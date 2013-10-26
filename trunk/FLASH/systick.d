@@ -1,0 +1,13 @@
+.\FLASH\systick.o: src\systick.c
+.\FLASH\systick.o: src\systick.h
+.\FLASH\systick.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h
+.\FLASH\systick.o: C:\Keil\ARM\CMSIS\Include\core_cm3.h
+.\FLASH\systick.o: C:\Keil\ARM\RV31\Inc\stdint.h
+.\FLASH\systick.o: C:\Keil\ARM\CMSIS\Include\core_cmInstr.h
+.\FLASH\systick.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
+.\FLASH\systick.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
+.\FLASH\systick.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
+.\FLASH\systick.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
+.\FLASH\systick.o: src\encoder.h
+.\FLASH\systick.o: src\systemfunc.h
+.\FLASH\systick.o: src\control.h

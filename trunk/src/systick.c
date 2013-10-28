@@ -7,7 +7,7 @@
 #include "encoder.h"
 #include "systemfunc.h"
 #include "control.h"
-
+#include "converter.h"
 
 /* —четчик */
 volatile uint32_t sysTicks = 0;
@@ -28,8 +28,8 @@ void SysTick_Handler(void) {
 	if(	beep_cnt )
 		beep_cnt--;
 	
-	UpdateSystemStatus(&system_status);			// Update system status
-	ProcessOverload();
+
+	Converter_HWProcess();
 	ProcessPowerOff();
 }
 

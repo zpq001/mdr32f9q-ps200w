@@ -20,19 +20,20 @@
 ### List of Objects: adding '".\ram\dwt_delay.o"'
 ### List of Objects: adding '".\ram\control.o"'
 ### List of Objects: adding '".\ram\lcd_func.o"'
+### List of Objects: adding '".\ram\converter.o"'
 ### List of Objects: adding '".\ram\font_8x12.o"'
 ### List of Objects: adding '".\ram\font_32x19.o"'
 ### List of Objects: adding '".\ram\font_16x10.o"'
 ### List of Objects: adding '".\ram\images.o"'
 ### ADS-LD Command completed:
---cpu Cortex-M3 ".\ram\startup_mdr32f9x.o" ".\ram\system_mdr32f9qx.o" ".\ram\mdr32f9qx_rst_clk.o" ".\ram\mdr32f9qx_ssp.o" ".\ram\mdr32f9qx_port.o" ".\ram\mdr32f9qx_timer.o" ".\ram\mdr32f9qx_i2c.o" ".\ram\mdr32f9qx_adc.o" ".\ram\main.o" ".\ram\systemfunc.o" ".\ram\systick.o" ".\ram\lcd_1202.o" ".\ram\buttons.o" ".\ram\led.o" ".\ram\encoder.o" ".\ram\i2c_eeprom.o" ".\ram\dwt_delay.o" ".\ram\control.o" ".\ram\lcd_func.o" ".\ram\font_8x12.o" ".\ram\font_32x19.o" ".\ram\font_16x10.o" ".\ram\images.o" --library_type=microlib --strict --scatter ".\RAM\MDR_200W.sct" 
+--cpu Cortex-M3 ".\ram\startup_mdr32f9x.o" ".\ram\system_mdr32f9qx.o" ".\ram\mdr32f9qx_rst_clk.o" ".\ram\mdr32f9qx_ssp.o" ".\ram\mdr32f9qx_port.o" ".\ram\mdr32f9qx_timer.o" ".\ram\mdr32f9qx_i2c.o" ".\ram\mdr32f9qx_adc.o" ".\ram\main.o" ".\ram\systemfunc.o" ".\ram\systick.o" ".\ram\lcd_1202.o" ".\ram\buttons.o" ".\ram\led.o" ".\ram\encoder.o" ".\ram\i2c_eeprom.o" ".\ram\dwt_delay.o" ".\ram\control.o" ".\ram\lcd_func.o" ".\ram\converter.o" ".\ram\font_8x12.o" ".\ram\font_32x19.o" ".\ram\font_16x10.o" ".\ram\images.o" --library_type=microlib --strict --scatter ".\RAM\MDR_200W.sct" 
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
 --info sizes --info totals --info unused --info veneers 
  --list ".\MDR_200W.map" -o ".\RAM\MDR_200W.axf"### Preparing Environment (PrepEnvAds)
 ### ADS-LD Output File: '.\RAM\MDR_200W.axf'
 ### ADS-LD Command File: '.\RAM\MDR_200W.lnp'
 ### Checking for dirty Components...
-### Creating CmdFile '.\RAM\MDR_200W.lnp', Handle=0x000003A4
+### Creating CmdFile '.\RAM\MDR_200W.lnp', Handle=0x000010DC
 ### Writing '.lnp' file
 ### ADS-LD Command file '.\RAM\MDR_200W.lnp' is ready.
 ### ADS-LD: About to start ADS-LD Thread.

@@ -348,7 +348,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\MDR_200W;.\src;.\src\fonts;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc</IncludePath>
+              <IncludePath>.\;.\src;.\src\fonts;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -492,6 +492,11 @@
               <FileName>lcd_func.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\lcd_func.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1028,6 +1033,11 @@
               <FileName>lcd_func.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\lcd_func.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter.c</FilePath>
             </File>
           </Files>
         </Group>

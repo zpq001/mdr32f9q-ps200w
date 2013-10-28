@@ -9,12 +9,12 @@
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_ssp.h
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
-.\RAM\systemfunc.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\RAM\systemfunc.o: .\MDR32F9Qx_config.h
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_i2c.h
 .\RAM\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_adc.h
 .\RAM\systemfunc.o: src\systemfunc.h
-.\RAM\systemfunc.o: ..\MDR_200W\defines.h
+.\RAM\systemfunc.o: .\defines.h
 .\RAM\systemfunc.o: src\systick.h
 .\RAM\systemfunc.o: src\lcd_1202.h
 .\RAM\systemfunc.o: src\lcd_func.h

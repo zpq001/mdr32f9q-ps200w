@@ -27,7 +27,11 @@
 
 #include "fonts.h"
 
-uint8_t system_overloaded = 0;
+
+
+int16_t converter_temp_celsius = 0;
+
+
 
 
 //==============================================================//
@@ -332,15 +336,17 @@ void ADCInit(void)
   sADCx.ADC_HighLevel        = 0;
   sADCx.ADC_VRefSource       = ADC_VREF_SOURCE_EXTERNAL;
   sADCx.ADC_IntVRefSource    = ADC_INT_VREF_SOURCE_EXACT;
-  sADCx.ADC_Prescaler        = ADC_CLK_div_1024;
+  sADCx.ADC_Prescaler        = ADC_CLK_div_512;
   sADCx.ADC_DelayGo          = 0;
   ADC1_Init (&sADCx);
+  ADC2_Init (&sADCx);
 
   /* Enable ADC1 EOCIF and AWOIFEN interupts */
   //ADC1_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
 
   /* ADC1 enable */
   ADC1_Cmd (ENABLE);
+  ADC2_Cmd (ENABLE);
 	
 	
 	
@@ -556,39 +562,13 @@ void LcdSetBacklight(uint16_t value)
 
 
 
-void ProcessOverload(void)
-{
-	static uint8_t start_overload_delay = 0;
-		// Check for overload
-	if ( (start_overload_delay == 100) &&  (system_control.ConverterState == CONVERTER_ON))
-	{
-			if ( system_status.ConverterOverload == OVERLOAD  )
-			{
-				system_control.ConverterState = CONVERTER_OFF;
-				led_state &= ~LED_GREEN;
-				led_state |= LED_RED;
-				UpdateLEDs();
-				system_overloaded = 1;
-				ApplySystemControl(&system_control);		
-			}	
- 	} 
-	else
-	{
-			if (system_control.ConverterState == CONVERTER_OFF)
-				start_overload_delay = 0;
-			else
-				start_overload_delay++;
-	} 
-	
-}
-
-
 void ProcessPowerOff(void)
 {
-	 if (system_status.LineInStatus == OFFLINE)
-	 {
-		 system_control.ConverterState = CONVERTER_OFF;
-		 ApplySystemControl(&system_control);	
+	 //if (system_status.LineInStatus == OFFLINE)
+	 if (GetACLineStatus() == OFFLINE)
+	 {	
+		 SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
+		 
 		 SysTickStop();
 		 StopBeep();
 		 
@@ -598,6 +578,7 @@ void ProcessPowerOff(void)
 		 SetCoolerSpeed(0);
 		 SetVoltagePWMPeriod(0);
 		 SetCurrentPWMPeriod(0);
+		 
 		 
 		 // Put message
 		 LcdFillBuffer(lcd0_buffer,0);
@@ -609,11 +590,10 @@ void ProcessPowerOff(void)
 		 
 		 while(DWTDelayInProgress());
 		 
-		 system_control.SelectedChannel = CHANNEL_12V;
-		 system_control.CurrentLimit = CURRENT_LIM_MAX;
-		 system_control.LoadDisable = LOAD_DISABLE;
-		 ApplySystemControl(&system_control);	
-		 
+		 SetFeedbackChannel(CHANNEL_12V);
+		 SetCurrentLimit(CURRENT_LIM_MAX); 
+		 SetOutputLoad(LOAD_DISABLE); 
+		  
 		 LcdUpdateByCore(LCD0,lcd0_buffer);
 		 LcdUpdateByCore(LCD1,lcd1_buffer);
 		 
@@ -629,10 +609,85 @@ void ProcessPowerOff(void)
 		 while(1);
 		 
 	 }
+ }
+	
+	 
+	
+
+
+	 
+void ProcessTemperature(void)
+{
+	static uint8_t fsm_state = TSTATE_START_EXTERNAL;
+	static uint16_t adc_samples;
+	static uint16_t sample_counter = 0;
+	
+	switch (fsm_state)
+	{
+		case TSTATE_START_EXTERNAL:
+			ADC2_SetChannel(ADC_CHANNEL_CONVERTER_TEMP); 
+			DWTDelayUs(10);
+			ADC2_Start();
+			fsm_state = TSTATE_GET_EXTERNAL;
+			adc_samples = 0;
+			sample_counter = 9;
+			break;
+		case TSTATE_GET_EXTERNAL:
+			adc_samples += ADC2_GetResult();
+			if (sample_counter != 0)
+			{
+				ADC2_Start();
+				sample_counter--;
+			}
+			else
+			{
+				fsm_state = TSTATE_DONE_EXTERNAL;
+			}
+			break;
+		case TSTATE_DONE_EXTERNAL:
+			converter_temp_celsius = (int16_t)( (float)adc_samples*0.1*(-0.226) + 230 );	//FIXME
+			fsm_state = TSTATE_START_EXTERNAL;
+			break;
+		
+		default:
+			fsm_state = TSTATE_START_EXTERNAL;
+	}
 	
 	
-	
+		/*
+		ADC2_SetChannel(ADC_CHANNEL_CONVERTER_TEMP); 
+		DWTDelayUs(10);
+		ADC2_Start();
+		while( ADC_GetFlagStatus(ADC2_FLAG_END_OF_CONVERSION)==RESET );
+		converter_temp = ADC2_GetResult();
+		
+		temperature_acc += converter_temp;
+		
+		if(	temperature_cnt >= 9)
+		{
+			temperature_cnt = 0;
+			converter_temp_norm =  (float)temperature_acc*0.1*(-0.226) + 230 ;
+			temperature_acc = 0;
+		}
+		else
+		{
+			temperature_cnt++;
+		}
+		*/
+}	
+	 
+
+void ProcessCooler(void)
+{
+	uint16_t cooler_speed;
+	cooler_speed = (converter_temp_celsius < 25) ? 50 : converter_temp_celsius * 2;
+	SetCoolerSpeed(cooler_speed);
 }
+	
+
+
+	
+
 
 
 

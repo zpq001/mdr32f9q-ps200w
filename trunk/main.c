@@ -25,12 +25,12 @@
 #include "dwt_delay.h"
 #include "control.h"
 
+#include "converter.h"
+
 
 #include "fonts.h"
 #include "images.h"
 
-
-extern uint8_t system_overloaded;
 
 
 //==============================================================//
@@ -80,42 +80,30 @@ int main(void)
 	uint16_t temp;
 	int16_t enc_delta;
 	char str1[20] =	"----------";
-  char str2[20] =	"----------";
-	uint16_t i;
-	int16_t voltage_pwm_period;
-	int16_t current_pwm_period;
-	uint16_t cooler_speed;
-	uint16_t voltage_adc;
-	uint16_t current_adc;
-	uint16_t converter_temp;
-	float converter_temp_norm = 0;
+	char str2[20] =	"----------";
+
+	
 	uint8_t param;
-	uint8_t temperature_cnt = 0;
-	uint32_t temperature_acc = 0;
 	
-	uint8_t is_charging = 0;
-	uint16_t power_on_counter = 0;
 	
-	uint16_t voltage_adc_stored = 0;
-	uint16_t charge_ticks = 0;
-	int16_t voltage_delta = 0;
 	
-	uint8_t delta_lim_counter = 0;
-	uint8_t blink_cnt = 0;
 
 	//=============================================//
-  // system initialization
-  //=============================================//
+	// system initialization
+	//=============================================//
 	Setup_CPU_Clock();
 	SysTickStart((SystemCoreClock / 1000)); 			/* Setup SysTick Timer for 1 msec interrupts  */
 	DWTCounterInit();
 	SSPInit();
 	I2CInit();
-  TimersInit();
+	TimersInit();
 	PortInit();
 	ADCInit();
 	LcdInit();
 	
+	Converter_Init();
+	
+	SetCoolerSpeed(80);
 	
 	// beep
 	SetBuzzerFreq(500);
@@ -131,7 +119,7 @@ int main(void)
 	
 	WaitBeep();
 	
-	SetCoolerSpeed(50);
+	
 	
 	
 	
@@ -170,8 +158,6 @@ int main(void)
 //	for(;;);
 
 	/*
-	
-
 	
 	while(1) 	
 	{
@@ -213,16 +199,13 @@ int main(void)
 	*/
 	
 	
-  //	__disable_irq();
-  //	__enable_irq();
 
-  voltage_pwm_period = 1000;
-	current_pwm_period = 200;
-	cooler_speed = 50;
+
+	
 	
 	param = 0;	// 0 - change voltage
-							// 1 - current
-							// 2 - current limit
+				// 1 - current
+				// 2 - current limit
 							
 
 
@@ -231,281 +214,68 @@ int main(void)
 	//=========================================================================//
 	while(1)
 	{
-		// Clear LCD buffers
-		LcdFillBuffer(lcd0_buffer,0x00);
-		LcdFillBuffer(lcd1_buffer,0x00);
 		
-
 		
-		//-------------------------------------------//
-		// Get new system status
+		UpdateButtons();					// Update global variable button_state
+		enc_delta = GetEncoderDelta();		// Process incremental encoder
 		
-		UpdateButtons();												// Update global variable button_state
-//		UpdateSystemStatus(&system_status);			// Update system status
-		enc_delta = GetEncoderDelta();					// Process incremental encoder
-		
+		Converter_ProcessADC();
+		ProcessTemperature();
 		
 		//-------------------------------------------//
 		// Process buttons
 		
 		if (button_state & BUTTON_OFF)
 		{
-			system_control.ConverterState = CONVERTER_OFF;
-			system_overloaded = 0;
-			led_state &= ~(LED_GREEN | LED_RED);
-			is_charging = 0;
-			system_control.LoadDisable = LOAD_ENABLE;
-
+			Converter_Disable();
 		}
-		else if ( (button_state & BUTTON_ON) && (system_overloaded == 0) )
+		else if (button_state & BUTTON_ON)
 		{
-			if (is_charging == 0)
-			{
-				system_control.ConverterState = CONVERTER_ON;
-				led_state |= LED_GREEN;
-				system_control.LoadDisable = LOAD_ENABLE;
-			}
+			Converter_Enable();
 		}
 
 		//if (button_state) StartBeep(100);
 		if (enc_delta) StartBeep(50);
 		if (button_state & BUTTON_OK ) StartBeep(2000);
 		
-		// Detect long press "ON" button
-		i = raw_button_state & BUTTON_ON;
-		if (i == BUTTON_ON) 
-			power_on_counter = (power_on_counter < 10) ?  power_on_counter + 1 : power_on_counter;
-	  else
-			power_on_counter = 0;
-				
-		// Start charge when "ON" button is pressed for long enough
-		if ( (is_charging == 0) && (power_on_counter == 10) )
-		{
-			// Set the flag
-			is_charging = 1;
-			// Disable resistive load on output
-			system_control.LoadDisable = LOAD_DISABLE;
-			// Set high voltage
-			voltage_pwm_period = 3200;	// 16V
-			// Last voltage
-			voltage_adc_stored = 0;
-			// Delta
-			voltage_delta = 0;
-			// Delta counter
-			delta_lim_counter = 0;
+		
 
-			charge_ticks = 0;
-			StartBeep(300);
-		}
-		
-		
 		//-------------------------------------------//
-		// Measure voltage, current and temperature
-
-		if (is_charging == 0)
-		{
-			ADC1_SetChannel(ADC_CHANNEL_VOLTAGE); 
-			DWTDelayUs(10);
-			ADC1_Start();
-			while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-			voltage_adc		= ADC1_GetResult();
-		}
-		else
-		{
-			system_control.ConverterState = CONVERTER_OFF;
-			led_state |= LED_RED;
-			ApplySystemControl(&system_control);				
-			UpdateLEDs();	
-			
-			SysTickDelay(50);
-			ADC1_SetChannel(ADC_CHANNEL_VOLTAGE);
-			voltage_adc = 0;
-			for (i=0;i<4;i++)
-			{
-				DWTDelayUs(100);
-				ADC1_Start();
-				while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-				voltage_adc		+= ADC1_GetResult();
-			}
-			voltage_adc >>= 2;
-			
-			
-			system_control.ConverterState = CONVERTER_ON;
-			led_state &= ~LED_RED;
-			ApplySystemControl(&system_control);	
-			SysTickDelay(50);
-			UpdateLEDs();	
-		}			
-		
-		
-		ADC1_SetChannel(ADC_CHANNEL_CURRENT); 
-		DWTDelayUs(100);
-		ADC1_Start();
-		while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-		current_adc		= ADC1_GetResult();
-		
-		
-		ADC1_SetChannel(ADC_CHANNEL_CONVERTER_TEMP); 
-		DWTDelayUs(10);
-		ADC1_Start();
-		while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-		converter_temp = ADC1_GetResult();
-		
-		temperature_acc += converter_temp;
-		
-		if(	temperature_cnt >= 9)
-		{
-			temperature_cnt = 0;
-			
-			
-		  converter_temp_norm =  (float)temperature_acc*0.1*(-0.226) + 230 ;
-			
-			temperature_acc = 0;
-		}
-		else
-			temperature_cnt++;
-		
-	
-			//-------------------------------------------//
 		// Switch regulation parameter
+		
 		if (button_state & BUTTON_ENCODER)
 		{
 			(param==2) ? param=0 : param++;
 			
 		}
 			
-			
-			
+		//-------------------------------------------//
+		// Apply regulation
 		
 		if (enc_delta)
 			switch (param)
 			{
 				case 0:
-					  // Do not regulate voltage while charging
-					  if (is_charging == 1) break;	
-						voltage_pwm_period += enc_delta*100;
-						if (voltage_pwm_period < 0)
-							voltage_pwm_period = 0;
-						else if (voltage_pwm_period > 4000)
-							voltage_pwm_period = 4000;
-						break;
+					Converter_SetVoltage(regulation_setting_p->set_voltage + enc_delta*500);
+					break;
 				case 1:
-						current_pwm_period += enc_delta*100;
-						if (current_pwm_period < 0) 
-							current_pwm_period = 0;
-						else if (current_pwm_period > 4000)
-							current_pwm_period = 4000;
-						break;
+					Converter_SetCurrent(regulation_setting_p->set_current + enc_delta*500);
+					break;
 				case 2:
-						if (enc_delta>0)
-							system_control.CurrentLimit = CURRENT_LIM_MAX;
-						else
-							system_control.CurrentLimit = CURRENT_LIM_MIN;
-						break;
+					if (enc_delta>0)
+						Converter_SetCurrentLimit(CURRENT_LIM_MAX);
+					else
+						Converter_SetCurrentLimit(CURRENT_LIM_MIN);
+					break;
 			}
 		
 			
 			
-			// Feedback channel select
+		// Feedback channel select
 		if (button_state & MODE_SWITCH)
-		{
-				// If changed, turn off converter
-				if (system_control.SelectedChannel == CHANNEL_12V)
-				{
-						system_control.ConverterState = CONVERTER_OFF;
-						led_state &= ~LED_GREEN;
-						UpdateLEDs();
-					
-						// Stop charging
-						system_control.LoadDisable = LOAD_ENABLE;
-					  is_charging = 0;
-					
-						ApplySystemControl(&system_control);	
-					  voltage_pwm_period = 1000;
-				    current_pwm_period = 500;
-					  SysTickDelay(100);
-				}
-				system_control.SelectedChannel = CHANNEL_5V;
-		}
+			Converter_SetFeedbackChannel(CHANNEL_5V);
 		else
-		{
-			// If changed, turn off converter
-				if (system_control.SelectedChannel == CHANNEL_5V)
-				{
-						system_control.ConverterState = CONVERTER_OFF;
-						led_state &= ~LED_GREEN;
-						UpdateLEDs();
-					
-					  // Stop charging
-						system_control.LoadDisable = LOAD_ENABLE;
-					  is_charging = 0;
-					
-						ApplySystemControl(&system_control);	
-					  voltage_pwm_period = 1000;
-				    current_pwm_period = 200;
-					  SysTickDelay(100);
-				}
-				system_control.SelectedChannel = CHANNEL_12V;
-		}
-		
-		
-		
-		
-		//------ Process charging --------//
-		if (is_charging)
-		{
-			if (charge_ticks > 20)	
-			{
-					charge_ticks = 0;
-					voltage_delta = (int32_t)voltage_adc - (int32_t)voltage_adc_stored;
-					// LSB == 5mV
-					if ( voltage_delta < -5 )	// if dV < -25mV, stop charge
-					{
-						delta_lim_counter++;
-						if (delta_lim_counter == 1)
-						{
-							Beep(50);
-							SysTickDelay(50);
-						  Beep(50);
-						}
-						// Charge process finish
-						if (delta_lim_counter == 2)
-						{
-							// Stop charging
-							delta_lim_counter = 0;
-							is_charging = 0;
-							system_control.ConverterState = CONVERTER_OFF;
-							led_state &= ~LED_GREEN;
-							// Beep
-							StartBeep(100);
-							SysTickDelay(200);
-							StartBeep(100);
-							SysTickDelay(200);
-							StartBeep(100);
-							SysTickDelay(200);
-							StartBeep(100);
-						}
-					}
-					// Store maximum
-					if (voltage_adc_stored < voltage_adc)
-						voltage_adc_stored = voltage_adc;
-			}
-			else
-				charge_ticks++;
-	}
-		
-		//--------------------------------//
-		
-		
-		
-		
-		
-		
-		// Cooler speed regulation
-		// Proportional
-		cooler_speed = (converter_temp_norm < 25) ? 50 : converter_temp_norm * 2;
-		
-
+			Converter_SetFeedbackChannel(CHANNEL_12V);
 		
 		
 		
@@ -514,53 +284,38 @@ int main(void)
 		// Graphical representation
 		//---------------------------------------------------//
 			
+		
+		// Clear LCD buffers
+		LcdFillBuffer(lcd0_buffer,0x00);
+		LcdFillBuffer(lcd1_buffer,0x00);
 			
-			
+		
 		//------------------------//
 		// Voltage section
 		//------------------------//
 	  
-		// Measured 
-		sprintf(str1,"%5.2fV",(float)(voltage_adc>>1)/100 );
+	    // Measured 
+		sprintf(str1,"%5.2fV",(float)(voltage_adc)/1000 );
 		LcdPutSpecialStr(0,0,(uint8_t*)str1,(tSpecialFont*)&font_32x19,lcd0_buffer);
+	  
+		// Set
+		sprintf(str2,"%5.2fV",(float)(regulation_setting_p->set_voltage)/1000 );
+		LcdPutNormalStr(0,38,"SET:",(tNormalFont*)&font_8x12,lcd0_buffer);
+		LcdPutSpecialStr(32,33,(uint8_t*)str2,(tSpecialFont*)&font_16x10,lcd0_buffer);
+			
+			
+			
+		//------------------------//
+		// Current section
+		//------------------------//
+		
+		
+		// Measured 
+		sprintf(str1,"%5.2fA",(float)(current_adc)/1000 );
+		LcdPutSpecialStr(0,0,(uint8_t*)str1,(tSpecialFont*)&font_32x19,lcd1_buffer);
 		
 		// Set
-		if (is_charging == 0)
-		{
-			sprintf(str2,"%5.2fV",(float)(voltage_pwm_period>>1)/100 );
-			LcdPutNormalStr(0,38,"SET:",(tNormalFont*)&font_8x12,lcd0_buffer);
-			LcdPutSpecialStr(32,33,(uint8_t*)str2,(tSpecialFont*)&font_16x10,lcd0_buffer);
-			
-		}			
-		else
-		{
-			sprintf(str1,"dU=%4dmV", voltage_delta*5);
-			LcdPutNormalStr(0,40,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd0_buffer);
-		}
-		
-			
-			
-			
-		//------------------------//
-	  // Current section
-		//------------------------//
-		
-		if (system_control.CurrentLimit == CURRENT_LIM_MAX)
-		{
-			// Measured 
-			sprintf(str1,"%5.2fA",(float)(current_adc)/100 );
-			// Set
-			sprintf(str2,"%5.2fA",(float)(current_pwm_period)/100 );
-		}
-		else
-		{
-			// Measured 
-			sprintf(str1,"%5.2fA",(float)(current_adc>>1)/100 );
-			// Set
-			sprintf(str2,"%5.2fA",(float)(current_pwm_period>>1)/100 );
-		}
-		
-		LcdPutSpecialStr(0,0,(uint8_t*)str1,(tSpecialFont*)&font_32x19,lcd1_buffer);
+		sprintf(str2,"%5.2fA",(float)(regulation_setting_p->set_current)/1000 );
 		LcdPutNormalStr(0,38,"SET:",(tNormalFont*)&font_8x12,lcd1_buffer);
 		LcdPutSpecialStr(32,33,(uint8_t*)str2,(tSpecialFont*)&font_16x10,lcd1_buffer);
 
@@ -571,13 +326,14 @@ int main(void)
 		// Frames LCD0
 		//------------------------//
 	
-	  LcdPutHorLine(0,55,LCD_XSIZE,PIXEL_ON,lcd0_buffer);
+		LcdPutHorLine(0,55,LCD_XSIZE,PIXEL_ON,lcd0_buffer);
 		LcdPutVertLine(48,56,13,PIXEL_ON,lcd0_buffer);
 		
-		sprintf(str1,"%2.0f%cC",converter_temp_norm,0xb0); //0xb7 );
+		sprintf(str1,"%2.0f%cC",(float)converter_temp_celsius,0xb0); //0xb7 );
 		LcdPutNormalStr(63,57,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd0_buffer);
 		
-		if (system_control.SelectedChannel == CHANNEL_5V)
+		//if (system_control.SelectedChannel == CHANNEL_5V)
+		if (converter_state.feedback_channel == CHANNEL_5V)
 			LcdPutNormalStr(0,57,"Ch. 5V",(tNormalFont*)&font_8x12,lcd0_buffer);
 		else
 			LcdPutNormalStr(0,57,"Ch.12V",(tNormalFont*)&font_8x12,lcd0_buffer);
@@ -593,22 +349,17 @@ int main(void)
 		LcdPutHorLine(0,55,LCD_XSIZE,PIXEL_ON,lcd1_buffer);
 		LcdPutVertLine(42,56,13,PIXEL_ON,lcd1_buffer);
 		
-		if (system_control.CurrentLimit == CURRENT_LIM_MAX)
+		
+		if (regulation_setting_p -> current_limit == CURRENT_LIM_MAX)
 			LcdPutNormalStr(2,57,"40A",(tNormalFont*)&font_8x12,lcd1_buffer);
 		else
 			LcdPutNormalStr(2,57,"20A",(tNormalFont*)&font_8x12,lcd1_buffer);
 		
-		
-		if (system_control.CurrentLimit == CURRENT_LIM_MAX)
-		  sprintf(str1,"%5.1fW",(float)(voltage_adc>>1)*( (float)(current_adc)/100 )/100 );
-		else
-			sprintf(str1,"%5.1fW",(float)(voltage_adc>>1)*( (float)(current_adc>>1)/100 )/100 );
-		
+		sprintf(str1,"%5.1fW",(float)(power_adc)/1000 );
 		LcdPutNormalStr(47,57,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd1_buffer);
-	
 		
 		
-	
+		
 		//------------------------//
 		// Current or voltage regulation
 		//	selection
@@ -637,19 +388,19 @@ int main(void)
 		
 		
 		//---------------------------------------------------//
-		// Apply settings
+		// Process output tasks
 		
-		ApplySystemControl(&system_control);				
-		UpdateLEDs();																
 		
-		SetVoltagePWMPeriod(voltage_pwm_period);	
-		SetCurrentPWMPeriod(current_pwm_period);
-		SetCoolerSpeed(cooler_speed);
+		ProcessCooler();
+			
+		Converter_Process();
+			
+		
 				
 		LcdUpdateByCore(LCD0,lcd0_buffer);
 		LcdUpdateByCore(LCD1,lcd1_buffer);
 		
-		SysTickDelay(200);
+		SysTickDelay(100);
 		
 
 		

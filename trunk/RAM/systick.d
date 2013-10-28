@@ -11,3 +11,4 @@
 .\RAM\systick.o: src\encoder.h
 .\RAM\systick.o: src\systemfunc.h
 .\RAM\systick.o: src\control.h
+.\RAM\systick.o: src\converter.h

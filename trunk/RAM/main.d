@@ -24,6 +24,7 @@
 .\RAM\main.o: .\src\i2c_eeprom.h
 .\RAM\main.o: .\src\dwt_delay.h
 .\RAM\main.o: .\src\control.h
+.\RAM\main.o: .\src\converter.h
 .\RAM\main.o: .\src\fonts\fonts.h
 .\RAM\main.o: .\src\fonts\font_defs.h
 .\RAM\main.o: .\src\fonts\images.h

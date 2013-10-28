@@ -7,4 +7,4 @@
 .\RAM\mdr32f9qx_rst_clk.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
 .\RAM\mdr32f9qx_rst_clk.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
 .\RAM\mdr32f9qx_rst_clk.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
-.\RAM\mdr32f9qx_rst_clk.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\RAM\mdr32f9qx_rst_clk.o: .\MDR32F9Qx_config.h

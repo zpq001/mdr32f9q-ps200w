@@ -12,6 +12,13 @@
 
 
 
+#define TSTATE_START_EXTERNAL	0x01
+#define TSTATE_GET_EXTERNAL		0x02
+#define	TSTATE_DONE_EXTERNAL	0x03
+
+
+extern int16_t converter_temp_celsius;
+
 void Setup_CPU_Clock(void);
 void PortInit(void);
 void SSPInit(void);
@@ -35,3 +42,6 @@ void I2CInit(void);
 void ProcessOverload(void);
 void ProcessPowerOff(void);
 
+
+void ProcessTemperature(void);
+void ProcessCooler(void);

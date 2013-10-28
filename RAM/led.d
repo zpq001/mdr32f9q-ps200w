@@ -7,7 +7,7 @@
 .\RAM\led.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
 .\RAM\led.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
 .\RAM\led.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
-.\RAM\led.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\RAM\led.o: .\MDR32F9Qx_config.h
 .\RAM\led.o: src\led.h
 .\RAM\led.o: src\systemfunc.h
-.\RAM\led.o: ..\MDR_200W\defines.h
+.\RAM\led.o: .\defines.h

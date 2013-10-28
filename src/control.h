@@ -9,8 +9,8 @@
 #define	CHANNEL_5V			 0x1
 #define	CHANNEL_12V			 0x0
 // CurrentLimit
-#define	CURRENT_LIM_MAX	 0x1
-#define	CURRENT_LIM_MIN	 0x0
+#define	CURRENT_LIM_HIGH	 0x1
+#define	CURRENT_LIM_LOW	 0x0
 // LoadDisable
 #define	LOAD_DISABLE		 0x1
 #define	LOAD_ENABLE			 0x0

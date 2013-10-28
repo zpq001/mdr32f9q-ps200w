@@ -68,7 +68,7 @@ void SetFeedbackChannel(uint8_t newChannel)
 //-------------------------------------------------------//
 void SetCurrentLimit(uint8_t newLimit)
 {
-	if (newLimit == CURRENT_LIM_MAX)
+	if (newLimit == CURRENT_LIM_HIGH)
 		PORT_SetBits(MDR_PORTA, 1<<CLIM_SEL);
 	else
 		PORT_ResetBits(MDR_PORTA, 1<<CLIM_SEL);

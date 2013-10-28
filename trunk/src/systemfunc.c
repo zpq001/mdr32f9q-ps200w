@@ -591,7 +591,7 @@ void ProcessPowerOff(void)
 		 while(DWTDelayInProgress());
 		 
 		 SetFeedbackChannel(CHANNEL_12V);
-		 SetCurrentLimit(CURRENT_LIM_MAX); 
+		 SetCurrentLimit(CURRENT_LIM_HIGH); 
 		 SetOutputLoad(LOAD_DISABLE); 
 		  
 		 LcdUpdateByCore(LCD0,lcd0_buffer);

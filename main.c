@@ -226,11 +226,11 @@ int main(void)
 		//-------------------------------------------//
 		// Process buttons
 		
-		if (buttons.action_down & BUTTON_OFF)
+		if (buttons.action_down & BTN_OFF)
 		{
 			Converter_Disable();
 		}
-		else if (buttons.action_down & BUTTON_ON)
+		else if (buttons.action_down & BTN_ON)
 		{
 			Converter_Enable();
 		}
@@ -243,7 +243,7 @@ int main(void)
 		//-------------------------------------------//
 		// Switch regulation parameter
 		
-		if (buttons.action_down & BUTTON_ENCODER)
+		if (buttons.action_down & BTN_ENCODER)
 		{
 			(param==2) ? param=0 : param++;
 			
@@ -272,7 +272,7 @@ int main(void)
 			
 			
 		// Feedback channel select
-		if (buttons.raw_state & MODE_SWITCH)
+		if (buttons.raw_state & SW_CHANNEL)
 			Converter_SetFeedbackChannel(CHANNEL_5V);
 		else
 			Converter_SetFeedbackChannel(CHANNEL_12V);

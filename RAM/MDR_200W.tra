@@ -33,7 +33,7 @@
 ### ADS-LD Output File: '.\RAM\MDR_200W.axf'
 ### ADS-LD Command File: '.\RAM\MDR_200W.lnp'
 ### Checking for dirty Components...
-### Creating CmdFile '.\RAM\MDR_200W.lnp', Handle=0x00001408
+### Creating CmdFile '.\RAM\MDR_200W.lnp', Handle=0x000016B4
 ### Writing '.lnp' file
 ### ADS-LD Command file '.\RAM\MDR_200W.lnp' is ready.
 ### ADS-LD: About to start ADS-LD Thread.

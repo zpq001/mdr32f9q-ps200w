@@ -500,3 +500,73 @@ compiling converter.c...
 linking...
 Program Size: Code=17072 RO-data=5904 RW-data=72 ZI-data=4560  
 ".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling main.c...
+main.c(229): error:  #20: identifier "BUTTON_OFF" is undefined
+main.c(233): error:  #20: identifier "BUTTON_ON" is undefined
+main.c(246): error:  #20: identifier "BUTTON_ENCODER" is undefined
+main.c(275): error:  #20: identifier "MODE_SWITCH" is undefined
+compiling systick.c...
+compiling buttons.c...
+src\buttons.c(35): error:  #20: identifier "BUTTON_ENCODER" is undefined
+src\buttons.c(40): error:  #20: identifier "BUTTON_ESC" is undefined
+src\buttons.c(42): error:  #20: identifier "BUTTON_LEFT" is undefined
+src\buttons.c(44): error:  #20: identifier "BUTTON_RIGHT" is undefined
+src\buttons.c(46): error:  #20: identifier "BUTTON_OK" is undefined
+src\buttons.c(48): error:  #20: identifier "MODE_SWITCH" is undefined
+src\buttons.c(57): error:  #20: identifier "BUTTON_ON" is undefined
+src\buttons.c(59): error:  #20: identifier "BUTTON_OFF" is undefined
+compiling control.c...
+compiling converter.c...
+Target not created
+Build target 'RAM'
+compiling main.c...
+main.c(275): error:  #20: identifier "MODE_SWITCH" is undefined
+compiling buttons.c...
+src\buttons.c(35): error:  #20: identifier "BUTTON_ENCODER" is undefined
+src\buttons.c(40): error:  #20: identifier "BUTTON_ESC" is undefined
+src\buttons.c(42): error:  #20: identifier "BUTTON_LEFT" is undefined
+src\buttons.c(44): error:  #20: identifier "BUTTON_RIGHT" is undefined
+src\buttons.c(46): error:  #20: identifier "BUTTON_OK" is undefined
+src\buttons.c(48): error:  #20: identifier "MODE_SWITCH" is undefined
+src\buttons.c(57): error:  #20: identifier "BUTTON_ON" is undefined
+src\buttons.c(59): error:  #20: identifier "BUTTON_OFF" is undefined
+Target not created
+Build target 'RAM'
+compiling main.c...
+compiling buttons.c...
+src\buttons.c(35): error:  #20: identifier "BUTTON_ENCODER" is undefined
+src\buttons.c(40): error:  #20: identifier "BUTTON_ESC" is undefined
+src\buttons.c(42): error:  #20: identifier "BUTTON_LEFT" is undefined
+src\buttons.c(44): error:  #20: identifier "BUTTON_RIGHT" is undefined
+src\buttons.c(46): error:  #20: identifier "BUTTON_OK" is undefined
+src\buttons.c(48): error:  #20: identifier "MODE_SWITCH" is undefined
+src\buttons.c(57): error:  #20: identifier "BUTTON_ON" is undefined
+src\buttons.c(59): error:  #20: identifier "BUTTON_OFF" is undefined
+Target not created
+Build target 'RAM'
+compiling buttons.c...
+src\buttons.c(48): error:  #20: identifier "MODE_SWITCH" is undefined
+Target not created
+Build target 'RAM'
+compiling buttons.c...
+linking...
+.\RAM\MDR_200W.axf: Error: L6218E: Undefined symbol buttons (referred from main.o).
+Target not created
+Build target 'RAM'
+linking...
+.\RAM\MDR_200W.axf: Error: L6218E: Undefined symbol buttons (referred from main.o).
+Target not created
+Build target 'RAM'
+linking...
+.\RAM\MDR_200W.axf: Error: L6218E: Undefined symbol buttons (referred from main.o).
+Target not created
+Build target 'RAM'
+compiling buttons.c...
+linking...
+Program Size: Code=17132 RO-data=5904 RW-data=80 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+linking...
+Program Size: Code=17132 RO-data=5904 RW-data=80 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).

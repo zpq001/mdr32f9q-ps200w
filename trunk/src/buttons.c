@@ -14,7 +14,7 @@
 
 
 static uint16_t raw_button_state = 0;
-
+buttons_t buttons;
 
 //---------------------------------------------//
 //	Gets raw button state
@@ -32,20 +32,20 @@ static void UpdateRawButtonState(void)
 	// get other buttons by delay time
 	temp = MDR_PORTA->RXTX;
 	if (! (temp & (1<<ENC_BTN)) )
-		raw_buttons |= BUTTON_ENCODER;
+		raw_buttons |= BTN_ENCODER;
 	if (temp & (1<<EEN))
 		raw_buttons |= SW_EXTERNAL;
 	temp = MDR_PORTB->RXTX;
 	if (! (temp & (1<<SB_ESC)) )
-		raw_buttons |= BUTTON_ESC;
+		raw_buttons |= BTN_ESC;
 	if (! (temp & (1<<SB_LEFT)) )
-		raw_buttons |= BUTTON_LEFT;
+		raw_buttons |= BTN_LEFT;
 	if (! (temp & (1<<SB_RIGHT)) )
-		raw_buttons |= BUTTON_RIGHT;
+		raw_buttons |= BTN_RIGHT;
 	if (! (temp & (1<<SB_OK)) )
-		raw_buttons |= BUTTON_OK;
+		raw_buttons |= BTN_OK;
 	if (! (temp & (1<<SB_MODE)) )
-		raw_buttons |= MODE_SWITCH;
+		raw_buttons |= SW_CHANNEL;
 	// wait until delay is done
 	while(DWTDelayInProgress()) {};
 	// read once more
@@ -54,9 +54,9 @@ static void UpdateRawButtonState(void)
 	MDR_PORTB->OE |= (1<<LGREEN | 1<<LRED);
 	// add remaining buttons	
 	if (! (temp & (1<<LGREEN)) )
-		raw_buttons |= BUTTON_ON;
+		raw_buttons |= BTN_ON;
 	if (! (temp & (1<<LRED)) )
-		raw_buttons |= BUTTON_OFF;
+		raw_buttons |= BTN_OFF;
 
 	
 	// Update global variable

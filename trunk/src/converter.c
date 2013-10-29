@@ -273,6 +273,9 @@ void Converter_StartCharge(void)
 }
 
 
+// TODO: add regulation of overload parameters - different for each channel or common for both ?
+
+
 void Converter_Init(void)
 {
 	// Converter is powered off.

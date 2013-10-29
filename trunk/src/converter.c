@@ -23,8 +23,10 @@
 #include "converter.h"
 
 // Globals used for communicating with converter control task called from ISR
-uint8_t state_HWProcess = HW_OFF;	
+uint8_t state_HWProcess = STATE_HW_OFF;	
 uint8_t ctrl_HWProcess = 0;
+uint8_t ctrl_ADCProcess = 0;
+uint8_t cmd_ADC_to_HWProcess = 0;
 
 
 
@@ -277,7 +279,7 @@ void Converter_Init(void)
 
 	// Common
 	channel_5v_setting.CHANNEL = CHANNEL_5V;
-	channel_5v_setting.load_state = LOAD_ENABLE;	// dummy
+	channel_5v_setting.load_state = LOAD_ENABLE;							// dummy - load at 5V channel can not be disabled
 	// Voltage
 	channel_5v_setting.set_voltage = 5000;
 	channel_5v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;			// Maximum voltage setting for channel
@@ -324,7 +326,7 @@ void Converter_Init(void)
 	channel_12v_setting.soft_max_current = 18000;
 	channel_12v_setting.soft_min_current = 6000;
 	channel_12v_setting.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
-	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;
+	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
 	channel_12v_setting.soft_current_range_enable = 0;
 	
 	// 
@@ -373,7 +375,7 @@ void Converter_Process(void)
 			if (HW_request & CMD_OFF)
 			{
 				HW_request &= ~CMD_OFF;
-				HW_cmd |= HW_RESET_OVERLOAD;
+				HW_cmd |= CMD_HW_RESET_OVERLOAD;
 				break;
 			}
 			
@@ -381,7 +383,7 @@ void Converter_Process(void)
 			{
 				HW_request &= ~CMD_ON;
 				next_conv_state = CONV_ON;
-				HW_cmd |= (HW_ON | HW_RESET_OVERLOAD);
+				HW_cmd |= (CMD_HW_ON | CMD_HW_RESET_OVERLOAD);
 				break;
 			}
 			
@@ -390,16 +392,16 @@ void Converter_Process(void)
 		case CONV_ON:
 			HW_request &= ~(CMD_ON | CMD_CLIM_20A | CMD_CLIM_40A);
 			
-			if ( (state_HWProcess & HW_OFF) || (HW_request & CMD_OFF) )
+			if ( (state_HWProcess & STATE_HW_OFF) || (HW_request & CMD_OFF) )
 			{
 				HW_request &= ~CMD_OFF;
-				HW_cmd |= HW_OFF;
+				HW_cmd |= CMD_HW_OFF;
 				next_conv_state = CONV_OFF;
 				break;
 			}
 			if (HW_request & (CMD_FB_5V | CMD_FB_12V))
 			{
-				HW_cmd |= HW_OFF;
+				HW_cmd |= CMD_HW_OFF;
 				next_conv_state = CONV_OFF;
 				break;
 			}
@@ -425,39 +427,21 @@ void Converter_Process(void)
 	// Apply voltage and current settings
 	apply_regulation();		
 	
-	// Send command to low-level task
-	HW_cmd |= HW_START_ADC_VOLTAGE | HW_START_ADC_CURRENT;
-	ctrl_HWProcess = HW_cmd;		// Atomic
-
+	// Send command to low-level task - must be atomic operations
+	ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
+	ctrl_HWProcess = HW_cmd;		
+	
+	
 	// LED indication
 	led_state = 0;
-	if (state_HWProcess & HW_ON)
+	if (state_HWProcess & STATE_HW_ON)
 		led_state = LED_GREEN;
-	else if (state_HWProcess & HW_OVERLOADED)
+	else if (state_HWProcess & STATE_HW_OVERLOADED)
 		led_state = LED_RED;
 	UpdateLEDs();
 }		
 
 
-
-/*
-	// Measuring voltage while charging
-	Converter_HWProcess(HW_OFF);
-	wait();
-	select_ADC_channel(Voltage);
-	wait();
-	ADC_start();
-	wait();
-	Voltage = ADC_read();
-	Converter_HWProcess(HW_ON);
-	 
-	// Measuring current or voltage normally
-	select_ADC_channel(Current);
-	wait();
-	ADC_start();
-	wait();
-	Current = ADC_read();
-*/
 
 
 //---------------------------------------------//
@@ -466,22 +450,17 @@ void Converter_Process(void)
 //	Low-level task for accessing Enbale/Disable functions.
 //	There may be an output overload which has to be correctly handled - converter should be disabled
 //	This task takes care for overload and top-level enable/disable control
-//	This task also starts Voltage/Current ADC operation
+//	
+// TODO: ensure that ISR is non-interruplable
 //---------------------------------------------//
 void Converter_HWProcess(void) 
 {
 	static uint16_t overload_ignore_counter;
 	static uint16_t overload_counter;
 	
-	static uint8_t adc_state = ADC_IDLE;
-	uint8_t next_adc_state;
-	static uint8_t adc_cmd;
-	static uint16_t voltage_samples;
-	static uint16_t current_samples;
-	static uint8_t adc_counter;
-	
+
 	// Due to hardware specialty overload input is active when converter is powered off
-	if ( (state_HWProcess & (HW_OFF | HW_OFF_BY_ADC)) || (0/*_overload_functions_disabled_*/) )
+	if ( (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || (0/*_overload_functions_disabled_*/) )
 		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
 	else if (overload_ignore_counter != 0)
 		overload_ignore_counter--;
@@ -499,52 +478,95 @@ void Converter_HWProcess(void)
 	if (overload_counter == 0)
 	{
 		// Converter is overloaded
-		state_HWProcess &= ~HW_ON;
-		state_HWProcess |= HW_OFF | HW_OVERLOADED;	// Set status for itself and top-level software
+		state_HWProcess &= ~STATE_HW_ON;
+		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
 	}
 	
 	// Process ON/OFF commands
-	if (ctrl_HWProcess & HW_RESET_OVERLOAD)
+	if (ctrl_HWProcess & CMD_HW_RESET_OVERLOAD)
 	{
-		state_HWProcess &= ~HW_OVERLOADED;
+		state_HWProcess &= ~STATE_HW_OVERLOADED;
 	}
-	if ( (ctrl_HWProcess & HW_OFF) && (!(state_HWProcess & HW_OVERLOADED)) )
+	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OVERLOADED)) )
 	{
-		state_HWProcess &= ~(HW_ON);
-		state_HWProcess |= HW_OFF;				
+		state_HWProcess &= ~STATE_HW_ON;
+		state_HWProcess |= STATE_HW_OFF;				
 	}
-	else if ( (ctrl_HWProcess & HW_ON) && (!(state_HWProcess & HW_OVERLOADED)) )
+	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_OVERLOADED)) )
 	{
-		state_HWProcess &= ~(HW_OFF);
-		state_HWProcess |= HW_ON;								
+		state_HWProcess &= ~STATE_HW_OFF;
+		state_HWProcess |= STATE_HW_ON;								
+	}
+	
+	// Process ON/OFF commands from ADC controller
+	if (cmd_ADC_to_HWProcess & CMD_HW_OFF_BY_ADC)
+	{
+		state_HWProcess |= STATE_HW_OFF_BY_ADC;
+	}
+	else if (cmd_ADC_to_HWProcess & CMD_HW_ON_BY_ADC)
+	{
+		state_HWProcess &= ~STATE_HW_OFF_BY_ADC;
 	}
 	
 	
 	
+	// Reset command
+	ctrl_HWProcess = 0;
+	cmd_ADC_to_HWProcess = 0;
+	
+	
+	// Apply converter state
+	// FIXME: care must be taken when using portF - this code is called from ISR
+	// ATOMIC access should be used
+	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+		SetConverterState(CONVERTER_OFF);
+	else if (state_HWProcess & STATE_HW_ON)
+		SetConverterState(CONVERTER_ON);
+	
+}
 
+
+
+
+
+
+//---------------------------------------------//
+//	Converter hardware ADC control task
+//	
+//	Low-level task for ADC start, normal or charging mode
+//	
+// TODO: ensure that ISR is non-interruptable
+//---------------------------------------------//
+void Converter_HW_ADCProcess(void)
+{
+	static uint8_t state_ADCProcess = STATE_ADC_IDLE;
+	static uint8_t adc_cmd;
+	static uint16_t voltage_samples;
+	static uint16_t current_samples;
+	static uint8_t adc_counter;
+	
 	
 	// Process ADC FSM-based controller
-	next_adc_state = adc_state;
-	switch (adc_state)
+	switch (state_ADCProcess)
 	{
-		case ADC_IDLE:
-			adc_cmd = ctrl_HWProcess & (HW_START_ADC_VOLTAGE | HW_START_ADC_CURRENT | HW_START_ADC_DISCON);
+		case STATE_ADC_IDLE:
+			adc_cmd = ctrl_ADCProcess;
 			if (adc_cmd)
-				next_adc_state = ADC_DISPATCH;
+				state_ADCProcess = STATE_ADC_DISPATCH;
 			break;
-		case ADC_DISPATCH:
-			if ((adc_cmd & (HW_START_ADC_VOLTAGE | HW_START_ADC_DISCON)) == HW_START_ADC_VOLTAGE)
+		case STATE_ADC_DISPATCH:
+			if ((adc_cmd & (CMD_ADC_START_VOLTAGE | CMD_ADC_START_DISCON)) == CMD_ADC_START_VOLTAGE)
 			{
 				// Normal voltage measure 
-				adc_cmd &= ~(HW_START_ADC_VOLTAGE | HW_START_ADC_DISCON);
-				next_adc_state = ADC_NORMAL_START_U;
+				adc_cmd &= ~(CMD_ADC_START_VOLTAGE | CMD_ADC_START_DISCON);
+				state_ADCProcess = STATE_ADC_NORMAL_START_U;
 				voltage_samples = 0;
 			}
-			else if (adc_cmd & HW_START_ADC_CURRENT)
+			else if (adc_cmd & CMD_ADC_START_CURRENT)
 			{
 				// Current measure
-				adc_cmd &= ~HW_START_ADC_CURRENT;
-				next_adc_state = ADC_START_I;
+				adc_cmd &= ~CMD_ADC_START_CURRENT;
+				state_ADCProcess = STATE_ADC_START_I;
 				current_samples = 0;
 			}
 			else
@@ -552,17 +574,16 @@ void Converter_HWProcess(void)
 				// Update global Voltage and Current
 				adc_voltage_counts = voltage_samples;
 				adc_current_counts = current_samples;
-				next_adc_state = ADC_IDLE;
+				state_ADCProcess = STATE_ADC_IDLE;
 			}
 			break;
-			
-		case ADC_NORMAL_START_U:
+		case STATE_ADC_NORMAL_START_U:
 			// TODO: use DMA for this purpose
 			ADC1_SetChannel(ADC_CHANNEL_VOLTAGE);
 			adc_counter = 4;
-			next_adc_state = ADC_NORMAL_REPEAT_U;
+			state_ADCProcess = STATE_ADC_NORMAL_REPEAT_U;
 			break;
-		case ADC_NORMAL_REPEAT_U:
+		case STATE_ADC_NORMAL_REPEAT_U:
 			if (adc_counter < 4)
 				voltage_samples += ADC1_GetResult();
 			if (adc_counter != 0)
@@ -572,18 +593,16 @@ void Converter_HWProcess(void)
 			}
 			else
 			{
-				next_adc_state = ADC_DISPATCH;
+				state_ADCProcess = STATE_ADC_DISPATCH;
 			}
 			break;
-			
-			
-		case ADC_START_I:
+		case STATE_ADC_START_I:
 			// TODO: use DMA for this purpose
 			ADC1_SetChannel(ADC_CHANNEL_CURRENT);
 			adc_counter = 4;
-			next_adc_state = ADC_NORMAL_REPEAT_I;
+			state_ADCProcess = STATE_ADC_NORMAL_REPEAT_I;
 			break;
-		case ADC_NORMAL_REPEAT_I:
+		case STATE_ADC_NORMAL_REPEAT_I:
 			if (adc_counter < 4)
 				current_samples += ADC1_GetResult();
 			ADC1_Start();
@@ -594,50 +613,30 @@ void Converter_HWProcess(void)
 			}
 			else
 			{
-				next_adc_state = ADC_DISPATCH;
+				state_ADCProcess = STATE_ADC_DISPATCH;
 			}
 			break;
-		
 		default:
-			next_adc_state = ADC_IDLE;
+			state_ADCProcess = STATE_ADC_IDLE;
 			break;
 	}
 	
-	adc_state = next_adc_state;
 	
+	ctrl_ADCProcess = 0;
 	/*
-	if (ctrl_HWProcess & HW_START_ADC)
-	{
 		//...
 		
 		// Disable converter for ADC
-		state_HWProcess |= HW_OFF_BY_ADC;
+		cmd_ADC_to_HWProcess = STATE_HW_OFF_BY_ADC;			// Will disallow converter operation
 		
 		//...
 		
 		// Enable converter for ADC
-		state_HWProcess &= ~HW_OFF_BY_ADC;
-		
-	}
+		cmd_ADC_to_HWProcess = CMD_HW_ON_BY_ADC;			// Will allow converter operation
 	*/
 	
-	
-	// Reset command
-	ctrl_HWProcess = 0;
-	
-	
-	
-	// Apply converter state
-	// FIXME: care must be taken when using portF - this code is called from ISR
-	// ATOMIC access should be used
-	if (state_HWProcess & (HW_OFF | HW_OFF_BY_ADC))
-		SetConverterState(CONVERTER_OFF);
-	else if (state_HWProcess & HW_ON)
-		SetConverterState(CONVERTER_ON);
-	
+
 }
-
-
 
 
 

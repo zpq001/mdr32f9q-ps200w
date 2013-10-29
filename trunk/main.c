@@ -216,7 +216,8 @@ int main(void)
 	{
 		
 		
-		UpdateButtons();					// Update global variable button_state
+		//UpdateButtons();					// Update global variable button_state
+		ProcessButtons();
 		enc_delta = GetEncoderDelta();		// Process incremental encoder
 		
 		Converter_ProcessADC();
@@ -225,25 +226,24 @@ int main(void)
 		//-------------------------------------------//
 		// Process buttons
 		
-		if (button_state & BUTTON_OFF)
+		if (buttons.action_down & BUTTON_OFF)
 		{
 			Converter_Disable();
 		}
-		else if (button_state & BUTTON_ON)
+		else if (buttons.action_down & BUTTON_ON)
 		{
 			Converter_Enable();
 		}
 
 		//if (button_state) StartBeep(100);
 		if (enc_delta) StartBeep(50);
-		if (button_state & BUTTON_OK ) StartBeep(2000);
 		
 		
 
 		//-------------------------------------------//
 		// Switch regulation parameter
 		
-		if (button_state & BUTTON_ENCODER)
+		if (buttons.action_down & BUTTON_ENCODER)
 		{
 			(param==2) ? param=0 : param++;
 			
@@ -272,7 +272,7 @@ int main(void)
 			
 			
 		// Feedback channel select
-		if (button_state & MODE_SWITCH)
+		if (buttons.raw_state & MODE_SWITCH)
 			Converter_SetFeedbackChannel(CHANNEL_5V);
 		else
 			Converter_SetFeedbackChannel(CHANNEL_12V);

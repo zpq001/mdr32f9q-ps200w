@@ -37,22 +37,44 @@
 #define SET_HIGH_CURRENT_SOFT_LIMIT	0x04
 
 
+//---------------------------------------------//
+// Converter_HWProcess
 
-#define HW_ON					0x01
-#define HW_OFF					0x02
-#define HW_OVERLOADED			0x04
-#define HW_RESET_OVERLOAD		0x08
-#define HW_OFF_BY_ADC			0x10
-#define HW_START_ADC_VOLTAGE	0x20
-#define HW_START_ADC_CURRENT	0x40
-#define HW_START_ADC_DISCON		0x80
+// state_HWProcess bits 
+#define STATE_HW_ON				0x01
+#define STATE_HW_OFF			0x02
+#define STATE_HW_OVERLOADED		0x04
+#define STATE_HW_OFF_BY_ADC		0x08
 
-#define ADC_IDLE				0x00
-#define ADC_DISPATCH			0x01
-#define ADC_NORMAL_START_U		0x02
-#define ADC_NORMAL_REPEAT_U		0x03
-#define ADC_START_I				0x10
-#define ADC_NORMAL_REPEAT_I		0x11
+// ctrl_HWProcess bits
+#define CMD_HW_ON				0x01
+#define CMD_HW_OFF				0x02
+#define CMD_HW_RESET_OVERLOAD	0x04
+
+// cmd_ADC_to_HWProcess bits
+#define CMD_HW_OFF_BY_ADC		0x01
+#define CMD_HW_ON_BY_ADC		0x02
+
+//---------------------------------------------//
+// Converter_HW_ADCProcess
+
+// state_ADCProcess states
+#define STATE_ADC_IDLE				0x00
+#define STATE_ADC_DISPATCH			0x01
+#define STATE_ADC_NORMAL_START_U	0x02
+#define STATE_ADC_NORMAL_REPEAT_U	0x03
+#define STATE_ADC_START_I			0x10
+#define STATE_ADC_NORMAL_REPEAT_I	0x11
+
+// ctrl_ADCProcess bits
+#define CMD_ADC_START_VOLTAGE		0x01
+#define CMD_ADC_START_CURRENT		0x02
+#define CMD_ADC_START_DISCON		0x04
+
+
+
+
+
 
 
 #define CONV_OFF				0x00
@@ -124,6 +146,6 @@ void Converter_Init(void);
 void Converter_Process(void);
 
 void Converter_HWProcess(void);
-
+void Converter_HW_ADCProcess(void);
 
 

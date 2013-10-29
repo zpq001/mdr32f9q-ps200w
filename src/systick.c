@@ -28,9 +28,9 @@ void SysTick_Handler(void) {
 	if(	beep_cnt )
 		beep_cnt--;
 	
-
-	Converter_HWProcess();
-	ProcessPowerOff();
+	ProcessPowerOff();				// Serves AC line disconnect
+	Converter_HW_ADCProcess();		// ADC functions
+	Converter_HWProcess();			// Converter ON/OFF control and overload handling
 }
 
 

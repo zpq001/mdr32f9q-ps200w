@@ -29,15 +29,6 @@ uint8_t GetACLineStatus(void)
 	return (MDR_PORTB->RXTX & (1<<PG)) ? OFFLINE : ONLINE; 
 }
 
-// TODO: bring following code to buttons
-// External switch state
-//	if (temp & (1<<EEN))
-//		system_status -> ExternalSwitchState = SWITCH_OFF;
-//	else
-//		system_status -> ExternalSwitchState = SWITCH_ON;
-	
-
-
 
 // TODO: make atomic access to PORTF
 

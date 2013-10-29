@@ -263,9 +263,9 @@ int main(void)
 					break;
 				case 2:
 					if (enc_delta>0)
-						Converter_SetCurrentLimit(CURRENT_LIM_MAX);
+						Converter_SetCurrentLimit(CURRENT_LIM_HIGH);
 					else
-						Converter_SetCurrentLimit(CURRENT_LIM_MIN);
+						Converter_SetCurrentLimit(CURRENT_LIM_LOW);
 					break;
 			}
 		
@@ -332,8 +332,7 @@ int main(void)
 		sprintf(str1,"%2.0f%cC",(float)converter_temp_celsius,0xb0); //0xb7 );
 		LcdPutNormalStr(63,57,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd0_buffer);
 		
-		//if (system_control.SelectedChannel == CHANNEL_5V)
-		if (converter_state.feedback_channel == CHANNEL_5V)
+		if (regulation_setting_p->CHANNEL == CHANNEL_5V)
 			LcdPutNormalStr(0,57,"Ch. 5V",(tNormalFont*)&font_8x12,lcd0_buffer);
 		else
 			LcdPutNormalStr(0,57,"Ch.12V",(tNormalFont*)&font_8x12,lcd0_buffer);
@@ -350,7 +349,7 @@ int main(void)
 		LcdPutVertLine(42,56,13,PIXEL_ON,lcd1_buffer);
 		
 		
-		if (regulation_setting_p -> current_limit == CURRENT_LIM_MAX)
+		if (regulation_setting_p -> current_limit == CURRENT_LIM_HIGH)
 			LcdPutNormalStr(2,57,"40A",(tNormalFont*)&font_8x12,lcd1_buffer);
 		else
 			LcdPutNormalStr(2,57,"20A",(tNormalFont*)&font_8x12,lcd1_buffer);

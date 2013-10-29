@@ -280,12 +280,12 @@ void Converter_Init(void)
 	channel_5v_setting.load_state = LOAD_ENABLE;	// dummy
 	// Voltage
 	channel_5v_setting.set_voltage = 5000;
-	channel_5v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;
-	channel_5v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_5V_CHANNEL;
+	channel_5v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;			// Maximum voltage setting for channel
+	channel_5v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_5V_CHANNEL;			// Minimum voltage setting for channel
 	channel_5v_setting.soft_max_voltage = 8000;
 	channel_5v_setting.soft_min_voltage = 3000;
-	channel_5v_setting.SOFT_MAX_VOLTAGE_LIMIT = 11000;
-	channel_5v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;
+	channel_5v_setting.SOFT_MAX_VOLTAGE_LIMIT = 10000;						// Maximum soft voltage limit
+	channel_5v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
 	channel_5v_setting.soft_voltage_range_enable = 0;
 	// Current
 	channel_5v_setting.current_limit = CURRENT_LIM_LOW;
@@ -294,10 +294,10 @@ void Converter_Init(void)
 	channel_5v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
 	channel_5v_setting.HIGH_LIM_MAX_CURRENT = CONV_HIGH_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
 	channel_5v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// High limit (40A) min current setting
-	channel_5v_setting.soft_max_current = 30000;
-	channel_5v_setting.soft_min_current = 37000;
-	channel_5v_setting.SOFT_MAX_CURRENT_LIMIT = 41000;
-	channel_5v_setting.SOFT_MIN_CURRENT_LIMIT = 0;
+	channel_5v_setting.soft_max_current = 37000;
+	channel_5v_setting.soft_min_current = 30000;
+	channel_5v_setting.SOFT_MAX_CURRENT_LIMIT = 40000;						// Maximum soft current limit
+	channel_5v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
 	channel_5v_setting.soft_current_range_enable = 0;
 	
 	
@@ -307,10 +307,12 @@ void Converter_Init(void)
 	channel_12v_setting.load_state = LOAD_ENABLE;
 	// Voltage
 	channel_12v_setting.set_voltage = 12000;
-	channel_12v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_12V_CHANNEL;
-	channel_12v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_12V_CHANNEL;
+	channel_12v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_12V_CHANNEL;			// Maximum voltage setting for channel
+	channel_12v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_12V_CHANNEL;			// Minimum voltage setting for channel
 	channel_12v_setting.soft_max_voltage = 16000;
 	channel_12v_setting.soft_min_voltage = 1500;
+	channel_12v_setting.SOFT_MAX_VOLTAGE_LIMIT = 20000;						// Maximum soft voltage limit
+	channel_12v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
 	channel_12v_setting.soft_voltage_range_enable = 0;
 	// Current
 	channel_12v_setting.current_limit = CURRENT_LIM_LOW;
@@ -319,8 +321,10 @@ void Converter_Init(void)
 	channel_12v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
 	channel_12v_setting.HIGH_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
 	channel_12v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;			// High limit (40A) min current setting
-	channel_12v_setting.soft_max_current = 25000;
+	channel_12v_setting.soft_max_current = 18000;
 	channel_12v_setting.soft_min_current = 6000;
+	channel_12v_setting.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
+	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;
 	channel_12v_setting.soft_current_range_enable = 0;
 	
 	// 

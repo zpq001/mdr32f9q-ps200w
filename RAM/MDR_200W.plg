@@ -329,3 +329,174 @@ compiling converter.c...
 linking...
 Program Size: Code=16660 RO-data=5904 RW-data=88 ZI-data=4480  
 ".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+linking...
+Program Size: Code=16660 RO-data=5904 RW-data=88 ZI-data=4480  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling main.c...
+.\src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+main.c(266): error:  #20: identifier "CURRENT_LIM_MAX" is undefined
+main.c(268): error:  #20: identifier "CURRENT_LIM_MIN" is undefined
+main.c(353): error:  #20: identifier "CURRENT_LIM_MAX" is undefined
+compiling systemfunc.c...
+compiling systick.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+compiling control.c...
+compiling converter.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+src\converter.c(141): error:  #20: identifier "SET_LOW_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(146): error:  #20: identifier "SET_HIGH_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(151): error:  #20: identifier "SET_LOW_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(156): error:  #20: identifier "SET_HIGH_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 110 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 111 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+.\src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+main.c(353): error:  #20: identifier "CURRENT_LIM_MAX" is undefined
+compiling systemfunc.c...
+compiling systick.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+compiling control.c...
+compiling converter.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+src\converter.c(141): error:  #20: identifier "SET_LOW_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(146): error:  #20: identifier "SET_HIGH_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(151): error:  #20: identifier "SET_LOW_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(156): error:  #20: identifier "SET_HIGH_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 110 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 111 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+.\src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+compiling systick.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+compiling converter.c...
+src\converter.h(102): error:  #20: identifier "converter_state_t" is undefined
+src\converter.c(141): error:  #20: identifier "SET_LOW_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(146): error:  #20: identifier "SET_HIGH_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(151): error:  #20: identifier "SET_LOW_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(156): error:  #20: identifier "SET_HIGH_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 110 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 111 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+main.c(336): error:  #20: identifier "converter_state" is undefined
+compiling systick.c...
+compiling converter.c...
+src\converter.c(141): error:  #20: identifier "SET_LOW_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(146): error:  #20: identifier "SET_HIGH_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(151): error:  #20: identifier "SET_LOW_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(156): error:  #20: identifier "SET_HIGH_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 110 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 111 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+compiling converter.c...
+src\converter.c(141): error:  #20: identifier "SET_LOW_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(146): error:  #20: identifier "SET_HIGH_VOLTAGE_SOFT_LIMIT" is undefined
+src\converter.c(151): error:  #20: identifier "SET_LOW_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(156): error:  #20: identifier "SET_HIGH_CURRENT_SOFT_LIMIT" is undefined
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 110 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 111 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+compiling systick.c...
+compiling converter.c...
+src\converter.c(215): error:  #147: declaration is incompatible with "void Converter_SetVoltage(int32_t)" (declared at line 116 of "src\converter.h")
+src\converter.c(226): error:  #147: declaration is incompatible with "void Converter_SetCurrent(int32_t)" (declared at line 117 of "src\converter.h")
+Target not created
+Build target 'RAM'
+compiling main.c...
+.\src\converter.h(117): error:  #130: expected a "{"
+.\src\fonts\image_defs.h(13): warning:  #12-D: parsing restarts here after previous syntax error
+.\src\fonts\image_defs.h(17): warning:  #940-D: missing return statement at end of non-void function "Converter_SetVoltage"
+.\src\fonts\image_defs.h(14): warning:  #177-D: variable "width" was declared but never referenced
+.\src\fonts\image_defs.h(15): warning:  #177-D: variable "height" was declared but never referenced
+.\src\fonts\image_defs.h(16): warning:  #177-D: variable "data" was declared but never referenced
+.\src\fonts\image_defs.h(17): error:  #77-D: this declaration has no storage class or type specifier
+.\src\fonts\images.h(3): error:  #757: variable "tImage" is not a type name
+.\src\fonts\images.h(4): error:  #757: variable "tImage" is not a type name
+main.c(104): warning:  #223-D: function "Converter_Init" declared implicitly
+main.c(230): warning:  #223-D: function "Converter_Disable" declared implicitly
+main.c(234): warning:  #223-D: function "Converter_Enable" declared implicitly
+main.c(262): warning:  #223-D: function "Converter_SetCurrent" declared implicitly
+main.c(266): warning:  #223-D: function "Converter_SetCurrentLimit" declared implicitly
+main.c(276): warning:  #223-D: function "Converter_SetFeedbackChannel" declared implicitly
+main.c(299): error:  #20: identifier "font_32x19" is undefined
+main.c(303): error:  #20: identifier "font_8x12" is undefined
+main.c(304): error:  #20: identifier "font_16x10" is undefined
+main.c(395): warning:  #223-D: function "Converter_Process" declared implicitly
+compiling systick.c...
+src\converter.h(117): error:  #130: expected a "{"
+src\systick.c(23): warning:  #12-D: parsing restarts here after previous syntax error
+src\systick.c(24): error:  #20: identifier "sysTicks" is undefined
+src\systick.c(26): error:  #20: identifier "beep_cnt" is undefined
+src\systick.c(32): warning:  #223-D: function "Converter_HWProcess" declared implicitly
+src\systick.c(34): warning:  #940-D: missing return statement at end of non-void function "Converter_SetVoltage"
+src\systick.c(53): error:  #20: identifier "sysTicks" is undefined
+src\systick.c(67): error:  #20: identifier "beep_cnt" is undefined
+src\systick.c(82): error:  #20: identifier "beep_cnt" is undefined
+src\systick.c(87): error:  #20: identifier "beep_cnt" is undefined
+compiling converter.c...
+src\converter.h(117): error:  #130: expected a "{"
+src\converter.c(47): warning:  #12-D: parsing restarts here after previous syntax error
+src\converter.c(53): error:  #20: identifier "new_set_voltage" is undefined
+src\converter.c(66): error:  #20: identifier "new_set_voltage" is undefined
+src\converter.c(77): error:  #20: identifier "err_code" is undefined
+src\converter.c(199): error:  #20: identifier "adc_voltage_counts" is undefined
+src\converter.c(202): error:  #20: identifier "adc_current_counts" is undefined
+src\converter.c(215): error:  #247: function "Converter_SetVoltage" has already been defined
+src\converter.c(218): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(239): error:  #20: identifier "HW_request" is undefined
+src\converter.c(251): error:  #20: identifier "HW_request" is undefined
+src\converter.c(260): error:  #20: identifier "HW_request" is undefined
+src\converter.c(265): error:  #20: identifier "HW_request" is undefined
+src\converter.c(279): error:  #20: identifier "channel_5v_setting" is undefined
+src\converter.c(306): error:  #20: identifier "channel_12v_setting" is undefined
+src\converter.c(344): error:  #20: identifier "HW_request" is undefined
+src\converter.c(347): error:  #20: identifier "channel_5v_setting" is undefined
+src\converter.c(353): error:  #20: identifier "channel_12v_setting" is undefined
+src\converter.c(389): error:  #20: identifier "state_HWProcess" is undefined
+src\converter.c(415): error:  #20: identifier "channel_12v_setting" is undefined
+src\converter.c(419): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(426): error:  #20: identifier "ctrl_HWProcess" is undefined
+src\converter.c(430): error:  #20: identifier "state_HWProcess" is undefined
+src\converter.c(480): error:  #20: identifier "state_HWProcess" is undefined
+src\converter.c(503): error:  #20: identifier "ctrl_HWProcess" is undefined
+src\converter.c(549): error:  #20: identifier "adc_voltage_counts" is undefined
+src\converter.c(550): error:  #20: identifier "adc_current_counts" is undefined
+Target not created
+Build target 'RAM'
+compiling main.c...
+compiling systick.c...
+compiling converter.c...
+linking...
+Program Size: Code=17056 RO-data=5904 RW-data=72 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling converter.c...
+linking...
+Program Size: Code=17056 RO-data=5904 RW-data=72 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling converter.c...
+linking...
+Program Size: Code=17068 RO-data=5904 RW-data=72 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling converter.c...
+linking...
+Program Size: Code=17068 RO-data=5904 RW-data=72 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'RAM'
+compiling converter.c...
+linking...
+Program Size: Code=17072 RO-data=5904 RW-data=72 ZI-data=4560  
+".\RAM\MDR_200W.axf" - 0 Error(s), 0 Warning(s).

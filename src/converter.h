@@ -30,6 +30,12 @@
 #define SLIM_MIN				0x11
 #define SLIM_MAX				0x12
 
+//Converter_SetSoftLimit mode codes
+#define SET_LOW_VOLTAGE_SOFT_LIMIT	0x01
+#define SET_HIGH_VOLTAGE_SOFT_LIMIT	0x02
+#define SET_LOW_CURRENT_SOFT_LIMIT	0x03
+#define SET_HIGH_CURRENT_SOFT_LIMIT	0x04
+
 
 
 #define HW_ON					0x01
@@ -99,7 +105,7 @@ typedef struct {
 } converter_regulation_t;
 
 
-extern converter_state_t converter_state;
+
 extern converter_regulation_t *regulation_setting_p;
 
 extern uint16_t voltage_adc;	// [mV]
@@ -107,8 +113,8 @@ extern uint16_t current_adc;	// [mA]
 extern uint32_t power_adc;		// [mW]
 	
 void Converter_ProcessADC(void);
-void Converter_SetVoltage(int32_t new_voltage);
-void Converter_SetCurrent(int32_t new_current);
+uint8_t Converter_SetVoltage(int32_t new_voltage);
+uint8_t Converter_SetCurrent(int32_t new_current);
 uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p, uint8_t mode);
 void Converter_SetFeedbackChannel(uint8_t new_channel);
 void Converter_SetCurrentLimit(uint8_t new_limit);

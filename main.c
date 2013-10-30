@@ -101,6 +101,7 @@ int main(void)
 	ADCInit();
 	LcdInit();
 	
+	InitButtons();
 	Converter_Init();
 	
 	SetCoolerSpeed(80);

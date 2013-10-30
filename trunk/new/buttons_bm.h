@@ -1,13 +1,8 @@
-/**********************************************************
-	Module for processing buttons and switches
-	using bit FIFOs
-	
-	Type: Header file
-	Written by: AvegaWanderer 10.2013
-**********************************************************/
 
 
-// User definitions
+// Defines listed here are not the PIN defines but logical bits
+// PIN defines are found in the header file "defines.h"
+
 #define BTN_ESC			0x01
 #define BTN_LEFT		0x02
 #define BTN_RIGHT		0x04
@@ -18,25 +13,21 @@
 #define BTN_OFF			0x80
 #define SW_EXTERNAL		0x0100
 
-
 //=============================================//
 // Button processing setup
 
-// Total count
-#define TOTAL_BUTTONS	9
-
 // Select minimal data type which can hold all your buttons (one bit per button or switch)
 #define btn_type_t		uint16_t		
-// Select minimal data type for bit FIFO to support desired delays (see settings check below)
-#define bfifo_type_t	uint16_t		
 
 // Choose which actions are supported by button processor - comment unused to optimize code size
+// ACTION_UP and ACTION_TOGGLE do not require timer
+
 //#define USE_ACTION_REP				// Emulation of repeated pressing
-#define USE_ACTION_UP				// Triggers when button is released
+#define USE_ACTION_UP					// Triggers when button is released
 //#define USE_ACTION_UP_SHORT			// Triggers when button is released and had been pressed for short time
 //#define USE_ACTION_UP_LONG			// Triggers when button is released and had been pressed for long time
 //#define USE_ACTION_HOLD				// Triggers when button is being pressed for long time
-//#define USE_ACTION_TOGGLE			// Toggles every time button is pressed
+//#define USE_ACTION_TOGGLE				// Toggles every time button is pressed
 
 
 // Set time options - all delays are in units of ProcessButtons() call period.
@@ -45,56 +36,34 @@
 
 // Set inversion of raw_button_state
 #define RAW_BUTTON_INVERSE_MASK		0x00
-//=============================================// 
+//=============================================//
 
-// Bit FIFO definitions
-#define BFIFO_LONG_MASK		( ((1 << (LONG_PRESS_DELAY + 1)) - 1) & ~0x3 )
-#define BFIFO_REPEAT_MASK	( ((1 << REPEAT_DELAY) - 1) & ~0x3 )
-#define BFIFO_HOLD			( ((1 << LONG_PRESS_DELAY) - 1) & ~0x3 )
-#define BFIFO_BUTTON_MASK	0x3
-#define BFIFO_BUTTON_DOWN	0x1
-#define BFIFO_BUTTON_UP		0x2
-#define BFIFO_BUTTON_HOLD	0x3
-
-// Check settings
-
-#if ((LONG_PRESS_DELAY + 1) > (sizeof(bfifo_type_t) * 8))
-	#error "LONG_PRESS_DELAY is too great for specified bfifo_type_t size. LONG_PRESS_DELAY should not exceed (number of bits in bfifo_type_t - 1)"
-#endif
-#if (REPEAT_DELAY > (sizeof(bfifo_type_t) * 8))
-	#error "REPEAT_DELAY is too great for specified bfifo_type_t size. REPEAT_DELAY should not exceed number of bits in bfifo_type_t"
-#endif
-#if (TOTAL_BUTTONS > (sizeof(btn_type_t) * 8))
-	#error "Buttons count specified exceeds number of bits in btn_type_t. TOTAL_BUTTONS should be less or equal to number of bits in btn_type_t"
-#endif
-
-#if (LONG_PRESS_DELAY < 3)
-	#error "LONG_PRESS_DELAY should be 3 or greater"
-#endif
-#if (REPEAT_DELAY < 3)
-	#warning "REPEAT_DELAY should be 3 or greater"
-#endif
 
 // Extra defines used for cleaning unnecessary code - do not modify
 #ifdef USE_ACTION_REP
-	#define ANALYSE_HOLD
+	#define USE_BUTTON_TIMER
+	#define USE_DELAYED
 #endif
 #ifdef USE_ACTION_UP
-	#define ANALYSE_ACTION_UP
+	#define USE_DELAYED
+	#define USE_CURRENT_INVERSED	
 #endif
 #ifdef USE_ACTION_UP_SHORT
-	#define ANALYSE_ACTION_UP
-	#define ANALYZE_TIMED_ACTION_UP
+	#define USE_BUTTON_TIMER
+	#define USE_DELAYED
+	#define USE_CURRENT_INVERSED
 #endif
 #ifdef USE_ACTION_UP_LONG
-	#define ANALYSE_ACTION_UP
-	#define ANALYZE_TIMED_ACTION_UP
+	#define USE_BUTTON_TIMER
+	#define USE_DELAYED
+	#define USE_CURRENT_INVERSED
 #endif
 #ifdef USE_ACTION_HOLD
-	#define ANALYSE_HOLD
+	#define USE_BUTTON_TIMER
+	#define USE_DELAYED
 #endif
 
-
+#define _FF	(~0x00)
 
 // Button state structure
 typedef struct {
@@ -132,8 +101,6 @@ extern buttons_t buttons;
 
 
 //=============================================//
-void InitButtons(void);
+//void InitButtons(void);
 void ProcessButtons(void);
-
-
 

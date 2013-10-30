@@ -20,8 +20,9 @@ uint16_t beep_cnt;
 /*----------------------------------------------------------------------------
   SysTick_Handler
  *----------------------------------------------------------------------------*/
+ /*
 void SysTick_Handler(void) {
-  sysTicks++;                               /* inc. counter necessary in Delay*/
+  sysTicks++;                               // inc. counter necessary in Delay
 	ProcessEncoder();
 	if ( beep_cnt == 1 )
 		StopBeep();
@@ -32,7 +33,7 @@ void SysTick_Handler(void) {
 	Converter_HW_ADCProcess();		// ADC functions
 	Converter_HWProcess();			// Converter ON/OFF control and overload handling
 }
-
+*/
 
 /* ”правление системным таймером */
 void SysTickStart(uint32_t ticks) {

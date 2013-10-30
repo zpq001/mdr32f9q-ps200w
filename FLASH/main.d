@@ -11,6 +11,15 @@
 .\FLASH\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
 .\FLASH\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
 .\FLASH\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_adc.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h
+.\FLASH\main.o: C:\Keil\ARM\RV31\Inc\stddef.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\projdefs.h
+.\FLASH\main.o: .\FreeRTOSConfig.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\portable.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\mpu_wrappers.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\list.h
 .\FLASH\main.o: C:\Keil\ARM\RV31\Inc\stdio.h
 .\FLASH\main.o: defines.h
 .\FLASH\main.o: .\src\systemfunc.h
@@ -24,6 +33,7 @@
 .\FLASH\main.o: .\src\i2c_eeprom.h
 .\FLASH\main.o: .\src\dwt_delay.h
 .\FLASH\main.o: .\src\control.h
+.\FLASH\main.o: .\src\converter.h
 .\FLASH\main.o: .\src\fonts\fonts.h
 .\FLASH\main.o: .\src\fonts\font_defs.h
 .\FLASH\main.o: .\src\fonts\images.h

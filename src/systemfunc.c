@@ -376,8 +376,8 @@ void TimersInit(void)
 	TIMER_ChnOutInitTypeDef sTIM_ChnOutInit;
 	
 	//======================= TIMER1 =================================//
-  // Timer1 		CH2		-> BUZ+
-	//						CH2N	-> BUZ-
+	// Timer1		CH2		-> BUZ+
+	//				CH2N	-> BUZ-
 
 	// Initialize timer 1 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
@@ -414,13 +414,13 @@ void TimersInit(void)
 	
 	
 	
-		//======================= TIMER2 =================================//
-  // Timer2 		CH1N	-> UPWM
-	//						CH3N	-> IPWM
+	//======================= TIMER2 =================================//
+	// Timer2		CH1N	-> UPWM
+	//				CH3N	-> IPWM
 	
 	// Initialize timer 2 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
-  sTIM_CntInit.TIMER_Prescaler                = 0x0;			// 3906.25 Hz at 16MHz core clk
+  sTIM_CntInit.TIMER_Prescaler                = 0x0;		// 3906.25 Hz at 16MHz core clk
   sTIM_CntInit.TIMER_Period                   = 0xFFF;		// 12-bit 
   TIMER_CntInit (MDR_TIMER2,&sTIM_CntInit);
 
@@ -457,12 +457,12 @@ void TimersInit(void)
 	
 	
 	//======================= TIMER3 =================================//
-	// Timer3 		CH1 	-> LPWM (LCD backlight PWM) 
-	//						CH3N	-> CPWM (System cooler PWM)
+	// Timer3		CH1 	-> LPWM (LCD backlight PWM) 
+	//				CH3N	-> CPWM (System cooler PWM)
 	
 	// Initialize timer 3 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
-  sTIM_CntInit.TIMER_Prescaler                = 0x7;	  // 2MHz at 16MHz core clk
+  sTIM_CntInit.TIMER_Prescaler                = 0x7;		// 2MHz at 16MHz core clk
   sTIM_CntInit.TIMER_Period                   = 100;		// 20kHz at 1MHz
   TIMER_CntInit (MDR_TIMER3,&sTIM_CntInit);
 	

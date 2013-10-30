@@ -116,7 +116,7 @@ void ProcessButtons(void)
 	btn_type_t current_bit;
 	uint8_t i;
 	
-	
+	UpdateRawButtonState();
 	raw_current = raw_button_state ^ RAW_BUTTON_INVERSE_MASK;
 	ResetButtonEvents();
 	

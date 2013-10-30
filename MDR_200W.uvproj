@@ -348,7 +348,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\;.\src;.\src\fonts;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc</IncludePath>
+              <IncludePath>.\;.\src;.\src\fonts;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -545,6 +545,56 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>FreeRTOS</GroupName>
+          <Files>
+            <File>
+              <FileName>FreeRTOSConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\FreeRTOSConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\port.c</FilePath>
+            </File>
+            <File>
+              <FileName>portmacro.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h</FilePath>
+            </File>
+            <File>
+              <FileName>heap_2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_2.c</FilePath>
+            </File>
+            <File>
+              <FileName>croutine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\croutine.c</FilePath>
+            </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\timers.c</FilePath>
+            </File>
+          </Files>
+        </Group>
       </Groups>
     </Target>
     <Target>
@@ -658,7 +708,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>1</UseSimulator>
+            <UseSimulator>0</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -669,7 +719,7 @@
             <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
           </Simulator>
           <Target>
-            <UseTarget>0</UseTarget>
+            <UseTarget>1</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>0</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -679,7 +729,7 @@
             <RestoreToolbox>1</RestoreToolbox>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>0</TargetSelection>
+          <TargetSelection>7</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -693,7 +743,7 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile></InitializationFile>
-            <Driver>BIN\UL2CM3.DLL</Driver>
+            <Driver>Segger\JL2CM3.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -889,7 +939,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\src\fonts;..\MDR_200W;.\src;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc</IncludePath>
+              <IncludePath>.\src\fonts;.\;.\src;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1083,6 +1133,56 @@
               <FileName>images.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\fonts\images.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>FreeRTOS</GroupName>
+          <Files>
+            <File>
+              <FileName>FreeRTOSConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\FreeRTOSConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\port.c</FilePath>
+            </File>
+            <File>
+              <FileName>portmacro.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h</FilePath>
+            </File>
+            <File>
+              <FileName>heap_2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_2.c</FilePath>
+            </File>
+            <File>
+              <FileName>croutine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\croutine.c</FilePath>
+            </File>
+            <File>
+              <FileName>list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>queue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\timers.c</FilePath>
             </File>
           </Files>
         </Group>

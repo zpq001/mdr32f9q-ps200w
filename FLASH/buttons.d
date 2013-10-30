@@ -5,6 +5,6 @@
 .\FLASH\buttons.o: C:\Keil\ARM\CMSIS\Include\core_cmInstr.h
 .\FLASH\buttons.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
 .\FLASH\buttons.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
-.\FLASH\buttons.o: ..\MDR_200W\defines.h
-.\FLASH\buttons.o: src\buttons.h
+.\FLASH\buttons.o: .\defines.h
 .\FLASH\buttons.o: src\dwt_delay.h
+.\FLASH\buttons.o: src\buttons.h

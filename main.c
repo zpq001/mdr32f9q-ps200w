@@ -6,6 +6,12 @@
 #include "MDR32F9Qx_timer.h"
 #include "MDR32F9Qx_adc.h"
 
+// Подключаем FreeRTOS
+#include "FreeRTOS.h"
+// из всех возможностей используем пока только переключение задач
+#include "task.h"
+
+
 #include "stdio.h"
 
 #include "defines.h"
@@ -70,6 +76,35 @@ uint8_t EEPROM_test(void)
 
 
 
+
+void vTaskLED1(void *pvParameters) {
+
+		portTickType lastExecutionTime = xTaskGetTickCount();
+        for (;;) {
+                PORT_ResetBits(MDR_PORTB, 1<<LGREEN);
+				vTaskDelayUntil(&lastExecutionTime, ((portTickType)500 / portTICK_RATE_MS));
+			
+                PORT_SetBits(MDR_PORTB, 1<<LGREEN);
+                vTaskDelayUntil(&lastExecutionTime, ((portTickType)500 / portTICK_RATE_MS));
+        }
+
+}
+
+
+void vTaskLED2(void *pvParameters) {
+
+		portTickType lastExecutionTime = xTaskGetTickCount();
+        for (;;) {
+                PORT_ResetBits(MDR_PORTB, 1<<LRED);
+                vTaskDelayUntil(&lastExecutionTime, ((portTickType)300 / portTICK_RATE_MS));
+			
+                PORT_SetBits(MDR_PORTB, 1<<LRED);
+                vTaskDelayUntil(&lastExecutionTime, ((portTickType)300 / portTICK_RATE_MS));
+        }
+
+}
+
+
 /*****************************************************************************
 *		Main function
 *
@@ -92,7 +127,7 @@ int main(void)
 	// system initialization
 	//=============================================//
 	Setup_CPU_Clock();
-	SysTickStart((SystemCoreClock / 1000)); 			/* Setup SysTick Timer for 1 msec interrupts  */
+	//SysTickStart((SystemCoreClock / 1000)); 			/* Setup SysTick Timer for 1 msec interrupts  */
 	DWTCounterInit();
 	SSPInit();
 	I2CInit();
@@ -105,7 +140,7 @@ int main(void)
 	Converter_Init();
 	
 	SetCoolerSpeed(80);
-	
+	/*
 	// beep
 	SetBuzzerFreq(500);
 	StartBeep(50);
@@ -119,7 +154,24 @@ int main(void)
 	}
 	
 	WaitBeep();
+	*/
 	
+	
+	LcdSetBacklight(85);
+	LcdPutNormalStr(2,20,"Hello",(tNormalFont*)&font_8x12,lcd0_buffer);
+	LcdPutNormalStr(2,20,"FreeRTOS",(tNormalFont*)&font_8x12,lcd1_buffer);
+	LcdUpdateByCore(LCD0,lcd0_buffer);
+	LcdUpdateByCore(LCD1,lcd1_buffer);
+	
+	xTaskCreate( vTaskLED1, ( signed char * ) "LED1", configMINIMAL_STACK_SIZE, NULL, 2,
+                        ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskLED2, ( signed char * ) "LED2", configMINIMAL_STACK_SIZE, NULL, 2,
+					( xTaskHandle * ) NULL);
+	
+	
+	vTaskStartScheduler();
+	
+	while(1);
 	
 	
 	

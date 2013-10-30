@@ -11,3 +11,4 @@
 .\FLASH\systick.o: src\encoder.h
 .\FLASH\systick.o: src\systemfunc.h
 .\FLASH\systick.o: src\control.h
+.\FLASH\systick.o: src\converter.h

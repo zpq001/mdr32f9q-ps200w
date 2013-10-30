@@ -1,0 +1,10 @@
+.\FLASH\mdr32f9qx_timer.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_timer.c
+.\FLASH\mdr32f9qx_timer.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
+.\FLASH\mdr32f9qx_timer.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h
+.\FLASH\mdr32f9qx_timer.o: C:\Keil\ARM\CMSIS\Include\core_cm3.h
+.\FLASH\mdr32f9qx_timer.o: C:\Keil\ARM\RV31\Inc\stdint.h
+.\FLASH\mdr32f9qx_timer.o: C:\Keil\ARM\CMSIS\Include\core_cmInstr.h
+.\FLASH\mdr32f9qx_timer.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
+.\FLASH\mdr32f9qx_timer.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
+.\FLASH\mdr32f9qx_timer.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
+.\FLASH\mdr32f9qx_timer.o: ..\MDR_200W\MDR32F9Qx_config.h

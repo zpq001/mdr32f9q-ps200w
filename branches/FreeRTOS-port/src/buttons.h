@@ -57,7 +57,7 @@
 #define BFIFO_BUTTON_HOLD	0x3
 
 // Check settings
-
+/*
 #if ((LONG_PRESS_DELAY + 1) > (sizeof(bfifo_type_t) * 8))
 	#error "LONG_PRESS_DELAY is too great for specified bfifo_type_t size. LONG_PRESS_DELAY should not exceed (number of bits in bfifo_type_t - 1)"
 #endif
@@ -67,7 +67,7 @@
 #if (TOTAL_BUTTONS > (sizeof(btn_type_t) * 8))
 	#error "Buttons count specified exceeds number of bits in btn_type_t. TOTAL_BUTTONS should be less or equal to number of bits in btn_type_t"
 #endif
-
+*/
 #if (LONG_PRESS_DELAY < 3)
 	#error "LONG_PRESS_DELAY should be 3 or greater"
 #endif

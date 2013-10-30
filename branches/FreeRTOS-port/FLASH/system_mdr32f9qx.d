@@ -5,4 +5,4 @@
 .\FLASH\system_mdr32f9qx.o: C:\Keil\ARM\CMSIS\Include\core_cmInstr.h
 .\FLASH\system_mdr32f9qx.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
 .\FLASH\system_mdr32f9qx.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
-.\FLASH\system_mdr32f9qx.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\FLASH\system_mdr32f9qx.o: .\MDR32F9Qx_config.h

@@ -8,8 +8,8 @@
 .\FLASH\lcd_1202.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
 .\FLASH\lcd_1202.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
 .\FLASH\lcd_1202.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
-.\FLASH\lcd_1202.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\FLASH\lcd_1202.o: .\MDR32F9Qx_config.h
 .\FLASH\lcd_1202.o: src\lcd_1202_defs.h
 .\FLASH\lcd_1202.o: src\lcd_1202.h
-.\FLASH\lcd_1202.o: ..\MDR_200W\defines.h
+.\FLASH\lcd_1202.o: .\defines.h
 .\FLASH\lcd_1202.o: src\dwt_delay.h

@@ -11,6 +11,15 @@
 .\RAM\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
 .\RAM\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
 .\RAM\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_adc.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h
+.\RAM\main.o: C:\Keil\ARM\RV31\Inc\stddef.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\projdefs.h
+.\RAM\main.o: .\FreeRTOSConfig.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\portable.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\mpu_wrappers.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h
+.\RAM\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\list.h
 .\RAM\main.o: C:\Keil\ARM\RV31\Inc\stdio.h
 .\RAM\main.o: defines.h
 .\RAM\main.o: .\src\systemfunc.h

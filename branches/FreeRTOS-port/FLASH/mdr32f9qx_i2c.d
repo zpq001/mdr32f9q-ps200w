@@ -7,4 +7,4 @@
 .\FLASH\mdr32f9qx_i2c.o: C:\Keil\ARM\CMSIS\Include\core_cmFunc.h
 .\FLASH\mdr32f9qx_i2c.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
 .\FLASH\mdr32f9qx_i2c.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
-.\FLASH\mdr32f9qx_i2c.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\FLASH\mdr32f9qx_i2c.o: .\MDR32F9Qx_config.h

@@ -8,4 +8,4 @@
 .\FLASH\mdr32f9qx_ssp.o: ..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.h
 .\FLASH\mdr32f9qx_ssp.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
 .\FLASH\mdr32f9qx_ssp.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_rst_clk.h
-.\FLASH\mdr32f9qx_ssp.o: ..\MDR_200W\MDR32F9Qx_config.h
+.\FLASH\mdr32f9qx_ssp.o: .\MDR32F9Qx_config.h

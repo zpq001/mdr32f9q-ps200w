@@ -6,13 +6,13 @@
 											
 // Peripheral blocks, used in design											
 #define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
-															RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
-															RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC )
+									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
+									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC )
 
 
 
 
-#define TSTATE_START_EXTERNAL	0x01
+#define TSTATE_START_EXTERNAL	0x01		// ADC FSM states
 #define TSTATE_GET_EXTERNAL		0x02
 #define	TSTATE_DONE_EXTERNAL	0x03
 

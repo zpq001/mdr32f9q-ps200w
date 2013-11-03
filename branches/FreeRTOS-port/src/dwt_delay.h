@@ -8,13 +8,9 @@
 // Enables DWT counter
 void DWTCounterInit(void);
 
-// Non - blocking us delay
-void DWTStartDelayUs(uint32_t us);
-// Non - blocking delay status
-uint8_t DWTDelayInProgress(void);
-// Blocking us delay
-void DWTDelayUs(uint32_t us);
 
+uint32_t DWTStartDelayUs(uint32_t us);
+uint8_t DWTDelayInProgress(uint32_t time_mark);
 
 
 

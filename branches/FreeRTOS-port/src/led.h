@@ -5,8 +5,6 @@
 #define LED_GREEN 1
 #define LED_RED	2
 
-extern uint8_t led_state;		// global leds state
-
 // Update LEDs
-void UpdateLEDs(void);
+void UpdateLEDs(uint8_t led_state);
 

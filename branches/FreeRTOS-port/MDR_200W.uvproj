@@ -498,6 +498,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\converter.c</FilePath>
             </File>
+            <File>
+              <FileName>gui_top.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui_top.c</FilePath>
+            </File>
+            <File>
+              <FileName>service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\service.c</FilePath>
+            </File>
+            <File>
+              <FileName>dispatcher.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\dispatcher.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1088,6 +1103,21 @@
               <FileName>converter.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\converter.c</FilePath>
+            </File>
+            <File>
+              <FileName>gui_top.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui_top.c</FilePath>
+            </File>
+            <File>
+              <FileName>service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\service.c</FilePath>
+            </File>
+            <File>
+              <FileName>dispatcher.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\dispatcher.c</FilePath>
             </File>
           </Files>
         </Group>

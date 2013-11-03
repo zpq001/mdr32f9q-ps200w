@@ -4,10 +4,17 @@
 #include "MDR32Fx.h"                      /* MDR32F9x definitions            */
 #include "MDR32F9Qx_timer.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
+#include "gui_top.h"
+
 #include "encoder.h"
 #include "systemfunc.h"
 #include "control.h"
 #include "converter.h"
+#include "dispatcher.h"
 
 /* —четчик */
 volatile uint32_t sysTicks = 0;
@@ -31,9 +38,45 @@ void SysTick_Handler(void) {
 	
 	ProcessPowerOff();				// Serves AC line disconnect
 	Converter_HW_ADCProcess();		// ADC functions
-	Converter_HWProcess();			// Converter ON/OFF control and overload handling
+	Converter_HWProcess();			
 }
 */
+
+// FreeRTOS tick hook - called from ISR
+void vApplicationTickHook( void )
+{
+	static uint32_t tmr_gui_update = GUI_UPDATE_INTERVAL;
+	static uint32_t tmr_converter_tick = CONVERTER_TICK_INTERVAL;
+	static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+	portBASE_TYPE xHigherPriorityTaskWokenByPost;
+	uint32_t msg;
+		
+	// We have not woken a task at the start of the ISR.
+	xHigherPriorityTaskWokenByPost = pdFALSE;
+	
+	if (--tmr_gui_update == 0)
+	{
+		msg = GUI_UPDATE_ALL;
+		xQueueSendToBackFromISR(xQueueGUI, &msg, &xHigherPriorityTaskWokenByPost);
+		tmr_gui_update = GUI_UPDATE_INTERVAL;
+	}
+	
+	if (--tmr_converter_tick == 0)
+	{
+		msg = CONVERTER_TICK;
+		xQueueSendToBackFromISR(xQueueConverter, &msg, &xHigherPriorityTaskWokenByPost);
+		tmr_converter_tick = CONVERTER_TICK_INTERVAL;
+	}
+	
+	if (--tmr_dispatcher_tick == 0)
+	{
+		msg = DISPATCHER_TICK;
+		xQueueSendToBackFromISR(xQueueDispatcher, &msg, &xHigherPriorityTaskWokenByPost);
+		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+	}
+		
+}
+
 
 /* ”правление системным таймером */
 void SysTickStart(uint32_t ticks) {
@@ -87,6 +130,7 @@ void WaitBeep(void)
 {
 	while(beep_cnt);
 }
+
 
 
 

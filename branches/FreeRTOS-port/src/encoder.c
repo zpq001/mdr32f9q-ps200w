@@ -18,13 +18,12 @@ volatile int16_t encoder_counter = 0;
 void ProcessEncoder(void)
 {
 	static uint8_t enc_state = 0;
-	
 	enc_state = enc_state << 2;
 	
 	// Get new encoder state
 	if (MDR_PORTB->RXTX & (1<<ENCA)) 
 		enc_state |= 0x01;
-  if (MDR_PORTB->RXTX & (1<<ENCB)) 
+	if (MDR_PORTB->RXTX & (1<<ENCB)) 
 		enc_state |= 0x02;
 	
 	// Detect direction
@@ -37,7 +36,6 @@ void ProcessEncoder(void)
 			encoder_counter ++;
 		break;
 	}
-	
 }
 
 

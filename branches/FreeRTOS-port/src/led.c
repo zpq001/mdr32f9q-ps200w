@@ -12,14 +12,13 @@
 #include "systemfunc.h"
 #include "defines.h"
 
-uint8_t led_state = 0;		// global leds state
 
 //==============================================================//
 // Update LEDs
 // Standard library functions are used in order to save 
 // JTAG functionality
 //==============================================================//
-void UpdateLEDs(void)
+void UpdateLEDs(uint8_t led_state)
 {
 	if (led_state & LED_GREEN)
 		PORT_ResetBits(MDR_PORTB, 1<<LGREEN);

@@ -29,7 +29,7 @@
 
 
 
-int16_t converter_temp_celsius = 0;
+
 
 
 
@@ -146,7 +146,14 @@ void PortInit(void)
 	
 	// TODO: add USART1 pins
 	
-	
+	// debug
+	PORT_StructInit(&PORT_InitStructure);
+	PORT_InitStructure.PORT_Pin   = (1<<TXD1) | (1<<RXD1);
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_SLOW;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_Init(MDR_PORTA, &PORT_InitStructure);
+
 	//================= PORTB =================//
 	PORT_StructInit(&PORT_InitStructure);
 	
@@ -247,17 +254,17 @@ void PortInit(void)
 // HCLK = 32 MHz
 // The information rate is computed using the following formula:
 //		F_SSPCLK / ( CPSDVR * (1 + SCR) )
-// 0.8 MHz
+// 3.2 MHz
 //-----------------------------------------------------------------//
 void SSPInit(void)
 {
 	SSP_InitTypeDef sSSP;
 	SSP_StructInit (&sSSP);
 
-	SSP_BRGInit(MDR_SSP2,SSP_HCLKdiv2);		// F_SSPCLK = HCLK / 2
+	SSP_BRGInit(MDR_SSP2,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
 	
 	sSSP.SSP_SCR  = 0x04;		// 0 to 255
-	sSSP.SSP_CPSDVSR = 4;		// even 2 to 254
+	sSSP.SSP_CPSDVSR = 2;		// even 2 to 254
 	sSSP.SSP_Mode = SSP_ModeMaster;
 	sSSP.SSP_WordLength = SSP_WordLength9b;
 	sSSP.SSP_SPH = SSP_SPH_1Edge;
@@ -373,7 +380,7 @@ void TimersInit(void)
 	TIMER_ChnInitTypeDef sTIM_ChnInit;
 	TIMER_ChnOutInitTypeDef sTIM_ChnOutInit;
 	
-	//================= TIMER 1 =================//
+	//======================= TIMER1 =======================//
 	// Timer1		CH2		-> BUZ+
 	//				CH2N	-> BUZ-
 	// TIMER_CLK = HCLK
@@ -382,8 +389,8 @@ void TimersInit(void)
 	
 	// Initialize timer 1 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
-	sTIM_CntInit.TIMER_Prescaler                = 0x1F;		
-	sTIM_CntInit.TIMER_Period                   = 500;		
+	sTIM_CntInit.TIMER_Prescaler                = 0x1F;		// 32MHz / (31 + 1) = 1MHz
+	sTIM_CntInit.TIMER_Period                   = 499;		
 	TIMER_CntInit (MDR_TIMER1,&sTIM_CntInit);
 	
 	// Initialize timer 1 channel 2
@@ -405,7 +412,7 @@ void TimersInit(void)
 	TIMER_ChnOutInit(MDR_TIMER1, &sTIM_ChnOutInit);
 
 	// Set default buzzer duty
-	MDR_TIMER1->CCR2 = 250;	
+	MDR_TIMER1->CCR2 = 249;	
   
 	// Enable TIMER1 counter clock
 	TIMER_BRGInit(MDR_TIMER1,TIMER_HCLKdiv1);
@@ -415,105 +422,123 @@ void TimersInit(void)
 	
 	
 	
-	//======================= TIMER2 =================================//
+	//======================= TIMER2 =======================//
 	// Timer2		CH1N	-> UPWM
 	//				CH3N	-> IPWM
+	// 				CH2		-> HW control interrupt generation
+	// TIMER_CLK = HCLK
+	// CLK = 16MHz
+	// PWM frequency = 3906.25 Hz (T = 256us)
+	// PWM resolution = 12 bit
 	
 	// Initialize timer 2 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
-  sTIM_CntInit.TIMER_Prescaler                = 0x0;		// 3906.25 Hz at 16MHz core clk
-  sTIM_CntInit.TIMER_Period                   = 0xFFF;		// 12-bit 
-  TIMER_CntInit (MDR_TIMER2,&sTIM_CntInit);
+	sTIM_CntInit.TIMER_Prescaler                = 0x1;		// CLK = 16MHz
+	sTIM_CntInit.TIMER_Period                   = 0xFFF;	// 16MHz / 4096 = 3906.25 Hz 
+	TIMER_CntInit (MDR_TIMER2,&sTIM_CntInit);
 
 	// Initialize timer 2 channels 1,3
-  TIMER_ChnStructInit(&sTIM_ChnInit);
-  sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-  sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
-  sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;	// voltage
-  TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
-	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;	// curret
-  TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
+	TIMER_ChnStructInit(&sTIM_ChnInit);
+	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;			// voltage
+	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
+	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;			// curret
+	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
+	
+	// Initialize timer 2 channel 2 - used for HW control interrupt generation
+	TIMER_ChnStructInit(&sTIM_ChnInit);
+	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format1;	// REF output = 1 when CNT == CCR
+	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
+	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_Immediately;
+	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
 	
 	// Initialize timer 2 channels 1,3 output
-  TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
-  sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_Inverted;
-  sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_REF;
-  sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
-  sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
-  TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
+	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
+	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_Inverted;
+	sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_REF;
+	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
+	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
+	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
 	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL3;
-  TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
+	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
 	
 	// Set default voltage PWM duty cycle
 	MDR_TIMER2->CCR1 = 0;	
 	// Set default current PWM duty cycle
 	MDR_TIMER2->CCR3 = 0;	
+	// Set default CCR for interrupt generation
+	MDR_TIMER2->CCR2 = 0;
 	
-	/* Enable TIMER1 counter clock */
-  TIMER_BRGInit(MDR_TIMER2,TIMER_HCLKdiv1);
+	// Enable interrupts
+	TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2, ENABLE);
+	//TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CNT_ZERO, ENABLE);
+	
+	// Enable TIMER2 counter clock
+	TIMER_BRGInit(MDR_TIMER2,TIMER_HCLKdiv1);
 
-  /* Enable TIMER1 */
-  TIMER_Cmd(MDR_TIMER2,ENABLE);
+	// Enable TIMER2
+	TIMER_Cmd(MDR_TIMER2,ENABLE);
 	
 	
 	
-	//======================= TIMER3 =================================//
+	//======================= TIMER3 =======================//
 	// Timer3		CH1 	-> LPWM (LCD backlight PWM) 
 	//				CH3N	-> CPWM (System cooler PWM)
+	// TIMER_CLK = HCLK
+	// CLK = 2MHz
+	// PWM frequency = 20kHz
+	// PWM resolution = 100
 	
 	// Initialize timer 3 counter
 	TIMER_CntStructInit(&sTIM_CntInit);
-  sTIM_CntInit.TIMER_Prescaler                = 0x7;		// 2MHz at 16MHz core clk
-  sTIM_CntInit.TIMER_Period                   = 100;		// 20kHz at 1MHz
-  TIMER_CntInit (MDR_TIMER3,&sTIM_CntInit);
-	
-	//-----------------------------//
-	//-----------------------------//
-	
-  // Initialize timer 3 channel 1
-  TIMER_ChnStructInit(&sTIM_ChnInit);
+	sTIM_CntInit.TIMER_Prescaler                = 0xF;		// 2MHz at 32MHz core clk
+	sTIM_CntInit.TIMER_Period                   = 99;			// 20kHz at 2MHz
+	TIMER_CntInit (MDR_TIMER3,&sTIM_CntInit);
+		
+	// Initialize timer 3 channel 1
+	TIMER_ChnStructInit(&sTIM_ChnInit);
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;
-  sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-  sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
-  TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
+	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
 
-  // Initialize timer 3 channel 1 output
-  TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
+	// Initialize timer 3 channel 1 output
+	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
 	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
-  sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_REF;
+	sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_REF;
 	sTIM_ChnOutInit.TIMER_CH_DirOut_Polarity          = TIMER_CHOPolarity_NonInverted;
-  sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
-  TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
+	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
+	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
 
-  //-----------------------------//
-	
-  // Initialize timer 3 channel 3
+	// Initialize timer 3 channel 3
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;
-  TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
+	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
 	
-  // Initialize timer 3 channel 3 output
+	// Initialize timer 3 channel 3 output
 	sTIM_ChnOutInit.TIMER_CH_Number           	= TIMER_CHANNEL3;
-  sTIM_ChnOutInit.TIMER_CH_DirOut_Source      = TIMER_CH_OutSrc_Only_0;
-  sTIM_ChnOutInit.TIMER_CH_DirOut_Mode        = TIMER_CH_OutMode_Input;
+	sTIM_ChnOutInit.TIMER_CH_DirOut_Source      = TIMER_CH_OutSrc_Only_0;
+	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode        = TIMER_CH_OutMode_Input;
 	sTIM_ChnOutInit.TIMER_CH_NegOut_Source     	= TIMER_CH_OutSrc_REF;
 	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity   	= TIMER_CHOPolarity_Inverted;
 	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode       	= TIMER_CH_OutMode_Output;
-  TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
-	
-	//-----------------------------//
+	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
 
-  // Set default PWM duty cycle for LCD backlight PWM	
+
+	// Set default PWM duty cycle for LCD backlight PWM	
 	MDR_TIMER3->CCR1 = 0;
 	
 	// Set default PWM duty cycle for system cooler PWM
 	MDR_TIMER3->CCR3 = 0;
 
-  /* Enable TIMER3 counter clock */
-  TIMER_BRGInit(MDR_TIMER3,TIMER_HCLKdiv1);
+	// Enable TIMER3 counter clock
+	TIMER_BRGInit(MDR_TIMER3,TIMER_HCLKdiv1);
 
-  /* Enable TIMER3 */
-  TIMER_Cmd(MDR_TIMER3,ENABLE);
+	// Enable TIMER3
+	TIMER_Cmd(MDR_TIMER3,ENABLE);
 	
+
 
 }
 
@@ -565,15 +590,18 @@ void LcdSetBacklight(uint16_t value)
 
 void ProcessPowerOff(void)
 {
+	uint32_t time_delay;
 	 //if (system_status.LineInStatus == OFFLINE)
 	 if (GetACLineStatus() == OFFLINE)
 	 {	
+		 __disable_irq();
+		 
 		 SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
 		 
 		 SysTickStop();
 		 StopBeep();
 		 
-		 DWTStartDelayUs(5000);
+		 time_delay = DWTStartDelayUs(5000);
 		 
 		 LcdSetBacklight(0);
 		 SetCoolerSpeed(0);
@@ -589,7 +617,7 @@ void ProcessPowerOff(void)
 		 
 		 
 		 
-		 while(DWTDelayInProgress());
+		 while(DWTDelayInProgress(time_delay));
 		 
 		 SetFeedbackChannel(CHANNEL_12V);
 		 SetCurrentLimit(CURRENT_LIM_HIGH); 
@@ -599,7 +627,10 @@ void ProcessPowerOff(void)
 		 LcdUpdateByCore(LCD1,lcd1_buffer);
 		 
 		 
-		 DWTDelayUs(1000);
+		 
+		 time_delay = DWTStartDelayUs(1000);
+		 while(DWTDelayInProgress(time_delay));
+		 
 		 PORT_DeInit(MDR_PORTA);
 		 PORT_DeInit(MDR_PORTB);
 		 PORT_DeInit(MDR_PORTC);
@@ -613,80 +644,6 @@ void ProcessPowerOff(void)
  }
 	
 	 
-	
-
-
-	 
-void ProcessTemperature(void)
-{
-	static uint8_t fsm_state = TSTATE_START_EXTERNAL;
-	static uint16_t adc_samples;
-	static uint16_t sample_counter = 0;
-	
-	switch (fsm_state)
-	{
-		case TSTATE_START_EXTERNAL:
-			ADC2_SetChannel(ADC_CHANNEL_CONVERTER_TEMP); 
-			DWTDelayUs(10);
-			ADC2_Start();
-			fsm_state = TSTATE_GET_EXTERNAL;
-			adc_samples = 0;
-			sample_counter = 9;
-			break;
-		case TSTATE_GET_EXTERNAL:
-			adc_samples += ADC2_GetResult();
-			if (sample_counter != 0)
-			{
-				ADC2_Start();
-				sample_counter--;
-			}
-			else
-			{
-				fsm_state = TSTATE_DONE_EXTERNAL;
-			}
-			break;
-		case TSTATE_DONE_EXTERNAL:
-			converter_temp_celsius = (int16_t)( (float)adc_samples*0.1*(-0.226) + 230 );	//FIXME
-			fsm_state = TSTATE_START_EXTERNAL;
-			break;
-		
-		default:
-			fsm_state = TSTATE_START_EXTERNAL;
-	}
-	
-	
-		/*
-		ADC2_SetChannel(ADC_CHANNEL_CONVERTER_TEMP); 
-		DWTDelayUs(10);
-		ADC2_Start();
-		while( ADC_GetFlagStatus(ADC2_FLAG_END_OF_CONVERSION)==RESET );
-		converter_temp = ADC2_GetResult();
-		
-		temperature_acc += converter_temp;
-		
-		if(	temperature_cnt >= 9)
-		{
-			temperature_cnt = 0;
-			converter_temp_norm =  (float)temperature_acc*0.1*(-0.226) + 230 ;
-			temperature_acc = 0;
-		}
-		else
-		{
-			temperature_cnt++;
-		}
-		*/
-}	
-	 
-
-void ProcessCooler(void)
-{
-	uint16_t cooler_speed;
-	cooler_speed = (converter_temp_celsius < 25) ? 50 : converter_temp_celsius * 2;
-	SetCoolerSpeed(cooler_speed);
-}
-	
-
-
 	
 
 

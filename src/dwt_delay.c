@@ -1,23 +1,22 @@
 /*******************************************************************
-	Module encoder.c
+	Module dwt_delay.c
 	
 		Functions for implementing delays.
 		
 		Uses counter DWT_CYCCN standard for all cortex M3 devices
 		When enabled, this counter increments every core cycle
 
+	TODO: check out sharing between different OS tasks - possibly use defines instead of functions
+	
 ********************************************************************/
 
 #include "MDR32Fx.h"
-
 #include "dwt_delay.h"
 
-// time stamp
-volatile int32_t time_mark;
 
-//==============================================================//
-// Enables DWT counter
-//==============================================================//
+//---------------------------------------------//
+//	Enabled DWT counter
+//---------------------------------------------//
 void DWTCounterInit(void)
 {
 	if (!(DWT_CONTROL & 1))
@@ -29,36 +28,27 @@ void DWTCounterInit(void)
 }
 
 
-//==============================================================//
-// Non - blocking us delay.
-// Function starts new delay but does not wait for it
-//==============================================================//
-void DWTStartDelayUs(uint32_t us)
+//---------------------------------------------//
+//	Returns future time mark for specified
+//		delay in us
+//---------------------------------------------//
+uint32_t DWTStartDelayUs(uint32_t us)
 {
-	time_mark = DWT_CYCCNT + us * (SystemCoreClock/1000000);
+	uint32_t time_mark = DWT_CYCCNT + us * (SystemCoreClock/1000000);
+	return time_mark;
 }
 
 
-//==============================================================//
-// Non - blocking delay status.
-// Function returns 0 if delay is done
-//==============================================================//
-uint8_t DWTDelayInProgress(void)
+//---------------------------------------------//
+//	Checks if DWT counter has not reached 
+//		specified time mark
+//---------------------------------------------//
+uint8_t DWTDelayInProgress(uint32_t time_mark)
 {
-	return (((int32_t)DWT_CYCCNT - time_mark) < 0);
+	return (((int32_t)DWT_CYCCNT - (int32_t)time_mark) < 0);
 }
 
 
-//==============================================================//
-// Blocking us delay.
-// Function executes for specified period of time
-// There is a small overhead of 2~4 us @16 MHz
-//==============================================================//
-void DWTDelayUs(uint32_t us)
-{
-	int32_t time_mark = DWT_CYCCNT + us * (SystemCoreClock/1000000);
-	while ((((int32_t)DWT_CYCCNT - time_mark) < 0)) {};
-}
 
 
 

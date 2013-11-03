@@ -56,7 +56,8 @@ void LcdWrite(uint8_t val, uint8_t mode)
 //==============================================================//
 void LcdDelayUs(uint16_t us)
 {
-	DWTDelayUs(us);
+	uint32_t time_delay = DWTStartDelayUs(us);
+	while(DWTDelayInProgress(time_delay));
 }
 
 //==============================================================//
@@ -153,6 +154,8 @@ void LcdInit(void)
 	// Initialize LCD #1
 	LcdSelect(LCD1);
 	LcdSingleInit();
+	// wait until all words are sent
+	while (!LCD_TX_DONE);	
 }
 
 
@@ -173,6 +176,8 @@ void LcdUpdateByCore(uint8_t display, uint16_t* lcd_buffer)
 	LcdSetCol(0);
 	for (i=0; i<LCD_BUFFER_SIZE; i++)
 		LcdWrite(lcd_buffer[i],DATA);
+	// wait until all words are sent
+	while (!LCD_TX_DONE);	
 }
 
 

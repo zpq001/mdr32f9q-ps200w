@@ -20,6 +20,8 @@
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\mpu_wrappers.h
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\list.h
+.\FLASH\main.o: .\src\gui_top.h
+.\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h
 .\FLASH\main.o: C:\Keil\ARM\RV31\Inc\stdio.h
 .\FLASH\main.o: defines.h
 .\FLASH\main.o: .\src\systemfunc.h
@@ -34,6 +36,8 @@
 .\FLASH\main.o: .\src\dwt_delay.h
 .\FLASH\main.o: .\src\control.h
 .\FLASH\main.o: .\src\converter.h
+.\FLASH\main.o: .\src\service.h
+.\FLASH\main.o: .\src\dispatcher.h
 .\FLASH\main.o: .\src\fonts\fonts.h
 .\FLASH\main.o: .\src\fonts\font_defs.h
 .\FLASH\main.o: .\src\fonts\images.h

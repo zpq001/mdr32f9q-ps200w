@@ -73,7 +73,8 @@
 
 
 
-
+#define HW_IRQ_PERIOD				(16*200)		// in units of 62.5ns, must be <= timer period
+#define HW_ADC_CALL_PERIOD			5				// in units of HW_IRQ period
 
 
 
@@ -87,8 +88,30 @@
 #define CMD_ON				0x0010
 #define CMD_OFF				0x0020
 
-#define OVERLOAD_IGNORE_TIMEOUT	100
-#define OVERLOAD_TIMEOUT		1
+#define OVERLOAD_IGNORE_TIMEOUT	(5*100)		// 100 ms
+#define OVERLOAD_TIMEOUT		5			// 1 ms
+
+
+
+
+//---------------------------------------------//
+// Task queue messages
+
+typedef struct {
+	uint32_t type;
+	uint32_t data_a;
+	uint32_t data_b;
+} conveter_message_t;
+
+#define CONVERTER_TICK				0x00
+#define CONVERTER_TURN_ON			0x01
+#define CONVERTER_TURN_OFF			0x02
+#define CONVERTER_SWITCH_TO_5VCH	0x03
+#define CONVERTER_SWITCH_TO_12VCH	0x04
+#define SET_CURRENT_LIMIT_20A		0x05
+#define SET_CURRENT_LIMIT_40A		0x06
+#define CONVERTER_SET_VOLTAGE		0x07
+#define CONVERTER_SET_CURRENT		0x07
 
 
 /*
@@ -127,6 +150,9 @@ typedef struct {
 } converter_regulation_t;
 
 
+extern xQueueHandle xQueueConverter;
+
+
 
 extern converter_regulation_t *regulation_setting_p;
 
@@ -142,8 +168,11 @@ void Converter_SetFeedbackChannel(uint8_t new_channel);
 void Converter_SetCurrentLimit(uint8_t new_limit);
 void Converter_Enable(void);
 void Converter_Disable(void);
-void Converter_Init(void);
+void Converter_Init(uint8_t default_channel);
 void Converter_Process(void);
+
+
+void vTaskConverter(void *pvParameters);
 
 void Converter_HWProcess(void);
 void Converter_HW_ADCProcess(void);

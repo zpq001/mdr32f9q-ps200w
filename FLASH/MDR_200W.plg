@@ -1,58 +1,12 @@
-Build target 'FLASH'
-compiling system_MDR32F9Qx.c...
-..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.c(37): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_rst_clk.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_rst_clk.c(25): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_ssp.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_ssp.c(26): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_port.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_timer.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_timer.c(25): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_i2c.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_i2c.c(25): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling MDR32F9Qx_adc.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_adc.c(25): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling main.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling systemfunc.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling systick.c...
-compiling lcd_1202.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling buttons.c...
-src\buttons.c(10): error:  #5: cannot open source input file "defines.h": No such file or directory
-compiling led.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling encoder.c...
-src\encoder.c(12): error:  #5: cannot open source input file "defines.h": No such file or directory
-compiling i2c_eeprom.c...
-src\i2c_eeprom.c(12): error:  #5: cannot open source input file "defines.h": No such file or directory
-compiling dwt_delay.c...
-compiling control.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling lcd_func.c...
-compiling converter.c...
-..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h(31): error:  #5: cannot open source input file "MDR32F9Qx_config.h": No such file or directory
-compiling font_8x12.c...
-compiling font_32x19.c...
-compiling font_16x10.c...
-compiling images.c...
-compiling port.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling heap_2.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling croutine.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling list.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling queue.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling tasks.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-compiling timers.c...
-..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h(79): error:  #5: cannot open source input file "FreeRTOSConfig.h": No such file or directory
-Target not created
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\MDR_200W.uvproj
+Project File Date:  11/03/2013
+
+<h2>Output:</h2>
 Build target 'FLASH'
 compiling system_MDR32F9Qx.c...
 compiling MDR32F9Qx_rst_clk.c...
@@ -62,6 +16,7 @@ compiling MDR32F9Qx_timer.c...
 compiling MDR32F9Qx_i2c.c...
 compiling MDR32F9Qx_adc.c...
 compiling main.c...
+main.c(164): warning:  #111-D: statement is unreachable
 compiling systemfunc.c...
 compiling systick.c...
 compiling lcd_1202.c...
@@ -73,6 +28,8 @@ compiling dwt_delay.c...
 compiling control.c...
 compiling lcd_func.c...
 compiling converter.c...
+compiling gui_top.c...
+compiling service.c...
 compiling font_8x12.c...
 compiling font_32x19.c...
 compiling font_16x10.c...
@@ -85,31 +42,693 @@ compiling queue.c...
 compiling tasks.c...
 compiling timers.c...
 linking...
-Program Size: Code=23488 RO-data=6080 RW-data=164 ZI-data=22796  
+Program Size: Code=25136 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.620V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systick.c...
+linking...
+Program Size: Code=25136 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.704V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systemfunc.c...
+compiling service.c...
+linking...
+Program Size: Code=25136 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.627V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systemfunc.c...
+linking...
+Program Size: Code=25136 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.640V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
 Build target 'FLASH'
 compiling main.c...
-main.c(249): warning:  #111-D: statement is unreachable
+main.c(164): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+compiling systick.c...
+compiling encoder.c...
 linking...
-Program Size: Code=17712 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25136 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
 Build target 'FLASH'
+compiling gui_top.c...
 linking...
-Program Size: Code=17712 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25144 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Build target 'FLASH'
+compiling main.c...
+main.c(164): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+compiling systick.c...
+compiling encoder.c...
 linking...
-Program Size: Code=17712 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25144 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.672V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
 Build target 'FLASH'
+compiling systemfunc.c...
 linking...
-Program Size: Code=17712 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25144 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.640V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systemfunc.c...
+compiling lcd_1202.c...
+compiling gui_top.c...
+linking...
+Program Size: Code=25164 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.666V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling main.c...
+.\src\dwt_delay.h(13): error:  #130: expected a "{"
+.\src\converter.h(107): warning:  #12-D: parsing restarts here after previous syntax error
+.\src\converter.h(133): warning:  #940-D: missing return statement at end of non-void function "DWTStartDelayUs"
+.\src\converter.h(109): warning:  #177-D: variable "CHANNEL" was declared but never referenced
+.\src\converter.h(110): warning:  #177-D: variable "load_state" was declared but never referenced
+.\src\converter.h(112): warning:  #177-D: variable "set_voltage" was declared but never referenced
+.\src\converter.h(113): warning:  #177-D: variable "MAX_VOLTAGE" was declared but never referenced
+.\src\converter.h(114): warning:  #177-D: variable "MIN_VOLTAGE" was declared but never referenced
+.\src\converter.h(115): warning:  #177-D: variable "soft_max_voltage" was declared but never referenced
+.\src\converter.h(116): warning:  #177-D: variable "soft_min_voltage" was declared but never referenced
+.\src\converter.h(117): warning:  #177-D: variable "SOFT_MAX_VOLTAGE_LIMIT" was declared but never referenced
+.\src\converter.h(118): warning:  #177-D: variable "SOFT_MIN_VOLTAGE_LIMIT" was declared but never referenced
+.\src\converter.h(119): warning:  #177-D: variable "soft_voltage_range_enable" was declared but never referenced
+.\src\converter.h(121): warning:  #177-D: variable "current_limit" was declared but never referenced
+.\src\converter.h(122): warning:  #177-D: variable "set_current" was declared but never referenced
+.\src\converter.h(123): warning:  #177-D: variable "LOW_LIM_MAX_CURRENT" was declared but never referenced
+.\src\converter.h(124): warning:  #177-D: variable "LOW_LIM_MIN_CURRENT" was declared but never referenced
+.\src\converter.h(125): warning:  #177-D: variable "HIGH_LIM_MAX_CURRENT" was declared but never referenced
+.\src\converter.h(126): warning:  #177-D: variable "HIGH_LIM_MIN_CURRENT" was declared but never referenced
+.\src\converter.h(127): warning:  #177-D: variable "soft_max_current" was declared but never referenced
+.\src\converter.h(128): warning:  #177-D: variable "soft_min_current" was declared but never referenced
+.\src\converter.h(129): warning:  #177-D: variable "SOFT_MAX_CURRENT_LIMIT" was declared but never referenced
+.\src\converter.h(130): warning:  #177-D: variable "SOFT_MIN_CURRENT_LIMIT" was declared but never referenced
+.\src\converter.h(131): warning:  #177-D: variable "soft_current_range_enable" was declared but never referenced
+.\src\converter.h(133): error:  #77-D: this declaration has no storage class or type specifier
+.\src\converter.h(140): error:  #757: variable "converter_regulation_t" is not a type name
+.\src\converter.h(149): error:  #757: variable "converter_regulation_t" is not a type name
+main.c(164): warning:  #111-D: statement is unreachable
+main.c(217): error:  #132: expression must have pointer-to-struct-or-union type
+main.c(220): error:  #132: expression must have pointer-to-struct-or-union type
+compiling systemfunc.c...
+src\dwt_delay.h(13): error:  #130: expected a "{"
+src\systemfunc.c(43): warning:  #12-D: parsing restarts here after previous syntax error
+src\systemfunc.c(85): warning:  #940-D: missing return statement at end of non-void function "DWTStartDelayUs"
+src\systemfunc.c(594): warning:  #223-D: function "GetACLineStatus" declared implicitly
+src\systemfunc.c(598): warning:  #223-D: function "SetConverterState" declared implicitly
+src\systemfunc.c(614): error:  #20: identifier "font_8x12" is undefined
+src\systemfunc.c(619): warning:  #223-D: function "DWTDelayInProgress" declared implicitly
+src\systemfunc.c(621): warning:  #223-D: function "SetFeedbackChannel" declared implicitly
+src\systemfunc.c(622): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\systemfunc.c(623): warning:  #223-D: function "SetOutputLoad" declared implicitly
+src\systemfunc.c(629): warning:  #223-D: function "DWTDelayUs" declared implicitly
+compiling lcd_1202.c...
+src\dwt_delay.h(13): error:  #130: expected a "{"
+src\lcd_1202.c(44): warning:  #12-D: parsing restarts here after previous syntax error
+src\lcd_1202.c(45): error:  #20: identifier "val" is undefined
+src\lcd_1202.c(46): error:  #20: identifier "mode" is undefined
+src\lcd_1202.c(51): warning:  #940-D: missing return statement at end of non-void function "DWTStartDelayUs"
+src\lcd_1202.c(59): warning:  #223-D: function "DWTDelayUs" declared implicitly
+compiling buttons.c...
+src\dwt_delay.h(13): error:  #130: expected a "{"
+src\buttons.h(100): warning:  #12-D: parsing restarts here after previous syntax error
+src\buttons.h(121): warning:  #940-D: missing return statement at end of non-void function "DWTStartDelayUs"
+src\buttons.h(101): warning:  #177-D: variable "raw_state" was declared but never referenced
+src\buttons.h(102): warning:  #177-D: variable "action_down" was declared but never referenced
+src\buttons.h(107): warning:  #177-D: variable "action_up" was declared but never referenced
+src\buttons.h(121): error:  #77-D: this declaration has no storage class or type specifier
+src\buttons.h(131): error:  #757: variable "buttons_t" is not a type name
+src\buttons.c(15): error:  #757: variable "buttons_t" is not a type name
+src\buttons.c(51): warning:  #223-D: function "DWTDelayInProgress" declared implicitly
+compiling dwt_delay.c...
+src\dwt_delay.h(13): error:  #130: expected a "{"
+src\dwt_delay.c(19): warning:  #12-D: parsing restarts here after previous syntax error
+src\dwt_delay.c(26): warning:  #940-D: missing return statement at end of non-void function "DWTStartDelayUs"
+src\dwt_delay.c(33): error:  #247: function "DWTStartDelayUs" has already been defined
+src\dwt_delay.c(46): warning:  #186-D: pointless comparison of unsigned integer with zero
+Target not created
+Build target 'FLASH'
+compiling main.c...
+main.c(164): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+src\systemfunc.c(619): error:  #165: too few arguments in function call
+src\systemfunc.c(629): warning:  #223-D: function "DWTDelayUs" declared implicitly
+compiling lcd_1202.c...
+src\lcd_1202.c(59): warning:  #223-D: function "DWTDelayUs" declared implicitly
+compiling buttons.c...
+src\buttons.c(51): error:  #165: too few arguments in function call
+compiling dwt_delay.c...
+src\dwt_delay.c(46): warning:  #186-D: pointless comparison of unsigned integer with zero
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(630): warning:  #223-D: function "DWTDelayUs" declared implicitly
+compiling buttons.c...
+src\buttons.c(51): error:  #165: too few arguments in function call
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+compiling buttons.c...
+src\buttons.c(51): error:  #165: too few arguments in function call
+Target not created
+Build target 'FLASH'
+compiling buttons.c...
+linking...
+.\FLASH\MDR_200W.axf: Error: L6218E: Undefined symbol DWTDelayUs (referred from lcd_1202.o).
+Target not created
+Build target 'FLASH'
+compiling lcd_1202.c...
+compiling buttons.c...
+linking...
+Program Size: Code=25164 RO-data=6040 RW-data=172 ZI-data=22796  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.679V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling main.c...
+main.c(161): error:  #20: identifier "vTaskDispatcher" is undefined
+main.c(171): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+compiling systick.c...
+compiling encoder.c...
+compiling converter.c...
+compiling gui_top.c...
+compiling dispatcher.c...
+src\dispatcher.c(54): error:  #20: identifier "DISPATCHER_TICK" is undefined
+src\dispatcher.c(37): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling main.c...
+main.c(172): warning:  #111-D: statement is unreachable
+compiling dispatcher.c...
+src\dispatcher.c(54): error:  #20: identifier "DISPATCHER_TICK" is undefined
+src\dispatcher.c(37): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling dispatcher.c...
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+linking...
+Program Size: Code=25408 RO-data=6040 RW-data=180 ZI-data=22796  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Build target 'FLASH'
+compiling main.c...
+main.c(172): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+compiling systick.c...
+compiling led.c...
+src\led.c(23): error:  #20: identifier "led_state" is undefined
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(180): error:  #20: identifier "dummy_err_code" is undefined
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(65): warning:  #550-D: variable "led_state" was set but never used
+src\converter.c(67): warning:  #550-D: variable "HW_cmd" was set but never used
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+src\converter.c(615): error:  #20: identifier "led_state" is undefined
+compiling gui_top.c...
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling led.c...
+src\led.c(23): error:  #20: identifier "led_state" is undefined
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(65): warning:  #550-D: variable "led_state" was set but never used
+src\converter.c(67): warning:  #550-D: variable "HW_cmd" was set but never used
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+src\converter.c(615): error:  #20: identifier "led_state" is undefined
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling led.c...
+src\led.c(23): error:  #20: identifier "led_state" is undefined
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(65): warning:  #550-D: variable "led_state" was set but never used
+src\converter.c(67): warning:  #550-D: variable "HW_cmd" was set but never used
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+src\converter.c(524): warning:  #550-D: variable "led_state" was set but never used
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling main.c...
+main.c(172): warning:  #111-D: statement is unreachable
+compiling systemfunc.c...
+compiling led.c...
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(194): error:  #165: too few arguments in function call
+src\converter.c(65): warning:  #550-D: variable "led_state" was set but never used
+src\converter.c(67): warning:  #550-D: variable "HW_cmd" was set but never used
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(194): error:  #165: too few arguments in function call
+src\converter.c(65): warning:  #550-D: variable "led_state" was set but never used
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(180): warning:  #223-D: function "CheckSetCurrentRange" declared implicitly
+src\converter.c(181): warning:  #223-D: function "CheckSetVoltageRange" declared implicitly
+src\converter.c(184): warning:  #223-D: function "apply_regulation" declared implicitly
+src\converter.c(213): error:  #159: declaration is incompatible with previous "CheckSetVoltageRange" (declared at line 181)
+src\converter.c(249): error:  #159: declaration is incompatible with previous "CheckSetCurrentRange" (declared at line 180)
+src\converter.c(346): error:  #159: declaration is incompatible with previous "apply_regulation" (declared at line 184)
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+compiling dispatcher.c...
+src\dispatcher.c(88): error:  #167: argument of type "long *" is incompatible with parameter of type "portTickType"
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+Target not created
+Build target 'FLASH'
+compiling dispatcher.c...
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+src\dispatcher.c(40): warning:  #550-D: variable "xHigherPriorityTaskWokenByPost" was set but never used
+linking...
+Program Size: Code=25784 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+Build target 'FLASH'
+compiling dispatcher.c...
+src\dispatcher.c(38): warning:  #550-D: variable "encoder_delta" was set but never used
+linking...
+Program Size: Code=25780 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Feb 15 2011 11:03:33
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.679V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling buttons.c...
+src\buttons.c(28): warning:  #550-D: variable "time_delay" was set but never used
+linking...
+Program Size: Code=25768 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -150,13 +769,11 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-main.c(249): warning:  #111-D: statement is unreachable
-main.c(111): warning:  #177-D: variable "temp" was declared but never referenced
+compiling buttons.c...
 linking...
-Program Size: Code=17668 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25780 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -185,7 +802,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.672V
+VTarget = 2.692V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -197,20 +814,11 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-main.c(249): warning:  #111-D: statement is unreachable
-main.c(111): warning:  #177-D: variable "temp" was declared but never referenced
-compiling port.c...
-compiling heap_2.c...
-compiling croutine.c...
-compiling list.c...
-compiling queue.c...
-compiling tasks.c...
-compiling timers.c...
+compiling buttons.c...
 linking...
-Program Size: Code=17660 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25772 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -239,7 +847,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.776V
+VTarget = 2.640V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -251,36 +859,11 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-main.c(249): warning:  #111-D: statement is unreachable
-main.c(111): warning:  #177-D: variable "temp" was declared but never referenced
-compiling port.c...
-compiling heap_2.c...
-compiling croutine.c...
-compiling list.c...
-compiling queue.c...
-compiling tasks.c...
-compiling timers.c...
+compiling buttons.c...
 linking...
-Program Size: Code=17660 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25772 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Build target 'FLASH'
-compiling main.c...
-main.c(253): warning:  #111-D: statement is unreachable
-main.c(115): warning:  #177-D: variable "temp" was declared but never referenced
-linking...
-Program Size: Code=17680 RO-data=4368 RW-data=156 ZI-data=22796  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Build target 'FLASH'
-compiling main.c...
-main.c(253): warning:  #111-D: statement is unreachable
-main.c(115): warning:  #177-D: variable "temp" was declared but never referenced
-linking...
-Program Size: Code=17680 RO-data=4368 RW-data=156 ZI-data=22796  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -309,7 +892,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.672V
+VTarget = 2.633V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -321,24 +904,28 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-main.c(161): warning:  #223-D: function "LcdPutStr" declared implicitly
-main.c(161): error:  #20: identifier "tFont" is undefined
-main.c(161): error:  #29: expected an expression
-main.c(161): error:  #18: expected a ")"
-main.c(162): error:  #29: expected an expression
-main.c(162): error:  #18: expected a ")"
-main.c(259): warning:  #111-D: statement is unreachable
-main.c(115): warning:  #177-D: variable "temp" was declared but never referenced
+compiling buttons.c...
+compiling dwt_delay.c...
+src\dwt_delay.c(33): error:  #147-D: declaration is incompatible with "uint32_t DWTStartDelayUs(uint32_t)" (declared at line 12 of "src\dwt_delay.h")
+src\dwt_delay.c(44): error:  #147-D: declaration is incompatible with "uint8_t DWTDelayInProgress(uint32_t)" (declared at line 13 of "src\dwt_delay.h")
 Target not created
 Build target 'FLASH'
-compiling main.c...
-main.c(259): warning:  #111-D: statement is unreachable
-main.c(115): warning:  #177-D: variable "temp" was declared but never referenced
+compiling buttons.c...
+compiling dwt_delay.c...
+src\dwt_delay.c(46): error:  #20: identifier "int32" is undefined
+src\dwt_delay.c(46): error:  #18: expected a ")"
+Target not created
+Build target 'FLASH'
+compiling dwt_delay.c...
 linking...
-Program Size: Code=17768 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25784 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'FLASH'
+linking...
+Program Size: Code=25784 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -367,7 +954,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.711V
+VTarget = 2.614V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -379,13 +966,16 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-main.c(259): warning:  #111-D: statement is unreachable
-main.c(115): warning:  #177-D: variable "temp" was declared but never referenced
+compiling buttons.c...
 linking...
-Program Size: Code=17768 RO-data=4368 RW-data=156 ZI-data=22796  
+Program Size: Code=25784 RO-data=6040 RW-data=176 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'FLASH'
+linking...
+Program Size: Code=25784 RO-data=6040 RW-data=176 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -414,7 +1004,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.769V
+VTarget = 2.679V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6

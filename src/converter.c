@@ -14,12 +14,18 @@
 #include "MDR32Fx.h" 
 #include "MDR32F9Qx_port.h"
 #include "MDR32F9Qx_adc.h"
+#include "MDR32F9Qx_timer.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
 #include "systemfunc.h"
 #include "led.h"
 
 #include "defines.h"
 #include "control.h"
+#include "encoder.h"
 #include "converter.h"
 
 // Globals used for communicating with converter control task called from ISR
@@ -43,6 +49,160 @@ uint32_t power_adc;		// [mW]
 
 uint16_t adc_voltage_counts;	// [ADC counts]
 uint16_t adc_current_counts;	// [ADC counts]
+
+
+xQueueHandle xQueueConverter;
+
+
+static void apply_regulation(void);
+static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code);
+static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code);
+
+void vTaskConverter(void *pvParameters) 
+{
+	conveter_message_t msg;
+	uint8_t led_state;
+	uint32_t conv_state = CONV_OFF;
+//	uint8_t HW_cmd;
+	uint8_t dummy_err_code;
+	
+	// Initialize
+	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
+	if( xQueueConverter == 0 )
+	{
+		// Queue was not created and must not be used.
+		while(1);
+	}
+	
+	
+	
+	while(1)
+	{
+		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
+		
+
+		switch (msg.type)
+		{
+			case CONVERTER_SET_VOLTAGE:
+				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+				break;
+			case CONVERTER_TURN_ON:
+
+				break;
+			case CONVERTER_TURN_OFF:
+
+				break;
+			
+		}
+		
+		
+		switch(conv_state)
+		{
+			case CONV_OFF:
+				if (msg == CONVERTER_SWITCH_TO_5VCH)
+				{
+					regulation_setting_p = &channel_5v_setting;
+					break;
+				}
+				if (msg == CONVERTER_SWITCH_TO_12VCH)
+				{
+					regulation_setting_p = &channel_12v_setting;
+					break;
+				}
+				if (msg == SET_CURRENT_LIMIT_20A)
+				{
+					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
+					break;
+				}
+				if (msg == SET_CURRENT_LIMIT_40A)
+				{
+					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
+					break;
+				}
+				if (msg == CONVERTER_TURN_OFF)
+				{
+					ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;
+					vTaskDelay(1);
+					break;
+				}
+				if (msg == CONVERTER_TURN_ON)
+				{
+					ctrl_HWProcess = (CMD_HW_ON | CMD_HW_RESET_OVERLOAD);
+					conv_state = CONV_ON;
+					vTaskDelay(5);
+					break;
+				}
+				
+			case CONV_ON:
+				if ( (state_HWProcess & STATE_HW_OFF) || (msg == CONVERTER_TURN_OFF) )
+				{
+					ctrl_HWProcess = CMD_HW_OFF;
+					conv_state = CONV_OFF;
+					vTaskDelay(5);
+					break;
+				}
+				if ( (msg == CONVERTER_SWITCH_TO_5VCH) || (msg == CONVERTER_SWITCH_TO_12VCH) )
+				{
+					ctrl_HWProcess = CMD_HW_OFF;
+					conv_state = CONV_OFF;
+					vTaskDelay(5);
+					
+					if (msg == CONVERTER_SWITCH_TO_5VCH)
+						regulation_setting_p = &channel_5v_setting;
+					if (msg == CONVERTER_SWITCH_TO_12VCH)
+						regulation_setting_p = &channel_12v_setting;
+					
+					
+				}
+				break;
+		}
+		
+		
+	
+		if (msg == CONVERTER_TICK)
+			// Send command to low-level task - must be atomic operations
+			ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
+		
+		// Apply controls
+		__disable_irq();
+		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+		__enable_irq();
+		SetCurrentLimit(regulation_setting_p->current_limit);
+		//SetOutputLoad(regulation_setting_p->load_state);
+		SetOutputLoad(channel_12v_setting.load_state);
+	
+		// Always make sure settings are within allowed range
+		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &dummy_err_code);
+		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &dummy_err_code);
+
+		// Apply voltage and current settings
+		apply_regulation();		
+		
+	
+	
+		// LED indication
+		led_state = 0;
+		if (state_HWProcess & STATE_HW_ON)
+			led_state = LED_GREEN;
+		else if (state_HWProcess & STATE_HW_OVERLOADED)
+			led_state = LED_RED;
+		UpdateLEDs(led_state);
+		
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
@@ -276,10 +436,11 @@ void Converter_StartCharge(void)
 // TODO: add regulation of overload parameters - different for each channel or common for both ?
 
 
-void Converter_Init(void)
+void Converter_Init(uint8_t default_channel)
 {
 	// Converter is powered off.
-
+	// TODO: add restore from EEPROM
+	
 	// Common
 	channel_5v_setting.CHANNEL = CHANNEL_5V;
 	channel_5v_setting.load_state = LOAD_ENABLE;							// dummy - load at 5V channel can not be disabled
@@ -333,8 +494,18 @@ void Converter_Init(void)
 	channel_12v_setting.soft_current_range_enable = 0;
 	
 	// 
-	regulation_setting_p = &channel_12v_setting;
-
+	if (default_channel == CHANNEL_12V)
+		regulation_setting_p = &channel_12v_setting;
+	else
+		regulation_setting_p = &channel_5v_setting;
+	
+	
+	// Apply controls
+	//__disable_irq();
+	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+	//__enable_irq();
+	SetCurrentLimit(regulation_setting_p->current_limit);
+	SetOutputLoad(channel_12v_setting.load_state);
 }
 
 
@@ -345,6 +516,7 @@ void Converter_Process(void)
 	uint8_t next_conv_state = conv_state;
 	uint8_t HW_cmd = 0;
 	uint8_t dummy_err_code;
+	uint8_t led_state;
 	
 	
 	switch(conv_state)
@@ -441,8 +613,15 @@ void Converter_Process(void)
 		led_state = LED_GREEN;
 	else if (state_HWProcess & STATE_HW_OVERLOADED)
 		led_state = LED_RED;
-	UpdateLEDs();
+	UpdateLEDs(led_state);
 }		
+
+
+
+//=================================================================//
+//=================================================================//
+//=================================================================//
+//=================================================================//
 
 
 
@@ -578,6 +757,8 @@ void Converter_HW_ADCProcess(void)
 				adc_voltage_counts = voltage_samples;
 				adc_current_counts = current_samples;
 				state_ADCProcess = STATE_ADC_IDLE;
+				Converter_ProcessADC();						// FIXME
+				ctrl_ADCProcess = 0;						// Can be used as flag
 			}
 			break;
 		case STATE_ADC_NORMAL_START_U:
@@ -625,7 +806,7 @@ void Converter_HW_ADCProcess(void)
 	}
 	
 	
-	ctrl_ADCProcess = 0;
+	
 	/*
 		//...
 		
@@ -640,6 +821,46 @@ void Converter_HW_ADCProcess(void)
 	
 
 }
+
+
+
+//---------------------------------------------//
+//	Converter hardware low-level control
+//
+//	Timer2 is used to generate PWM for voltage 
+//  and current setting
+//---------------------------------------------//
+void Timer2_IRQHandler(void) 
+{
+	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
+	uint16_t temp;
+	
+	// Debug
+	if (MDR_PORTA->RXTX & (1<<TXD1))
+		PORT_ResetBits(MDR_PORTA, 1<<TXD1);
+	else
+		PORT_SetBits(MDR_PORTA, 1<<TXD1);
+	
+	ProcessPowerOff();				// Check AC line disconnection
+	if (--hw_adc_counter == 0)
+	{
+		hw_adc_counter = HW_ADC_CALL_PERIOD;
+		Converter_HW_ADCProcess();	// Converter low-level ADC control
+	}
+	
+	Converter_HWProcess();			// Converter ON/OFF control and overload handling
+	ProcessEncoder();				// Poll encoder				
+
+	// Reinit timer2 CCR
+	temp = MDR_TIMER2->CCR2;
+	temp += HW_IRQ_PERIOD;
+	if (temp > MDR_TIMER2->ARR)
+		temp -= MDR_TIMER2->ARR;
+	MDR_TIMER2->CCR2 = temp;
+	TIMER_ClearFlag(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2);
+}
+
+
 
 
 

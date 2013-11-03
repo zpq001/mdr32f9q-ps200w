@@ -19,6 +19,13 @@
 #define __SYSTICK_H
 
 #include "MDR32Fx.h" 
+
+
+
+#define GUI_UPDATE_INTERVAL			25		// OS ticks
+#define CONVERTER_TICK_INTERVAL		25		// OS ticks
+#define DISPATCHER_TICK_INTERVAL	10		// OS ticks
+
            
 extern uint32_t ticks_per_us;
 

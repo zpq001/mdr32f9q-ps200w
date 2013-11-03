@@ -508,6 +508,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\service.c</FilePath>
             </File>
+            <File>
+              <FileName>dispatcher.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\dispatcher.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1108,6 +1113,11 @@
               <FileName>service.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\service.c</FilePath>
+            </File>
+            <File>
+              <FileName>dispatcher.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\dispatcher.c</FilePath>
             </File>
           </Files>
         </Group>

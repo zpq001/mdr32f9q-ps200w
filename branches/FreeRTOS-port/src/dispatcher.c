@@ -22,6 +22,7 @@
 #include "encoder.h"
 #include "converter.h"
 #include "control.h"
+#include "gui_top.h"
 #include "dispatcher.h"
 
 
@@ -36,7 +37,8 @@ void vTaskDispatcher(void *pvParameters)
 {
 	uint32_t msg;
 	int16_t encoder_delta;
-	uint32_t converter_msg;
+	conveter_message_t converter_msg;
+	uint32_t gui_msg;
 
 	
 	// Initialize
@@ -56,34 +58,42 @@ void vTaskDispatcher(void *pvParameters)
 		{
 			case DISPATCHER_TICK:
 				ProcessButtons();
-				encoder_delta = GetEncoderDelta();	
+				//encoder_delta = GetEncoderDelta();	
+				UpdateEncoderDelta();
 			
-				converter_msg = 0;
+				converter_msg.type = 0;
 			
 				// Feedback channel select
 				if (buttons.action_down & SW_CHANNEL)
 				{
 					// Send switch channel to 5V message
-					converter_msg = CONVERTER_SWITCH_TO_5VCH;
+					converter_msg.type = CONVERTER_SWITCH_TO_5VCH;
 				}
 				else if (buttons.action_up & SW_CHANNEL)
 				{
 					// Send switch channel to 12V message
-					converter_msg = CONVERTER_SWITCH_TO_12VCH;
+					converter_msg.type = CONVERTER_SWITCH_TO_12VCH;
 				}
 				else if (buttons.action_down & BTN_OFF)
 				{
 					// Send OFF mesage to converter task
-					converter_msg = CONVERTER_TURN_OFF;
+					converter_msg.type = CONVERTER_TURN_OFF;
 				}
 				else if (buttons.action_down & BTN_ON)
 				{
 					// Send ON mesage to converter task
-					converter_msg = CONVERTER_TURN_ON;
+					converter_msg.type = CONVERTER_TURN_ON;
 				}
 			
-				if (converter_msg)
+				if (converter_msg.type)
 					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+					
+				//---------------------------//	
+				//---------------------------//
+
+				// Make GUI process buttons and encoder
+				gui_msg = GUI_PROCESS_BUTTONS;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 			
 			break;
 		}

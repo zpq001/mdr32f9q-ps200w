@@ -20,11 +20,17 @@
 #include "service.h"	// temperature
 #include "control.h"	// some defines
 
+#include "buttons.h"
+#include "encoder.h"
+
 
 xQueueHandle xQueueGUI;
 
 static void gui_update_all(void);
+static void gui_process_buttons(void);
 
+
+uint8_t param = 0;
 
 
 void vTaskGUI(void *pvParameters) 
@@ -51,13 +57,58 @@ void vTaskGUI(void *pvParameters)
 			case GUI_UPDATE_ALL:
 				gui_update_all();
 			
-			break;
+				break;
+			case GUI_PROCESS_BUTTONS:
+				gui_process_buttons();
+				
+				break;
 		}
 		
 	}
 	
 }
 
+
+static void gui_process_buttons(void)
+{
+	conveter_message_t msg;
+	msg.type = 0;
+	
+	//-------------------------------------------//
+	// Switch regulation parameter
+	
+	if (buttons.action_down & BTN_ENCODER)
+	{
+		(param==2) ? param=0 : param++;
+		
+	}
+		
+		
+	//-------------------------------------------//
+	// Apply regulation
+		
+	if (encoder_delta)
+	switch (param)
+	{
+		case 0:
+			msg.type = CONVERTER_SET_VOLTAGE;
+			msg.data_a = regulation_setting_p->set_voltage + encoder_delta*500;
+			break;
+		case 1:
+			msg.type = CONVERTER_SET_CURRENT;
+			msg.data_a = regulation_setting_p->set_current + encoder_delta*500;
+			break;
+		case 2:
+			if (encoder_delta>0)
+				msg.type = SET_CURRENT_LIMIT_40A;
+			else
+				msg.type = SET_CURRENT_LIMIT_20A;
+			break;
+	}
+	if (msg.type)
+		xQueueSendToBack(xQueueConverter, &msg, 0);
+	
+}
 
 
 static void gui_update_all(void)
@@ -142,7 +193,7 @@ static void gui_update_all(void)
 		LcdPutNormalStr(47,57,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd1_buffer);
 		
 		
-/*		
+	
 		//------------------------//
 		// Current or voltage regulation
 		//	selection
@@ -163,7 +214,7 @@ static void gui_update_all(void)
 					//LcdPutNormalStr(33,57,(uint8_t*)str1,(tNormalFont*)&font_8x12,lcd1_buffer);
 				  LcdPutImage((uint8_t*)imgSelect0.data,35,56,imgSelect0.width,imgSelect0.height,lcd1_buffer);
 			}		
-*/			
+			
 			
 		LcdUpdateByCore(LCD0,lcd0_buffer);
 		//vTaskDelay(1);

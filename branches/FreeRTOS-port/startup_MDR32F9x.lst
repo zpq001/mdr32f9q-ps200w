@@ -169,9 +169,9 @@ ARM Macro Assembler    Page 3
 ]
   117 00000000                 IMPORT           SystemInit
   118 00000000                 IMPORT           __main
-  119 00000000 4806            LDR              R0, =SystemInit
+  119 00000000 4809            LDR              R0, =SystemInit
   120 00000002 4780            BLX              R0
-  121 00000004 4806            LDR              R0, =__main
+  121 00000004 4809            LDR              R0, =__main
   122 00000006 4700            BX               R0
   123 00000008                 ENDP
   124 00000008         
@@ -332,21 +332,33 @@ ARM Macro Assembler    Page 6
   224 0000001C         ;*******************************************************
                        ************************
   225 0000001C                 IF               :DEF:__MICROLIB
-  226 0000001C         
-  227 0000001C                 EXPORT           __initial_sp
-  228 0000001C                 EXPORT           __heap_base
-  229 0000001C                 EXPORT           __heap_limit
-  230 0000001C         
-  231 0000001C                 ELSE
-  246                          ENDIF
-  247 0000001C         
-  248 0000001C                 END
+  232 0000001C         
+  233 0000001C                 IMPORT           __use_two_region_memory
+  234 0000001C                 EXPORT           __user_initial_stackheap
+  235 0000001C         
+  236 0000001C         __user_initial_stackheap
+  237 0000001C         
+  238 0000001C 4804            LDR              R0, =  Heap_Mem
+  239 0000001E 4905            LDR              R1, =(Stack_Mem + Stack_Size)
+  240 00000020 4A05            LDR              R2, = (Heap_Mem +  Heap_Size)
+  241 00000022 4B06            LDR              R3, = Stack_Mem
+  242 00000024 4770            BX               LR
+  243 00000026         
+  244 00000026 00 00           ALIGN
+  245 00000028         
+  246 00000028                 ENDIF
+  247 00000028         
+  248 00000028                 END
               00000000 
               00000000 
-Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=.\RAM\st
-artup_MDR32F9x.d -o.\RAM\startup_MDR32F9x.o -IC:\Keil\ARM\RV31\Inc -IC:\Keil\AR
-M\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --predefine="__EVAL SETA 1" 
---predefine="__MICROLIB SETA 1" --list=startup_MDR32F9x.lst startup_MDR32F9x.s
+              00000000 
+              00000400 
+              00000200 
+              00000000 
+Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=.\FLASH\
+startup_MDR32F9x.d -o.\FLASH\startup_MDR32F9x.o -IC:\Keil\ARM\RV31\Inc -IC:\Kei
+l\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --predefine="__EVAL SETA
+ 1" --list=startup_MDR32F9x.lst startup_MDR32F9x.s
 
 
 
@@ -367,8 +379,9 @@ Symbol: Stack_Mem
    Definitions
       At line 33 in file startup_MDR32F9x.s
    Uses
-      None
-Comment: Stack_Mem unused
+      At line 239 in file startup_MDR32F9x.s
+      At line 241 in file startup_MDR32F9x.s
+
 __initial_sp 00000400
 
 Symbol: __initial_sp
@@ -376,8 +389,7 @@ Symbol: __initial_sp
       At line 34 in file startup_MDR32F9x.s
    Uses
       At line 58 in file startup_MDR32F9x.s
-      At line 227 in file startup_MDR32F9x.s
-
+Comment: __initial_sp used once
 3 symbols
 
 
@@ -399,24 +411,25 @@ Symbol: Heap_Mem
    Definitions
       At line 45 in file startup_MDR32F9x.s
    Uses
-      None
-Comment: Heap_Mem unused
+      At line 238 in file startup_MDR32F9x.s
+      At line 240 in file startup_MDR32F9x.s
+
 __heap_base 00000000
 
 Symbol: __heap_base
    Definitions
       At line 44 in file startup_MDR32F9x.s
    Uses
-      At line 228 in file startup_MDR32F9x.s
-Comment: __heap_base used once
+      None
+Comment: __heap_base unused
 __heap_limit 00000200
 
 Symbol: __heap_limit
    Definitions
       At line 46 in file startup_MDR32F9x.s
    Uses
-      At line 229 in file startup_MDR32F9x.s
-Comment: __heap_limit used once
+      None
+Comment: __heap_limit unused
 4 symbols
 
 
@@ -782,7 +795,15 @@ Symbol: WWDG_IRQHandler
 ARM Macro Assembler    Page 6 Alphabetic symbol ordering
 Relocatable symbols
 
-33 symbols
+__user_initial_stackheap 0000001C
+
+Symbol: __user_initial_stackheap
+   Definitions
+      At line 236 in file startup_MDR32F9x.s
+   Uses
+      At line 234 in file startup_MDR32F9x.s
+Comment: __user_initial_stackheap used once
+34 symbols
 
 
 
@@ -796,7 +817,8 @@ Symbol: Heap_Size
       At line 41 in file startup_MDR32F9x.s
    Uses
       At line 45 in file startup_MDR32F9x.s
-Comment: Heap_Size used once
+      At line 240 in file startup_MDR32F9x.s
+
 Stack_Size 00000400
 
 Symbol: Stack_Size
@@ -804,7 +826,8 @@ Symbol: Stack_Size
       At line 30 in file startup_MDR32F9x.s
    Uses
       At line 33 in file startup_MDR32F9x.s
-Comment: Stack_Size used once
+      At line 239 in file startup_MDR32F9x.s
+
 __Vectors_Size 000000C0
 
 Symbol: __Vectors_Size
@@ -836,5 +859,13 @@ Symbol: __main
    Uses
       At line 121 in file startup_MDR32F9x.s
 Comment: __main used once
-2 symbols
-382 symbols in table
+__use_two_region_memory 00000000
+
+Symbol: __use_two_region_memory
+   Definitions
+      At line 233 in file startup_MDR32F9x.s
+   Uses
+      None
+Comment: __use_two_region_memory unused
+3 symbols
+385 symbols in table

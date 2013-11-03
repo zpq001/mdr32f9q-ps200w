@@ -22,7 +22,7 @@
 
 #include "systemfunc.h"
 #include "led.h"
-
+#include "adc.h"
 #include "defines.h"
 #include "control.h"
 #include "encoder.h"
@@ -31,7 +31,7 @@
 // Globals used for communicating with converter control task called from ISR
 uint8_t state_HWProcess = STATE_HW_OFF;	
 uint8_t ctrl_HWProcess = 0;
-uint8_t ctrl_ADCProcess = 0;
+
 uint8_t cmd_ADC_to_HWProcess = 0;
 
 
@@ -43,13 +43,10 @@ converter_regulation_t *regulation_setting_p;
 uint8_t HW_request = 0;
 
 
-uint16_t voltage_adc;	// [mV]
-uint16_t current_adc;	// [mA]
-uint32_t power_adc;		// [mW]
 
-uint16_t adc_voltage_counts;	// [ADC counts]
-uint16_t adc_current_counts;	// [ADC counts]
 
+
+const conveter_message_t converter_tick_message = {	CONVERTER_TICK, 0, 0 };
 
 xQueueHandle xQueueConverter;
 
@@ -64,7 +61,8 @@ void vTaskConverter(void *pvParameters)
 	uint8_t led_state;
 	uint32_t conv_state = CONV_OFF;
 //	uint8_t HW_cmd;
-	uint8_t dummy_err_code;
+	uint8_t err_code;
+	uint32_t adc_msg;
 	
 	// Initialize
 	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
@@ -86,46 +84,42 @@ void vTaskConverter(void *pvParameters)
 			case CONVERTER_SET_VOLTAGE:
 				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
 				break;
-			case CONVERTER_TURN_ON:
-
+			case CONVERTER_SET_CURRENT:
+				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
 				break;
-			case CONVERTER_TURN_OFF:
-
-				break;
-			
 		}
 		
 		
 		switch(conv_state)
 		{
 			case CONV_OFF:
-				if (msg == CONVERTER_SWITCH_TO_5VCH)
+				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
 				{
 					regulation_setting_p = &channel_5v_setting;
 					break;
 				}
-				if (msg == CONVERTER_SWITCH_TO_12VCH)
+				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
 				{
 					regulation_setting_p = &channel_12v_setting;
 					break;
 				}
-				if (msg == SET_CURRENT_LIMIT_20A)
+				if (msg.type == SET_CURRENT_LIMIT_20A)
 				{
 					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
 					break;
 				}
-				if (msg == SET_CURRENT_LIMIT_40A)
+				if (msg.type == SET_CURRENT_LIMIT_40A)
 				{
 					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
 					break;
 				}
-				if (msg == CONVERTER_TURN_OFF)
+				if (msg.type == CONVERTER_TURN_OFF)
 				{
 					ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;
 					vTaskDelay(1);
 					break;
 				}
-				if (msg == CONVERTER_TURN_ON)
+				if (msg.type == CONVERTER_TURN_ON)
 				{
 					ctrl_HWProcess = (CMD_HW_ON | CMD_HW_RESET_OVERLOAD);
 					conv_state = CONV_ON;
@@ -134,22 +128,22 @@ void vTaskConverter(void *pvParameters)
 				}
 				
 			case CONV_ON:
-				if ( (state_HWProcess & STATE_HW_OFF) || (msg == CONVERTER_TURN_OFF) )
+				if ( (state_HWProcess & STATE_HW_OFF) || (msg.type == CONVERTER_TURN_OFF) )
 				{
 					ctrl_HWProcess = CMD_HW_OFF;
 					conv_state = CONV_OFF;
 					vTaskDelay(5);
 					break;
 				}
-				if ( (msg == CONVERTER_SWITCH_TO_5VCH) || (msg == CONVERTER_SWITCH_TO_12VCH) )
+				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) || (msg.type == CONVERTER_SWITCH_TO_12VCH) )
 				{
 					ctrl_HWProcess = CMD_HW_OFF;
 					conv_state = CONV_OFF;
 					vTaskDelay(5);
 					
-					if (msg == CONVERTER_SWITCH_TO_5VCH)
+					if (msg.type == CONVERTER_SWITCH_TO_5VCH)
 						regulation_setting_p = &channel_5v_setting;
-					if (msg == CONVERTER_SWITCH_TO_12VCH)
+					if (msg.type == CONVERTER_SWITCH_TO_12VCH)
 						regulation_setting_p = &channel_12v_setting;
 					
 					
@@ -158,10 +152,13 @@ void vTaskConverter(void *pvParameters)
 		}
 		
 		
-	
-		if (msg == CONVERTER_TICK)
-			// Send command to low-level task - must be atomic operations
-			ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
+		// Will be special for charging mode - TODO
+		if (msg.type == CONVERTER_TICK)
+		{
+			// ADC task is responsible for sampling and filtering voltage and current
+			adc_msg = ADC_GET_ALL_NORMAL;
+			xQueueSendToBack(xQueueADC, &adc_msg, 0);
+		}			
 		
 		// Apply controls
 		__disable_irq();
@@ -172,8 +169,8 @@ void vTaskConverter(void *pvParameters)
 		SetOutputLoad(channel_12v_setting.load_state);
 	
 		// Always make sure settings are within allowed range
-		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &dummy_err_code);
-		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &dummy_err_code);
+		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &err_code);
+		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &err_code);
 
 		// Apply voltage and current settings
 		apply_regulation();		
@@ -356,19 +353,6 @@ static void apply_regulation(void)
 
 
 
-void Converter_ProcessADC(void)
-{
-	voltage_adc = adc_voltage_counts>>2;
-	voltage_adc *= 5;
-	
-	current_adc = adc_current_counts>>2;
-	if (regulation_setting_p -> current_limit == CURRENT_LIM_HIGH)
-		current_adc *= 10;
-	else
-		current_adc *= 5;
-	
-	power_adc = voltage_adc * current_adc / 1000;
-}
 
 //---------------------------------------------//
 //	Set the converter output voltage
@@ -603,7 +587,7 @@ void Converter_Process(void)
 	apply_regulation();		
 	
 	// Send command to low-level task - must be atomic operations
-	ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
+//	ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
 	ctrl_HWProcess = HW_cmd;		
 	
 	
@@ -710,117 +694,6 @@ void Converter_HWProcess(void)
 
 
 
-
-
-//---------------------------------------------//
-//	Converter hardware ADC control task
-//	
-//	Low-level task for ADC start, normal or charging mode
-//	
-// TODO: ensure that ISR is non-interruptable
-//---------------------------------------------//
-void Converter_HW_ADCProcess(void)
-{
-	static uint8_t state_ADCProcess = STATE_ADC_IDLE;
-	static uint8_t adc_cmd;
-	static uint16_t voltage_samples;
-	static uint16_t current_samples;
-	static uint8_t adc_counter;
-	
-	
-	// Process ADC FSM-based controller
-	switch (state_ADCProcess)
-	{
-		case STATE_ADC_IDLE:
-			adc_cmd = ctrl_ADCProcess;
-			if (adc_cmd)
-				state_ADCProcess = STATE_ADC_DISPATCH;
-			break;
-		case STATE_ADC_DISPATCH:
-			if ((adc_cmd & (CMD_ADC_START_VOLTAGE | CMD_ADC_START_DISCON)) == CMD_ADC_START_VOLTAGE)
-			{
-				// Normal voltage measure 
-				adc_cmd &= ~(CMD_ADC_START_VOLTAGE | CMD_ADC_START_DISCON);
-				state_ADCProcess = STATE_ADC_NORMAL_START_U;
-				voltage_samples = 0;
-			}
-			else if (adc_cmd & CMD_ADC_START_CURRENT)
-			{
-				// Current measure
-				adc_cmd &= ~CMD_ADC_START_CURRENT;
-				state_ADCProcess = STATE_ADC_START_I;
-				current_samples = 0;
-			}
-			else
-			{
-				// Update global Voltage and Current
-				adc_voltage_counts = voltage_samples;
-				adc_current_counts = current_samples;
-				state_ADCProcess = STATE_ADC_IDLE;
-				Converter_ProcessADC();						// FIXME
-				ctrl_ADCProcess = 0;						// Can be used as flag
-			}
-			break;
-		case STATE_ADC_NORMAL_START_U:
-			// TODO: use DMA for this purpose
-			ADC1_SetChannel(ADC_CHANNEL_VOLTAGE);
-			adc_counter = 4;
-			state_ADCProcess = STATE_ADC_NORMAL_REPEAT_U;
-			break;
-		case STATE_ADC_NORMAL_REPEAT_U:
-			if (adc_counter < 4)
-				voltage_samples += ADC1_GetResult();
-			if (adc_counter != 0)
-			{
-				ADC1_Start();
-				adc_counter--;
-			}
-			else
-			{
-				state_ADCProcess = STATE_ADC_DISPATCH;
-			}
-			break;
-		case STATE_ADC_START_I:
-			// TODO: use DMA for this purpose
-			ADC1_SetChannel(ADC_CHANNEL_CURRENT);
-			adc_counter = 4;
-			state_ADCProcess = STATE_ADC_NORMAL_REPEAT_I;
-			break;
-		case STATE_ADC_NORMAL_REPEAT_I:
-			if (adc_counter < 4)
-				current_samples += ADC1_GetResult();
-			ADC1_Start();
-			if (adc_counter != 0)
-			{
-				ADC1_Start();
-				adc_counter--;
-			}
-			else
-			{
-				state_ADCProcess = STATE_ADC_DISPATCH;
-			}
-			break;
-		default:
-			state_ADCProcess = STATE_ADC_IDLE;
-			break;
-	}
-	
-	
-	
-	/*
-		//...
-		
-		// Disable converter for ADC
-		cmd_ADC_to_HWProcess = STATE_HW_OFF_BY_ADC;			// Will disallow converter operation
-		
-		//...
-		
-		// Enable converter for ADC
-		cmd_ADC_to_HWProcess = CMD_HW_ON_BY_ADC;			// Will allow converter operation
-	*/
-	
-
-}
 
 
 

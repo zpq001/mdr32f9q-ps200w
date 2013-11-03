@@ -35,6 +35,7 @@
 #include "converter.h"
 #include "service.h"
 #include "dispatcher.h"
+#include "adc.h"
 
 #include "fonts.h"
 #include "images.h"
@@ -115,21 +116,12 @@ void vTaskLED2(void *pvParameters) {
 int main(void)
 
 {
-//	uint16_t temp;
-	int16_t enc_delta;
-
-
-	
-	uint8_t param;
-	
-	
 	
 
 	//=============================================//
 	// system initialization
 	//=============================================//
 	Setup_CPU_Clock();
-	//SysTickStart((SystemCoreClock / 1000)); 			/* Setup SysTick Timer for 1 msec interrupts  */
 	DWTCounterInit();
 	SSPInit();
 	I2CInit();
@@ -160,121 +152,13 @@ int main(void)
 	xTaskCreate( vTaskConverter, ( signed char * ) "Converter", configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskService, ( signed char * ) "Service", configMINIMAL_STACK_SIZE, NULL, 0, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskDispatcher, ( signed char * ) "Dispatcher", configMINIMAL_STACK_SIZE, NULL, 3, ( xTaskHandle * ) NULL);
-	
+	xTaskCreate( vTaskADC, ( signed char * ) "ADC", configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
 	
 	vTaskStartScheduler();
 	
 
 
 	while(1);
-	
-	
-	param = 0;	// 0 - change voltage
-				// 1 - current
-				// 2 - current limit
-							
-
-
-	//=========================================================================//
-	//	Main loop
-	//=========================================================================//
-	while(1)
-	{
-		
-		
-		//UpdateButtons();					// Update global variable button_state
-		ProcessButtons();
-		enc_delta = GetEncoderDelta();		// Process incremental encoder
-		
-	//	Converter_ProcessADC();
-//		ProcessTemperature();
-		
-		//-------------------------------------------//
-		// Process buttons
-		
-		if (buttons.action_down & BTN_OFF)
-		{
-			Converter_Disable();
-		}
-		else if (buttons.action_down & BTN_ON)
-		{
-			Converter_Enable();
-		}
-
-		//if (button_state) StartBeep(100);
-		if (enc_delta) StartBeep(50);
-		
-		
-
-		//-------------------------------------------//
-		// Switch regulation parameter
-		
-		if (buttons.action_down & BTN_ENCODER)
-		{
-			(param==2) ? param=0 : param++;
-			
-		}
-			
-		//-------------------------------------------//
-		// Apply regulation
-		
-		if (enc_delta)
-			switch (param)
-			{
-				case 0:
-					Converter_SetVoltage(regulation_setting_p->set_voltage + enc_delta*500);
-					break;
-				case 1:
-					Converter_SetCurrent(regulation_setting_p->set_current + enc_delta*500);
-					break;
-				case 2:
-					if (enc_delta>0)
-						Converter_SetCurrentLimit(CURRENT_LIM_HIGH);
-					else
-						Converter_SetCurrentLimit(CURRENT_LIM_LOW);
-					break;
-			}
-		
-			
-			
-		// Feedback channel select
-		if (buttons.raw_state & SW_CHANNEL)
-			Converter_SetFeedbackChannel(CHANNEL_5V);
-		else
-			Converter_SetFeedbackChannel(CHANNEL_12V);
-		
-		
-		
-		
-		
-/*		if (blink_cnt & 0x02)
-			LcdPutImage((uint8_t*)imgUnderline0.data,32+10,50,imgUnderline0.width,imgUnderline0.height,lcd0_buffer);
-		blink_cnt++;
-	*/	
-		
-		
-		//---------------------------------------------------//
-		// Process output tasks
-		
-		
-	//	ProcessCooler();
-			
-		Converter_Process();
-			
-		
-				
-		
-		
-		SysTickDelay(100);
-		
-
-		
-	}		// end of main loop
-	//=========================================================================//
-
-	
-
-	
 	
 }
 

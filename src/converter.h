@@ -103,7 +103,7 @@ typedef struct {
 	uint32_t data_b;
 } conveter_message_t;
 
-#define CONVERTER_TICK				0x00
+#define CONVERTER_TICK				0xFF
 #define CONVERTER_TURN_ON			0x01
 #define CONVERTER_TURN_OFF			0x02
 #define CONVERTER_SWITCH_TO_5VCH	0x03
@@ -111,7 +111,7 @@ typedef struct {
 #define SET_CURRENT_LIMIT_20A		0x05
 #define SET_CURRENT_LIMIT_40A		0x06
 #define CONVERTER_SET_VOLTAGE		0x07
-#define CONVERTER_SET_CURRENT		0x07
+#define CONVERTER_SET_CURRENT		0x08
 
 
 /*
@@ -152,9 +152,11 @@ typedef struct {
 
 extern xQueueHandle xQueueConverter;
 
-
+extern const conveter_message_t converter_tick_message;
 
 extern converter_regulation_t *regulation_setting_p;
+
+extern uint8_t cmd_ADC_to_HWProcess;
 
 extern uint16_t voltage_adc;	// [mV]
 extern uint16_t current_adc;	// [mA]

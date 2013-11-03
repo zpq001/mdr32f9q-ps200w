@@ -591,57 +591,56 @@ void LcdSetBacklight(uint16_t value)
 void ProcessPowerOff(void)
 {
 	uint32_t time_delay;
-	 //if (system_status.LineInStatus == OFFLINE)
-	 if (GetACLineStatus() == OFFLINE)
-	 {	
-		 __disable_irq();
+	if (GetACLineStatus() == OFFLINE)
+	{	
+		__disable_irq();
+
+		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
+
+		SysTickStop();
+		StopBeep();
+
+		time_delay = DWTStartDelayUs(5000);
+
+		LcdSetBacklight(0);
+		SetCoolerSpeed(0);
+		SetVoltagePWMPeriod(0);
+		SetCurrentPWMPeriod(0);
+
+
+		// Put message
+		LcdFillBuffer(lcd0_buffer,0);
+		LcdFillBuffer(lcd1_buffer,0);
+		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
+		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+
+
+
+		while(DWTDelayInProgress(time_delay));
+
+		SetFeedbackChannel(CHANNEL_12V);
+		SetCurrentLimit(CURRENT_LIM_HIGH); 
+		SetOutputLoad(LOAD_DISABLE); 
+
+		LcdUpdateByCore(LCD0,lcd0_buffer);
+		LcdUpdateByCore(LCD1,lcd1_buffer);
+
+
+
+		time_delay = DWTStartDelayUs(1000);
+		while(DWTDelayInProgress(time_delay));
+
+		PORT_DeInit(MDR_PORTA);
+		PORT_DeInit(MDR_PORTB);
+		PORT_DeInit(MDR_PORTC);
+		PORT_DeInit(MDR_PORTD);
+		PORT_DeInit(MDR_PORTE);
+		PORT_DeInit(MDR_PORTF);
+
+		while(1);
 		 
-		 SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
-		 
-		 SysTickStop();
-		 StopBeep();
-		 
-		 time_delay = DWTStartDelayUs(5000);
-		 
-		 LcdSetBacklight(0);
-		 SetCoolerSpeed(0);
-		 SetVoltagePWMPeriod(0);
-		 SetCurrentPWMPeriod(0);
-		 
-		 
-		 // Put message
-		 LcdFillBuffer(lcd0_buffer,0);
-		 LcdFillBuffer(lcd1_buffer,0);
-		 LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
-		 LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
-		 
-		 
-		 
-		 while(DWTDelayInProgress(time_delay));
-		 
-		 SetFeedbackChannel(CHANNEL_12V);
-		 SetCurrentLimit(CURRENT_LIM_HIGH); 
-		 SetOutputLoad(LOAD_DISABLE); 
-		  
-		 LcdUpdateByCore(LCD0,lcd0_buffer);
-		 LcdUpdateByCore(LCD1,lcd1_buffer);
-		 
-		 
-		 
-		 time_delay = DWTStartDelayUs(1000);
-		 while(DWTDelayInProgress(time_delay));
-		 
-		 PORT_DeInit(MDR_PORTA);
-		 PORT_DeInit(MDR_PORTB);
-		 PORT_DeInit(MDR_PORTC);
-		 PORT_DeInit(MDR_PORTD);
-		 PORT_DeInit(MDR_PORTE);
-		 PORT_DeInit(MDR_PORTF);
-		 
-		 while(1);
-		 
-	 }
- }
+	}
+}
 	
 	 
 	

@@ -1,8 +1,8 @@
 
 
 
-extern volatile int16_t encoder_counter;
+extern int16_t encoder_delta;
 
 void ProcessEncoder(void);
-int16_t GetEncoderDelta(void);
+void UpdateEncoderDelta(void);
 

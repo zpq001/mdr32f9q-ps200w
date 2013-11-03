@@ -13,7 +13,8 @@
 #include "encoder.h"
 #include "systick.h"
 
-volatile int16_t encoder_counter = 0;
+int16_t encoder_delta;
+static volatile int16_t encoder_counter = 0;
 
 void ProcessEncoder(void)
 {
@@ -39,13 +40,13 @@ void ProcessEncoder(void)
 }
 
 
-int16_t GetEncoderDelta(void)
+void UpdateEncoderDelta(void)
 {
 	static int16_t old_counter = 0;
 	int16_t delta = old_counter;
 	old_counter = encoder_counter&0xFFFC;
 	delta = old_counter - delta;
-	return delta>>2;
+	encoder_delta = delta>>2;
 }
 
 

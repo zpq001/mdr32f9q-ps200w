@@ -5,6 +5,7 @@
 
 
 #define GUI_UPDATE_ALL	0
+#define GUI_PROCESS_BUTTONS	1
 
 
 

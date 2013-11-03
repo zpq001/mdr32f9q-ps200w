@@ -63,8 +63,8 @@ void vApplicationTickHook( void )
 	
 	if (--tmr_converter_tick == 0)
 	{
-		msg = CONVERTER_TICK;
-		xQueueSendToBackFromISR(xQueueConverter, &msg, &xHigherPriorityTaskWokenByPost);
+		//msg = CONVERTER_TICK;
+		xQueueSendToBackFromISR(xQueueConverter, &converter_tick_message, &xHigherPriorityTaskWokenByPost);
 		tmr_converter_tick = CONVERTER_TICK_INTERVAL;
 	}
 	
@@ -74,7 +74,10 @@ void vApplicationTickHook( void )
 		xQueueSendToBackFromISR(xQueueDispatcher, &msg, &xHigherPriorityTaskWokenByPost);
 		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
 	}
-		
+	
+	// Force context switching if required
+	// CHECKME
+	portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
 }
 
 

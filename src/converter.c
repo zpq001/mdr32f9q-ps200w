@@ -46,7 +46,8 @@ uint8_t HW_request = 0;
 
 
 
-const conveter_message_t converter_tick_message = {	CONVERTER_TICK, 0, 0 };
+const conveter_message_t converter_tick_message = 	{	CONVERTER_TICK, 0, 0 };
+const conveter_message_t converter_update_message = {	CONVERTER_UPDATE, 0, 0 };
 
 xQueueHandle xQueueConverter;
 
@@ -54,141 +55,6 @@ xQueueHandle xQueueConverter;
 static void apply_regulation(void);
 static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code);
 static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code);
-
-void vTaskConverter(void *pvParameters) 
-{
-	conveter_message_t msg;
-	uint8_t led_state;
-	uint32_t conv_state = CONV_OFF;
-//	uint8_t HW_cmd;
-	uint8_t err_code;
-	uint32_t adc_msg;
-	
-	// Initialize
-	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
-	if( xQueueConverter == 0 )
-	{
-		// Queue was not created and must not be used.
-		while(1);
-	}
-	
-	
-	
-	while(1)
-	{
-		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-		
-
-		switch (msg.type)
-		{
-			case CONVERTER_SET_VOLTAGE:
-				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
-				break;
-			case CONVERTER_SET_CURRENT:
-				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
-				break;
-		}
-		
-		
-		switch(conv_state)
-		{
-			case CONV_OFF:
-				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
-				{
-					regulation_setting_p = &channel_5v_setting;
-					break;
-				}
-				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
-				{
-					regulation_setting_p = &channel_12v_setting;
-					break;
-				}
-				if (msg.type == SET_CURRENT_LIMIT_20A)
-				{
-					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
-					break;
-				}
-				if (msg.type == SET_CURRENT_LIMIT_40A)
-				{
-					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
-					break;
-				}
-				if (msg.type == CONVERTER_TURN_OFF)
-				{
-					ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;
-					vTaskDelay(1);
-					break;
-				}
-				if (msg.type == CONVERTER_TURN_ON)
-				{
-					ctrl_HWProcess = (CMD_HW_ON | CMD_HW_RESET_OVERLOAD);
-					conv_state = CONV_ON;
-					vTaskDelay(5);
-					break;
-				}
-				
-			case CONV_ON:
-				if ( (state_HWProcess & STATE_HW_OFF) || (msg.type == CONVERTER_TURN_OFF) )
-				{
-					ctrl_HWProcess = CMD_HW_OFF;
-					conv_state = CONV_OFF;
-					vTaskDelay(5);
-					break;
-				}
-				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) || (msg.type == CONVERTER_SWITCH_TO_12VCH) )
-				{
-					ctrl_HWProcess = CMD_HW_OFF;
-					conv_state = CONV_OFF;
-					vTaskDelay(5);
-					
-					if (msg.type == CONVERTER_SWITCH_TO_5VCH)
-						regulation_setting_p = &channel_5v_setting;
-					if (msg.type == CONVERTER_SWITCH_TO_12VCH)
-						regulation_setting_p = &channel_12v_setting;
-					
-					
-				}
-				break;
-		}
-		
-		
-		// Will be special for charging mode - TODO
-		if (msg.type == CONVERTER_TICK)
-		{
-			// ADC task is responsible for sampling and filtering voltage and current
-			adc_msg = ADC_GET_ALL_NORMAL;
-			xQueueSendToBack(xQueueADC, &adc_msg, 0);
-		}			
-		
-		// Apply controls
-		__disable_irq();
-		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
-		__enable_irq();
-		SetCurrentLimit(regulation_setting_p->current_limit);
-		//SetOutputLoad(regulation_setting_p->load_state);
-		SetOutputLoad(channel_12v_setting.load_state);
-	
-		// Always make sure settings are within allowed range
-		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &err_code);
-		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &err_code);
-
-		// Apply voltage and current settings
-		apply_regulation();		
-		
-	
-	
-		// LED indication
-		led_state = 0;
-		if (state_HWProcess & STATE_HW_ON)
-			led_state = LED_GREEN;
-		else if (state_HWProcess & STATE_HW_OVERLOADED)
-			led_state = LED_RED;
-		UpdateLEDs(led_state);
-		
-	}
-	
-}
-
 
 
 
@@ -354,68 +220,6 @@ static void apply_regulation(void)
 
 
 
-//---------------------------------------------//
-//	Set the converter output voltage
-//	
-//---------------------------------------------//
-uint8_t Converter_SetVoltage(int32_t new_voltage)
-{
-	uint8_t err_code;
-	regulation_setting_p->set_voltage = CheckSetVoltageRange(new_voltage, &err_code);
-	return err_code;
-}
-
-//---------------------------------------------//
-//	Set the converter output current
-//	
-//---------------------------------------------//
-uint8_t Converter_SetCurrent(int32_t new_current)
-{
-	uint8_t err_code;
-	regulation_setting_p->set_current = CheckSetCurrentRange(new_current, &err_code);
-	return err_code;
-}
-
-
-void Converter_SetFeedbackChannel(uint8_t new_channel)
-{
-	if (new_channel != regulation_setting_p->CHANNEL)
-	{
-		if (new_channel == CHANNEL_5V)
-			HW_request |= CMD_FB_5V;
-		else
-			HW_request |= CMD_FB_12V;
-	}
-}
-
-
-void Converter_SetCurrentLimit(uint8_t new_limit) 	
-{
-	if (new_limit != regulation_setting_p->current_limit)
-	{
-		if (new_limit == CURRENT_LIM_HIGH)
-			HW_request |= CMD_CLIM_40A;
-		else
-			HW_request |= CMD_CLIM_20A;
-	}
-}
-
-
-void Converter_Enable(void)
-{
-	HW_request |= CMD_ON;
-}
-
-void Converter_Disable(void)
-{
-	HW_request |= CMD_OFF;
-}
-
-void Converter_StartCharge(void)
-{
-
-}
-
 
 // TODO: add regulation of overload parameters - different for each channel or common for both ?
 
@@ -494,111 +298,211 @@ void Converter_Init(uint8_t default_channel)
 
 
 
-void Converter_Process(void)
+
+
+static uint32_t analyzeAndResetHWErrorState(void)
 {
-	static uint8_t conv_state = CONV_OFF;
-	uint8_t next_conv_state = conv_state;
-	uint8_t HW_cmd = 0;
-	uint8_t dummy_err_code;
-	uint8_t led_state;
-	
-	
-	switch(conv_state)
+	uint32_t state_flags;
+	if (state_HWProcess & STATE_HW_OVERLOADED)		
 	{
-		case CONV_OFF:
-			if (HW_request & CMD_FB_5V)
-			{
-				HW_request &= ~(CMD_FB_5V | CMD_FB_12V | CMD_CLIM_20A | CMD_CLIM_40A);
-				regulation_setting_p = &channel_5v_setting;
-				break;
-			}
-			if (HW_request & CMD_FB_12V)
-			{
-				HW_request &= ~(CMD_FB_12V | CMD_CLIM_20A | CMD_CLIM_40A);
-				regulation_setting_p = &channel_12v_setting;
-				break;
-			}
-			if (HW_request & CMD_CLIM_20A)
-			{
-				HW_request &= ~CMD_CLIM_20A;
-				regulation_setting_p -> current_limit = CURRENT_LIM_LOW;				
-				break;
-			}
-			if (HW_request & CMD_CLIM_40A)
-			{
-				HW_request &= ~CMD_CLIM_40A;
-				regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
-				break;
-			}
-			
-			if (HW_request & CMD_OFF)
-			{
-				HW_request &= ~CMD_OFF;
-				HW_cmd |= CMD_HW_RESET_OVERLOAD;
-				break;
-			}
-			
-			if (HW_request & CMD_ON)
-			{
-				HW_request &= ~CMD_ON;
-				next_conv_state = CONV_ON;
-				HW_cmd |= (CMD_HW_ON | CMD_HW_RESET_OVERLOAD);
-				break;
-			}
-			
-			HW_request &= ~CMD_OFF;
-			break;
-		case CONV_ON:
-			HW_request &= ~(CMD_ON | CMD_CLIM_20A | CMD_CLIM_40A);
-			
-			if ( (state_HWProcess & STATE_HW_OFF) || (HW_request & CMD_OFF) )
-			{
-				HW_request &= ~CMD_OFF;
-				HW_cmd |= CMD_HW_OFF;
-				next_conv_state = CONV_OFF;
-				break;
-			}
-			if (HW_request & (CMD_FB_5V | CMD_FB_12V))
-			{
-				HW_cmd |= CMD_HW_OFF;
-				next_conv_state = CONV_OFF;
-				break;
-			}
-			
-			break;
+		ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;		
+		while(ctrl_HWProcess);
+		state_flags = CONV_OVERLOAD;	
+	}
+	// Add more if necessary
+	else
+	{
+		state_flags = 0;
+	}
+	return state_flags;
+}
+
+static uint32_t disableConverterAndCheckHWState(void)
+{
+	uint32_t new_state;
+	
+#if CMD_HAS_PRIORITY == 1
+	// If error status is generated simultaneously with OFF command,
+	// converter will be turned off and no error status will be shown
+	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
+	while(ctrl_HWProcess);
+	new_state = CONV_OFF;		
+	
+#elif ERROR_HAS_PRIORITY == 1
+	// If error status is generated simultaneously with OFF command,
+	// converter will be turned off, but error status will be indicated
+	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
+	while(ctrl_HWProcess);
+	new_state = CONV_OFF;	
+	new_state |= analyzeAndResetHWErrorState();	
+						
+#endif
+	return new_state;
+}
+
+
+
+//---------------------------------------------//
+//	Main converter task
+//	
+//---------------------------------------------//
+void vTaskConverter(void *pvParameters) 
+{
+	conveter_message_t msg;
+	uint8_t led_state;
+	uint32_t conv_state = CONV_OFF;
+//	uint8_t HW_cmd;
+	uint8_t err_code;
+	uint32_t adc_msg;
+	
+	// Initialize
+	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
+	if( xQueueConverter == 0 )
+	{
+		// Queue was not created and must not be used.
+		while(1);
 	}
 	
-	conv_state = next_conv_state;
 	
 	
-	// Apply controls
-	__disable_irq();
-	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
-	__enable_irq();
-	SetCurrentLimit(regulation_setting_p->current_limit);
-	//SetOutputLoad(regulation_setting_p->load_state);
-	SetOutputLoad(channel_12v_setting.load_state);
+	while(1)
+	{
+		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
+		
+
+		switch (msg.type)
+		{
+			case CONVERTER_SET_VOLTAGE:
+				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+				break;
+			case CONVERTER_SET_CURRENT:
+				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+				break;
+		}
+		
+
+		
+		switch(conv_state & CONV_STATE_MASK)
+		{
+			case CONV_OFF:
+				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
+				{
+					regulation_setting_p = &channel_5v_setting;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
+				{
+					regulation_setting_p = &channel_12v_setting;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if (msg.type == SET_CURRENT_LIMIT_20A)
+				{
+					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if (msg.type == SET_CURRENT_LIMIT_40A)
+				{
+					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if (msg.type == CONVERTER_TURN_OFF)
+				{
+					conv_state = CONV_OFF;			// Reset overload flag
+					break;
+				}
+				if (msg.type == CONVERTER_TURN_ON)
+				{
+					// Message to turn on converter is received
+					if (state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED) || (!(state_HWProcess & STATE_HW_USER_TIMER_EXPIRED))
+					{
+						// Safe timeout is not expired
+						break;
+					}
+					ctrl_HWProcess = CMD_HW_ON;
+					while(ctrl_HWProcess);
+					conv_state = CONV_ON;			// Switch to new state and reset overload flag
+					break;
+				}
+				break;
+			case CONV_ON:
+				if (msg.type == CONVERTER_TURN_OFF)
+				{
+					conv_state = disableConverterAndCheckHWState();
+					break;
+				}
+				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) && (regulation_setting_p != &channel_5v_setting) )
+				{
+					conv_state = disableConverterAndCheckHWState();
+					vTaskDelay(4);
+					regulation_setting_p = &channel_5v_setting;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if ( (msg.type == CONVERTER_SWITCH_TO_12VCH) && (regulation_setting_p != &channel_12v_setting) )
+				{
+					conv_state = disableConverterAndCheckHWState();
+					vTaskDelay(4);
+					regulation_setting_p = &channel_5v_setting;
+					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					while(ctrl_HWProcess);
+					break;
+				}
+				if (state_HWProcess & STATE_HW_OFF)
+				{
+					// Some hardware error has happened and converter had been switched off
+					conv_state = CONV_OFF;
+					conv_state |= analyzeAndResetHWErrorState();
+					break;
+				}
+				break;
+		}
+		
+		
+		// Will be special for charging mode - TODO
+		if (msg.type == CONVERTER_TICK)
+		{
+			// ADC task is responsible for sampling and filtering voltage and current
+			adc_msg = ADC_GET_ALL_NORMAL;
+			xQueueSendToBack(xQueueADC, &adc_msg, 0);
+		}			
+		
+		// Apply controls
+		__disable_irq();
+		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+		__enable_irq();
+		SetCurrentLimit(regulation_setting_p->current_limit);
+		SetOutputLoad(channel_12v_setting.load_state);
 	
-	// Always make sure settings are within allowed range
-	regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &dummy_err_code);
-	regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &dummy_err_code);
-	
-	// Apply voltage and current settings
-	apply_regulation();		
-	
-	// Send command to low-level task - must be atomic operations
-//	ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
-	ctrl_HWProcess = HW_cmd;		
+		// Always make sure settings are within allowed range
+		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &err_code);
+		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &err_code);
+
+		// Apply voltage and current settings
+		apply_regulation();		
+		
 	
 	
-	// LED indication
-	led_state = 0;
-	if (state_HWProcess & STATE_HW_ON)
-		led_state = LED_GREEN;
-	else if (state_HWProcess & STATE_HW_OVERLOADED)
-		led_state = LED_RED;
-	UpdateLEDs(led_state);
-}		
+		// LED indication
+		led_state = 0;
+		if (conv_state & CONV_ON)
+			led_state = LED_GREEN;
+		if (conv_state & CONV_OVERLOAD)
+			led_state = LED_RED;
+		UpdateLEDs(led_state);
+		
+	}
+	
+}
+
 
 
 
@@ -617,13 +521,15 @@ void Converter_Process(void)
 //	There may be an output overload which has to be correctly handled - converter should be disabled
 //	This task takes care for overload and top-level enable/disable control
 //	
-// TODO: ensure that ISR is non-interruplable
+// TODO: ensure that ISR is non-interruptable
 //---------------------------------------------//
 void Converter_HWProcess(void) 
 {
 	static uint16_t overload_ignore_counter;
 	static uint16_t overload_counter;
-	
+	static uint16_t safe_counter = 0;
+	static uint16_t user_counter = 0;
+	portBASE_TYPE xHigherPriorityTaskWokenByPost;
 
 	// Due to hardware specialty overload input is active when converter is powered off
 	if ( (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || (0/*_overload_functions_disabled_*/) )
@@ -646,6 +552,8 @@ void Converter_HWProcess(void)
 		// Converter is overloaded
 		state_HWProcess &= ~STATE_HW_ON;
 		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
+		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+		xQueueSendToFrontFromISR(xQueueConverter, &converter_update_message, 0);	// No need for exact timing
 	}
 	
 	// Process ON/OFF commands
@@ -653,15 +561,20 @@ void Converter_HWProcess(void)
 	{
 		state_HWProcess &= ~STATE_HW_OVERLOADED;
 	}
-	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OVERLOADED)) )
+	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OFF)) )
 	{
 		state_HWProcess &= ~STATE_HW_ON;
-		state_HWProcess |= STATE_HW_OFF;				
+		state_HWProcess |= STATE_HW_OFF;		
+		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
 	}
-	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_OVERLOADED)) )
+	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_ON)) )
 	{
 		state_HWProcess &= ~STATE_HW_OFF;
 		state_HWProcess |= STATE_HW_ON;								
+	}
+	if (ctrl_HWProcess & CMD_HW_RESTART_USER_TIMER)
+	{
+		user_counter = USER_TIMEOUT;
 	}
 	
 	// Process ON/OFF commands from ADC controller
@@ -675,11 +588,31 @@ void Converter_HWProcess(void)
 	}
 	
 	
-	
 	// Reset command
 	ctrl_HWProcess = 0;
 	cmd_ADC_to_HWProcess = 0;
 	
+	// Process safe timer
+	if (safe_counter != 0)
+	{
+		safe_counter--;
+		state_HWProcess |= STATE_HW_TIMER_NOT_EXPIRED;
+	}
+	else
+	{
+		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
+	}
+	
+	// Process user timer
+	if (user_counter != 0)
+	{
+		user_counter--;
+		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
+	}
+	else
+	{
+		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
+	}
 	
 	// Apply converter state
 	// FIXME: care must be taken when using portF - this code is called from ISR
@@ -688,8 +621,10 @@ void Converter_HWProcess(void)
 		SetConverterState(CONVERTER_OFF);
 	else if (state_HWProcess & STATE_HW_ON)
 		SetConverterState(CONVERTER_ON);
-	
 }
+
+
+
 
 
 
@@ -721,15 +656,12 @@ void Timer2_IRQHandler(void)
 		Converter_HW_ADCProcess();	// Converter low-level ADC control
 	}
 	
-	Converter_HWProcess();			// Converter ON/OFF control and overload handling
+	Converter_HWProcess();			// Converter low-level ON/OFF control and overload handling
 	ProcessEncoder();				// Poll encoder				
 
 	// Reinit timer2 CCR
-	temp = MDR_TIMER2->CCR2;
-	temp += HW_IRQ_PERIOD;
-	if (temp > MDR_TIMER2->ARR)
-		temp -= MDR_TIMER2->ARR;
-	MDR_TIMER2->CCR2 = temp;
+	temp = MDR_TIMER2->CCR2 + HW_IRQ_PERIOD;	
+	MDR_TIMER2->CCR2 = (temp > MDR_TIMER2->ARR) ? temp - MDR_TIMER2->ARR : temp;
 	TIMER_ClearFlag(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2);
 }
 

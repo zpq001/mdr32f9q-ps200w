@@ -45,11 +45,14 @@
 #define STATE_HW_OFF			0x02
 #define STATE_HW_OVERLOADED		0x04
 #define STATE_HW_OFF_BY_ADC		0x08
+#define STATE_HW_TIMER_NOT_EXPIRED	0x10
+#define STATE_HW_USER_TIMER_EXPIRED	0x20
 
 // ctrl_HWProcess bits
 #define CMD_HW_ON				0x01
 #define CMD_HW_OFF				0x02
 #define CMD_HW_RESET_OVERLOAD	0x04
+#define CMD_HW_RESTART_USER_TIMER	0x08
 
 // cmd_ADC_to_HWProcess bits
 #define CMD_HW_OFF_BY_ADC		0x01
@@ -78,8 +81,10 @@
 
 
 
-#define CONV_OFF				0x00
-#define CONV_ON					0x01
+#define CONV_OFF				0x01
+#define CONV_ON					0x02
+#define CONV_OVERLOAD			0x10
+#define CONV_STATE_MASK			0x0F
 
 #define CMD_FB_5V			0x0001
 #define CMD_FB_12V			0x0002
@@ -90,9 +95,18 @@
 
 #define OVERLOAD_IGNORE_TIMEOUT	(5*100)		// 100 ms
 #define OVERLOAD_TIMEOUT		5			// 1 ms
+#define MINIMAL_OFF_TIME		(5*40)		// 40 ms
+#define USER_TIMEOUT			(5*20)		// 20 ms	- used for delay between channel switch and ON command
 
+// These defines set behavior of controller in case when 
+// error status is generated simultaneously with processing OFF command
+// Either must be set
+#define CMD_HAS_PRIORITY 	1		// - no error will be shown
+#define ERROR_HAS_PRIORITY	0		// - error will be shown
 
-
+#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
+#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+#endif 
 
 //---------------------------------------------//
 // Task queue messages
@@ -104,6 +118,7 @@ typedef struct {
 } conveter_message_t;
 
 #define CONVERTER_TICK				0xFF
+#define CONVERTER_UPDATE			0xFE
 #define CONVERTER_TURN_ON			0x01
 #define CONVERTER_TURN_OFF			0x02
 #define CONVERTER_SWITCH_TO_5VCH	0x03

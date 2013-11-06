@@ -101,8 +101,8 @@
 // These defines set behavior of controller in case when 
 // error status is generated simultaneously with processing OFF command
 // Either must be set
-#define CMD_HAS_PRIORITY 	1		// - no error will be shown
-#define ERROR_HAS_PRIORITY	0		// - error will be shown
+#define CMD_HAS_PRIORITY 	0		// - no error will be shown
+#define ERROR_HAS_PRIORITY	1		// - error will be shown
 
 #if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
 #error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"

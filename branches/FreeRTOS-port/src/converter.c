@@ -351,7 +351,6 @@ void vTaskConverter(void *pvParameters)
 	conveter_message_t msg;
 	uint8_t led_state;
 	uint32_t conv_state = CONV_OFF;
-//	uint8_t HW_cmd;
 	uint8_t err_code;
 	uint32_t adc_msg;
 	
@@ -421,7 +420,7 @@ void vTaskConverter(void *pvParameters)
 				if (msg.type == CONVERTER_TURN_ON)
 				{
 					// Message to turn on converter is received
-					if (state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED) || (!(state_HWProcess & STATE_HW_USER_TIMER_EXPIRED))
+					if ((state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED) || (!(state_HWProcess & STATE_HW_USER_TIMER_EXPIRED)))
 					{
 						// Safe timeout is not expired
 						break;
@@ -529,7 +528,6 @@ void Converter_HWProcess(void)
 	static uint16_t overload_counter;
 	static uint16_t safe_counter = 0;
 	static uint16_t user_counter = 0;
-	portBASE_TYPE xHigherPriorityTaskWokenByPost;
 
 	// Due to hardware specialty overload input is active when converter is powered off
 	if ( (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || (0/*_overload_functions_disabled_*/) )
@@ -607,11 +605,11 @@ void Converter_HWProcess(void)
 	if (user_counter != 0)
 	{
 		user_counter--;
-		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
+		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
 	}
 	else
 	{
-		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
+		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
 	}
 	
 	// Apply converter state
@@ -642,13 +640,13 @@ void Timer2_IRQHandler(void)
 {
 	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
 	uint16_t temp;
-	
+/*	
 	// Debug
 	if (MDR_PORTA->RXTX & (1<<TXD1))
 		PORT_ResetBits(MDR_PORTA, 1<<TXD1);
 	else
 		PORT_SetBits(MDR_PORTA, 1<<TXD1);
-	
+*/	
 	ProcessPowerOff();				// Check AC line disconnection
 	if (--hw_adc_counter == 0)
 	{

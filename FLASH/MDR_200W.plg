@@ -4,11 +4,10 @@
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
 E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\MDR_200W.uvproj
-Project File Date:  11/03/2013
+Project File Date:  11/06/2013
 
 <h2>Output:</h2>
 Build target 'FLASH'
-assembling startup_MDR32F9x.s...
 compiling system_MDR32F9Qx.c...
 compiling MDR32F9Qx_rst_clk.c...
 compiling MDR32F9Qx_ssp.c...
@@ -17,7 +16,6 @@ compiling MDR32F9Qx_timer.c...
 compiling MDR32F9Qx_i2c.c...
 compiling MDR32F9Qx_adc.c...
 compiling main.c...
-main.c(172): warning:  #111-D: statement is unreachable
 compiling systemfunc.c...
 compiling systick.c...
 compiling lcd_1202.c...
@@ -29,10 +27,14 @@ compiling dwt_delay.c...
 compiling control.c...
 compiling lcd_func.c...
 compiling converter.c...
+src\converter.c(424): error:  #29: expected an expression
+src\converter.c(429): warning:  #12-D: parsing restarts here after previous syntax error
+src\converter.c(532): warning:  #177-D: variable "xHigherPriorityTaskWokenByPost" was declared but never referenced
 compiling gui_top.c...
 compiling service.c...
 compiling dispatcher.c...
 src\dispatcher.c(39): warning:  #177-D: variable "encoder_delta" was declared but never referenced
+compiling adc.c...
 compiling font_8x12.c...
 compiling font_32x19.c...
 compiling font_16x10.c...
@@ -44,99 +46,17 @@ compiling list.c...
 compiling queue.c...
 compiling tasks.c...
 compiling timers.c...
-linking...
-Program Size: Code=26048 RO-data=6052 RW-data=184 ZI-data=22792  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 500 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
+Target not created
 Build target 'FLASH'
-compiling gui_top.c...
-linking...
-Program Size: Code=26160 RO-data=6092 RW-data=184 ZI-data=22792  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 500 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
+compiling converter.c...
+src\converter.c(425): error:  #18: expected a ")"
+src\converter.c(433): warning:  #12-D: parsing restarts here after previous syntax error
+src\converter.c(433): error:  #127: expected a statement
+Target not created
 Build target 'FLASH'
-compiling main.c...
-compiling systick.c...
+compiling converter.c...
 linking...
-Program Size: Code=26176 RO-data=6092 RW-data=184 ZI-data=22792  
+Program Size: Code=26072 RO-data=6104 RW-data=192 ZI-data=22792  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
@@ -179,86 +99,92 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
+compiling converter.c...
+linking...
+Program Size: Code=26072 RO-data=6104 RW-data=192 ZI-data=22792  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+ROMTableAddr = 0xE00FF003
+* JLink Info: TotalIRLen = 4, IRPrint = 0x01
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+**JLink Warning: Could not set S_RESET_ST
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.672V
+State of Pins: 
+TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 500 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
 compiling main.c...
-main.c(154): error:  #20: identifier "vTaskADC" is undefined
+.\src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
 compiling systemfunc.c...
+compiling systick.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling encoder.c...
+compiling converter.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling gui_top.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling dispatcher.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling adc.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+Target not created
+Build target 'FLASH'
+compiling main.c...
+.\src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling systick.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling converter.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling gui_top.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling dispatcher.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+compiling adc.c...
+src\converter.h(108): error:  #35: #error directive: "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
+Target not created
+Build target 'FLASH'
+compiling main.c...
 compiling systick.c...
 compiling converter.c...
 compiling gui_top.c...
 compiling dispatcher.c...
 src\dispatcher.c(39): warning:  #177-D: variable "encoder_delta" was declared but never referenced
 compiling adc.c...
-src\adc.c(28): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(55): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(65): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(103): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(130): warning:  #223-D: function "ADC1_SetChannel" declared implicitly
-src\adc.c(130): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(136): warning:  #223-D: function "ADC1_GetResult" declared implicitly
-src\adc.c(139): warning:  #223-D: function "ADC1_Start" declared implicitly
-src\adc.c(149): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-src\adc.c(156): warning:  #223-D: function "ADC1_Start" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling main.c...
-compiling adc.c...
-src\adc.c(28): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(55): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(65): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(103): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(130): warning:  #223-D: function "ADC1_SetChannel" declared implicitly
-src\adc.c(130): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(136): warning:  #223-D: function "ADC1_GetResult" declared implicitly
-src\adc.c(139): warning:  #223-D: function "ADC1_Start" declared implicitly
-src\adc.c(149): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-src\adc.c(156): warning:  #223-D: function "ADC1_Start" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling adc.c...
-src\adc.c(42): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(52): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(90): error:  #20: identifier "ctrl_ADCProcess" is undefined
-src\adc.c(117): warning:  #223-D: function "ADC1_SetChannel" declared implicitly
-src\adc.c(117): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(123): warning:  #223-D: function "ADC1_GetResult" declared implicitly
-src\adc.c(126): warning:  #223-D: function "ADC1_Start" declared implicitly
-src\adc.c(136): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-src\adc.c(143): warning:  #223-D: function "ADC1_Start" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling converter.c...
-src\converter.c(590): error:  #20: identifier "ctrl_ADCProcess" is undefined
-compiling adc.c...
-src\adc.c(53): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(118): warning:  #223-D: function "ADC1_SetChannel" declared implicitly
-src\adc.c(118): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(124): warning:  #223-D: function "ADC1_GetResult" declared implicitly
-src\adc.c(127): warning:  #223-D: function "ADC1_Start" declared implicitly
-src\adc.c(137): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-src\adc.c(144): warning:  #223-D: function "ADC1_Start" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling converter.c...
-compiling adc.c...
-src\adc.c(53): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
-src\adc.c(118): warning:  #223-D: function "ADC1_SetChannel" declared implicitly
-src\adc.c(118): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(124): warning:  #223-D: function "ADC1_GetResult" declared implicitly
-src\adc.c(127): warning:  #223-D: function "ADC1_Start" declared implicitly
-src\adc.c(137): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-src\adc.c(144): warning:  #223-D: function "ADC1_Start" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling adc.c...
-src\adc.c(120): error:  #20: identifier "ADC_CHANNEL_VOLTAGE" is undefined
-src\adc.c(139): error:  #20: identifier "ADC_CHANNEL_CURRENT" is undefined
-Target not created
-Build target 'FLASH'
-compiling adc.c...
 linking...
-Program Size: Code=26256 RO-data=6092 RW-data=184 ZI-data=22792  
+Program Size: Code=26048 RO-data=6104 RW-data=192 ZI-data=22792  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -288,64 +214,6 @@ Target info:
 ------------
 Device: MDR32F9Q2I
 VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 500 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling adc.c...
-src\adc.c(24): error:  #20: identifier "xSemaphoreHandle" is undefined
-src\adc.c(38): warning:  #223-D: function "vSemaphoreCreateBinary" declared implicitly
-src\adc.c(38): error:  #20: identifier "xSemaphore" is undefined
-src\adc.c(55): warning:  #223-D: function "xSemaphoreTake" declared implicitly
-src\adc.c(123): warning:  #223-D: function "xSemaphoreGiveFromISR" declared implicitly
-Target not created
-Build target 'FLASH'
-compiling adc.c...
-src\adc.c(39): error:  #20: identifier "xSemaphore" is undefined
-src\adc.c(40): error:  #20: identifier "xSemaphore" is undefined
-Target not created
-Build target 'FLASH'
-compiling adc.c...
-linking...
-Program Size: Code=26316 RO-data=6092 RW-data=188 ZI-data=22796  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
 State of Pins: 
 TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6

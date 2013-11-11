@@ -70,8 +70,7 @@ void vApplicationTickHook( void )
 	
 	if (--tmr_dispatcher_tick == 0)
 	{
-		msg = DISPATCHER_TICK;
-		xQueueSendToBackFromISR(xQueueDispatcher, &msg, &xHigherPriorityTaskWokenByPost);
+		xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
 		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
 	}
 	

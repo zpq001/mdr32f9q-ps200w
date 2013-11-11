@@ -27,6 +27,7 @@
 #include "control.h"
 #include "encoder.h"
 #include "converter.h"
+#include "uart.h"
 
 // Globals used for communicating with converter control task called from ISR
 uint8_t state_HWProcess = STATE_HW_OFF;	
@@ -639,6 +640,8 @@ void Converter_HWProcess(void)
 void Timer2_IRQHandler(void) 
 {
 	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
+	static uint16_t hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD - 1;
+	static uint16_t hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD - 2;
 	uint16_t temp;
 /*	
 	// Debug
@@ -652,6 +655,16 @@ void Timer2_IRQHandler(void)
 	{
 		hw_adc_counter = HW_ADC_CALL_PERIOD;
 		Converter_HW_ADCProcess();	// Converter low-level ADC control
+	}
+	if (--hw_uart2_rx_counter == 0)
+	{
+		hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD;
+		processUartRX();			// UART2 receiver service
+	}
+	if (--hw_uart2_tx_counter == 0)
+	{
+		hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD;
+		processUartTX();			// UART2 transmitter service
 	}
 	
 	Converter_HWProcess();			// Converter low-level ON/OFF control and overload handling

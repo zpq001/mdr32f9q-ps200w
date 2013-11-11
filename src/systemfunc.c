@@ -89,7 +89,7 @@ void Setup_CPU_Clock(void)
 //-----------------------------------------------------------------//
 // Setup IO Ports
 //-----------------------------------------------------------------//
-void PortInit(void)
+void HW_PortInit(void)
 {
 	PORT_InitTypeDef PORT_InitStructure;
   
@@ -244,8 +244,42 @@ void PortInit(void)
 	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
 	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 	
-	// TODO: add USART2 functions	
+	// USART2 functions	
+	PORT_StructInit(&PORT_InitStructure);
+	// TX pin
+	PORT_InitStructure.PORT_Pin   = 1<<TXD2;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_FAST;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_OVERRID;
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_Init(MDR_PORTF, &PORT_InitStructure);
+	// RX pin
+	PORT_InitStructure.PORT_Pin   = 1<<RXD2;
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_Init(MDR_PORTF, &PORT_InitStructure);
+}
+
+
+//-----------------------------------------------------------------//
+// Setup UART modules
+// HCLK = 32 MHz
+//
+// UART2 CLK = 16 MHz
+//-----------------------------------------------------------------//
+void HW_UARTInit(void)
+{
+	UART_InitTypeDef sUART;
+	UART_StructInit (&sUART);
+
+	sUART.UART_BaudRate                           = 115200;
+	sUART.UART_WordLength                         = UART_WordLength8b;
+	sUART.UART_StopBits                           = UART_StopBits1;
+	sUART.UART_Parity                             = UART_Parity_No;
+	sUART.UART_FIFOMode                           = UART_FIFO_ON;
+	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
 	
+	UART_BRGInit(MDR_UART2,UART_HCLKdiv2);
+	UART_Init (MDR_UART2,&sUART);
 }
 
 
@@ -256,7 +290,7 @@ void PortInit(void)
 //		F_SSPCLK / ( CPSDVR * (1 + SCR) )
 // 3.2 MHz
 //-----------------------------------------------------------------//
-void SSPInit(void)
+void HW_SSPInit(void)
 {
 	SSP_InitTypeDef sSSP;
 	SSP_StructInit (&sSSP);
@@ -281,7 +315,7 @@ void SSPInit(void)
 // HCLK = 32 MHz
 // 125 kHz
 //-----------------------------------------------------------------//
-void I2CInit(void)
+void HW_I2CInit(void)
 {
 	//--------------- I2C INIT ---------------//
 I2C_InitTypeDef I2C_InitStruct;
@@ -305,7 +339,7 @@ I2C_InitTypeDef I2C_InitStruct;
 //		(29 to 36 ADC clock cycles depending on ADC_DelayGo)
 //	ADC clock = 4MHz / 128 = 31.250kHz (T = 32uS)
 //-----------------------------------------------------------------//
-void ADCInit(void)
+void HW_ADCInit(void)
 {
 	ADC_InitTypeDef sADC;
 	ADCx_InitTypeDef sADCx;
@@ -374,7 +408,7 @@ void ADCInit(void)
 // TIMER_CLK = HCLK / TIMER_HCLKdivx
 // CLK = TIMER_CLK/(TIMER_Prescaler + 1) 
 //-----------------------------------------------------------------//
-void TimersInit(void)
+void HW_TimersInit(void)
 {
 	TIMER_CntInitTypeDef sTIM_CntInit;
 	TIMER_ChnInitTypeDef sTIM_ChnInit;

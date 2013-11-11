@@ -36,6 +36,7 @@
 #include "service.h"
 #include "dispatcher.h"
 #include "adc.h"
+#include "uart.h"
 
 #include "fonts.h"
 #include "images.h"
@@ -123,12 +124,15 @@ int main(void)
 	//=============================================//
 	Setup_CPU_Clock();
 	DWTCounterInit();
-	SSPInit();
-	I2CInit();
-	TimersInit();
-	PortInit();
-	ADCInit();
+	HW_SSPInit();
+	HW_I2CInit();
+	HW_TimersInit();
+	HW_PortInit();
+	HW_ADCInit();
+	HW_UARTInit();
 	LcdInit();
+	
+	UARTInit();
 	
 	InitButtons();
 	ProcessButtons();
@@ -148,15 +152,15 @@ int main(void)
 	
 
 	
-	xTaskCreate( vTaskGUI, ( signed char * ) "GUI TOP", configMINIMAL_STACK_SIZE, NULL, 1, ( xTaskHandle * ) NULL);
-	xTaskCreate( vTaskConverter, ( signed char * ) "Converter", configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
-	xTaskCreate( vTaskService, ( signed char * ) "Service", configMINIMAL_STACK_SIZE, NULL, 0, ( xTaskHandle * ) NULL);
-	xTaskCreate( vTaskDispatcher, ( signed char * ) "Dispatcher", configMINIMAL_STACK_SIZE, NULL, 3, ( xTaskHandle * ) NULL);
-	xTaskCreate( vTaskADC, ( signed char * ) "ADC", configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskGUI, 			( signed char * ) "GUI top", 		configMINIMAL_STACK_SIZE, NULL, 1, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskConverter, 	( signed char * ) "Converter", 		configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskService, 		( signed char * ) "Service", 		configMINIMAL_STACK_SIZE, NULL, 0, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskDispatcher, 	( signed char * ) "Dispatcher", 	configMINIMAL_STACK_SIZE, NULL, 3, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskADC, 			( signed char * ) "ADC", 			configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskUARTReceiver, ( signed char * ) "UART2 RX", 		256, 					  NULL, 2, ( xTaskHandle * ) NULL);
 	
 	vTaskStartScheduler();
 	
-
 
 	while(1);
 	

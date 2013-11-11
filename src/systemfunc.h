@@ -7,7 +7,7 @@
 // Peripheral blocks, used in design											
 #define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
-									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC )
+									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
 
 
 
@@ -20,9 +20,12 @@
 
 
 void Setup_CPU_Clock(void);
-void PortInit(void);
-void SSPInit(void);
-void ADCInit(void);
+void HW_PortInit(void);
+void HW_UARTInit(void);
+void HW_SSPInit(void);
+void HW_I2CInit(void);
+void HW_ADCInit(void);
+void HW_TimersInit(void);
 
 void LcdSetBacklight(uint16_t value);
 
@@ -31,12 +34,12 @@ void SetCurrentPWMPeriod(uint16_t new_period);
 
 void SetCoolerSpeed(uint16_t speed);
 
-void TimersInit(void);
+
 void DelayUs(uint16_t delay);
 
 void SetBuzzerFreq(uint16_t freq);
 
-void I2CInit(void);
+
 
 
 void ProcessOverload(void);

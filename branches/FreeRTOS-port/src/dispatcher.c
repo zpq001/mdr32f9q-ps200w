@@ -42,8 +42,8 @@ void vTaskDispatcher(void *pvParameters)
 	conveter_message_t converter_msg;
 	uint32_t gui_msg;
 	
-	uint16_t button_emulation;
-	int16_t encoder_emulation;
+	uint16_t button_emulation = 0;
+	int16_t encoder_emulation = 0;
 	
 	// Initialize
 	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_incoming_msg_t ) );		// Queue can contain 5 elements of type uint32_t

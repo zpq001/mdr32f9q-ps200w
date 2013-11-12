@@ -10,6 +10,7 @@
 #include "MDR32Fx.h"
 #include "MDR32F9Qx_rst_clk.h"
 #include "MDR32F9Qx_ssp.h"
+#include "MDR32F9Qx_uart.h"
 #include "MDR32F9Qx_port.h"
 #include "MDR32F9Qx_timer.h"
 #include "MDR32F9Qx_i2c.h"
@@ -268,18 +269,20 @@ void HW_PortInit(void)
 //-----------------------------------------------------------------//
 void HW_UARTInit(void)
 {
+	BaudRateStatus initStatus;
 	UART_InitTypeDef sUART;
-	UART_StructInit (&sUART);
+	UART_StructInit(&sUART);
 
-	sUART.UART_BaudRate                           = 115200;
+	sUART.UART_BaudRate                           = 150000;
 	sUART.UART_WordLength                         = UART_WordLength8b;
 	sUART.UART_StopBits                           = UART_StopBits1;
 	sUART.UART_Parity                             = UART_Parity_No;
 	sUART.UART_FIFOMode                           = UART_FIFO_ON;
 	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
 	
-	UART_BRGInit(MDR_UART2,UART_HCLKdiv2);
-	UART_Init (MDR_UART2,&sUART);
+	UART_BRGInit(MDR_UART2,UART_HCLKdiv1);
+	initStatus = UART_Init(MDR_UART2,&sUART);
+	UART_Cmd(MDR_UART2,ENABLE);
 }
 
 

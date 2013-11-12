@@ -357,8 +357,8 @@ ARM Macro Assembler    Page 6
               00000000 
 Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=.\FLASH\
 startup_MDR32F9x.d -o.\FLASH\startup_MDR32F9x.o -IC:\Keil\ARM\RV31\Inc -IC:\Kei
-l\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --predefine="__EVAL SETA
- 1" --list=startup_MDR32F9x.lst startup_MDR32F9x.s
+l\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --list=startup_MDR32F9x.
+lst startup_MDR32F9x.s
 
 
 
@@ -868,4 +868,4 @@ Symbol: __use_two_region_memory
       None
 Comment: __use_two_region_memory unused
 3 symbols
-385 symbols in table
+384 symbols in table

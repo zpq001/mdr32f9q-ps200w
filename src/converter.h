@@ -53,6 +53,7 @@
 #define CMD_HW_OFF				0x02
 #define CMD_HW_RESET_OVERLOAD	0x04
 #define CMD_HW_RESTART_USER_TIMER	0x08
+#define CMD_HW_RESTART_LED_BLINK_TIMER 0x10
 
 // cmd_ADC_to_HWProcess bits
 #define CMD_HW_OFF_BY_ADC		0x01
@@ -95,10 +96,12 @@
 #define CMD_ON				0x0010
 #define CMD_OFF				0x0020
 
-#define OVERLOAD_IGNORE_TIMEOUT	(5*100)		// 100 ms
-#define OVERLOAD_TIMEOUT		5			// 1 ms
-#define MINIMAL_OFF_TIME		(5*40)		// 40 ms
-#define USER_TIMEOUT			(5*20)		// 20 ms	- used for delay between channel switch and ON command
+#define OVERLOAD_IGNORE_TIMEOUT		(5*100)		// 100 ms
+#define OVERLOAD_TIMEOUT			5			// 1 ms
+#define MINIMAL_OFF_TIME			(5*40)		// 40 ms
+#define USER_TIMEOUT				(5*20)		// 20 ms	- used for delay between channel switch and ON command
+#define LED_BLINK_TIMEOUT			(5*100)		// 100ms	- used for charging indication
+#define OVERLOAD_WARNING_TIMEOUT	(5*200)		// 200ms	- used for sound overload warning
 
 // These defines set behavior of controller in case when 
 // error status is generated simultaneously with processing OFF command

@@ -12,6 +12,7 @@ typedef struct {
 #define DP_CONVERTER_TURN_OFF		0x201
 #define DP_CONVERTER_SET_VOLTAGE	0x210
 #define DP_CONVERTER_SET_CURRENT	0x211
+#define DP_CONVERTER_SET_CURRENT_LIMIT	0x212
 
 // Control panel emulation
 #define DP_EMU_BTN_DOWN			0x400

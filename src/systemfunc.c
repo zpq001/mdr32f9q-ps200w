@@ -435,6 +435,7 @@ void HW_TimersInit(void)
 	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
 	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
+	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
 	TIMER_ChnInit(MDR_TIMER1, &sTIM_ChnInit);
 	
 	// Initialize timer 1 channel 2 output
@@ -478,6 +479,7 @@ void HW_TimersInit(void)
 	TIMER_ChnStructInit(&sTIM_ChnInit);
 	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
 	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;			// voltage
 	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;			// curret
@@ -539,6 +541,7 @@ void HW_TimersInit(void)
 	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;
 	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
 	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
 	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
 
 	// Initialize timer 3 channel 1 output
@@ -596,11 +599,7 @@ void SetCurrentPWMPeriod(uint16_t new_period)
 }
 
 
-void SetBuzzerFreq(uint16_t freq)
-{
-	MDR_TIMER1->ARR = freq;	
-	MDR_TIMER1->CCR2 = freq/2;		// 50% duty
-}
+
 
 
 

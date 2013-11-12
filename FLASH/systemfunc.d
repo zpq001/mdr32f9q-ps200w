@@ -8,6 +8,7 @@
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_rst_clk.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_ssp.h
+.\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_uart.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_port.h
 .\FLASH\systemfunc.o: .\MDR32F9Qx_config.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h

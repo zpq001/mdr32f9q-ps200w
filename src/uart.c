@@ -3,6 +3,12 @@
 #include "string.h"
 #include "stdlib.h"
 
+#include "MDR32F9Qx_uart.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 #include "stdint.h"
 #include "ring_buffer.h"
 #include "uart.h"
@@ -58,7 +64,7 @@ void vTaskUARTReceiver(void *pvParameters)
 		{
 			if (test_mode)
 			{
-				while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));		
+				while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
 				continue;
 			}
 			if (temp_char == SPACING_SYMBOL)
@@ -66,7 +72,7 @@ void vTaskUARTReceiver(void *pvParameters)
 				received_msg[msg_length++] = '\0';
 				search_for_word = 1;
 			}
-			else if (temp_char == MESSAGE_END_SYMBOL)
+			else if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE))
 			{
 				received_msg[msg_length++] = '\0';
 			}
@@ -82,7 +88,7 @@ void vTaskUARTReceiver(void *pvParameters)
 			}
 			
 			
-			if ((temp_char == MESSAGE_END_SYMBOL) || (msg_length == RX_MESSAGE_MAX_LENGTH))
+			if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE) || (msg_length == RX_MESSAGE_MAX_LENGTH))
 			{
 				// Received full message OR maximum allowed message length is reached
 				// Parse message
@@ -111,7 +117,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					{
 						if (argc < 2)
 						{
-							sendString2(argv[0], "ERR: missing argument [mV]\r");
+							sendString2(argv[0], " ERR: missing argument [mV]\r");
 							cmd_ok = 0;
 						}
 						else
@@ -125,7 +131,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					{
 						if (argc < 2)
 						{
-							sendString2(argv[0], "ERR: missing argument [mA]\r");
+							sendString2(argv[0], " ERR: missing argument [mA]\r");
 							cmd_ok = 0;
 						}
 						else
@@ -176,7 +182,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					{
 						if (argc < 2)
 						{
-							sendString2(argv[0], "ERR: missing argument [ticks]\r");
+							sendString2(argv[0], " ERR: missing argument [ticks]\r");
 							cmd_ok = 0;
 						}
 						else
@@ -190,7 +196,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					//------------ unknown command -----------//
 					else
 					{
-						sendString2(argv[0], "ERR: unknown cmd\r");
+						sendString2(argv[0], " ERR: unknown cmd\r");
 						cmd_ok = 0;
 					}
 					
@@ -202,7 +208,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					
 					// Confirm
 					if (cmd_ok)
-						sendString2(argv[0], "OK\r");
+						sendString2(argv[0], " OK\r");
 			
 				}			
 				msg_length = 0;
@@ -222,7 +228,7 @@ void processUartRX(void)
 	while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
 	{
 		temp = UART_ReceiveData(MDR_UART2);
-		if (temp & (UART_Data_BE | UART_Data_PE | UART_Data_FE) == 0)
+		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
 		{
 			putIntoRingBuffer(&uart2_rx_rbuf, (char)temp);
 		}
@@ -255,7 +261,7 @@ void processUartTX(void)
 	char temp;
 	while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )
 	{
-		temp = getFromRingBuffer(&uart2_tx_rbuf, &temp))
+		getFromRingBuffer(&uart2_tx_rbuf, &temp);
 		UART_SendData(MDR_UART2,(uint16_t)temp);
 	}
 }

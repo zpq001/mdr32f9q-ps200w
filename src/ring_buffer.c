@@ -17,10 +17,10 @@ void initRingBuffer(ring_buffer_t *rb, char *data, uint16_t size)
 
 uint8_t putIntoRingBuffer(ring_buffer_t *rb, char item)
 {
-	if (rb->write_count - rb->read_count < rb->size)
+	if ((uint16_t)(rb->write_count - rb->read_count) < rb->size)
 	{
 		rb->data[rb->tail_index] = item;
-		rb->tail_index = (rb->tail_index == rb->size) ? 0 : rb->tail_index + 1;
+		rb->tail_index = (rb->tail_index < (rb->size - 1)) ? rb->tail_index + 1 : 0;
 		rb->write_count++;
 		return 1;
 	}
@@ -30,10 +30,10 @@ uint8_t putIntoRingBuffer(ring_buffer_t *rb, char item)
 
 uint8_t getFromRingBuffer(ring_buffer_t *rb,  char *item)
 {
-	if (rb->write_count - rb->read_count > 0)
+	if ((uint16_t)(rb->write_count - rb->read_count) > 0)
 	{
 		*item = rb->data[rb->head_index];
-		rb->head_index = (rb->head_index == rb->size) ? 0 : rb->head_index + 1;
+		rb->head_index = (rb->head_index < (rb->size - 1)) ? rb->head_index + 1 : 0;
 		rb->read_count++;
 		return 1;
 	}

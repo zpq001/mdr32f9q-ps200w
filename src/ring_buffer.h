@@ -12,9 +12,9 @@ typedef struct {
 } ring_buffer_t;
 
 
-#define ringBufferIsFull(rb)	(rb.write_count - rb.read_count == rb.size)
-#define ringBufferIsEmpty(rb)	(rb.write_count - rb.read_count == 0)
-#define ringBufferCount(rb)		(rb.write_count - rb.read_count)
+#define ringBufferIsFull(rb)	((uint16_t)(rb.write_count - rb.read_count) == rb.size)
+#define ringBufferIsEmpty(rb)	((uint16_t)(rb.write_count - rb.read_count) == 0)
+#define ringBufferCount(rb)		((uint16_t)(rb.write_count - rb.read_count))
 
 
 void initRingBuffer(ring_buffer_t *rb, char *data, uint16_t size);

@@ -39,6 +39,7 @@
 .\FLASH\main.o: .\src\service.h
 .\FLASH\main.o: .\src\dispatcher.h
 .\FLASH\main.o: .\src\adc.h
+.\FLASH\main.o: .\src\uart.h
 .\FLASH\main.o: .\src\fonts\fonts.h
 .\FLASH\main.o: .\src\fonts\font_defs.h
 .\FLASH\main.o: .\src\fonts\images.h

@@ -11,6 +11,7 @@
 
 //---------------------------------------------//
 // Protocol definitions
+#define MESSAGE_NEW_LINE		'\n'	// similar to MESSAGE_END_SYMBOL
 #define MESSAGE_END_SYMBOL		'\r'	// A message should end with this symbol
 #define SPACING_SYMBOL			' '		// Words in the message should be separated by this symbol (1 or more)
 

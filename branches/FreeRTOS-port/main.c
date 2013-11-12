@@ -123,7 +123,7 @@ int main(void)
 	// system initialization
 	//=============================================//
 	Setup_CPU_Clock();
-	DWTCounterInit();
+	DWT_Init();
 	HW_SSPInit();
 	HW_I2CInit();
 	HW_TimersInit();
@@ -150,7 +150,10 @@ int main(void)
 	SetCoolerSpeed(80);
 	LcdSetBacklight(85);
 	
-
+	// Reset time statistics
+	time_profile.max_ticks_in_Systick_hook = 0;
+	time_profile.max_ticks_in_Timer2_ISR = 0;
+	
 	
 	xTaskCreate( vTaskGUI, 			( signed char * ) "GUI top", 		configMINIMAL_STACK_SIZE, NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskConverter, 	( signed char * ) "Converter", 		configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);

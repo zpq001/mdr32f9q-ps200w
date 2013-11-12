@@ -9,6 +9,7 @@
 #include "task.h"
 #include "queue.h"
 
+#include "systick.h"
 #include "stdint.h"
 #include "ring_buffer.h"
 #include "uart.h"
@@ -49,6 +50,8 @@ void vTaskUARTReceiver(void *pvParameters)
 	// Debug
 	uint16_t i;
 	uint32_t temp32u;
+	
+	char temp_str[50];
 	
 	portTickType lastExecutionTime = xTaskGetTickCount();
 	
@@ -141,7 +144,20 @@ void vTaskUARTReceiver(void *pvParameters)
 							dispatcher_msg.data = strtoul(argv[1], 0, 0);
 						}
 					}
-					
+					else if (strcmp(argv[0], "set_current_limit") == 0)			// Setting converter current limit
+					{
+						if (argc < 2)
+						{
+							sendString2(argv[0], " ERR: missing argument (20/40)[A]\r");
+							cmd_ok = 0;
+						}
+						else
+						{
+							// Second argument is current limit value [A]
+							dispatcher_msg.type = DP_CONVERTER_SET_CURRENT_LIMIT;
+							dispatcher_msg.data = strtoul(argv[1], 0, 0);
+						}
+					}
 					//----- button and encoder emulation -----//
 					else if (strcmp(argv[0], "btn_esc") == 0)				// ESC button
 					{
@@ -192,7 +208,14 @@ void vTaskUARTReceiver(void *pvParameters)
 							dispatcher_msg.data = (uint32_t)strtol(argv[1], 0, 0);
 						}
 					}
-					
+					//----------------- misc -----------------//
+					else if (strcmp(argv[0], "get_time_profiling") == 0)			// Time profiling
+					{
+						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Systick_hook);
+						sendString2("Systick hook max ticks: ", temp_str);
+						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Timer2_ISR);
+						sendString2("Timer2 ISR max ticks: ", temp_str);
+					}
 					//------------ unknown command -----------//
 					else
 					{

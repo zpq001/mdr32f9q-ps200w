@@ -56,8 +56,8 @@ void LcdWrite(uint8_t val, uint8_t mode)
 //==============================================================//
 void LcdDelayUs(uint16_t us)
 {
-	uint32_t time_delay = DWTStartDelayUs(us);
-	while(DWTDelayInProgress(time_delay));
+	uint32_t time_delay = DWT_StartDelayUs(us);
+	while(DWT_DelayInProgress(time_delay));
 }
 
 //==============================================================//

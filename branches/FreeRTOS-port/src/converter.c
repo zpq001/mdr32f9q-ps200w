@@ -13,8 +13,8 @@
 
 #include "MDR32Fx.h" 
 #include "MDR32F9Qx_port.h"
-#include "MDR32F9Qx_adc.h"
-#include "MDR32F9Qx_timer.h"
+//#include "MDR32F9Qx_adc.h"
+//#include "MDR32F9Qx_timer.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -25,9 +25,8 @@
 #include "adc.h"
 #include "defines.h"
 #include "control.h"
-#include "encoder.h"
 #include "converter.h"
-#include "uart.h"
+
 
 // Globals used for communicating with converter control task called from ISR
 uint8_t state_HWProcess = STATE_HW_OFF;	
@@ -56,8 +55,6 @@ xQueueHandle xQueueConverter;
 static void apply_regulation(void);
 static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code);
 static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code);
-
-
 
 
 
@@ -350,7 +347,6 @@ static uint32_t disableConverterAndCheckHWState(void)
 void vTaskConverter(void *pvParameters) 
 {
 	conveter_message_t msg;
-	uint8_t led_state;
 	uint32_t conv_state = CONV_OFF;
 	uint8_t err_code;
 	uint32_t adc_msg;
@@ -461,6 +457,10 @@ void vTaskConverter(void *pvParameters)
 					// Some hardware error has happened and converter had been switched off
 					conv_state = CONV_OFF;
 					conv_state |= analyzeAndResetHWErrorState();
+					if (conv_state & CONV_OVERLOAD)
+					{
+						// Send message to sound driver - TODO
+					}
 					break;
 				}
 				break;
@@ -490,15 +490,8 @@ void vTaskConverter(void *pvParameters)
 		apply_regulation();		
 		
 	
-	
 		// LED indication
-		led_state = 0;
-		if (conv_state & CONV_ON)
-			led_state = LED_GREEN;
-		if (conv_state & CONV_OVERLOAD)
-			led_state = LED_RED;
-		UpdateLEDs(led_state);
-		
+
 	}
 	
 }
@@ -519,7 +512,7 @@ void vTaskConverter(void *pvParameters)
 //	
 //	Low-level task for accessing Enbale/Disable functions.
 //	There may be an output overload which has to be correctly handled - converter should be disabled
-//	This task takes care for overload and top-level enable/disable control
+//	The routine takes care for overload and enable/disable control coming from top-level controllers
 //	
 // TODO: ensure that ISR is non-interruptable
 //---------------------------------------------//
@@ -529,23 +522,42 @@ void Converter_HWProcess(void)
 	static uint16_t overload_counter;
 	static uint16_t safe_counter = 0;
 	static uint16_t user_counter = 0;
+	static uint16_t led_blink_counter = 0;
+	static uint16_t overload_warning_counter = 0;
+	uint8_t overload_check_enable;
+	uint8_t raw_overload_flag;
+	uint8_t led_state;
 
+	//-------------------------------//
+	// Get converter status and process overload timers
+	
 	// Due to hardware specialty overload input is active when converter is powered off
-	if ( (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || (0/*_overload_functions_disabled_*/) )
+	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
+	overload_check_enable = 0;
+	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
 		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
 	else if (overload_ignore_counter != 0)
 		overload_ignore_counter--;
+	else
+		overload_check_enable = 1;
 	
-	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
-	if ( (overload_ignore_counter != 0) || (GetOverloadStatus() == OVERLOAD) )
+	// Apply top-level overload check control
+	//if (__overload_functions_disabled__)
+	//	overload_check_enable = 0;
+	
+	if (overload_check_enable)
+		raw_overload_flag = GetOverloadStatus();
+	else
+		raw_overload_flag = NORMAL;
+	
+	if (raw_overload_flag == NORMAL)
 		overload_counter = OVERLOAD_TIMEOUT;
 	else if (overload_counter != 0)
 		overload_counter--;
 	
-	//-------------------------------//
 
-	
-	// Check overload 
+	//-------------------------------//
+	// Check overload 	
 	if (overload_counter == 0)
 	{
 		// Converter is overloaded
@@ -555,7 +567,8 @@ void Converter_HWProcess(void)
 		xQueueSendToFrontFromISR(xQueueConverter, &converter_update_message, 0);	// No need for exact timing
 	}
 	
-	// Process ON/OFF commands
+	//-------------------------------//
+	// Process commands from top-level converter controller
 	if (ctrl_HWProcess & CMD_HW_RESET_OVERLOAD)
 	{
 		state_HWProcess &= ~STATE_HW_OVERLOADED;
@@ -575,8 +588,13 @@ void Converter_HWProcess(void)
 	{
 		user_counter = USER_TIMEOUT;
 	}
+	if (ctrl_HWProcess & CMD_HW_RESTART_LED_BLINK_TIMER)
+	{
+		user_counter = LED_BLINK_TIMEOUT;
+	}
 	
-	// Process ON/OFF commands from ADC controller
+	//-------------------------------//
+	// Process commands from top-level ADC controller
 	if (cmd_ADC_to_HWProcess & CMD_HW_OFF_BY_ADC)
 	{
 		state_HWProcess |= STATE_HW_OFF_BY_ADC;
@@ -586,12 +604,41 @@ void Converter_HWProcess(void)
 		state_HWProcess &= ~STATE_HW_OFF_BY_ADC;
 	}
 	
-	
-	// Reset command
+	// Reset commands
 	ctrl_HWProcess = 0;
 	cmd_ADC_to_HWProcess = 0;
+
+	//-------------------------------//
+	// Apply converter state
+	// TODO - check IRQ disable while accessing converter control port (MDR_PORTF) for write
+	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+		SetConverterState(CONVERTER_OFF);
+	else if (state_HWProcess & STATE_HW_ON)
+		SetConverterState(CONVERTER_ON);
+		
+	//-------------------------------//
+	// LED indication
+	// Uses raw converter state and top-level conveter status
+	// TODO - check IRQ disable while accessing LED port (MDR_PORTB) for write
+	led_state = 0;
+	if ((state_HWProcess & STATE_HW_ON) && (led_blink_counter == 0))
+		led_state |= LED_GREEN;
+	if ((raw_overload_flag == OVERLOAD) || (conv_state & CONV_OVERLOAD))
+		led_state |= LED_RED;
+	UpdateLEDs(led_state);
 	
-	// Process safe timer
+	//-------------------------------//
+	// Overload sound warning
+	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
+	{
+		//xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
+	}
+	
+	//-------------------------------//
+	// Process timers
+	
+	// Process safe timer - used by top-level controller to provide a safe minimal OFF timeout
 	if (safe_counter != 0)
 	{
 		safe_counter--;
@@ -602,7 +649,7 @@ void Converter_HWProcess(void)
 		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
 	}
 	
-	// Process user timer
+	// Process user timer - used by top-level controller to provide a safe interval after switching channels
 	if (user_counter != 0)
 	{
 		user_counter--;
@@ -613,68 +660,27 @@ void Converter_HWProcess(void)
 		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
 	}
 	
-	// Apply converter state
-	// FIXME: care must be taken when using portF - this code is called from ISR
-	// ATOMIC access should be used
-	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
-		SetConverterState(CONVERTER_OFF);
-	else if (state_HWProcess & STATE_HW_ON)
-		SetConverterState(CONVERTER_ON);
-}
-
-
-
-
-
-
-
-
-
-
-//---------------------------------------------//
-//	Converter hardware low-level control
-//
-//	Timer2 is used to generate PWM for voltage 
-//  and current setting
-//---------------------------------------------//
-void Timer2_IRQHandler(void) 
-{
-	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
-	static uint16_t hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD - 1;
-	static uint16_t hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD - 2;
-	uint16_t temp;
-/*	
-	// Debug
-	if (MDR_PORTA->RXTX & (1<<TXD1))
-		PORT_ResetBits(MDR_PORTA, 1<<TXD1);
-	else
-		PORT_SetBits(MDR_PORTA, 1<<TXD1);
-*/	
-	ProcessPowerOff();				// Check AC line disconnection
-	if (--hw_adc_counter == 0)
+	// Process LED blink timer
+	if (led_blink_counter != 0)
 	{
-		hw_adc_counter = HW_ADC_CALL_PERIOD;
-		Converter_HW_ADCProcess();	// Converter low-level ADC control
-	}
-	if (--hw_uart2_rx_counter == 0)
-	{
-		hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD;
-		processUartRX();			// UART2 receiver service
-	}
-	if (--hw_uart2_tx_counter == 0)
-	{
-		hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD;
-		processUartTX();			// UART2 transmitter service
+		led_blink_counter--;
 	}
 	
-	Converter_HWProcess();			// Converter low-level ON/OFF control and overload handling
-	ProcessEncoder();				// Poll encoder				
-
-	// Reinit timer2 CCR
-	temp = MDR_TIMER2->CCR2 + HW_IRQ_PERIOD;	
-	MDR_TIMER2->CCR2 = (temp > MDR_TIMER2->ARR) ? temp - MDR_TIMER2->ARR : temp;
-	TIMER_ClearFlag(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2);
+	// Process overload sound warning timer
+	if (overload_warning_counter != 0)
+	{
+		overload_warning_counter--;
+	}
 }
+
+
+
+
+
+
+
+
+
 
 
 

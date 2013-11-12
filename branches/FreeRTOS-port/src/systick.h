@@ -26,6 +26,15 @@
 #define CONVERTER_TICK_INTERVAL		50		// OS ticks
 #define DISPATCHER_TICK_INTERVAL	10		// OS ticks
 
+
+typedef struct {
+	uint32_t max_ticks_in_Systick_hook;
+	uint32_t max_ticks_in_Timer2_ISR;
+} time_profile_t;
+
+
+extern time_profile_t time_profile;
+
            
 extern uint32_t ticks_per_us;
 

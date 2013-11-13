@@ -16,7 +16,9 @@
 #include "dispatcher.h"
 #include "buttons.h"
 
-uint8_t test_mode = 1;
+#include "dwt_delay.h"
+
+uint8_t test_mode = 0;
 
 static ring_buffer_t uart2_tx_rbuf;
 static ring_buffer_t uart2_rx_rbuf;
@@ -282,7 +284,8 @@ void sendString2(char *pstr1, char *pstr2)
 void processUartTX(void)
 {
 	char temp;
-	while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )
+	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
+	while ( (!(MDR_UART2->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
 	{
 		getFromRingBuffer(&uart2_tx_rbuf, &temp);
 		UART_SendData(MDR_UART2,(uint16_t)temp);

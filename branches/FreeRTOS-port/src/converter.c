@@ -61,7 +61,7 @@ static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
 
 
 
-
+uint32_t conv_state = CONV_OFF;
 
 
 
@@ -347,7 +347,7 @@ static uint32_t disableConverterAndCheckHWState(void)
 void vTaskConverter(void *pvParameters) 
 {
 	conveter_message_t msg;
-	uint32_t conv_state = CONV_OFF;
+	
 	uint8_t err_code;
 	uint32_t adc_msg;
 	

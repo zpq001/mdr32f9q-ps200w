@@ -13,8 +13,6 @@
 
 #include "MDR32Fx.h" 
 #include "MDR32F9Qx_port.h"
-//#include "MDR32F9Qx_adc.h"
-//#include "MDR32F9Qx_timer.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -26,6 +24,7 @@
 #include "defines.h"
 #include "control.h"
 #include "converter.h"
+#include "sound_driver.h"
 
 
 // Globals used for communicating with converter control task called from ISR
@@ -350,6 +349,7 @@ void vTaskConverter(void *pvParameters)
 	
 	uint8_t err_code;
 	uint32_t adc_msg;
+	uint32_t sound_msg;
 	
 	// Initialize
 	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
@@ -370,9 +370,25 @@ void vTaskConverter(void *pvParameters)
 		{
 			case CONVERTER_SET_VOLTAGE:
 				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MAX))
+					sound_msg = SND_CONV_SETTING_ILLEGAL;
+				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MAX))
+					sound_msg = SND_CONV_SETTING_ILLEGAL;
+				else
+					sound_msg = SND_CONV_SETTING_OK;
+				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+				xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				break;
 			case CONVERTER_SET_CURRENT:
 				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MAX))
+					sound_msg = SND_CONV_SETTING_ILLEGAL;
+				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MAX))
+					sound_msg = SND_CONV_SETTING_ILLEGAL;
+				else
+					sound_msg = SND_CONV_SETTING_OK;
+				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+				xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				break;
 		}
 		
@@ -460,6 +476,8 @@ void vTaskConverter(void *pvParameters)
 					if (conv_state & CONV_OVERLOAD)
 					{
 						// Send message to sound driver - TODO
+						//sound_msg == SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+						//xQueueSendToBack(xQueueSound, &sound_msg, 0);
 					}
 					break;
 				}
@@ -631,7 +649,7 @@ void Converter_HWProcess(void)
 	// Overload sound warning
 	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
 	{
-		//xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
 		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
 	}
 	

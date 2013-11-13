@@ -86,12 +86,12 @@ void vTaskDispatcher(void *pvParameters)
 					// Send switch channel to 12V message
 					converter_msg.type = CONVERTER_SWITCH_TO_12VCH;
 				}
-				else if (buttons.action_down & BTN_OFF)
+				else if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
 				{
 					// Send OFF mesage to converter task
 					converter_msg.type = CONVERTER_TURN_OFF;
 				}
-				else if (buttons.action_down & BTN_ON)
+				else if ((buttons.action_down & BTN_ON) || (buttons.action_down & SW_EXTERNAL))
 				{
 					// Send ON mesage to converter task
 					converter_msg.type = CONVERTER_TURN_ON;

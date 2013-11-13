@@ -35,7 +35,7 @@ static void UpdateRawButtonState(void)
 	temp = MDR_PORTA->RXTX;
 	if (! (temp & (1<<ENC_BTN)) )
 		raw_buttons |= BTN_ENCODER;
-	if (temp & (1<<EEN))
+	if (! (temp & (1<<EEN)) )
 		raw_buttons |= SW_EXTERNAL;
 	temp = MDR_PORTB->RXTX;
 	if (! (temp & (1<<SB_ESC)) )

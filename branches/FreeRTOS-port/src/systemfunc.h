@@ -7,7 +7,7 @@
 // Peripheral blocks, used in design											
 #define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
-									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
+									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
 
 
 
@@ -26,6 +26,7 @@ void HW_SSPInit(void);
 void HW_I2CInit(void);
 void HW_ADCInit(void);
 void HW_TimersInit(void);
+void HW_DMAInit(void);
 
 void LcdSetBacklight(uint16_t value);
 

@@ -145,15 +145,27 @@ void HW_PortInit(void)
 	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_ALTER;
 	PORT_Init(MDR_PORTA, &PORT_InitStructure);
 	
-	// TODO: add USART1 pins
+	// USART1 pins	
+	PORT_StructInit(&PORT_InitStructure);
+	// TX pin
+	PORT_InitStructure.PORT_Pin   = 1<<TXD1;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_FAST;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_OVERRID;
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_Init(MDR_PORTA, &PORT_InitStructure);
+	// RX pin
+	PORT_InitStructure.PORT_Pin   = 1<<RXD1;
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_Init(MDR_PORTA, &PORT_InitStructure);
 	
 	// debug
-	PORT_StructInit(&PORT_InitStructure);
+/*	PORT_StructInit(&PORT_InitStructure);
 	PORT_InitStructure.PORT_Pin   = (1<<TXD1) | (1<<RXD1);
 	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
 	PORT_InitStructure.PORT_SPEED = PORT_SPEED_SLOW;
 	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_Init(MDR_PORTA, &PORT_InitStructure);
+	PORT_Init(MDR_PORTA, &PORT_InitStructure); */
 
 	//================= PORTB =================//
 	PORT_StructInit(&PORT_InitStructure);
@@ -272,7 +284,8 @@ void HW_UARTInit(void)
 	BaudRateStatus initStatus;
 	UART_InitTypeDef sUART;
 	UART_StructInit(&sUART);
-
+	
+	//--------------- UART2 INIT ---------------//
 	sUART.UART_BaudRate                           = 115200;
 	sUART.UART_WordLength                         = UART_WordLength8b;
 	sUART.UART_StopBits                           = UART_StopBits1;
@@ -283,7 +296,45 @@ void HW_UARTInit(void)
 	UART_BRGInit(MDR_UART2,UART_HCLKdiv1);
 	initStatus = UART_Init(MDR_UART2,&sUART);
 	UART_Cmd(MDR_UART2,ENABLE);
+	
+	//--------------- UART1 INIT ---------------//
+	sUART.UART_BaudRate                           = 115200;
+	sUART.UART_WordLength                         = UART_WordLength8b;
+	sUART.UART_StopBits                           = UART_StopBits1;
+	sUART.UART_Parity                             = UART_Parity_No;
+	sUART.UART_FIFOMode                           = UART_FIFO_ON;
+	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
+	
+	UART_BRGInit(MDR_UART1,UART_HCLKdiv1);
+	initStatus = UART_Init(MDR_UART1,&sUART);
+	UART_Cmd(MDR_UART1,ENABLE);
+	
+	//------------ UART DMA features------------//
+	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
+	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+	
+	/* Enable UART1 DMA Rx and Tx request */
+	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+	/* Enable UART2 DMA Rx and Tx request */
+	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 }
+
+//-----------------------------------------------------------------//
+// Setup DMA
+// HCLK = 32 MHz
+//-----------------------------------------------------------------//
+void HW_DMAInit(void)
+{
+	// Reset all DMA settings
+	DMA_DeInit();	
+	
+	/*
+		NVIC_EnableIRQ(DMA_IRQn);
+	
+	
+	*/
+}
+
 
 
 //-----------------------------------------------------------------//
@@ -581,7 +632,6 @@ void HW_TimersInit(void)
 
 
 }
-
 
 
 

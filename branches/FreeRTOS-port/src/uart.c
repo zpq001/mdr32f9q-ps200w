@@ -18,6 +18,8 @@
 
 #include "dwt_delay.h"
 
+// Test
+#define MDR_UARTx MDR_UART1
 uint8_t test_mode = 0;
 
 static ring_buffer_t uart2_tx_rbuf;
@@ -250,9 +252,9 @@ void vTaskUARTReceiver(void *pvParameters)
 void processUartRX(void)
 {
 	uint16_t temp;
-	while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
+	while ( (UART_GetFlagStatus(MDR_UARTx,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
 	{
-		temp = UART_ReceiveData(MDR_UART2);
+		temp = UART_ReceiveData(MDR_UARTx);
 		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
 		{
 			putIntoRingBuffer(&uart2_rx_rbuf, (char)temp);
@@ -285,10 +287,10 @@ void processUartTX(void)
 {
 	char temp;
 	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
-	while ( (!(MDR_UART2->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
+	while ( (!(MDR_UARTx->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
 	{
 		getFromRingBuffer(&uart2_tx_rbuf, &temp);
-		UART_SendData(MDR_UART2,(uint16_t)temp);
+		UART_SendData(MDR_UARTx,(uint16_t)temp);
 	}
 }
 

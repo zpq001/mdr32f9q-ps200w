@@ -132,7 +132,6 @@ void vTaskSound(void *pvParameters)
 						{
 							// Found zero sample - finished
 							state = IDLE;
-							set_beeper_output(0);
 						}
 						else
 						{
@@ -151,6 +150,7 @@ void vTaskSound(void *pvParameters)
 							current_tone_record = ptone;
 							state = APPLY_NEXT_TONE_RECORD;
 						}
+						break;
 					case APPLY_NEXT_TONE_RECORD:
 						current_tone_period = current_tone_record->tone_period;
 						current_tone_duration = current_tone_record->duration;
@@ -187,6 +187,7 @@ void vTaskSound(void *pvParameters)
 						break;
 					default:
 						current_event_priority = 0;
+						set_beeper_output(0);
 						fsm_exit = 1;
 						break;
 				}

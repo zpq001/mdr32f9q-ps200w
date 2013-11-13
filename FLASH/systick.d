@@ -23,4 +23,7 @@
 .\FLASH\systick.o: src\systemfunc.h
 .\FLASH\systick.o: src\control.h
 .\FLASH\systick.o: src\converter.h
+.\FLASH\systick.o: src\adc.h
 .\FLASH\systick.o: src\dispatcher.h
+.\FLASH\systick.o: src\uart.h
+.\FLASH\systick.o: src\dwt_delay.h

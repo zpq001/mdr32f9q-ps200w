@@ -20,7 +20,7 @@
 //-------------------------------------------------------//
 uint8_t GetOverloadStatus(void)
 {
-	return (MDR_PORTA->RXTX & (1<<OVERLD)) ? OVERLOAD : NORMAL;
+	return (MDR_PORTA->RXTX & (1<<OVERLD)) ? NORMAL : OVERLOAD;
 }
 
 // 220V AC input line state

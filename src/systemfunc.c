@@ -273,7 +273,7 @@ void HW_UARTInit(void)
 	UART_InitTypeDef sUART;
 	UART_StructInit(&sUART);
 
-	sUART.UART_BaudRate                           = 150000;
+	sUART.UART_BaudRate                           = 115200;
 	sUART.UART_WordLength                         = UART_WordLength8b;
 	sUART.UART_StopBits                           = UART_StopBits1;
 	sUART.UART_Parity                             = UART_Parity_No;
@@ -633,10 +633,10 @@ void ProcessPowerOff(void)
 
 		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
 
-		SysTickStop();
-		StopBeep();
+		//SysTickStop();
+		//StopBeep();
 
-		time_delay = DWTStartDelayUs(5000);
+		time_delay = DWT_StartDelayUs(5000);
 
 		LcdSetBacklight(0);
 		SetCoolerSpeed(0);
@@ -652,7 +652,7 @@ void ProcessPowerOff(void)
 
 
 
-		while(DWTDelayInProgress(time_delay));
+		while(DWT_DelayInProgress(time_delay));
 
 		SetFeedbackChannel(CHANNEL_12V);
 		SetCurrentLimit(CURRENT_LIM_HIGH); 
@@ -663,8 +663,8 @@ void ProcessPowerOff(void)
 
 
 
-		time_delay = DWTStartDelayUs(1000);
-		while(DWTDelayInProgress(time_delay));
+		time_delay = DWT_StartDelayUs(1000);
+		while(DWT_DelayInProgress(time_delay));
 
 		PORT_DeInit(MDR_PORTA);
 		PORT_DeInit(MDR_PORTB);

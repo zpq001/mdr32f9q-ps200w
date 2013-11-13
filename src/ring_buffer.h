@@ -13,7 +13,7 @@ typedef struct {
 
 
 #define ringBufferIsFull(rb)	((uint16_t)(rb.write_count - rb.read_count) == rb.size)
-#define ringBufferIsEmpty(rb)	((uint16_t)(rb.write_count - rb.read_count) == 0)
+#define ringBufferIsEmpty(rb)	(rb.write_count == rb.read_count)
 #define ringBufferCount(rb)		((uint16_t)(rb.write_count - rb.read_count))
 
 

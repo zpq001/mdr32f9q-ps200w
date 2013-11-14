@@ -13,11 +13,11 @@
 
 static const sample_t *event_table[] = 
 {
-	sample_beep_600Hz_x2,			// 0 - unknown command
-	sample_beep_1000Hz_50ms,		// 1
-	sample_beep_800Hz_50ms,			// 2
-	sample_beep_800Hz_x3,			// 3
-	sample_beep_800Hz_20ms			// 4
+	&sample_beep_600Hz_x2,			// 0 - unknown command
+	&sample_beep_1000Hz_50ms,		// 1
+	&sample_beep_800Hz_50ms,		// 2
+	&sample_beep_800Hz_x3,			// 3
+	&sample_beep_800Hz_20ms			// 4
 };
 
 
@@ -26,10 +26,10 @@ xQueueHandle xQueueSound;
 const uint32_t sound_driver_sync_msg = SYNC;
 const uint32_t sound_instant_overload_msg = SND_CONV_INSTANT_OVERLOAD | SND_CONVERTER_PRIORITY_HIGH;
 
-static sample_t *decode_event(uint16_t event_code)
+static const sample_t *decode_event(uint16_t event_code)
 {
-	sample_t *psample;
-	if (event_code < sizeof(event_table) / sizeof(sample_t *))
+	const sample_t *psample;
+	if (event_code >= sizeof(event_table) / sizeof(sample_t *))
 		event_code = 0;
 	psample = event_table[event_code];
 	return psample;
@@ -74,9 +74,11 @@ void vTaskSound(void *pvParameters)
 	uint16_t current_event_priority = 0;
 	
 	uint16_t state;
+	uint8_t fsm_exit;
 	
 	const sample_t *psample;
 	const tone_t *ptone;
+	const tone_t *current_tone_record;
 	uint16_t tone_repeats;
 	uint16_t current_tone_period;
 	uint16_t current_tone_duration;
@@ -93,12 +95,12 @@ void vTaskSound(void *pvParameters)
 	{
 		xQueueReceive(xQueueSound, &income_msg, portMAX_DELAY);
 		
-		income_event_priority = (uint16_t)income_msg;
-		income_event_code = (uint16_t)(income_msg >> 16);
-		
-		if (income_event_code != SYNC)
+		if (income_msg != SYNC)
 		{
 			// Received some message
+			income_event_priority = (uint16_t)income_msg;
+			income_event_code = (uint16_t)(income_msg >> 16);
+			
 			if (income_event_priority > pending_event_priority)
 			{
 				pending_event_priority = income_event_priority;

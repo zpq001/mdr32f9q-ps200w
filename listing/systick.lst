@@ -6017,7 +6017,7 @@ N
 N#define GUI_UPDATE_INTERVAL			25		// OS ticks
 N#define CONVERTER_TICK_INTERVAL		50		// OS ticks
 N#define DISPATCHER_TICK_INTERVAL	10		// OS ticks
-N
+N#define SOUND_DRIVER_TICK_INTERVAL	5
 N
 Ntypedef struct {
 N	uint32_t max_ticks_in_Systick_hook;
@@ -12337,8 +12337,8 @@ N
 N// Peripheral blocks, used in design											
 N#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
 N									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
-N									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
-X#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | 									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
+N									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
+X#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | 									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
 N
 N
 N
@@ -12357,6 +12357,7 @@ Nvoid HW_SSPInit(void);
 Nvoid HW_I2CInit(void);
 Nvoid HW_ADCInit(void);
 Nvoid HW_TimersInit(void);
+Nvoid HW_DMAInit(void);
 N
 Nvoid LcdSetBacklight(uint16_t value);
 N
@@ -12561,11 +12562,11 @@ N
 N// These defines set behavior of controller in case when 
 N// error status is generated simultaneously with processing OFF command
 N// Either must be set
-N#define CMD_HAS_PRIORITY 	0		// - no error will be shown
-N#define ERROR_HAS_PRIORITY	1		// - error will be shown
+N#define CMD_HAS_PRIORITY 	1		// - no error will be shown
+N#define ERROR_HAS_PRIORITY	0		// - error will be shown
 N
 N#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
-X#if ((0 && 1) || (!0 && !1))
+X#if ((1 && 0) || (!1 && !0))
 S#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
 N#endif 
 N
@@ -12632,7 +12633,7 @@ Nextern const conveter_message_t converter_tick_message;
 N
 Nextern converter_regulation_t *regulation_setting_p;
 N
-Nextern uint8_t cmd_ADC_to_HWProcess;
+Nextern volatile uint8_t cmd_ADC_to_HWProcess;
 N
 Nextern uint16_t voltage_adc;	// [mV]
 Nextern uint16_t current_adc;	// [mA]
@@ -12762,6 +12763,46 @@ N
 N
 N
 L 21 "src\systick.c" 2
+N#include "sound_driver.h"
+L 1 "src\sound_driver.h" 1
+N
+N//---------------------------------------------//
+N// Sound driver message codes
+N#define SYNC 								0xFFFF0000
+N#define SND_CONV_CMD_OK						0x00010000
+N#define SND_CONV_CMD_ILLEGAL				0x00020000
+N#define SND_CONV_SETTING_OK					SND_CONV_CMD_OK
+N#define SND_CONV_SETTING_ILLEGAL			SND_CONV_CMD_ILLEGAL
+N#define SND_CONV_OVERLOADED					0x00030000
+N#define SND_CONV_INSTANT_OVERLOAD			0x00040000
+N
+N//---------------------------------------------//
+N// Sound driver priorities
+N#define SND_CONVERTER_PRIORITY_NORMAL		50
+N#define SND_CONVERTER_PRIORITY_HIGH			51
+N#define SND_CONVERTER_PRIORITY_HIGHEST		52
+N
+N
+N
+N//---------------------------------------------//
+N// Sound driver FSM states - private
+N#define IDLE							0x00
+N#define START_NEW_SAMPLE				0x01
+N#define GET_NEXT_SAMPLE_RECORD			0x02
+N#define APPLY_CURRENT_SAMPLE_RECORD		0x03
+N#define APPLY_NEXT_TONE_RECORD			0x04
+N#define WAIT_FOR_CURRENT_TONE			0x05
+N
+N
+N
+Nextern xQueueHandle xQueueSound;
+Nextern const uint32_t sound_driver_sync_msg;
+Nextern const uint32_t sound_instant_overload_msg;
+N
+Nvoid vTaskSound(void *pvParameters);
+N
+N
+L 22 "src\systick.c" 2
 N
 N/* —четчик 
 Nvolatile uint32_t sysTicks = 0;
@@ -12785,6 +12826,8 @@ N	static uint32_t tmr_converter_tick = CONVERTER_TICK_INTERVAL;
 X	static uint32_t tmr_converter_tick = 50;
 N	static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
 X	static uint32_t tmr_dispatcher_tick = 10;
+N	static uint32_t tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
+X	static uint32_t tmr_sound_driver_tick = 5;
 N	portBASE_TYPE xHigherPriorityTaskWokenByPost;
 X	long xHigherPriorityTaskWokenByPost;
 N	uint32_t msg;
@@ -12821,6 +12864,14 @@ N		xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPrior
 X		xQueueGenericSendFromISR( ( xQueueDispatcher ), ( &dispatcher_tick_msg ), ( &xHigherPriorityTaskWokenByPost ), ( ( long ) 0 ) );
 N		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
 X		tmr_dispatcher_tick = 10;
+N	}
+N	
+N	if (--tmr_sound_driver_tick == 0)
+N	{
+N		xQueueSendToBackFromISR(xQueueSound, &sound_driver_sync_msg, &xHigherPriorityTaskWokenByPost);
+X		xQueueGenericSendFromISR( ( xQueueSound ), ( &sound_driver_sync_msg ), ( &xHigherPriorityTaskWokenByPost ), ( ( long ) 0 ) );
+N		tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
+X		tmr_sound_driver_tick = 5;
 N	}
 N	
 N	// Force context switching if required

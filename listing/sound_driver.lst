@@ -1,19 +1,6 @@
-L 1 "src\dispatcher.c"
-N/********************************************************************
-N	Module		Dispatcher
-N	
-N	Purpose:
-N		
-N					
-N	Globals used:
+L 1 "src\sound_driver.c"
 N
-N		
-N	Operation: FIXME
-N
-N********************************************************************/
-N
-N
-N#include "MDR32Fx.h" 
+N#include "MDR32Fx.h"                    
 L 1 "..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h" 1
 N/**
 N  ******************************************************************************
@@ -6000,7 +5987,860 @@ N
 N/******************* (C) COPYRIGHT 2010 Phyton *********************************
 N*
 N* END OF FILE MDR32Fx.h */
-L 16 "src\dispatcher.c" 2
+L 3 "src\sound_driver.c" 2
+N#include "MDR32F9Qx_timer.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_timer.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.0
+N  * @date    16/02/2011
+N  * @brief   This file contains all the functions prototypes for the TIMER
+N  *          firmware library.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_timer.h
+N  */
+N
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9QX_TIMER_H
+N#define __MDR32F9QX_TIMER_H
+N
+N/* Includes ------------------------------------------------------------------*/
+N#include "MDR32Fx.h"
+N#include "MDR32F9Qx_lib.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_lib.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.1
+N  * @date    23/03/2011
+N  * @brief   This file contains all file IDs of the Milandr MDR32F9Qx
+N  *          firmware library source files.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_lib.h
+N  */
+N
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9QX_LIB_H
+N#define __MDR32F9QX_LIB_H
+N
+N#define  FILEID__MDR32F9X_CAN_C               1
+N#define  FILEID__MDR32F9X_USB_C               2
+N#define  FILEID__MDR32F9X_EEPROM_C            3
+N#define  FILEID__MDR32F9X_RST_CLK_C           4
+N#define  FILEID__MDR32F9X_DMA_C               5
+N#define  FILEID__MDR32F9X_UART_C              6
+N#define  FILEID__MDR32F9X_SSP_C               7
+N#define  FILEID__MDR32F9X_I2C_C               8
+N#define  FILEID__MDR32F9X_POWER_C             9
+N#define  FILEID__MDR32F9X_WWDG_C             10
+N#define  FILEID__MDR32F9X_IWDG_C             11
+N#define  FILEID__MDR32F9X_TIMER_C            12
+N#define  FILEID__MDR32F9X_ADC_C              13
+N#define  FILEID__MDR32F9X_DAC_C              14
+N#define  FILEID__MDR32F9X_COMP_C             15
+N#define  FILEID__MDR32F9X_PORT_C             16
+N#define  FILEID__MDR32F9X_BKP_C              17
+N#define  FILEID__MDR32F9X_EBC_C              18
+N#define  FILEID__MDR32F9QX_USB_DEVICE_C       19
+N#define  FILEID__MDR32F9QX_USB_CDC_C          20
+N
+N#define  FILEID__USER_LO                    100
+N
+N/* Supported USB Device Classes */
+N#define USB_DEVICE_CLASS_CDC 2
+N
+N#endif /* __MDR32F9QX_LIB_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_lib.h */
+N
+L 31 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h" 2
+N
+N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
+N  * @{
+N  */
+N
+N/** @addtogroup TIMER
+N  * @{
+N  */
+N
+N/** @defgroup TIMER_Exported_Types TIMER Exported Types
+N  * @{
+N  */
+N
+N/**
+N  * @brief  TIMER Counter Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint16_t TIMER_IniCounter;            /*!< Specifies the initial counter value.
+N                                             This parameter can be a number between 0x0000 and 0xFFFF. */
+N
+N  uint16_t TIMER_Prescaler;             /*!< Specifies the prescaler value used to divide the TIMER clock.
+N                                             This parameter can be a number between 0x0000 and 0xFFFF.
+N                                             CLK = TIMER_CLK/(TIMER_Prescaler + 1) */
+N
+N  uint16_t TIMER_Period;                /*!< Specifies the period value to be loaded into the
+N                                             Auto-Reload Register (ARR) at the next update event.
+N                                             This parameter must be a number between 0x0000 and 0xFFFF.  */
+N
+N  uint16_t TIMER_CounterMode;           /*!< Specifies the counter mode.
+N                                             This parameter can be a value of @ref TIMER_Counter_Mode */
+N
+N  uint16_t TIMER_CounterDirection;      /*!< Specifies the counter direction.
+N                                             This parameter can be a value of @ref TIMER_Counter_Direction */
+N
+N  uint16_t TIMER_EventSource;           /*!< Specifies the Counter Event source.
+N                                             This parameter can be a value of @ref TIMER_Event_Source */
+N
+N  uint16_t TIMER_FilterSampling;        /*!< Specifies the filter sampling clock (FDTS).
+N                                             This parameter can be a value of @ref TIMER_Filter_Sampling */
+N
+N  uint16_t TIMER_ARR_UpdateMode;        /*!< Specifies the Auto-Reload Register (ARR) updating mode.
+N                                             This parameter can be a value of @ref TIMER_ARR_Update_Mode */
+N
+N  uint16_t TIMER_ETR_FilterConf;        /*!< Specifies the ETR Filter configuration.
+N                                             This parameter can be a value of @ref TIMER_FilterConfiguration */
+N
+N  uint16_t TIMER_ETR_Prescaler;         /*!< Specifies the ETR Prescaler configuration.
+N                                             This parameter can be a value of @ref TIMER_ETR_Prescaler */
+N
+N  uint16_t TIMER_ETR_Polarity;          /*!< Specifies the ETR Polarity configuration.
+N                                             This parameter can be a value of @ref TIMER_ETR_Polarity */
+N
+N  uint16_t TIMER_BRK_Polarity;          /*!< Specifies the BRK Polarity configuration.
+N                                             This parameter can be a value of @ref TIMER_BRK_Polarity */
+N}TIMER_CntInitTypeDef;
+N
+N/**
+N  * @brief  TIMER Channel Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint16_t TIMER_CH_Number;             /*!< Specifies the TIMER Channel number to be configured.
+N                                             This parameter can be a value of @ref TIMER_CH_Number */
+N
+N  uint16_t TIMER_CH_Mode;               /*!< Specifies the TIMER Channel mode.
+N                                             This parameter can be a value of @ref TIMER_CH_Mode */
+N
+N  uint16_t TIMER_CH_ETR_Ena;            /*!< Enables or disables ETR.
+N                                             This parameter can be a value of FunctionalState */
+N
+N  uint16_t TIMER_CH_ETR_Reset;          /*!< Enables or disables ETR Reset.
+N                                             This parameter can be a value of @ref TIMER_CH_ETR_Reset */
+N
+N  uint16_t TIMER_CH_BRK_Reset;          /*!< Enables or disables BRK Reset.
+N                                             This parameter can be a value of @ref TIMER_CH_BRK_Reset */
+N
+N  uint16_t TIMER_CH_REF_Format;         /*!< Specifies the REF signal format.
+N                                             This parameter can be a value of @ref TIMER_CH_REF_Format */
+N
+N  uint16_t TIMER_CH_Prescaler;          /*!< Specifies the TIMER Channel Prescaler configuration.
+N                                             This parameter can be a value of @ref TIMER_CH_Prescaler */
+N
+N  uint16_t TIMER_CH_EventSource;        /*!< Specifies the Channel Event source.
+N                                             This parameter can be a value of @ref TIMER_CH_EventSource */
+N
+N  uint16_t TIMER_CH_FilterConf;         /*!< Specifies the TIMER Channel Filter configuration.
+N                                             This parameter can be a value of @ref TIMER_FilterConfiguration */
+N
+N  uint16_t TIMER_CH_CCR_UpdateMode;     /*!< Specifies the TIMER CCR, CCR1 update mode.
+N                                             This parameter can be a value of @ref TIMER_CH_CCR_Update_Mode */
+N
+N  uint16_t TIMER_CH_CCR1_Ena;           /*!< Enables or disables the CCR1 register.
+N                                             This parameter can be a value of FunctionalState */
+N
+N  uint16_t TIMER_CH_CCR1_EventSource;   /*!< Specifies the Channel CCR1 Event source.
+N                                             This parameter can be a value of @ref TIMER_CH_CCR1_EventSource */
+N}TIMER_ChnInitTypeDef;
+N
+N/**
+N  * @brief  TIMER Channel Output Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint16_t TIMER_CH_Number;             /*!< Specifies the TIMER Channel number to be configured.
+N                                             This parameter can be a value of @ref TIMER_CH_Number */
+N
+N  uint16_t TIMER_CH_DirOut_Polarity;    /*!< Specifies the TIMER CHx output polarity.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Polarity */
+N
+N  uint16_t TIMER_CH_DirOut_Source;      /*!< Specifies the TIMER CHx output source.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Source */
+N
+N  uint16_t TIMER_CH_DirOut_Mode;        /*!< Specifies the TIMER CHx output enable source.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Mode */
+N
+N  uint16_t TIMER_CH_NegOut_Polarity;    /*!< Enables or disables the TIMER CHxN output inversion.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Polarity */
+N
+N  uint16_t TIMER_CH_NegOut_Source;      /*!< Specifies the TIMER CHxN output source.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Source */
+N
+N  uint16_t TIMER_CH_NegOut_Mode;        /*!< Specifies the TIMER CHxN output enable source.
+N                                             This parameter can be a value of @ref TIMER_CH_OUT_Mode */
+N
+N  uint16_t TIMER_CH_DTG_MainPrescaler;  /*!< Specifies the main prescaler of TIMER DTG.
+N                                             This parameter can be a number between 0x0000 and 0x00FF.
+N                                             Delay DTGdel = TIMER_CH_DTG_MainPrescaler*(TIMER_CH_DTG_AuxPrescaler + 1) clocks. */
+N
+N  uint16_t TIMER_CH_DTG_AuxPrescaler;   /*!< Specifies the auxiliary prescaler of TIMER DTG.
+N                                             This parameter can be a number between 0x0000 and 0x000F.
+N                                             Delay DTGdel = TIMER_CH_DTG_MainPrescaler*(TIMER_CH_DTG_AuxPrescaler + 1) clocks. */
+N
+N  uint16_t TIMER_CH_DTG_ClockSource;    /*!< Specifies the TIMER DTG clock source.
+N                                             This parameter can be a value of @ref TIMER_CH_DTG_Clock_Source */
+N}TIMER_ChnOutInitTypeDef;
+N
+N/** @} */ /* End of group TIMER_Exported_Types */
+N
+N/** @defgroup TIMER_Exported_Constants TIMER Exported Constants
+N  * @{
+N  */
+N
+N#define IS_TIMER_ALL_PERIPH(PERIPH) (((PERIPH) == MDR_TIMER1) || \
+N                                     ((PERIPH) == MDR_TIMER2) || \
+N                                     ((PERIPH) == MDR_TIMER3))
+X#define IS_TIMER_ALL_PERIPH(PERIPH) (((PERIPH) == MDR_TIMER1) ||                                      ((PERIPH) == MDR_TIMER2) ||                                      ((PERIPH) == MDR_TIMER3))
+N
+N/** @defgroup TIMER_Counter_Mode TIMER Counter Mode
+N  * @{
+N  */
+N
+N#define TIMER_CntMode_ClkFixedDir             (((uint32_t)0x0) << TIMER_CNTRL_CNT_MODE_Pos) /*!< The Timer clock changes the TIMERx_CNT value. The count direction is not changed. */
+N#define TIMER_CntMode_ClkChangeDir            (((uint32_t)0x1) << TIMER_CNTRL_CNT_MODE_Pos) /*!< The Timer clock changes the TIMERx_CNT value. The count direction changes. */
+N#define TIMER_CntMode_EvtFixedDir             (((uint32_t)0x2) << TIMER_CNTRL_CNT_MODE_Pos) /*!< The event changes the TIMERx_CNT value. The count direction is not changed. */
+N#define TIMER_CntMode_EvtChangeDir            (((uint32_t)0x3) << TIMER_CNTRL_CNT_MODE_Pos) /*!< The event changes the TIMERx_CNT value. The count direction changes. */
+N
+N#define IS_TIMER_COUNTER_MODE(MODE) (((MODE) == TIMER_CntMode_ClkFixedDir ) || \
+N                                     ((MODE) == TIMER_CntMode_ClkChangeDir) || \
+N                                     ((MODE) == TIMER_CntMode_EvtFixedDir ) || \
+N                                     ((MODE) == TIMER_CntMode_EvtChangeDir))
+X#define IS_TIMER_COUNTER_MODE(MODE) (((MODE) == TIMER_CntMode_ClkFixedDir ) ||                                      ((MODE) == TIMER_CntMode_ClkChangeDir) ||                                      ((MODE) == TIMER_CntMode_EvtFixedDir ) ||                                      ((MODE) == TIMER_CntMode_EvtChangeDir))
+N
+N/** @} */ /* End of group TIMER_Counter_Mode */
+N
+N/** @defgroup TIMER_Counter_Direction TIMER Counter Direction
+N  * @{
+N  */
+N
+N#define TIMER_CntDir_Up                       (((uint32_t)0x0) << TIMER_CNTRL_DIR_Pos)  /*!< Increments the Timer TIMERx_CNT counter value. */
+N#define TIMER_CntDir_Dn                       (((uint32_t)0x1) << TIMER_CNTRL_DIR_Pos)  /*!< Decrements the Timer TIMERx_CNT counter value. */
+N
+N#define IS_TIMER_COUNTER_DIR(DIR) (((DIR) == TIMER_CntDir_Up) || \
+N                                   ((DIR) == TIMER_CntDir_Dn))
+X#define IS_TIMER_COUNTER_DIR(DIR) (((DIR) == TIMER_CntDir_Up) ||                                    ((DIR) == TIMER_CntDir_Dn))
+N
+N/** @} */ /* End of group TIMER_Counter_Direction */
+N
+N/** @defgroup TIMER_Event_Source TIMER Event Source
+N  * @{
+N  */
+N
+N#define TIMER_EvSrc_None                      (((uint32_t)0x0) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< No events. */
+N#define TIMER_EvSrc_TM1                       (((uint32_t)0x1) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects TIMER1 (CNT == ARR) event. */
+N#define TIMER_EvSrc_TM2                       (((uint32_t)0x2) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects TIMER2 (CNT == ARR) event. */
+N#define TIMER_EvSrc_TM3                       (((uint32_t)0x3) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects TIMER3 (CNT == ARR) event. */
+N#define TIMER_EvSrc_CH1                       (((uint32_t)0x4) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects Channel 1 event. */
+N#define TIMER_EvSrc_CH2                       (((uint32_t)0x5) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects Channel 2 event. */
+N#define TIMER_EvSrc_CH3                       (((uint32_t)0x6) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects Channel 3 event. */
+N#define TIMER_EvSrc_CH4                       (((uint32_t)0x7) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects Channel 4 event. */
+N#define TIMER_EvSrc_ETR                       (((uint32_t)0x8) << TIMER_CNTRL_EVENT_SEL_Pos)  /*!< Selects ETR event. */
+N
+N#define IS_TIMER_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_EvSrc_None) || \
+N                                       ((SOURCE) == TIMER_EvSrc_TM1 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_TM2 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_TM3 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_CH1 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_CH2 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_CH3 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_CH4 ) || \
+N                                       ((SOURCE) == TIMER_EvSrc_ETR ))
+X#define IS_TIMER_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_EvSrc_None) ||                                        ((SOURCE) == TIMER_EvSrc_TM1 ) ||                                        ((SOURCE) == TIMER_EvSrc_TM2 ) ||                                        ((SOURCE) == TIMER_EvSrc_TM3 ) ||                                        ((SOURCE) == TIMER_EvSrc_CH1 ) ||                                        ((SOURCE) == TIMER_EvSrc_CH2 ) ||                                        ((SOURCE) == TIMER_EvSrc_CH3 ) ||                                        ((SOURCE) == TIMER_EvSrc_CH4 ) ||                                        ((SOURCE) == TIMER_EvSrc_ETR ))
+N
+N/** @} */ /* End of group TIMER_Event_Source */
+N
+N/** @defgroup TIMER_Filter_Sampling TIMER Filter Sampling Clock
+N  * @{
+N  */
+N
+N#define TIMER_FDTS_TIMER_CLK_div_1              (((uint32_t)0x0) << TIMER_CNTRL_FDTS_Pos) /*!< The FDTS clock occures each TIMER_CLK clock. */
+N#define TIMER_FDTS_TIMER_CLK_div_2              (((uint32_t)0x1) << TIMER_CNTRL_FDTS_Pos) /*!< The FDTS clock occures each 2-nd TIMER_CLK clock. */
+N#define TIMER_FDTS_TIMER_CLK_div_3              (((uint32_t)0x2) << TIMER_CNTRL_FDTS_Pos) /*!< The FDTS clock occures each 3-rd TIMER_CLK clock. */
+N#define TIMER_FDTS_TIMER_CLK_div_4              (((uint32_t)0x3) << TIMER_CNTRL_FDTS_Pos) /*!< The FDTS clock occures each 4-th TIMER_CLK clock. */
+N
+N#define IS_TIMER_FILTER_SAMPLING(CONFIG) (((CONFIG) == TIMER_FDTS_TIMER_CLK_div_1) || \
+N                                          ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_2) || \
+N                                          ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_3) || \
+N                                          ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_4))
+X#define IS_TIMER_FILTER_SAMPLING(CONFIG) (((CONFIG) == TIMER_FDTS_TIMER_CLK_div_1) ||                                           ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_2) ||                                           ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_3) ||                                           ((CONFIG) == TIMER_FDTS_TIMER_CLK_div_4))
+N
+N/** @} */ /* End of group TIMER_Filter_Sampling */
+N
+N/** @defgroup TIMER_ARR_Update_Mode TIMER ARR Update Mode
+N  * @{
+N  */
+N
+N#define TIMER_ARR_Update_Immediately          (((uint32_t)0x0) << TIMER_CNTRL_ARRB_EN_Pos)  /*!< The ARR register is updated immediately. */
+N#define TIMER_ARR_Update_On_CNT_Overflow      (((uint32_t)0x1) << TIMER_CNTRL_ARRB_EN_Pos)  /*!< The ARR register is updated at CNT count end. */
+N
+N#define IS_TIMER_ARR_UPDATE_MODE(MODE) (((MODE) == TIMER_ARR_Update_Immediately    ) || \
+N                                        ((MODE) == TIMER_ARR_Update_On_CNT_Overflow))
+X#define IS_TIMER_ARR_UPDATE_MODE(MODE) (((MODE) == TIMER_ARR_Update_Immediately    ) ||                                         ((MODE) == TIMER_ARR_Update_On_CNT_Overflow))
+N
+N/** @} */ /* End of group TIMER_ARR_UpdateMode */
+N
+N/** @defgroup TIMER_FilterConfiguration TIMER Filter configuration
+N  * @{
+N  */
+N
+N#define TIMER_Filter_1FF_at_TIMER_CLK         ((uint32_t)0x0)  /*!< Signal is latched by 1 trigger  at TIMER_CLK clock frequency. */
+N#define TIMER_Filter_2FF_at_TIMER_CLK         ((uint32_t)0x1)  /*!< Signal is latched by 2 triggers at TIMER_CLK clock frequency. */
+N#define TIMER_Filter_4FF_at_TIMER_CLK         ((uint32_t)0x2)  /*!< Signal is latched by 4 triggers at TIMER_CLK clock frequency. */
+N#define TIMER_Filter_8FF_at_TIMER_CLK         ((uint32_t)0x3)  /*!< Signal is latched by 8 triggers at TIMER_CLK clock frequency. */
+N#define TIMER_Filter_6FF_at_FTDS_div_2        ((uint32_t)0x4)  /*!< Signal is latched by 6 triggers at FDTS/2  clock frequency. */
+N#define TIMER_Filter_8FF_at_FTDS_div_2        ((uint32_t)0x5)  /*!< Signal is latched by 8 triggers at FDTS/2  clock frequency. */
+N#define TIMER_Filter_6FF_at_FTDS_div_4        ((uint32_t)0x6)  /*!< Signal is latched by 6 triggers at FDTS/4  clock frequency. */
+N#define TIMER_Filter_8FF_at_FTDS_div_4        ((uint32_t)0x7)  /*!< Signal is latched by 8 triggers at FDTS/4  clock frequency. */
+N#define TIMER_Filter_6FF_at_FTDS_div_8        ((uint32_t)0x8)  /*!< Signal is latched by 6 triggers at FDTS/8  clock frequency. */
+N#define TIMER_Filter_8FF_at_FTDS_div_8        ((uint32_t)0x9)  /*!< Signal is latched by 8 triggers at FDTS/8  clock frequency. */
+N#define TIMER_Filter_5FF_at_FTDS_div_16       ((uint32_t)0xA)  /*!< Signal is latched by 5 triggers at FDTS/16 clock frequency. */
+N#define TIMER_Filter_6FF_at_FTDS_div_16       ((uint32_t)0xB)  /*!< Signal is latched by 6 triggers at FDTS/16 clock frequency. */
+N#define TIMER_Filter_8FF_at_FTDS_div_16       ((uint32_t)0xC)  /*!< Signal is latched by 8 triggers at FDTS/16 clock frequency. */
+N#define TIMER_Filter_5FF_at_FTDS_div_32       ((uint32_t)0xD)  /*!< Signal is latched by 5 triggers at FDTS/32 clock frequency. */
+N#define TIMER_Filter_6FF_at_FTDS_div_32       ((uint32_t)0xE)  /*!< Signal is latched by 6 triggers at FDTS/32 clock frequency. */
+N#define TIMER_Filter_8FF_at_FTDS_div_32       ((uint32_t)0xF)  /*!< Signal is latched by 8 triggers at FDTS/32 clock frequency. */
+N
+N#define IS_TIMER_FILTER_CONF(CONF) (((CONF) == TIMER_Filter_1FF_at_TIMER_CLK  ) || \
+N                                    ((CONF) == TIMER_Filter_2FF_at_TIMER_CLK  ) || \
+N                                    ((CONF) == TIMER_Filter_4FF_at_TIMER_CLK  ) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_TIMER_CLK  ) || \
+N                                    ((CONF) == TIMER_Filter_6FF_at_FTDS_div_2 ) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_FTDS_div_2 ) || \
+N                                    ((CONF) == TIMER_Filter_6FF_at_FTDS_div_4 ) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_FTDS_div_4 ) || \
+N                                    ((CONF) == TIMER_Filter_6FF_at_FTDS_div_8 ) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_FTDS_div_8 ) || \
+N                                    ((CONF) == TIMER_Filter_5FF_at_FTDS_div_16) || \
+N                                    ((CONF) == TIMER_Filter_6FF_at_FTDS_div_16) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_FTDS_div_16) || \
+N                                    ((CONF) == TIMER_Filter_5FF_at_FTDS_div_32) || \
+N                                    ((CONF) == TIMER_Filter_6FF_at_FTDS_div_32) || \
+N                                    ((CONF) == TIMER_Filter_8FF_at_FTDS_div_32))
+X#define IS_TIMER_FILTER_CONF(CONF) (((CONF) == TIMER_Filter_1FF_at_TIMER_CLK  ) ||                                     ((CONF) == TIMER_Filter_2FF_at_TIMER_CLK  ) ||                                     ((CONF) == TIMER_Filter_4FF_at_TIMER_CLK  ) ||                                     ((CONF) == TIMER_Filter_8FF_at_TIMER_CLK  ) ||                                     ((CONF) == TIMER_Filter_6FF_at_FTDS_div_2 ) ||                                     ((CONF) == TIMER_Filter_8FF_at_FTDS_div_2 ) ||                                     ((CONF) == TIMER_Filter_6FF_at_FTDS_div_4 ) ||                                     ((CONF) == TIMER_Filter_8FF_at_FTDS_div_4 ) ||                                     ((CONF) == TIMER_Filter_6FF_at_FTDS_div_8 ) ||                                     ((CONF) == TIMER_Filter_8FF_at_FTDS_div_8 ) ||                                     ((CONF) == TIMER_Filter_5FF_at_FTDS_div_16) ||                                     ((CONF) == TIMER_Filter_6FF_at_FTDS_div_16) ||                                     ((CONF) == TIMER_Filter_8FF_at_FTDS_div_16) ||                                     ((CONF) == TIMER_Filter_5FF_at_FTDS_div_32) ||                                     ((CONF) == TIMER_Filter_6FF_at_FTDS_div_32) ||                                     ((CONF) == TIMER_Filter_8FF_at_FTDS_div_32))
+N
+N/** @} */ /* End of group TIMER_FilterConfiguration */
+N
+N/** @defgroup TIMER_ETR_Prescaler TIMER ETR Prescaler
+N  * @{
+N  */
+N
+N#define TIMER_ETR_Prescaler_None              (((uint32_t)0x0) << TIMER_BRKETR_CNTRL_ETR_PSC_Pos)  /*!< No division of input frequency. */
+N#define TIMER_ETR_Prescaler_div_2             (((uint32_t)0x1) << TIMER_BRKETR_CNTRL_ETR_PSC_Pos)  /*!< Selects input frequency divider by 2. */
+N#define TIMER_ETR_Prescaler_div_4             (((uint32_t)0x2) << TIMER_BRKETR_CNTRL_ETR_PSC_Pos)  /*!< Selects input frequency divider by 4. */
+N#define TIMER_ETR_Prescaler_div_8             (((uint32_t)0x3) << TIMER_BRKETR_CNTRL_ETR_PSC_Pos)  /*!< Selects input frequency divider by 8. */
+N
+N#define IS_TIMER_ETR_PRESCALER(VALUE) (((VALUE) == TIMER_ETR_Prescaler_None ) || \
+N                                       ((VALUE) == TIMER_ETR_Prescaler_div_2) || \
+N                                       ((VALUE) == TIMER_ETR_Prescaler_div_4) || \
+N                                       ((VALUE) == TIMER_ETR_Prescaler_div_8))
+X#define IS_TIMER_ETR_PRESCALER(VALUE) (((VALUE) == TIMER_ETR_Prescaler_None ) ||                                        ((VALUE) == TIMER_ETR_Prescaler_div_2) ||                                        ((VALUE) == TIMER_ETR_Prescaler_div_4) ||                                        ((VALUE) == TIMER_ETR_Prescaler_div_8))
+N
+N/** @} */ /* End of group TIMER_ETR_Prescaler */
+N
+N/** @defgroup TIMER_ETR_Polarity TIMER ETR Polarity
+N  * @{
+N  */
+N
+N#define TIMER_ETRPolarity_NonInverted         (((uint32_t)0x0) << TIMER_BRKETR_CNTRL_ETR_INV_Pos)  /*!< No inversion of the ETR input. */
+N#define TIMER_ETRPolarity_Inverted            (((uint32_t)0x1) << TIMER_BRKETR_CNTRL_ETR_INV_Pos)  /*!< The ETR input is inverted. */
+N
+N#define IS_TIMER_ETR_POLARITY(STATE) (((STATE) == TIMER_ETRPolarity_NonInverted) || \
+N                                      ((STATE) == TIMER_ETRPolarity_Inverted   ))
+X#define IS_TIMER_ETR_POLARITY(STATE) (((STATE) == TIMER_ETRPolarity_NonInverted) ||                                       ((STATE) == TIMER_ETRPolarity_Inverted   ))
+N
+N/** @} */ /* End of group TIMER_ETR_Polarity */
+N
+N/** @defgroup TIMER_BRK_Polarity TIMER BRK Polarity
+N  * @{
+N  */
+N
+N#define TIMER_BRKPolarity_NonInverted         (((uint32_t)0x0) << TIMER_BRKETR_CNTRL_BRK_INV_Pos)  /*!< No inversion of the BRK input. */
+N#define TIMER_BRKPolarity_Inverted            (((uint32_t)0x1) << TIMER_BRKETR_CNTRL_BRK_INV_Pos)  /*!< The BRK input is inverted. */
+N
+N#define IS_TIMER_BRK_POLARITY(STATE) (((STATE) == TIMER_BRKPolarity_NonInverted) || \
+N                                      ((STATE) == TIMER_BRKPolarity_Inverted   ))
+X#define IS_TIMER_BRK_POLARITY(STATE) (((STATE) == TIMER_BRKPolarity_NonInverted) ||                                       ((STATE) == TIMER_BRKPolarity_Inverted   ))
+N
+N/** @} */ /* End of group TIMER_BRK_Polarity */
+N
+N/** @defgroup TIMER_CH_Number TIMER Channel Number
+N  * @{
+N  */
+N
+N#define TIMER_CHANNEL1                        ((uint32_t)0x0)  /*!< Specifies the TIMER channel 1. */
+N#define TIMER_CHANNEL2                        ((uint32_t)0x1)  /*!< Specifies the TIMER channel 2. */
+N#define TIMER_CHANNEL3                        ((uint32_t)0x2)  /*!< Specifies the TIMER channel 3. */
+N#define TIMER_CHANNEL4                        ((uint32_t)0x3)  /*!< Specifies the TIMER channel 4. */
+N
+N#define IS_TIMER_CHANNEL_NUMBER(NUMBER) (((NUMBER) == TIMER_CHANNEL1) || \
+N                                         ((NUMBER) == TIMER_CHANNEL2) || \
+N                                         ((NUMBER) == TIMER_CHANNEL3) || \
+N                                         ((NUMBER) == TIMER_CHANNEL4))
+X#define IS_TIMER_CHANNEL_NUMBER(NUMBER) (((NUMBER) == TIMER_CHANNEL1) ||                                          ((NUMBER) == TIMER_CHANNEL2) ||                                          ((NUMBER) == TIMER_CHANNEL3) ||                                          ((NUMBER) == TIMER_CHANNEL4))
+N
+N/** @} */ /* End of group TIMER_CH_Number */
+N
+N/** @defgroup TIMER_CH_ETR_Reset TIMER Channel ETR Reset configuration
+N  * @{
+N  */
+N
+N#define TIMER_CH_ETR_RESET_Disable            (((uint32_t)0x0) << TIMER_CH_CNTRL_ETREN_Pos)   /*!< Disables ETR Reset. */
+N#define TIMER_CH_ETR_RESET_Enable             (((uint32_t)0x1) << TIMER_CH_CNTRL_ETREN_Pos)   /*!< Enables ETR Reset. */
+N
+N#define IS_TIMER_CHANNEL_ETR_RESET_CONFIG(CONFIG) (((CONFIG) == TIMER_CH_ETR_RESET_Disable) || \
+N                                                   ((CONFIG) == TIMER_CH_ETR_RESET_Enable ))
+X#define IS_TIMER_CHANNEL_ETR_RESET_CONFIG(CONFIG) (((CONFIG) == TIMER_CH_ETR_RESET_Disable) ||                                                    ((CONFIG) == TIMER_CH_ETR_RESET_Enable ))
+N
+N/** @} */ /* End of group TIMER_CH_ETR_Reset */
+N
+N/** @defgroup TIMER_CH_BRK_Reset TIMER Channel BRK Reset configuration
+N  * @{
+N  */
+N
+N#define TIMER_CH_BRK_RESET_Disable            (((uint32_t)0x0) << TIMER_CH_CNTRL_BRKEN_Pos)   /*!< Disables BRK Reset. */
+N#define TIMER_CH_BRK_RESET_Enable             (((uint32_t)0x1) << TIMER_CH_CNTRL_BRKEN_Pos)   /*!< Enables BRK Reset. */
+N
+N#define IS_TIMER_CHANNEL_BRK_RESET_CONFIG(CONFIG) (((CONFIG) == TIMER_CH_BRK_RESET_Disable) || \
+N                                                   ((CONFIG) == TIMER_CH_BRK_RESET_Enable ))
+X#define IS_TIMER_CHANNEL_BRK_RESET_CONFIG(CONFIG) (((CONFIG) == TIMER_CH_BRK_RESET_Disable) ||                                                    ((CONFIG) == TIMER_CH_BRK_RESET_Enable ))
+N
+N/** @} */ /* End of group TIMER_CH_BRK_Reset */
+N
+N/** @defgroup TIMER_CH_Mode TIMER Channel Mode
+N  * @{
+N  */
+N
+N#define TIMER_CH_MODE_PWM                     (((uint32_t)0x0) << TIMER_CH_CNTRL_CAP_NPWM_Pos)  /*!< Specifies the PWM channel mode. */
+N#define TIMER_CH_MODE_CAPTURE                 (((uint32_t)0x1) << TIMER_CH_CNTRL_CAP_NPWM_Pos)  /*!< Specifies the Capture channel mode. */
+N
+N#define IS_TIMER_CHANNEL_MODE(MODE) (((MODE) == TIMER_CH_MODE_PWM    ) || \
+N                                     ((MODE) == TIMER_CH_MODE_CAPTURE))
+X#define IS_TIMER_CHANNEL_MODE(MODE) (((MODE) == TIMER_CH_MODE_PWM    ) ||                                      ((MODE) == TIMER_CH_MODE_CAPTURE))
+N
+N/** @} */ /* End of group TIMER_CH_Mode */
+N
+N/** @defgroup TIMER_CH_REF_Format TIMER Channel REF Format
+N  * @{
+N  */
+N
+N#define TIMER_CH_REF_Format0                  (((uint32_t)0x0) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to 0 */
+N#define TIMER_CH_REF_Format1                  (((uint32_t)0x1) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to 1 if:
+N                                                                                                   (CNT == CCR) or
+N                                                                                                   ((CNT == CCR1) and CCR1 enabled),
+N                                                                                                 else REF is equal to 0. */
+N#define TIMER_CH_REF_Format2                  (((uint32_t)0x2) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to 0 if:
+N                                                                                                   (CNT == CCR) or
+N                                                                                                   ((CNT == CCR1) and CCR1 enabled),
+N                                                                                                 else REF is equal to 1. */
+N#define TIMER_CH_REF_Format3                  (((uint32_t)0x3) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< Toggle REF state if:
+N                                                                                                   (CNT == CCR) or
+N                                                                                                   ((CNT == CCR1) and CCR1 enabled). */
+N#define TIMER_CH_REF_Format4                  (((uint32_t)0x4) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to 0. */
+N#define TIMER_CH_REF_Format5                  (((uint32_t)0x5) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to 1. */
+N#define TIMER_CH_REF_Format6                  (((uint32_t)0x6) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to inverted DIR state if:
+N                                                                                                   (CCR1 disabled and (CNT < CCR)) or
+N                                                                                                   (CCR1 enabled  and (CCR1 < CNT < CCR)),
+N                                                                                                 else REF is equal to DIR state. */
+N#define TIMER_CH_REF_Format7                  (((uint32_t)0x7) << TIMER_CH_CNTRL_OCCM_Pos)  /*!< REF is equal to DIR state if:
+N                                                                                                   (CCR1 disabled and (CNT < CCR)) or
+N                                                                                                   (CCR1 enabled  and (CCR1 < CNT < CCR)),
+N                                                                                                 else REF is equal to inverted DIR state. */
+N
+N#define IS_TIMER_CHANNEL_REF_FORMAT(FORMAT) (((FORMAT) == TIMER_CH_REF_Format0) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format1) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format2) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format3) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format4) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format5) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format6) || \
+N                                             ((FORMAT) == TIMER_CH_REF_Format7))
+X#define IS_TIMER_CHANNEL_REF_FORMAT(FORMAT) (((FORMAT) == TIMER_CH_REF_Format0) ||                                              ((FORMAT) == TIMER_CH_REF_Format1) ||                                              ((FORMAT) == TIMER_CH_REF_Format2) ||                                              ((FORMAT) == TIMER_CH_REF_Format3) ||                                              ((FORMAT) == TIMER_CH_REF_Format4) ||                                              ((FORMAT) == TIMER_CH_REF_Format5) ||                                              ((FORMAT) == TIMER_CH_REF_Format6) ||                                              ((FORMAT) == TIMER_CH_REF_Format7))
+N
+N/** @} */ /* End of group TIMER_CH_REF_Format */
+N
+N/** @defgroup TIMER_CH_Prescaler TIMER Channel Prescaler
+N  * @{
+N  */
+N
+N#define TIMER_CH_Prescaler_None               ((uint32_t)0x0)  /*!< No division of input frequency. */
+N#define TIMER_CH_Prescaler_div_2              ((uint32_t)0x1)  /*!< Selects input frequency divider by 2. */
+N#define TIMER_CH_Prescaler_div_4              ((uint32_t)0x2)  /*!< Selects input frequency divider by 4. */
+N#define TIMER_CH_Prescaler_div_8              ((uint32_t)0x3)  /*!< Selects input frequency divider by 8. */
+N
+N#define IS_TIMER_CHANNEL_PRESCALER(VALUE) (((VALUE) == TIMER_CH_Prescaler_None ) || \
+N                                           ((VALUE) == TIMER_CH_Prescaler_div_2) || \
+N                                           ((VALUE) == TIMER_CH_Prescaler_div_4) || \
+N                                           ((VALUE) == TIMER_CH_Prescaler_div_8))
+X#define IS_TIMER_CHANNEL_PRESCALER(VALUE) (((VALUE) == TIMER_CH_Prescaler_None ) ||                                            ((VALUE) == TIMER_CH_Prescaler_div_2) ||                                            ((VALUE) == TIMER_CH_Prescaler_div_4) ||                                            ((VALUE) == TIMER_CH_Prescaler_div_8))
+N
+N/** @} */ /* End of group TIMER_CH_Prescaler */
+N
+N/** @defgroup TIMER_CH_EventSource TIMER Channel Event Source
+N  * @{
+N  */
+N
+N#define TIMER_CH_EvSrc_PE                     (((uint32_t)0x0) << TIMER_CH_CNTRL_CHSEL_Pos)  /*!< Selects positive edge from current TIMER channel. */
+N#define TIMER_CH_EvSrc_NE                     (((uint32_t)0x1) << TIMER_CH_CNTRL_CHSEL_Pos)  /*!< Selects negative edge from current TIMER channel. */
+N#define TIMER_CH_EvSrc_PE_OC1                 (((uint32_t)0x2) << TIMER_CH_CNTRL_CHSEL_Pos)  /*!< Selects positive edge from other TIMER channel (variant 1). */
+N#define TIMER_CH_EvSrc_PE_OC2                 (((uint32_t)0x3) << TIMER_CH_CNTRL_CHSEL_Pos)  /*!< Selects positive edge from other TIMER channel (variant 2). */
+N
+N#define IS_TIMER_CHANNEL_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_EvSrc_PE    ) || \
+N                                               ((SOURCE) == TIMER_CH_EvSrc_NE    ) || \
+N                                               ((SOURCE) == TIMER_CH_EvSrc_PE_OC1) || \
+N                                               ((SOURCE) == TIMER_CH_EvSrc_PE_OC2))
+X#define IS_TIMER_CHANNEL_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_EvSrc_PE    ) ||                                                ((SOURCE) == TIMER_CH_EvSrc_NE    ) ||                                                ((SOURCE) == TIMER_CH_EvSrc_PE_OC1) ||                                                ((SOURCE) == TIMER_CH_EvSrc_PE_OC2))
+N
+N/** @} */ /* End of group TIMER_CH_EventSource */
+N
+N/** @defgroup TIMER_CH_CCR1_EventSource TIMER Channel CCR1 Event Source
+N  * @{
+N  */
+N
+N#define TIMER_CH_CCR1EvSrc_PE                 (((uint32_t)0x0) << TIMER_CH_CNTRL2_CHSEL1_Pos)  /*!< Selects positive edge from current TIMER channel. */
+N#define TIMER_CH_CCR1EvSrc_NE                 (((uint32_t)0x1) << TIMER_CH_CNTRL2_CHSEL1_Pos)  /*!< Selects negative edge from current TIMER channel. */
+N#define TIMER_CH_CCR1EvSrc_NE_OC1             (((uint32_t)0x2) << TIMER_CH_CNTRL2_CHSEL1_Pos)  /*!< Selects negative edge from other TIMER channel (variant 1). */
+N#define TIMER_CH_CCR1EvSrc_NE_OC2             (((uint32_t)0x3) << TIMER_CH_CNTRL2_CHSEL1_Pos)  /*!< Selects negative edge from other TIMER channel (variant 2). */
+N
+N#define IS_TIMER_CHANNEL_CCR1_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_CCR1EvSrc_PE    ) || \
+N                                                    ((SOURCE) == TIMER_CH_CCR1EvSrc_NE    ) || \
+N                                                    ((SOURCE) == TIMER_CH_CCR1EvSrc_NE_OC1) || \
+N                                                    ((SOURCE) == TIMER_CH_CCR1EvSrc_NE_OC2))
+X#define IS_TIMER_CHANNEL_CCR1_EVENT_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_CCR1EvSrc_PE    ) ||                                                     ((SOURCE) == TIMER_CH_CCR1EvSrc_NE    ) ||                                                     ((SOURCE) == TIMER_CH_CCR1EvSrc_NE_OC1) ||                                                     ((SOURCE) == TIMER_CH_CCR1EvSrc_NE_OC2))
+N
+N/** @} */ /* End of group TIMER_CH_CCR1_EventSource */
+N
+N/** @defgroup TIMER_CH_CCR_Update_Mode TIMER CCR, CCR1 Update mode
+N  * @{
+N  */
+N
+N#define TIMER_CH_CCR_Update_Immediately       (((uint32_t)0x0) << TIMER_CH_CNTRL2_CCRRLD_Pos)  /*!< The CCR, CCR1 registers is updated immediately. */
+N#define TIMER_CH_CCR_Update_On_CNT_eq_0       (((uint32_t)0x1) << TIMER_CH_CNTRL2_CCRRLD_Pos)  /*!< The CCR, CCR1 registers is updated at (CNT == 0) condition. */
+N
+N#define IS_TIMER_CHANNEL_CCR_UPDATE_MODE(MODE) (((MODE) == TIMER_CH_CCR_Update_Immediately) || \
+N                                                ((MODE) == TIMER_CH_CCR_Update_On_CNT_eq_0))
+X#define IS_TIMER_CHANNEL_CCR_UPDATE_MODE(MODE) (((MODE) == TIMER_CH_CCR_Update_Immediately) ||                                                 ((MODE) == TIMER_CH_CCR_Update_On_CNT_eq_0))
+N
+N/** @} */ /* End of group TIMER_CH_CCR_UpdateMode */
+N
+N/** @defgroup TIMER_CH_OUT_Polarity TIMER Channel Output Polarity
+N  * @{
+N  */
+N
+N#define TIMER_CHOPolarity_NonInverted         ((uint32_t)0x0)   /*!< No inversion on the Channel output. */
+N#define TIMER_CHOPolarity_Inverted            ((uint32_t)0x1)   /*!< The Channel output is inverted. */
+N
+N#define IS_TIMER_CHO_POLARITY(STATE) (((STATE) == TIMER_CHOPolarity_NonInverted) || \
+N                                      ((STATE) == TIMER_CHOPolarity_Inverted   ))
+X#define IS_TIMER_CHO_POLARITY(STATE) (((STATE) == TIMER_CHOPolarity_NonInverted) ||                                       ((STATE) == TIMER_CHOPolarity_Inverted   ))
+N
+N/** @} */ /* End of group TIMER_CH_OUT_Polarity */
+N
+N/** @defgroup TIMER_CH_OUT_Source TIMER Channel Output Source
+N  * @{
+N  */
+N
+N#define TIMER_CH_OutSrc_Only_0                ((uint32_t)0x0)   /*!< Selects the '0' state on the CHx (or CHxN) line. */
+N#define TIMER_CH_OutSrc_Only_1                ((uint32_t)0x1)   /*!< Selects the '1' state on the CHx (or CHxN) line. */
+N#define TIMER_CH_OutSrc_REF                   ((uint32_t)0x2)   /*!< Selects the REF state on the CHx (or CHxN) line. */
+N#define TIMER_CH_OutSrc_DTG                   ((uint32_t)0x3)   /*!< Selects the DTG output state on the CHx (or CHxN) line. */
+N
+N#define IS_TIMER_CHO_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_OutSrc_Only_0) || \
+N                                     ((SOURCE) == TIMER_CH_OutSrc_Only_1) || \
+N                                     ((SOURCE) == TIMER_CH_OutSrc_REF   ) || \
+N                                     ((SOURCE) == TIMER_CH_OutSrc_DTG   ))
+X#define IS_TIMER_CHO_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_OutSrc_Only_0) ||                                      ((SOURCE) == TIMER_CH_OutSrc_Only_1) ||                                      ((SOURCE) == TIMER_CH_OutSrc_REF   ) ||                                      ((SOURCE) == TIMER_CH_OutSrc_DTG   ))
+N
+N/** @} */ /* End of group TIMER_CH_OUT_Source */
+N
+N/** @defgroup TIMER_CH_OUT_Mode TIMER Channel Output Enable Source
+N  * @{
+N  */
+N
+N#define TIMER_CH_OutMode_Input                ((uint32_t)0x0)   /*!< Selects the Input mode on the CHx (or CHxN) line. */
+N#define TIMER_CH_OutMode_Output               ((uint32_t)0x1)   /*!< Selects the Output mode on the CHx (or CHxN) line. */
+N#define TIMER_CH_OutMode_REF_as_OE            ((uint32_t)0x2)   /*!< The REF signal specifies the CHx (or CHxN) line mode. */
+N#define TIMER_CH_OutMode_DTG_as_OE            ((uint32_t)0x3)   /*!< The DTG output specifies the CHx (or CHxN) line mode. */
+N
+N#define IS_TIMER_CHO_MODE(MODE) (((MODE) == TIMER_CH_OutMode_Input    ) || \
+N                                 ((MODE) == TIMER_CH_OutMode_Output   ) || \
+N                                 ((MODE) == TIMER_CH_OutMode_REF_as_OE) || \
+N                                 ((MODE) == TIMER_CH_OutMode_DTG_as_OE))
+X#define IS_TIMER_CHO_MODE(MODE) (((MODE) == TIMER_CH_OutMode_Input    ) ||                                  ((MODE) == TIMER_CH_OutMode_Output   ) ||                                  ((MODE) == TIMER_CH_OutMode_REF_as_OE) ||                                  ((MODE) == TIMER_CH_OutMode_DTG_as_OE))
+N
+N/** @} */ /* End of group TIMER_CH_OUT_Mode */
+N
+N/** @defgroup TIMER_CH_DTG_Prescaler TIMER Channel DTG Prescaler
+N  * @{
+N  */
+N
+N#define IS_TIMER_CHANNEL_DTG_MAIN_PRESCALER(VALUE) (((VALUE) >> 8) == 0)
+N
+N#define IS_TIMER_CHANNEL_DTG_AUX_PRESCALER(VALUE) (((VALUE) >> 4) == 0)
+N
+N/** @} */ /* End of group TIMER_CH_DTG_Prescaler */
+N
+N/** @defgroup TIMER_CH_DTG_Clock_Source TIMER Channel DTG Clock Source
+N  * @{
+N  */
+N
+N#define TIMER_CH_DTG_ClkSrc_TIMER_CLK         (((uint32_t)0x0) << TIMER_CH_DTG_EDTS_Pos)  /*!< Specifies the TIMER_CLK signal as DTG clock source. */
+N#define TIMER_CH_DTG_ClkSrc_FDTS              (((uint32_t)0x1) << TIMER_CH_DTG_EDTS_Pos)  /*!< Specifies the FDTS signal as DTG clock source. */
+N
+N#define IS_TIMER_CHANNEL_DTG_CLK_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_DTG_ClkSrc_TIMER_CLK) || \
+N                                                 ((SOURCE) == TIMER_CH_DTG_ClkSrc_FDTS     ))
+X#define IS_TIMER_CHANNEL_DTG_CLK_SOURCE(SOURCE) (((SOURCE) == TIMER_CH_DTG_ClkSrc_TIMER_CLK) ||                                                  ((SOURCE) == TIMER_CH_DTG_ClkSrc_FDTS     ))
+N
+N/** @} */ /* End of group TIMER_CH_DTG_Clock_Source */
+N
+N/** @defgroup TIMER_StatusFlags TIMER Status flags
+N  * @{
+N  */
+N
+N#define TIMER_STATUS_CNT_ZERO                 (((uint32_t)0x1) <<  0) /*!< The (CNT == 0) condition occured. */
+N#define TIMER_STATUS_CNT_ARR                  (((uint32_t)0x1) <<  1) /*!< The (CNT == ARR) condition occured. */
+N#define TIMER_STATUS_ETR_RISING_EDGE          (((uint32_t)0x1) <<  2) /*!< The ETR rising edge occured. */
+N#define TIMER_STATUS_ETR_FALLING_EDGE         (((uint32_t)0x1) <<  3) /*!< The ETR falling edge occured. */
+N#define TIMER_STATUS_BRK                      (((uint32_t)0x1) <<  4) /*!< The (BRK == 1) condition occured. */
+N#define TIMER_STATUS_CCR_CAP_CH1              (((uint32_t)0x1) <<  5) /*!< The Channel 1 CCR capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP_CH2              (((uint32_t)0x1) <<  6) /*!< The Channel 2 CCR capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP_CH3              (((uint32_t)0x1) <<  7) /*!< The Channel 3 CCR capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP_CH4              (((uint32_t)0x1) <<  8) /*!< The Channel 4 CCR capture condition occured. */
+N#define TIMER_STATUS_CCR_REF_CH1              (((uint32_t)0x1) <<  9) /*!< The Channel 1 (REF == 1) condition occured. */
+N#define TIMER_STATUS_CCR_REF_CH2              (((uint32_t)0x1) << 10) /*!< The Channel 2 (REF == 1) condition occured. */
+N#define TIMER_STATUS_CCR_REF_CH3              (((uint32_t)0x1) << 11) /*!< The Channel 3 (REF == 1) condition occured. */
+N#define TIMER_STATUS_CCR_REF_CH4              (((uint32_t)0x1) << 12) /*!< The Channel 4 (REF == 1) condition occured. */
+N#define TIMER_STATUS_CCR_CAP1_CH1             (((uint32_t)0x1) << 13) /*!< The Channel 1 CCR1 capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP1_CH2             (((uint32_t)0x1) << 14) /*!< The Channel 2 CCR1 capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP1_CH3             (((uint32_t)0x1) << 15) /*!< The Channel 3 CCR1 capture condition occured. */
+N#define TIMER_STATUS_CCR_CAP1_CH4             (((uint32_t)0x1) << 16) /*!< The Channel 4 CCR1 capture condition occured. */
+N
+N#define TIMER_STATUS_Msk                      (TIMER_STATUS_CNT_ZERO         | \
+N                                               TIMER_STATUS_CNT_ARR          | \
+N                                               TIMER_STATUS_ETR_RISING_EDGE  | \
+N                                               TIMER_STATUS_ETR_FALLING_EDGE | \
+N                                               TIMER_STATUS_BRK              | \
+N                                               TIMER_STATUS_CCR_CAP_CH1      | \
+N                                               TIMER_STATUS_CCR_CAP_CH2      | \
+N                                               TIMER_STATUS_CCR_CAP_CH3      | \
+N                                               TIMER_STATUS_CCR_CAP_CH4      | \
+N                                               TIMER_STATUS_CCR_REF_CH1      | \
+N                                               TIMER_STATUS_CCR_REF_CH2      | \
+N                                               TIMER_STATUS_CCR_REF_CH3      | \
+N                                               TIMER_STATUS_CCR_REF_CH4      | \
+N                                               TIMER_STATUS_CCR_CAP1_CH1     | \
+N                                               TIMER_STATUS_CCR_CAP1_CH2     | \
+N                                               TIMER_STATUS_CCR_CAP1_CH3     | \
+N                                               TIMER_STATUS_CCR_CAP1_CH4)
+X#define TIMER_STATUS_Msk                      (TIMER_STATUS_CNT_ZERO         |                                                TIMER_STATUS_CNT_ARR          |                                                TIMER_STATUS_ETR_RISING_EDGE  |                                                TIMER_STATUS_ETR_FALLING_EDGE |                                                TIMER_STATUS_BRK              |                                                TIMER_STATUS_CCR_CAP_CH1      |                                                TIMER_STATUS_CCR_CAP_CH2      |                                                TIMER_STATUS_CCR_CAP_CH3      |                                                TIMER_STATUS_CCR_CAP_CH4      |                                                TIMER_STATUS_CCR_REF_CH1      |                                                TIMER_STATUS_CCR_REF_CH2      |                                                TIMER_STATUS_CCR_REF_CH3      |                                                TIMER_STATUS_CCR_REF_CH4      |                                                TIMER_STATUS_CCR_CAP1_CH1     |                                                TIMER_STATUS_CCR_CAP1_CH2     |                                                TIMER_STATUS_CCR_CAP1_CH3     |                                                TIMER_STATUS_CCR_CAP1_CH4)
+N
+N#define IS_TIMER_STATUS_FLAG(FLAG) (((FLAG) == TIMER_STATUS_CNT_ZERO        ) || \
+N                                    ((FLAG) == TIMER_STATUS_CNT_ARR         ) || \
+N                                    ((FLAG) == TIMER_STATUS_ETR_RISING_EDGE ) || \
+N                                    ((FLAG) == TIMER_STATUS_ETR_FALLING_EDGE) || \
+N                                    ((FLAG) == TIMER_STATUS_BRK             ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP_CH1     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP_CH2     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP_CH3     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP_CH4     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_REF_CH1     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_REF_CH2     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_REF_CH3     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_REF_CH4     ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP1_CH1    ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP1_CH2    ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP1_CH3    ) || \
+N                                    ((FLAG) == TIMER_STATUS_CCR_CAP1_CH4    ))
+X#define IS_TIMER_STATUS_FLAG(FLAG) (((FLAG) == TIMER_STATUS_CNT_ZERO        ) ||                                     ((FLAG) == TIMER_STATUS_CNT_ARR         ) ||                                     ((FLAG) == TIMER_STATUS_ETR_RISING_EDGE ) ||                                     ((FLAG) == TIMER_STATUS_ETR_FALLING_EDGE) ||                                     ((FLAG) == TIMER_STATUS_BRK             ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP_CH1     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP_CH2     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP_CH3     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP_CH4     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_REF_CH1     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_REF_CH2     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_REF_CH3     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_REF_CH4     ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP1_CH1    ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP1_CH2    ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP1_CH3    ) ||                                     ((FLAG) == TIMER_STATUS_CCR_CAP1_CH4    ))
+N
+N#define IS_TIMER_STATUS(STATUS) (((STATUS) & TIMER_STATUS_Msk) == (STATUS))
+N
+N/** @} */ /* End of group TIMER_StatusFlags */
+N
+N/** @defgroup TIMER_Clock_BRG TIMER Clock BRG
+N  * @{
+N  */
+N
+N#define TIMER_HCLKdiv1                        ((uint32_t)0x0)
+N#define TIMER_HCLKdiv2                        ((uint32_t)0x1)
+N#define TIMER_HCLKdiv4                        ((uint32_t)0x2)
+N#define TIMER_HCLKdiv8                        ((uint32_t)0x3)
+N#define TIMER_HCLKdiv16                       ((uint32_t)0x4)
+N#define TIMER_HCLKdiv32                       ((uint32_t)0x5)
+N#define TIMER_HCLKdiv64                       ((uint32_t)0x6)
+N#define TIMER_HCLKdiv128                      ((uint32_t)0x7)
+N
+N#define IS_TIMER_CLOCK_BRG(BRG) (((BRG) == TIMER_HCLKdiv1  ) || \
+N                                 ((BRG) == TIMER_HCLKdiv2  ) || \
+N                                 ((BRG) == TIMER_HCLKdiv4  ) || \
+N                                 ((BRG) == TIMER_HCLKdiv8  ) || \
+N                                 ((BRG) == TIMER_HCLKdiv16 ) || \
+N                                 ((BRG) == TIMER_HCLKdiv32 ) || \
+N                                 ((BRG) == TIMER_HCLKdiv64 ) || \
+N                                 ((BRG) == TIMER_HCLKdiv128))
+X#define IS_TIMER_CLOCK_BRG(BRG) (((BRG) == TIMER_HCLKdiv1  ) ||                                  ((BRG) == TIMER_HCLKdiv2  ) ||                                  ((BRG) == TIMER_HCLKdiv4  ) ||                                  ((BRG) == TIMER_HCLKdiv8  ) ||                                  ((BRG) == TIMER_HCLKdiv16 ) ||                                  ((BRG) == TIMER_HCLKdiv32 ) ||                                  ((BRG) == TIMER_HCLKdiv64 ) ||                                  ((BRG) == TIMER_HCLKdiv128))
+N
+N/** @} */ /* End of group TIMER_Clock_BRG */
+N
+N/** @} */ /* End of group TIMER_Exported_Constants */
+N
+N/** @defgroup TIMER_Exported_Macros TIMER Exported Macros
+N  * @{
+N  */
+N
+N/**
+N  * @brief  Clears the TIMERx's interrupt pending (TIMERx's Status) bits.
+N  * @param  TIMERx: where x can be 1 to 3 to select the TIMER peripheral.
+N  * @param  TIMER_IT: specifies the pending bit to clear.
+N  *         This parameter can be any combination of the TIMER_StatusFlags:
+N  *           @arg TIMER_STATUS_CNT_ZERO:         the (CNT == 0) condition occured;
+N  *           @arg TIMER_STATUS_CNT_ARR:          the (CNT == ARR) condition occured;
+N  *           @arg TIMER_STATUS_ETR_RISING_EDGE:  the ETR rising edge occured;
+N  *           @arg TIMER_STATUS_ETR_FALLING_EDGE: the ETR falling edge occured;
+N  *           @arg TIMER_STATUS_BRK:              the (BRK == 1) condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP_CH1:      the Channel 1 CCR capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP_CH2:      the Channel 2 CCR capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP_CH3:      the Channel 3 CCR capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP_CH4:      the Channel 4 CCR capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_REF_CH1:      the Channel 1 (REF == 1) condition occured;
+N  *           @arg TIMER_STATUS_CCR_REF_CH2:      the Channel 2 (REF == 1) condition occured;
+N  *           @arg TIMER_STATUS_CCR_REF_CH3:      the Channel 3 (REF == 1) condition occured;
+N  *           @arg TIMER_STATUS_CCR_REF_CH4:      the Channel 4 (REF == 1) condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP1_CH1:     the Channel 1 CCR1 capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP1_CH2:     the Channel 2 CCR1 capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP1_CH3:     the Channel 3 CCR1 capture condition occured;
+N  *           @arg TIMER_STATUS_CCR_CAP1_CH4:     the Channel 4 CCR1 capture condition occured.
+N  * @retval None
+N  */
+N#define TIMER_ClearITPendingBit(TIMERx, TIMER_IT) TIMER_ClearFlag(TIMERx, TIMER_IT)
+N
+N/** @} */ /* End of group TIMER_Exported_Macros */
+N
+N/** @defgroup TIMER_Exported_Functions TIMER Exported Functions
+N  * @{
+N  */
+N
+Nvoid TIMER_DeInit(MDR_TIMER_TypeDef* TIMERx);
+N
+Nvoid TIMER_CntInit(MDR_TIMER_TypeDef* TIMERx, const TIMER_CntInitTypeDef* TIMER_CntInitStruct);
+Nvoid TIMER_CntStructInit(TIMER_CntInitTypeDef* TIMER_CntInitStruct);
+N
+Nvoid TIMER_Cmd(MDR_TIMER_TypeDef* TIMERx, FunctionalState NewState);
+N
+Nvoid TIMER_SetCounter(MDR_TIMER_TypeDef* TIMERx, uint16_t Counter);
+Nvoid TIMER_SetCntPrescaler(MDR_TIMER_TypeDef* TIMERx, uint16_t Prescaler);
+Nvoid TIMER_SetCntAutoreload(MDR_TIMER_TypeDef* TIMERx, uint16_t Autoreload);
+Nvoid TIMER_CntAutoreloadConfig(MDR_TIMER_TypeDef* TIMERx, uint16_t Autoreload, uint32_t UpdateMode);
+Nuint16_t TIMER_GetCounter(MDR_TIMER_TypeDef* TIMERx);
+N
+Nvoid TIMER_CntEventSourceConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t EventSource);
+Nvoid TIMER_FilterSamplingConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Prescaler);
+Nvoid TIMER_CounterModeConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Mode);
+Nvoid TIMER_SetCounterDirection(MDR_TIMER_TypeDef* TIMERx, uint32_t Direction);
+Nvoid TIMER_ETRInputConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Prescaler, uint32_t Polarity, uint32_t Filter);
+Nvoid TIMER_ETRFilterConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Filter);
+Nvoid TIMER_ETRPrescalerConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Prescaler);
+Nvoid TIMER_ETRPolarityConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Polarity);
+Nvoid TIMER_BRKPolarityConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Polarity);
+Nuint32_t TIMER_GetCounterDirection(MDR_TIMER_TypeDef* TIMERx);
+NFlagStatus TIMER_GetCntWriteComplete(MDR_TIMER_TypeDef* TIMERx);
+N
+Nvoid TIMER_ChnInit(MDR_TIMER_TypeDef* TIMERx, const TIMER_ChnInitTypeDef* TIMER_ChnInitStruct);
+Nvoid TIMER_ChnStructInit(TIMER_ChnInitTypeDef* TIMER_ChnInitStruct);
+N
+Nvoid TIMER_SetChnCompare(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint16_t Compare);
+Nvoid TIMER_SetChnCompare1(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint16_t Compare);
+Nvoid TIMER_ChnCompareConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint16_t Compare, uint32_t UpdateMode);
+Nvoid TIMER_ChnCompare1Config(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint16_t Compare, uint32_t UpdateMode);
+Nuint16_t TIMER_GetChnCapture(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel);
+Nuint16_t TIMER_GetChnCapture1(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel);
+N
+Nvoid TIMER_ChnETR_Cmd(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, FunctionalState NewState);
+Nvoid TIMER_ChnETRResetConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t NewState);
+Nvoid TIMER_ChnBRKResetConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t NewState);
+Nvoid TIMER_ChnREFFormatConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Format);
+Nvoid TIMER_ChnCapturePrescalerConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Prescaler);
+Nvoid TIMER_ChnEventSourceConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t EventSource);
+Nvoid TIMER_ChnFilterConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Filter);
+NFlagStatus TIMER_GetChnWriteComplete(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel);
+Nvoid TIMER_ChnCCR1_EventSourceConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t EventSource);
+Nvoid TIMER_ChnCCR1_Cmd(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, FunctionalState NewState);
+N
+Nvoid TIMER_ChnOutInit(MDR_TIMER_TypeDef* TIMERx, const TIMER_ChnOutInitTypeDef* TIMER_ChnOutInitStruct);
+Nvoid TIMER_ChnOutStructInit(TIMER_ChnOutInitTypeDef* TIMER_ChnOutInitStruct);
+Nvoid TIMER_ChnOutConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t OutSource, uint32_t Mode, uint32_t Polarity);
+Nvoid TIMER_ChnOutSourceConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t OutSource);
+Nvoid TIMER_ChnOutModeConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Mode);
+Nvoid TIMER_ChnOutPolarityConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Polarity);
+Nvoid TIMER_ChnNOutConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t OutSource, uint32_t Mode, uint32_t Polarity);
+Nvoid TIMER_ChnNOutSourceConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t OutSource);
+Nvoid TIMER_ChnNOutModeConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Mode);
+Nvoid TIMER_ChnNOutPolarityConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel, uint32_t Polarity);
+Nvoid TIMER_ChnOutDTGConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t Channel,
+N                         uint32_t MainPrescaler, uint32_t AuxPrescaler, uint32_t ClockSource);
+N
+Nuint32_t TIMER_GetStatus(MDR_TIMER_TypeDef* TIMERx);
+NFlagStatus TIMER_GetFlagStatus(MDR_TIMER_TypeDef* TIMERx, uint32_t Flag);
+Nvoid TIMER_ClearFlag(MDR_TIMER_TypeDef* TIMERx, uint32_t Flags);
+N
+Nvoid TIMER_DMACmd(MDR_TIMER_TypeDef* TIMERx, uint32_t TIMER_DMASource, FunctionalState NewState);
+N
+Nvoid TIMER_ITConfig(MDR_TIMER_TypeDef* TIMERx, uint32_t TIMER_IT, FunctionalState NewState);
+NITStatus TIMER_GetITStatus(MDR_TIMER_TypeDef* TIMERx, uint32_t TIMER_IT);
+Nvoid TIMER_BRGInit(MDR_TIMER_TypeDef* TIMERx, uint32_t TIMER_BRG);
+N
+N/** @} */ /* End of group TIMER_Exported_Functions */
+N
+N/** @} */ /* End of group TIMER */
+N
+N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
+N
+N#endif /* __MDR32F9QX_TIMER_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_timer.h */
+N
+L 4 "src\sound_driver.c" 2
 N
 N#include "FreeRTOS.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h" 1
@@ -7706,7 +8546,7 @@ N#define eTaskStateGet eTaskGetState
 N
 N#endif /* INC_FREERTOS_H */
 N
-L 18 "src\dispatcher.c" 2
+L 6 "src\sound_driver.c" 2
 N#include "task.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h" 1
 N/*
@@ -9667,7 +10507,7 @@ N#endif /* INC_TASK_H */
 N
 N
 N
-L 19 "src\dispatcher.c" 2
+L 7 "src\sound_driver.c" 2
 N#include "queue.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h" 1
 N/*
@@ -11390,644 +12230,314 @@ N#endif
 N
 N#endif /* QUEUE_H */
 N
-L 20 "src\dispatcher.c" 2
+L 8 "src\sound_driver.c" 2
 N
-N#include "buttons.h"
-L 1 "src\buttons.h" 1
-N/**********************************************************
-N	Module for processing buttons and switches
-N	using bit FIFOs
-N	
-N	Type: Header file
-N	Written by: AvegaWanderer 10.2013
-N**********************************************************/
+N#include "sound_defs.h"
+L 1 "src\sound_defs.h" 1
+N
+N#ifndef __sound_defs_h
+N#define __sound_defs_h
+N
+N#include "stdint.h"	// std typedefs
 N
 N
-N// User definitions
-N#define BTN_ESC			0x01
-N#define BTN_LEFT		0x02
-N#define BTN_RIGHT		0x04
-N#define BTN_OK			0x08
-N#define BTN_ENCODER		0x10
-N#define SW_CHANNEL		0x20
-N#define BTN_ON			0x40
-N#define BTN_OFF			0x80
-N#define SW_EXTERNAL		0x0100
+N#define FREQ(x)	(uint16_t)(1000000/x)
+N#define LAST(x)	(uint16_t)(x/10)
 N
-N
-N//=============================================//
-N// Button processing setup
-N
-N// Total count
-N#define TOTAL_BUTTONS	9
-N
-N// Select minimal data type which can hold all your buttons (one bit per button or switch)
-N#define btn_type_t		uint16_t		
-N// Select minimal data type for bit FIFO to support desired delays (see settings check below)
-N#define bfifo_type_t	uint16_t		
-N
-N// Choose which actions are supported by button processor - comment unused to optimize code size
-N//#define USE_ACTION_REP				// Emulation of repeated pressing
-N#define USE_ACTION_UP				// Triggers when button is released
-N//#define USE_ACTION_UP_SHORT			// Triggers when button is released and had been pressed for short time
-N//#define USE_ACTION_UP_LONG			// Triggers when button is released and had been pressed for long time
-N//#define USE_ACTION_HOLD				// Triggers when button is being pressed for long time
-N//#define USE_ACTION_TOGGLE			// Toggles every time button is pressed
-N
-N
-N// Set time options - all delays are in units of ProcessButtons() call period.
-N#define LONG_PRESS_DELAY	10		// After this delay button actions will be considered as long
-N#define REPEAT_DELAY		6		// After this delay emulation of repeated pressing becomes active
-N
-N// Set inversion of raw_button_state
-N#define RAW_BUTTON_INVERSE_MASK		0x00
-N//=============================================// 
-N
-N// Bit FIFO definitions
-N#define BFIFO_LONG_MASK		( ((1 << (LONG_PRESS_DELAY + 1)) - 1) & ~0x3 )
-N#define BFIFO_REPEAT_MASK	( ((1 << REPEAT_DELAY) - 1) & ~0x3 )
-N#define BFIFO_HOLD			( ((1 << LONG_PRESS_DELAY) - 1) & ~0x3 )
-N#define BFIFO_BUTTON_MASK	0x3
-N#define BFIFO_BUTTON_DOWN	0x1
-N#define BFIFO_BUTTON_UP		0x2
-N#define BFIFO_BUTTON_HOLD	0x3
-N
-N// Check settings
-N/*
-N#if ((LONG_PRESS_DELAY + 1) > (sizeof(bfifo_type_t) * 8))
-N	#error "LONG_PRESS_DELAY is too great for specified bfifo_type_t size. LONG_PRESS_DELAY should not exceed (number of bits in bfifo_type_t - 1)"
-N#endif
-N#if (REPEAT_DELAY > (sizeof(bfifo_type_t) * 8))
-N	#error "REPEAT_DELAY is too great for specified bfifo_type_t size. REPEAT_DELAY should not exceed number of bits in bfifo_type_t"
-N#endif
-N#if (TOTAL_BUTTONS > (sizeof(btn_type_t) * 8))
-N	#error "Buttons count specified exceeds number of bits in btn_type_t. TOTAL_BUTTONS should be less or equal to number of bits in btn_type_t"
-N#endif
-N*/
-N#if (LONG_PRESS_DELAY < 3)
-X#if (10 < 3)
-S	#error "LONG_PRESS_DELAY should be 3 or greater"
-N#endif
-N#if (REPEAT_DELAY < 3)
-X#if (6 < 3)
-S	#warning "REPEAT_DELAY should be 3 or greater"
-N#endif
-N
-N// Extra defines used for cleaning unnecessary code - do not modify
-N#ifdef USE_ACTION_REP
-S	#define ANALYSE_HOLD
-N#endif
-N#ifdef USE_ACTION_UP
-N	#define ANALYSE_ACTION_UP
-N#endif
-N#ifdef USE_ACTION_UP_SHORT
-S	#define ANALYSE_ACTION_UP
-S	#define ANALYZE_TIMED_ACTION_UP
-N#endif
-N#ifdef USE_ACTION_UP_LONG
-S	#define ANALYSE_ACTION_UP
-S	#define ANALYZE_TIMED_ACTION_UP
-N#endif
-N#ifdef USE_ACTION_HOLD
-S	#define ANALYSE_HOLD
-N#endif
-N
-N
-N
-N// Button state structure
 Ntypedef struct {
-N	btn_type_t raw_state;		// Non-processed button state (only RAW_BUTTON_INVERSE_MASK is applied)
-X	uint16_t raw_state;		
-N	btn_type_t action_down;		// Bit is set once when button is pressed
-X	uint16_t action_down;		
-N	#ifdef USE_ACTION_REP
-S	btn_type_t action_rep;		// Bit is set once when button is pressed. Bit is set continuously after REPEAT_DELAY until button is released
-N	#endif
-N	#ifdef USE_ACTION_UP
-N	btn_type_t action_up;		// Bit is set once when button is released
-X	uint16_t action_up;		
-N	#endif
-N	#ifdef USE_ACTION_UP_SHORT
-S	btn_type_t action_up_short;	// Bit is set once when button is released before LONG_PRESS_DELAY
-N	#endif
-N	#ifdef USE_ACTION_UP_LONG
-S	btn_type_t action_up_long;	// Bit is set once when button is released after LONG_PRESS_DELAY
-N	#endif
-N	#ifdef USE_ACTION_HOLD
-S	btn_type_t action_hold;		// Bit is set once when button is pressed for LONG_PRESS_DELAY
-N	#endif
-N	#ifdef USE_ACTION_TOGGLE
-S	btn_type_t action_toggle;	// Bit is set every time button is pressed
-N	#endif
-N} buttons_t;
+N	uint16_t tone_period;		// in 20us gradation	
+N	uint16_t duration;			// in 10ms gradation
+N} tone_t;
+N
+Ntypedef struct {
+N	uint8_t num_repeats;
+N	const tone_t *tones;
+N} sample_t;
 N
 N
-N//=============================================//
-N// This raw_button_state represents sampled state of buttons being processed - input data for ProcessButtons()
-N// It is assumed that if some button is pressed, corresponding bit is set - this is true for all buttons.
-N// If your raw_button_state is inversed, set RAW_BUTTON_INVERSE_MASK to all ones
-N//extern btn_type_t raw_button_state;		
+N#endif
+L 10 "src\sound_driver.c" 2
+N#include "sound_samples.h"
+L 1 "src\sound_samples.h" 1
 N
-N// Processed output
-Nextern buttons_t buttons;
+N#include "sound_defs.h"
 N
 N
-N//=============================================//
-Nvoid InitButtons(void);
-Nvoid ProcessButtons(void);
+Nextern const sample_t sample_beep_1000Hz_50ms;
+Nextern const sample_t sample_beep_800Hz_50ms;
+Nextern const sample_t sample_beep_800Hz_x3;
+Nextern const sample_t sample_beep_800Hz_20ms;
+Nextern const sample_t sample_beep_600Hz_x2;
 N
 N
 N
-L 22 "src\dispatcher.c" 2
-N#include "encoder.h"
-L 1 "src\encoder.h" 1
 N
 N
 N
-Nextern int16_t encoder_delta;
 N
-Nvoid ProcessEncoder(void);
-Nvoid UpdateEncoderDelta(void);
+L 11 "src\sound_driver.c" 2
+N#include "sound_driver.h"
+L 1 "src\sound_driver.h" 1
 N
-L 23 "src\dispatcher.c" 2
-N#include "converter.h"
-L 1 "src\converter.h" 1
+N//---------------------------------------------//
+N// Sound driver message codes
+N#define SYNC 								0xFFFF0000
+N#define SND_CONV_CMD_OK						0x00010000
+N#define SND_CONV_CMD_ILLEGAL				0x00020000
+N#define SND_CONV_SETTING_OK					SND_CONV_CMD_OK
+N#define SND_CONV_SETTING_ILLEGAL			SND_CONV_CMD_ILLEGAL
+N#define SND_CONV_OVERLOADED					0x00030000
+N#define SND_CONV_INSTANT_OVERLOAD			0x00040000
 N
+N//---------------------------------------------//
+N// Sound driver priorities
+N#define SND_CONVERTER_PRIORITY_NORMAL		50
+N#define SND_CONVERTER_PRIORITY_HIGH			51
+N#define SND_CONVERTER_PRIORITY_HIGHEST		52
 N
-N#define CONV_MAX_VOLTAGE_5V_CHANNEL		10000	// [mV]
-N#define CONV_MAX_VOLTAGE_12V_CHANNEL	20000	// [mV]
-N#define CONV_MIN_VOLTAGE_5V_CHANNEL		0		// [mV]
-N#define CONV_MIN_VOLTAGE_12V_CHANNEL	0		// [mV]
-N
-N// Common for both channels
-N#define CONV_HIGH_LIM_MAX_CURRENT		40000	// [mA]
-N#define CONV_LOW_LIM_MAX_CURRENT		20000	// [mA]
-N#define CONV_MIN_CURRENT				0		// [mA]
-N
-N
-N// CheckSetVoltageRange error codes			// TODO: bring into *.c file
-N#define VCHECK_OK				0x01
-N#define VCHECK_ABS_MAX			0x02	// ABS limits have greater priority
-N#define VCHECK_ABS_MIN			0x03
-N#define VCHECK_SOFT_MAX			0x04
-N#define VCHECK_SOFT_MIN			0x05
-N
-N// CheckSetCurrentRange error codes
-N#define CCHECK_OK				0x08
-N#define CCHECK_ABS_MAX			0x09	// ABS limits have greater priority
-N#define CCHECK_ABS_MIN			0x0A
-N#define CCHECK_SOFT_MAX			0x0B
-N#define CCHECK_SOFT_MIN			0x0C
-N
-N//Converter_SetSoftLimit error codes
-N#define SLIM_OK					0x10
-N#define SLIM_MIN				0x11
-N#define SLIM_MAX				0x12
-N
-N//Converter_SetSoftLimit mode codes
-N#define SET_LOW_VOLTAGE_SOFT_LIMIT	0x01
-N#define SET_HIGH_VOLTAGE_SOFT_LIMIT	0x02
-N#define SET_LOW_CURRENT_SOFT_LIMIT	0x03
-N#define SET_HIGH_CURRENT_SOFT_LIMIT	0x04
 N
 N
 N//---------------------------------------------//
-N// Converter_HWProcess
-N
-N// state_HWProcess bits 
-N#define STATE_HW_ON				0x01
-N#define STATE_HW_OFF			0x02
-N#define STATE_HW_OVERLOADED		0x04
-N#define STATE_HW_OFF_BY_ADC		0x08
-N#define STATE_HW_TIMER_NOT_EXPIRED	0x10
-N#define STATE_HW_USER_TIMER_EXPIRED	0x20
-N
-N// ctrl_HWProcess bits
-N#define CMD_HW_ON				0x01
-N#define CMD_HW_OFF				0x02
-N#define CMD_HW_RESET_OVERLOAD	0x04
-N#define CMD_HW_RESTART_USER_TIMER	0x08
-N#define CMD_HW_RESTART_LED_BLINK_TIMER 0x10
-N
-N// cmd_ADC_to_HWProcess bits
-N#define CMD_HW_OFF_BY_ADC		0x01
-N#define CMD_HW_ON_BY_ADC		0x02
-N
-N//---------------------------------------------//
-N// Converter_HW_ADCProcess
-N
-N// state_ADCProcess states
-N#define STATE_ADC_IDLE				0x00
-N#define STATE_ADC_DISPATCH			0x01
-N#define STATE_ADC_NORMAL_START_U	0x02
-N#define STATE_ADC_NORMAL_REPEAT_U	0x03
-N#define STATE_ADC_START_I			0x10
-N#define STATE_ADC_NORMAL_REPEAT_I	0x11
-N
-N// ctrl_ADCProcess bits
-N#define CMD_ADC_START_VOLTAGE		0x01
-N#define CMD_ADC_START_CURRENT		0x02
-N#define CMD_ADC_START_DISCON		0x04
+N// Sound driver FSM states - private
+N#define IDLE							0x00
+N#define START_NEW_SAMPLE				0x01
+N#define GET_NEXT_SAMPLE_RECORD			0x02
+N#define APPLY_CURRENT_SAMPLE_RECORD		0x03
+N#define APPLY_NEXT_TONE_RECORD			0x04
+N#define WAIT_FOR_CURRENT_TONE			0x05
 N
 N
 N
-N#define HW_IRQ_PERIOD				(16*200)		// in units of 62.5ns, must be <= timer period
-N#define HW_ADC_CALL_PERIOD			5				// in units of HW_IRQ period
-N#define HW_UART2_RX_CALL_PERIOD		5				// in units of HW_IRQ period
-N#define HW_UART2_TX_CALL_PERIOD		5				// in units of HW_IRQ period
+Nextern xQueueHandle xQueueSound;
+Nextern const uint32_t sound_driver_sync_msg;
+Nextern const uint32_t sound_instant_overload_msg;
+N
+Nvoid vTaskSound(void *pvParameters);
 N
 N
-N
-N#define CONV_OFF				0x01
-N#define CONV_ON					0x02
-N#define CONV_OVERLOAD			0x10
-N#define CONV_STATE_MASK			0x0F
-N
-N#define CMD_FB_5V			0x0001
-N#define CMD_FB_12V			0x0002
-N#define CMD_CLIM_20A		0x0004
-N#define CMD_CLIM_40A		0x0008
-N#define CMD_ON				0x0010
-N#define CMD_OFF				0x0020
-N
-N#define OVERLOAD_IGNORE_TIMEOUT		(5*100)		// 100 ms
-N#define OVERLOAD_TIMEOUT			5			// 1 ms
-N#define MINIMAL_OFF_TIME			(5*40)		// 40 ms
-N#define USER_TIMEOUT				(5*20)		// 20 ms	- used for delay between channel switch and ON command
-N#define LED_BLINK_TIMEOUT			(5*100)		// 100ms	- used for charging indication
-N#define OVERLOAD_WARNING_TIMEOUT	(5*200)		// 200ms	- used for sound overload warning
-N
-N// These defines set behavior of controller in case when 
-N// error status is generated simultaneously with processing OFF command
-N// Either must be set
-N#define CMD_HAS_PRIORITY 	1		// - no error will be shown
-N#define ERROR_HAS_PRIORITY	0		// - error will be shown
-N
-N#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
-X#if ((1 && 0) || (!1 && !0))
-S#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
-N#endif 
-N
-N//---------------------------------------------//
-N// Task queue messages
-N
-Ntypedef struct {
-N	uint32_t type;
-N	uint32_t data_a;
-N	uint32_t data_b;
-N} conveter_message_t;
-N
-N#define CONVERTER_TICK				0xFF
-N#define CONVERTER_UPDATE			0xFE
-N#define CONVERTER_TURN_ON			0x01
-N#define CONVERTER_TURN_OFF			0x02
-N#define CONVERTER_SWITCH_TO_5VCH	0x03
-N#define CONVERTER_SWITCH_TO_12VCH	0x04
-N#define SET_CURRENT_LIMIT_20A		0x05
-N#define SET_CURRENT_LIMIT_40A		0x06
-N#define CONVERTER_SET_VOLTAGE		0x07
-N#define CONVERTER_SET_CURRENT		0x08
+L 12 "src\sound_driver.c" 2
 N
 N
-N/*
-Ntypedef struct {
-N	uint8_t feedback_channel;
-N	uint8_t load_state;
-N} converter_state_t;
-N*/
-N
-Ntypedef struct {
-N	
-N	uint8_t CHANNEL;			// const
-N	uint8_t load_state;
-N	
-N	uint16_t set_voltage;
-N	uint16_t MAX_VOLTAGE;		// const
-N	uint16_t MIN_VOLTAGE;		// const
-N	uint16_t soft_max_voltage;
-N	uint16_t soft_min_voltage;
-N	uint16_t SOFT_MAX_VOLTAGE_LIMIT;
-N	uint16_t SOFT_MIN_VOLTAGE_LIMIT;
-N	uint8_t soft_voltage_range_enable;
-N	
-N	uint8_t current_limit;
-N	uint16_t set_current;	
-N	uint16_t LOW_LIM_MAX_CURRENT;	// const
-N	uint16_t LOW_LIM_MIN_CURRENT;	// const
-N	uint16_t HIGH_LIM_MAX_CURRENT;	// const
-N	uint16_t HIGH_LIM_MIN_CURRENT;	// const
-N	uint16_t soft_max_current;
-N	uint16_t soft_min_current;
-N	uint16_t SOFT_MAX_CURRENT_LIMIT;
-N	uint16_t SOFT_MIN_CURRENT_LIMIT;
-N	uint8_t soft_current_range_enable;
-N	
-N} converter_regulation_t;
-N
-N
-Nextern xQueueHandle xQueueConverter;
-N
-Nextern const conveter_message_t converter_tick_message;
-N
-Nextern converter_regulation_t *regulation_setting_p;
-N
-Nextern volatile uint8_t cmd_ADC_to_HWProcess;
-N
-Nextern uint16_t voltage_adc;	// [mV]
-Nextern uint16_t current_adc;	// [mA]
-Nextern uint32_t power_adc;		// [mW]
-N	
-Nvoid Converter_ProcessADC(void);
-Nuint8_t Converter_SetVoltage(int32_t new_voltage);
-Nuint8_t Converter_SetCurrent(int32_t new_current);
-Nuint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p, uint8_t mode);
-Nvoid Converter_SetFeedbackChannel(uint8_t new_channel);
-Nvoid Converter_SetCurrentLimit(uint8_t new_limit);
-Nvoid Converter_Enable(void);
-Nvoid Converter_Disable(void);
-Nvoid Converter_Init(uint8_t default_channel);
-Nvoid Converter_Process(void);
-N
-N
-Nvoid vTaskConverter(void *pvParameters);
-N
-Nvoid Converter_HWProcess(void);
-Nvoid Converter_HW_ADCProcess(void);
-N
-N
-L 24 "src\dispatcher.c" 2
-N#include "control.h"
-L 1 "src\control.h" 1
-N
-N/********************************************************************
-N	Definitions for system control
-N********************************************************************/
-N// ConverterState
-N#define CONVERTER_OFF    0x0
-N#define CONVERTER_ON     0x1
-N// SelectedChannel
-N#define	CHANNEL_5V			0x1
-N#define	CHANNEL_12V			0x0
-N// CurrentLimit
-N#define	CURRENT_LIM_HIGH	0x1
-N#define	CURRENT_LIM_LOW	 	0x0
-N// LoadDisable
-N#define	LOAD_DISABLE		0x1
-N#define	LOAD_ENABLE			0x0
-N
-N
-N
-N
-N/*
-Ntypedef struct 
+Nstatic const sample_t *event_table[] = 
 N{
-N	uint8_t	ConverterState 		:1;		// open collector
-N	uint8_t	SelectedChannel		:1;
-N	uint8_t CurrentLimit			:1;
-N	uint8_t	LoadDisable				:1;		// open collector
-N}	SYSTEM_CONTROL_Typedef;// __attribute__((bitband));
-N*/
-N
-N/********************************************************************
-N	Definitions for system status
-N********************************************************************/
-N
-N// ConverterOverload
-N#define	NORMAL 			0x0
-N#define	OVERLOAD		0x1
-N// ExternalSwitchState
-N#define	SWITCH_OFF		0x0		// TODO: remove to buttons
-N#define	SWITCH_ON		0x1
-N// LineInStatus
-N#define	OFFLINE			0x0
-N#define	ONLINE			0x1
+N	&sample_beep_600Hz_x2,			// 0 - unknown command
+N	&sample_beep_1000Hz_50ms,		// 1
+N	&sample_beep_800Hz_50ms,		// 2
+N	&sample_beep_800Hz_x3,			// 3
+N	&sample_beep_800Hz_20ms			// 4
+N};
 N
 N
 N
-N/*
-Ntypedef struct 
+NxQueueHandle xQueueSound;
+Nconst uint32_t sound_driver_sync_msg = SYNC;
+Xconst uint32_t sound_driver_sync_msg = 0xFFFF0000;
+Nconst uint32_t sound_instant_overload_msg = SND_CONV_INSTANT_OVERLOAD | SND_CONVERTER_PRIORITY_HIGH;
+Xconst uint32_t sound_instant_overload_msg = 0x00040000 | 51;
+N
+Nstatic const sample_t *decode_event(uint16_t event_code)
 N{
-N	uint8_t		ConverterOverload		:1;
-N	uint8_t		ExternalSwitchState :1;
-N	uint8_t		LineInStatus				:1;
-N}	SYSTEM_STATUS_Typedef;// __attribute__((bitband));;
-N*/
+N	const sample_t *psample;
+N	if (event_code >= sizeof(event_table) / sizeof(sample_t *))
+N		event_code = 0;
+N	psample = event_table[event_code];
+N	return psample;
+N}
 N
-N
-N
-N
-N
-Nuint8_t GetOverloadStatus(void);
-Nuint8_t GetACLineStatus(void);
-N
-N
-Nvoid SetConverterState(uint8_t newState);
-Nvoid SetFeedbackChannel(uint8_t newChannel);
-Nvoid SetCurrentLimit(uint8_t newLimit);
-Nvoid SetOutputLoad(uint8_t newLoad);
-N
-L 25 "src\dispatcher.c" 2
-N#include "gui_top.h"
-L 1 "src\gui_top.h" 1
-N
-N#include "FreeRTOS.h"
-N#include "task.h"
-N#include "queue.h"
-N
-N
-N#define GUI_UPDATE_ALL	0
-N#define GUI_PROCESS_BUTTONS	1
-N
-N
-N
-Nextern xQueueHandle xQueueGUI;
-Nvoid vTaskGUI(void *pvParameters);
-N
-N
-N
-L 26 "src\dispatcher.c" 2
-N#include "dispatcher.h"
-L 1 "src\dispatcher.h" 1
-N
-Ntypedef struct {
-N	uint32_t type;
-N	uint32_t data;
-N} dispatch_incoming_msg_t;
-N
-N
-N#define DISPATCHER_TICK	0
-N
-N// Converter control
-N#define DP_CONVERTER_TURN_ON		0x200
-N#define DP_CONVERTER_TURN_OFF		0x201
-N#define DP_CONVERTER_SET_VOLTAGE	0x210
-N#define DP_CONVERTER_SET_CURRENT	0x211
-N#define DP_CONVERTER_SET_CURRENT_LIMIT	0x212
-N
-N// Control panel emulation
-N#define DP_EMU_BTN_DOWN			0x400
-N#define DP_EMU_ENC_DELTA		0x410
-N
-N
-N
-Nextern xQueueHandle xQueueDispatcher;
-Nextern const dispatch_incoming_msg_t dispatcher_tick_msg;
-N
-Nvoid vTaskDispatcher(void *pvParameters);
-N
-N
-N
-L 27 "src\dispatcher.c" 2
-N
-N
-N
-NxQueueHandle xQueueDispatcher;
-N
-N
-N
-Nconst dispatch_incoming_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
-Xconst dispatch_incoming_msg_t dispatcher_tick_msg = {0, 0};
-N
-N
-N
-Nvoid vTaskDispatcher(void *pvParameters) 
+Nstatic void set_beeper_period(uint16_t period)
 N{
-N	dispatch_incoming_msg_t income_msg;
-N	int16_t encoder_delta;
-N	conveter_message_t converter_msg;
-N	uint32_t gui_msg;
+N	MDR_TIMER1->ARR = period - 1;	
+X	((MDR_TIMER_TypeDef *) (0x40070000))->ARR = period - 1;	
+N	MDR_TIMER1->CCR2 = period / 2;		// 50% duty
+X	((MDR_TIMER_TypeDef *) (0x40070000))->CCR2 = period / 2;		
+N}
+N
+Nstatic void set_beeper_output(uint8_t enable)
+N{
+N	uint32_t temp = MDR_TIMER1->CH2_CNTRL1;
+X	uint32_t temp = ((MDR_TIMER_TypeDef *) (0x40070000))->CH2_CNTRL1;
+N	temp &= ~( (3 << TIMER_CH_CNTRL1_SELO_Pos) | (3 << TIMER_CH_CNTRL1_NSELO_Pos));
+X	temp &= ~( (3 << 2) | (3 << 10));
+N	if (enable)
+N		temp |= (TIMER_CH_OutSrc_REF << TIMER_CH_CNTRL1_SELO_Pos) | (TIMER_CH_OutSrc_REF << TIMER_CH_CNTRL1_NSELO_Pos);
+X		temp |= (((uint32_t)0x2) << 2) | (((uint32_t)0x2) << 10);
+N	else
+N		temp |= (TIMER_CH_OutSrc_Only_1 << TIMER_CH_CNTRL1_SELO_Pos) | (TIMER_CH_OutSrc_Only_1 << TIMER_CH_CNTRL1_NSELO_Pos);
+X		temp |= (((uint32_t)0x1) << 2) | (((uint32_t)0x1) << 10);
+N	MDR_TIMER1->CH2_CNTRL1 = temp;
+X	((MDR_TIMER_TypeDef *) (0x40070000))->CH2_CNTRL1 = temp;
+N}
+N
+N//-------------------------------------------------------//
+N// Messages to sound driver should be composed like this
+N// msg = CONVERTER_TURN_ON   |   12;
+N//       ^                       ^
+N//       event code              priority
+N// If there is some sample playing and incoming events's priority is higher than current,
+N// current sample is interrupted and new sample is started. 
+N// If event's priority is equal or less than current's, event is missed.
+N// All sample processing (starting, stopping, changing to another) are tied to SYNC message
+N//-------------------------------------------------------//
+Nvoid vTaskSound(void *pvParameters) 
+N{
+N	uint32_t income_msg;
+N	uint16_t income_event_code;
+N	uint16_t income_event_priority;
 N	
-N	uint16_t button_emulation = 0;
-N	int16_t encoder_emulation = 0;
+N	uint16_t pending_event_code = 0;
+N	uint16_t pending_event_priority = 0;
+N	
+N	uint16_t current_event_priority = 0;
+N	
+N	uint16_t state;
+N	uint8_t fsm_exit;
+N	
+N	const sample_t *psample;
+N	const tone_t *ptone;
+N	const tone_t *current_tone_record;
+N	uint16_t tone_repeats;
+N	uint16_t current_tone_period;
+N	uint16_t current_tone_duration;
 N	
 N	// Initialize
-N	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_incoming_msg_t ) );		// Queue can contain 5 elements of type uint32_t
-X	xQueueDispatcher = xQueueGenericCreate( 10, sizeof( dispatch_incoming_msg_t ), ( ( unsigned char ) 0U ) );		
-N	if( xQueueDispatcher == 0 )
+N	xQueueSound = xQueueCreate( 10, sizeof( uint32_t ) );		// Queue can contain 10 elements of type uint32_t
+X	xQueueSound = xQueueGenericCreate( 10, sizeof( uint32_t ), ( ( unsigned char ) 0U ) );		
+N	if( xQueueSound == 0 )
 N	{
 N		// Queue was not created and must not be used.
 N		while(1);
 N	}
 N	
-N	
-N	
 N	while(1)
 N	{
-N		xQueueReceive(xQueueDispatcher, &income_msg, portMAX_DELAY);
-X		xQueueGenericReceive( ( xQueueDispatcher ), ( &income_msg ), ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
-N		converter_msg.type = 0;
+N		xQueueReceive(xQueueSound, &income_msg, portMAX_DELAY);
+X		xQueueGenericReceive( ( xQueueSound ), ( &income_msg ), ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
 N		
-N		switch (income_msg.type)
+N		if (income_msg != SYNC)
+X		if (income_msg != 0xFFFF0000)
 N		{
-N			case DISPATCHER_TICK:
-X			case 0:
-N				ProcessButtons();
-N				//encoder_delta = GetEncoderDelta();	
-N				UpdateEncoderDelta();
-N				
-N				// Apply emulation
-N				buttons.action_down |= button_emulation;
-N				encoder_delta += encoder_emulation;
-N				button_emulation = 0;
-N				encoder_emulation = 0;
+N			// Received some message
+N			income_event_priority = (uint16_t)income_msg;
+N			income_event_code = (uint16_t)(income_msg >> 16);
 N			
-N				
-N			
-N				// Feedback channel select
-N				if (buttons.action_down & SW_CHANNEL)
-X				if (buttons.action_down & 0x20)
-N				{
-N					// Send switch channel to 5V message
-N					converter_msg.type = CONVERTER_SWITCH_TO_5VCH;
-X					converter_msg.type = 0x03;
-N				}
-N				else if (buttons.action_up & SW_CHANNEL)
-X				else if (buttons.action_up & 0x20)
-N				{
-N					// Send switch channel to 12V message
-N					converter_msg.type = CONVERTER_SWITCH_TO_12VCH;
-X					converter_msg.type = 0x04;
-N				}
-N				else if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
-X				else if ((buttons.action_down & 0x80) || (buttons.action_up & 0x0100))
-N				{
-N					// Send OFF mesage to converter task
-N					converter_msg.type = CONVERTER_TURN_OFF;
-X					converter_msg.type = 0x02;
-N				}
-N				else if ((buttons.action_down & BTN_ON) || (buttons.action_down & SW_EXTERNAL))
-X				else if ((buttons.action_down & 0x40) || (buttons.action_down & 0x0100))
-N				{
-N					// Send ON mesage to converter task
-N					converter_msg.type = CONVERTER_TURN_ON;
-X					converter_msg.type = 0x01;
-N				}
-N			
-N				
-N					
-N				//---------------------------//	
-N				//---------------------------//
-N
-N				// Make GUI process buttons and encoder
-N				gui_msg = GUI_PROCESS_BUTTONS;
-X				gui_msg = 1;
-N				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-X				xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 0 ) );
-N			
-N				break;
-N				
-N			//----- button and encoder emulation -----//
-N			case DP_EMU_BTN_DOWN:
-X			case 0x400:
-N				button_emulation |= income_msg.data;
-N				break;
-N			case DP_EMU_ENC_DELTA:
-X			case 0x410:
-N				encoder_emulation += (int16_t)income_msg.data;
-N				break;
-N			
-N				
-N			//----- converter control -----//
-N			case DP_CONVERTER_TURN_ON:
-X			case 0x200:
-N				converter_msg.type = CONVERTER_TURN_ON;
-X				converter_msg.type = 0x01;
-N				break;
-N			case DP_CONVERTER_TURN_OFF:
-X			case 0x201:
-N				converter_msg.type = CONVERTER_TURN_OFF;
-X				converter_msg.type = 0x02;
-N				break;
-N			case DP_CONVERTER_SET_VOLTAGE:
-X			case 0x210:
-N				converter_msg.type = CONVERTER_SET_VOLTAGE;
-X				converter_msg.type = 0x07;
-N				converter_msg.data_a = income_msg.data;
-N				break;
-N			case DP_CONVERTER_SET_CURRENT:
-X			case 0x211:
-N				converter_msg.type = CONVERTER_SET_CURRENT;
-X				converter_msg.type = 0x08;
-N				converter_msg.data_a = income_msg.data;
-N				break;
-N			case DP_CONVERTER_SET_CURRENT_LIMIT:
-X			case 0x212:
-N				if (income_msg.data == 20)
-N					converter_msg.type = SET_CURRENT_LIMIT_20A;
-X					converter_msg.type = 0x05;
-N				else if (income_msg.data == 40)
-N					converter_msg.type = SET_CURRENT_LIMIT_40A;
-X					converter_msg.type = 0x06;
-N				break;
+N			if (income_event_priority > pending_event_priority)
+N			{
+N				pending_event_priority = income_event_priority;
+N				pending_event_code = income_event_code;
+N			}
 N		}
-N		
-N		
-N		if (converter_msg.type)
-N			xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-X			xQueueGenericSend( ( xQueueConverter ), ( &converter_msg ), ( 0 ), ( ( long ) 0 ) );
+N		else
+N		{
+N			if (pending_event_priority > current_event_priority)
+N			{
+N				// Override FSM state
+N				state = START_NEW_SAMPLE;	
+X				state = 0x01;	
+N			}
+N			//---------------------------//
+N			// Sound driver FSM
+N			fsm_exit = 0;
+N			while (fsm_exit == 0)
+N			{
+N				switch(state)
+N				{
+N					case START_NEW_SAMPLE:
+X					case 0x01:
+N						psample = decode_event(pending_event_code);
+N						state = GET_NEXT_SAMPLE_RECORD;
+X						state = 0x02;
+N						current_event_priority = pending_event_priority;
+N						pending_event_priority = 0;
+N						break;
+N					case GET_NEXT_SAMPLE_RECORD:
+X					case 0x02:
+N						ptone = psample->tones;
+N						tone_repeats = psample->num_repeats;
+N						if ((ptone == 0) && (tone_repeats == 0))
+N						{
+N							// Found zero sample - finished
+N							state = IDLE;
+X							state = 0x00;
+N						}
+N						else
+N						{
+N							psample++;
+N							state = APPLY_CURRENT_SAMPLE_RECORD;
+X							state = 0x03;
+N						}
+N						break;
+N					case APPLY_CURRENT_SAMPLE_RECORD:
+X					case 0x03:
+N						if (tone_repeats == 0)
+N						{
+N							state = GET_NEXT_SAMPLE_RECORD;
+X							state = 0x02;
+N						}
+N						else
+N						{
+N							tone_repeats--;
+N							current_tone_record = ptone;
+N							state = APPLY_NEXT_TONE_RECORD;
+X							state = 0x04;
+N						}
+N						break;
+N					case APPLY_NEXT_TONE_RECORD:
+X					case 0x04:
+N						current_tone_period = current_tone_record->tone_period;
+N						current_tone_duration = current_tone_record->duration;
+N						if ((current_tone_duration == 0) && (current_tone_period == 0))
+N						{
+N							state = APPLY_CURRENT_SAMPLE_RECORD;
+X							state = 0x03;
+N						}
+N						else
+N						{
+N							current_tone_record++;
+N							if (current_tone_period != 0)
+N							{
+N								set_beeper_period(current_tone_period);
+N								set_beeper_output(1);
+N							}
+N							else
+N							{
+N								set_beeper_output(0);
+N							}
+N							state = WAIT_FOR_CURRENT_TONE;
+X							state = 0x05;
+N						}
+N						break;
+N					case WAIT_FOR_CURRENT_TONE:
+X					case 0x05:
+N						if (current_tone_duration == 0)
+N						{
+N							// Finished current tone
+N							state = APPLY_NEXT_TONE_RECORD;
+X							state = 0x04;
+N						}
+N						else
+N						{
+N							current_tone_duration--;
+N							fsm_exit = 1;
+N						}
+N						break;
+N					default:
+N						current_event_priority = 0;
+N						set_beeper_output(0);
+N						fsm_exit = 1;
+N						break;
+N				}
+N			}
+N			//---------------------------//
+N		}
 N	}
-N	
 N}
+N
+N
+N
+N
+N
+N
+N
 N
 N
 N

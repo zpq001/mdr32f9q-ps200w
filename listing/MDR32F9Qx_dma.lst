@@ -1,11 +1,11 @@
-L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c"
 N/**
 N  ******************************************************************************
-N  * @file    MDR32F9Qx_uart.c
+N  * @file    MDR32F9Qx_dma.c
 N  * @author  Phyton Application Team
-N  * @version V1.0.0
-N  * @date    22/06/2010
-N  * @brief   This file contains all the UART firmware functions.
+N  * @version V1.0.1
+N  * @date    11/06/2010
+N  * @brief   This file contains all the DMA firmware functions.
 N  ******************************************************************************
 N  * <br><br>
 N  *
@@ -18,38 +18,8 @@ N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 N  *
 N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
 N  ******************************************************************************
-N  * FILE MDR32F9Qx_uart.c
+N  * FILE MDR32F9Qx_dma.c
 N  */
-N
-N/* Includes ------------------------------------------------------------------*/
-N#include "MDR32F9Qx_uart.h"
-L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_uart.h" 1
-N/**
-N  ******************************************************************************
-N  * @file    MDR32F9Qx_uart.h
-N  * @author  Phyton Application Team
-N  * @version V1.0.0
-N  * @date    27/04/2010
-N  * @brief   This file contains all the functions prototypes for the UART
-N  *          firmware library.
-N  ******************************************************************************
-N  * <br><br>
-N  *
-N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
-N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-N  *
-N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
-N  ******************************************************************************
-N  * FILE MDR32F9Qx_uart.h
-N  */
-N
-N/* Define to prevent recursive inclusion -------------------------------------*/
-N#ifndef __MDR32F9Qx_UART_H
-N#define __MDR32F9Qx_UART_H
 N
 N/* Includes ------------------------------------------------------------------*/
 N#include "MDR32Fx.h"
@@ -6039,929 +6009,7 @@ N
 N/******************* (C) COPYRIGHT 2010 Phyton *********************************
 N*
 N* END OF FILE MDR32Fx.h */
-L 30 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_uart.h" 2
-N#include "MDR32F9Qx_lib.h"
-L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_lib.h" 1
-N/**
-N  ******************************************************************************
-N  * @file    MDR32F9Qx_lib.h
-N  * @author  Phyton Application Team
-N  * @version V1.0.1
-N  * @date    23/03/2011
-N  * @brief   This file contains all file IDs of the Milandr MDR32F9Qx
-N  *          firmware library source files.
-N  ******************************************************************************
-N  * <br><br>
-N  *
-N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
-N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-N  *
-N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
-N  ******************************************************************************
-N  * FILE MDR32F9Qx_lib.h
-N  */
-N
-N/* Define to prevent recursive inclusion -------------------------------------*/
-N#ifndef __MDR32F9QX_LIB_H
-N#define __MDR32F9QX_LIB_H
-N
-N#define  FILEID__MDR32F9X_CAN_C               1
-N#define  FILEID__MDR32F9X_USB_C               2
-N#define  FILEID__MDR32F9X_EEPROM_C            3
-N#define  FILEID__MDR32F9X_RST_CLK_C           4
-N#define  FILEID__MDR32F9X_DMA_C               5
-N#define  FILEID__MDR32F9X_UART_C              6
-N#define  FILEID__MDR32F9X_SSP_C               7
-N#define  FILEID__MDR32F9X_I2C_C               8
-N#define  FILEID__MDR32F9X_POWER_C             9
-N#define  FILEID__MDR32F9X_WWDG_C             10
-N#define  FILEID__MDR32F9X_IWDG_C             11
-N#define  FILEID__MDR32F9X_TIMER_C            12
-N#define  FILEID__MDR32F9X_ADC_C              13
-N#define  FILEID__MDR32F9X_DAC_C              14
-N#define  FILEID__MDR32F9X_COMP_C             15
-N#define  FILEID__MDR32F9X_PORT_C             16
-N#define  FILEID__MDR32F9X_BKP_C              17
-N#define  FILEID__MDR32F9X_EBC_C              18
-N#define  FILEID__MDR32F9QX_USB_DEVICE_C       19
-N#define  FILEID__MDR32F9QX_USB_CDC_C          20
-N
-N#define  FILEID__USER_LO                    100
-N
-N/* Supported USB Device Classes */
-N#define USB_DEVICE_CLASS_CDC 2
-N
-N#endif /* __MDR32F9QX_LIB_H */
-N
-N/******************* (C) COPYRIGHT 2010 Phyton *********************************
-N*
-N* END OF FILE MDR32F9Qx_lib.h */
-N
-L 31 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_uart.h" 2
-N
-N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
-N  * @{
-N  */
-N
-N/** @addtogroup UART
-N  * @{
-N  */
-N
-N/** @defgroup UART_Exported_Types UART Exported Types
-N  * @{
-N  */
-N
-Ntypedef enum {BaudRateInvalid = 0, BaudRateValid = !BaudRateInvalid} BaudRateStatus;
-N
-N/**
-N  * @brief  UART Init Structure definition
-N  */
-N
-Ntypedef struct
-N{
-N  uint32_t UART_BaudRate;            /*!< This member configures the UART communication baud rate.
-N                                          The baud rate is computed using the following formula:
-N                                           - IntegerDivider = ((UARTCLK) / (16 * (UART_InitStruct->UART_BaudRate)))
-N                                           - FractionalDivider = ((IntegerDivider - ((u32) IntegerDivider)) * 64) + 0.5 */
-N  uint16_t UART_WordLength;          /*!< Specifies the number of data bits transmitted or received in a frame.
-N                                          This parameter is one of @ref UART_Word_Length values. */
-N  uint16_t UART_StopBits;            /*!< Specifies the number of stop bits transmitted.
-N                                          This parameter is one of @ref UART_Stop_Bits values. */
-N  uint16_t UART_Parity;              /*!< Specifies the parity mode.
-N                                          This parameter is one of @ref UART_Parity values. */
-N  uint16_t UART_FIFOMode;            /*!< Specifies the FIFO mode.
-N                                          This parameter is one of @ref UART_FIFO_Mode values. */
-N  uint16_t UART_HardwareFlowControl; /*!< Specifies whether the hardware flow control mode is enabled or disabled.
-N                                          This parameter is one of @ref UART_Hardware_Flow_Control values. */
-N}UART_InitTypeDef;
-N
-N/** @} */ /* End of group UART_Exported_Types */
-N
-N
-N/** @defgroup UART_Exported_Constants UART Exported Constants
-N  * @{
-N  */
-N
-N#define IS_UART_ALL_PERIPH(PERIPH)          (((PERIPH) == MDR_UART1) || \
-N                                             ((PERIPH) == MDR_UART2))
-X#define IS_UART_ALL_PERIPH(PERIPH)          (((PERIPH) == MDR_UART1) ||                                              ((PERIPH) == MDR_UART2))
-N
-N/** @defgroup UART_Word_Length UART Word Length
-N  * @{
-N  */
-N
-N#define UART_WordLength5b                   ((uint16_t)0x0000)
-N#define UART_WordLength6b                   ((uint16_t)0x0020)
-N#define UART_WordLength7b                   ((uint16_t)0x0040)
-N#define UART_WordLength8b                   ((uint16_t)0x0060)
-N
-N#define IS_UART_WORD_LENGTH(LENGTH)         (((LENGTH) == UART_WordLength5b) || \
-N                                             ((LENGTH) == UART_WordLength6b) || \
-N                                             ((LENGTH) == UART_WordLength7b) || \
-N                                             ((LENGTH) == UART_WordLength8b))
-X#define IS_UART_WORD_LENGTH(LENGTH)         (((LENGTH) == UART_WordLength5b) ||                                              ((LENGTH) == UART_WordLength6b) ||                                              ((LENGTH) == UART_WordLength7b) ||                                              ((LENGTH) == UART_WordLength8b))
-N
-N/** @} */ /* End of group UART_Word_Length */
-N
-N/** @defgroup UART_Stop_Bits UART Stop Bits
-N  * @{
-N  */
-N
-N#define UART_StopBits1                      ((uint16_t)0x0000)
-N#define UART_StopBits2                      ((uint16_t)0x0008)
-N
-N#define IS_UART_STOPBITS(STOPBITS)          (((STOPBITS) == UART_StopBits1) || \
-N                                             ((STOPBITS) == UART_StopBits2))
-X#define IS_UART_STOPBITS(STOPBITS)          (((STOPBITS) == UART_StopBits1) ||                                              ((STOPBITS) == UART_StopBits2))
-N
-N/** @} */ /* End of group UART_Stop_Bits */
-N
-N/** @defgroup UART_Parity UART Parity
-N  * @{
-N  */
-N
-N#define UART_Parity_No                      ((uint16_t)0x0000)
-N#define UART_Parity_Even                    ((uint16_t)0x0006)
-N#define UART_Parity_Odd                     ((uint16_t)0x0002)
-N#define UART_Parity_1                       ((uint16_t)0x0082)
-N#define UART_Parity_0                       ((uint16_t)0x0086)
-N
-N#define IS_UART_PARITY(PARITY)              (((PARITY) == UART_Parity_No)   || \
-N                                             ((PARITY) == UART_Parity_Even) || \
-N                                             ((PARITY) == UART_Parity_Odd)  || \
-N                                             ((PARITY) == UART_Parity_1)    || \
-N                                             ((PARITY) == UART_Parity_0))
-X#define IS_UART_PARITY(PARITY)              (((PARITY) == UART_Parity_No)   ||                                              ((PARITY) == UART_Parity_Even) ||                                              ((PARITY) == UART_Parity_Odd)  ||                                              ((PARITY) == UART_Parity_1)    ||                                              ((PARITY) == UART_Parity_0))
-N
-N/** @} */ /* End of group UART_Parity */
-N
-N/** @defgroup UART_FIFO_Mode UART FIFO Mode
-N  * @{
-N  */
-N
-N#define UART_FIFO_OFF                       ((uint16_t)0x0000)
-N#define UART_FIFO_ON                        ((uint16_t)0x0010)
-N
-N#define IS_UART_FIFOMODE(FIFOMODE)          (((FIFOMODE) == UART_FIFO_ON) || \
-N                                             ((FIFOMODE) == UART_FIFO_OFF))
-X#define IS_UART_FIFOMODE(FIFOMODE)          (((FIFOMODE) == UART_FIFO_ON) ||                                              ((FIFOMODE) == UART_FIFO_OFF))
-N
-N/** @} */ /* End of group UART_FIFO_Mode */
-N
-N/** @defgroup UART_Hardware_Flow_Control UART Hardware Flow Control
-N  * @{
-N  */
-N#define UART_HardwareFlowControl_None       ((uint16_t)0x0000)
-N#define UART_HardwareFlowControl_CTSEn      ((uint16_t)0x8000)
-N#define UART_HardwareFlowControl_RTSEn      ((uint16_t)0x4000)
-N#define UART_HardwareFlowControl_Out2       ((uint16_t)0x2000)
-N#define UART_HardwareFlowControl_Out1       ((uint16_t)0x1000)
-N#define UART_HardwareFlowControl_RTS        ((uint16_t)0x0800)
-N#define UART_HardwareFlowControl_DTR        ((uint16_t)0x0400)
-N#define UART_HardwareFlowControl_RXE        ((uint16_t)0x0200)
-N#define UART_HardwareFlowControl_TXE        ((uint16_t)0x0100)
-N#define UART_HardwareFlowControl_LBE        ((uint16_t)0x0080)
-N
-N#define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL) \
-N                              (((CONTROL) == UART_HardwareFlowControl_None)  || \
-N                               ((CONTROL) == UART_HardwareFlowControl_RTSEn) || \
-N                               ((CONTROL) == UART_HardwareFlowControl_CTSEn) || \
-N                               ((CONTROL) == UART_HardwareFlowControl_Out2)  || \
-N                               ((CONTROL) == UART_HardwareFlowControl_Out1)  || \
-N                               ((CONTROL) == UART_HardwareFlowControl_RTS)   || \
-N                               ((CONTROL) == UART_HardwareFlowControl_DTR)   || \
-N                               ((CONTROL) == UART_HardwareFlowControl_RXE)   || \
-N                               ((CONTROL) == UART_HardwareFlowControl_TXE)   || \
-N                               ((CONTROL) == UART_HardwareFlowControl_LBE))
-X#define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)                               (((CONTROL) == UART_HardwareFlowControl_None)  ||                                ((CONTROL) == UART_HardwareFlowControl_RTSEn) ||                                ((CONTROL) == UART_HardwareFlowControl_CTSEn) ||                                ((CONTROL) == UART_HardwareFlowControl_Out2)  ||                                ((CONTROL) == UART_HardwareFlowControl_Out1)  ||                                ((CONTROL) == UART_HardwareFlowControl_RTS)   ||                                ((CONTROL) == UART_HardwareFlowControl_DTR)   ||                                ((CONTROL) == UART_HardwareFlowControl_RXE)   ||                                ((CONTROL) == UART_HardwareFlowControl_TXE)   ||                                ((CONTROL) == UART_HardwareFlowControl_LBE))
-N
-N/** @} */ /* End of group UART_Hardware_Flow_Control */
-N
-N/** @defgroup UART_Interrupt_definition UART Interrupt definition
-N  * @{
-N  */
-N
-N#define UART_IT_OE                          ((uint32_t)0x00000400)
-N#define UART_IT_BE                          ((uint32_t)0x00000200)
-N#define UART_IT_PE                          ((uint32_t)0x00000100)
-N#define UART_IT_FE                          ((uint32_t)0x00000080)
-N#define UART_IT_RT                          ((uint32_t)0x00000040)
-N#define UART_IT_TX                          ((uint32_t)0x00000020)
-N#define UART_IT_RX                          ((uint32_t)0x00000010)
-N#define UART_IT_DSR                         ((uint32_t)0x00000008)
-N#define UART_IT_DCD                         ((uint32_t)0x00000004)
-N#define UART_IT_CTS                         ((uint32_t)0x00000002)
-N#define UART_IT_RI                          ((uint32_t)0x00000001)
-N
-N#define IS_UART_CONFIG_IT(IT)               (((IT) == UART_IT_OE)  || ((IT) == UART_IT_BE)  || \
-N                                             ((IT) == UART_IT_PE)  || ((IT) == UART_IT_FE)  || \
-N                                             ((IT) == UART_IT_RT)  || ((IT) == UART_IT_TX)  || \
-N                                             ((IT) == UART_IT_RX)  || ((IT) == UART_IT_DSR) || \
-N                                             ((IT) == UART_IT_DCD) || ((IT) == UART_IT_CTS) || \
-N                                             ((IT) == UART_IT_RI))
-X#define IS_UART_CONFIG_IT(IT)               (((IT) == UART_IT_OE)  || ((IT) == UART_IT_BE)  ||                                              ((IT) == UART_IT_PE)  || ((IT) == UART_IT_FE)  ||                                              ((IT) == UART_IT_RT)  || ((IT) == UART_IT_TX)  ||                                              ((IT) == UART_IT_RX)  || ((IT) == UART_IT_DSR) ||                                              ((IT) == UART_IT_DCD) || ((IT) == UART_IT_CTS) ||                                              ((IT) == UART_IT_RI))
-N
-N/** @} */ /* End of group UART_Interrupt_definition */
-N
-N/** @defgroup UART_DMA_interrupt_definition UART DMA interrupt definition
-N  * @{
-N  */
-N
-N#define UART_IT_FIFO_LVL_2words             ((uint32_t)0x00000000)
-N#define UART_IT_FIFO_LVL_4words             ((uint32_t)0x00000001)
-N#define UART_IT_FIFO_LVL_8words             ((uint32_t)0x00000002)
-N#define UART_IT_FIFO_LVL_12words            ((uint32_t)0x00000003)
-N#define UART_IT_FIFO_LVL_14words            ((uint32_t)0x00000004)
-N
-N#define IS_UART_IT_FIFO_LVL(IT_FIFO_LVL)    (((IT_FIFO_LVL) == UART_IT_FIFO_LVL_2words) || \
-N                                             ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_4words) || \
-N                                             ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_8words) || \
-N                                             ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_12words) || \
-N                                             ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_14words))
-X#define IS_UART_IT_FIFO_LVL(IT_FIFO_LVL)    (((IT_FIFO_LVL) == UART_IT_FIFO_LVL_2words) ||                                              ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_4words) ||                                              ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_8words) ||                                              ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_12words) ||                                              ((IT_FIFO_LVL) == UART_IT_FIFO_LVL_14words))
-N
-N/** @} */ /* End of group UART_DMA_interrupt_definition */
-N
-N/** @defgroup UART_DMA_request UART DMA request
-N  * @{
-N  */
-N
-N#define UART_DMA_RXE                        ((uint32_t)0x00000001)
-N#define UART_DMA_TXE                        ((uint32_t)0x00000002)
-N#define UART_DMA_ONERR                      ((uint32_t)0x00000004)
-N
-N#define IS_UART_DMAREQ(DMAREQ)              (((DMAREQ) == UART_DMA_RXE) || \
-N                                             ((DMAREQ) == UART_DMA_TXE) || \
-N                                             ((DMAREQ) == UART_DMA_ONERR))
-X#define IS_UART_DMAREQ(DMAREQ)              (((DMAREQ) == UART_DMA_RXE) ||                                              ((DMAREQ) == UART_DMA_TXE) ||                                              ((DMAREQ) == UART_DMA_ONERR))
-N
-N/** @} */ /* End of group UART_DMA_request */
-N
-N/** @defgroup UART_IrDA_Low_Power UART IrDA Low Power
-N  * @{
-N  */
-N
-N#define UART_IrDAMode_LowPower              ((uint32_t)0x00000004)
-N#define UART_IrDAMode_Normal                ((uint32_t)0x00000000)
-N
-N#define IS_UART_IRDA_MODE(MODE)             (((MODE) == UART_IrDAMode_LowPower) || \
-N                                             ((MODE) == UART_IrDAMode_Normal))
-X#define IS_UART_IRDA_MODE(MODE)             (((MODE) == UART_IrDAMode_LowPower) ||                                              ((MODE) == UART_IrDAMode_Normal))
-N
-N/** @} */ /* End of group UART_IrDA_Low_Power */
-N
-N/** @defgroup UART_Flags UART Flags
-N  * @{
-N  */
-N
-N#define UART_FLAG_RI                        ((uint32_t)0x00000100)
-N#define UART_FLAG_TXFE                      ((uint32_t)0x00000080)
-N#define UART_FLAG_RXFF                      ((uint32_t)0x00000040)
-N#define UART_FLAG_TXFF                      ((uint32_t)0x00000020)
-N#define UART_FLAG_RXFE                      ((uint32_t)0x00000010)
-N#define UART_FLAG_BUSY                      ((uint32_t)0x00000008)
-N#define UART_FLAG_DCD                       ((uint32_t)0x00000004)
-N#define UART_FLAG_DSR                       ((uint32_t)0x00000002)
-N#define UART_FLAG_CTS                       ((uint32_t)0x00000001)
-N
-N#define IS_UART_FLAG(FLAG)                  (((FLAG) == UART_FLAG_RI)   || ((FLAG) == UART_FLAG_TXFE) || \
-N                                             ((FLAG) == UART_FLAG_RXFF) || ((FLAG) == UART_FLAG_TXFF) || \
-N                                             ((FLAG) == UART_FLAG_RXFE) || ((FLAG) == UART_FLAG_BUSY) || \
-N                                             ((FLAG) == UART_FLAG_DCD)  || ((FLAG) == UART_FLAG_DSR)  || \
-N                                             ((FLAG) == UART_FLAG_CTS))
-X#define IS_UART_FLAG(FLAG)                  (((FLAG) == UART_FLAG_RI)   || ((FLAG) == UART_FLAG_TXFE) ||                                              ((FLAG) == UART_FLAG_RXFF) || ((FLAG) == UART_FLAG_TXFF) ||                                              ((FLAG) == UART_FLAG_RXFE) || ((FLAG) == UART_FLAG_BUSY) ||                                              ((FLAG) == UART_FLAG_DCD)  || ((FLAG) == UART_FLAG_DSR)  ||                                              ((FLAG) == UART_FLAG_CTS))
-N
-N#define IS_UART_BAUDRATE(BAUDRATE) (((BAUDRATE) > 0) && ((BAUDRATE) <= 115200))
-N
-N/** @} */ /* End of group UART_Flags */
-N
-N/** @defgroup UART_Data_Status UART Data Status
-N  * @{
-N  */
-N
-N#define UART_Data_OE                        0x0B
-N#define UART_Data_BE                        0x0A
-N#define UART_Data_PE                        0x09
-N#define UART_Data_FE                        0x08
-N
-N#define UART_Data_OE_Msk                    ((uint32_t)(1 << UART_Data_OE))
-N#define UART_Data_BE_Msk                    ((uint32_t)(1 << UART_Data_BE))
-N#define UART_Data_PE_Msk                    ((uint32_t)(1 << UART_Data_FE))
-N#define UART_Data_FE_Msk                    ((uint32_t)(1 << UART_Data_PE))
-N
-N#define UART_Data(DATA)                     ((uint8_t)DATA)
-N#define UART_Flags(DATA)                    ((uint8_t)(DATA >> 8))
-N#define UART_CheckDataStatus(DATA, BIT)     ((((uint32_t)DATA) << (31 - BIT)) >> 31)
-N
-N#define IS_UART_DATA(DATA)                  ((DATA) <= 0xFF)
-N
-N/** @} */ /* End of group UART_Data_Status */
-N
-N/** @defgroup UART_Clock_BRG UART Clock BRG
-N  * @{
-N  */
-N
-N#define UART_HCLKdiv1                       ((uint32_t)0x00000000)
-N#define UART_HCLKdiv2                       ((uint32_t)0x00000001)
-N#define UART_HCLKdiv4                       ((uint32_t)0x00000002)
-N#define UART_HCLKdiv8                       ((uint32_t)0x00000003)
-N#define UART_HCLKdiv16                      ((uint32_t)0x00000004)
-N#define UART_HCLKdiv32                      ((uint32_t)0x00000005)
-N#define UART_HCLKdiv64                      ((uint32_t)0x00000006)
-N#define UART_HCLKdiv128                     ((uint32_t)0x00000007)
-N
-N#define IS_UART_CLOCK_BRG(BRG)              (((BRG) >= 0) && ((BRG) <= 7))
-N
-N/** @} */ /* End of group UART_Clock_BRG */
-N
-N/** @} */ /* End of group UART_Exported_Constants */
-N
-N/** @defgroup UART_Exported_Macros UART Exported Macros
-N  * @{
-N  */
-N
-N/** @} */ /* End of group UART_Exported_Macros */
-N
-N/** @defgroup UART_Exported_Functions UART Exported Functions
-N  * @{
-N  */
-N
-Nvoid UART_DeInit(MDR_UART_TypeDef* UARTx);
-NBaudRateStatus UART_Init(MDR_UART_TypeDef* UARTx, UART_InitTypeDef* UART_InitStruct);
-Nvoid UART_StructInit(UART_InitTypeDef* UART_InitStruct);
-N
-Nvoid UART_Cmd(MDR_UART_TypeDef* UARTx, FunctionalState NewState);
-N
-Nvoid UART_ITConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IT, FunctionalState NewState);
-NITStatus UART_GetITStatus(MDR_UART_TypeDef* UARTx, uint32_t UART_IT);
-NITStatus UART_GetITStatusMasked(MDR_UART_TypeDef* UARTx, uint32_t UART_IT);
-Nvoid UART_ClearITPendingBit(MDR_UART_TypeDef* UARTx, uint32_t UART_IT);
-N
-Nvoid UART_DMAConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IT_RB_LVL, uint32_t UART_IT_TB_LVL);
-Nvoid UART_DMACmd(MDR_UART_TypeDef* UARTx, uint32_t UART_DMAReq, FunctionalState NewState);
-N
-Nvoid UART_SendData(MDR_UART_TypeDef* UARTx, uint16_t Data);
-Nuint16_t UART_ReceiveData(MDR_UART_TypeDef* UARTx);
-Nvoid UART_BreakLine(MDR_UART_TypeDef* UARTx, FunctionalState NewState);
-N
-Nvoid UART_IrDAConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IrDAMode);
-Nvoid UART_IrDACmd(MDR_UART_TypeDef* UARTx, FunctionalState NewState);
-N
-NFlagStatus UART_GetFlagStatus(MDR_UART_TypeDef* UARTx, uint32_t UART_FLAG);
-Nvoid UART_BRGInit(MDR_UART_TypeDef* UARTx, uint32_t UART_BRG);
-N
-N/** @} */ /* End of group UART_Exported_Functions */
-N
-N/** @} */ /* End of group UART */
-N
-N/** @} */ /* End of group MDR32F9Qx_StdPeriph_Driver */
-N
-N#endif /* __MDR32F9Qx_UART_H */
-N
-N/******************* (C) COPYRIGHT 2010 Phyton *********
-N*
-N* END OF FILE MDR32F9Qx_uart.h */
-N
-L 25 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c" 2
-N#include "MDR32F9Qx_rst_clk.h"
-L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_rst_clk.h" 1
-N/**
-N  ******************************************************************************
-N  * @file    MDR32F9Qx_rst_clk.h
-N  * @author  Phyton Application Team
-N  * @version V1.1.0
-N  * @date    23/09/2011
-N  * @brief   This file contains all the functions prototypes for the RST_CLK
-N  *          firmware library.
-N  ******************************************************************************
-N  * <br><br>
-N  *
-N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
-N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-N  *
-N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
-N  ******************************************************************************
-N  * FILE MDR32F9Qx_rst_clk.h
-N  */
-N
-N/* Define to prevent recursive inclusion -------------------------------------*/
-N#ifndef __MDR32F9Qx_RST_CLK_H
-N#define __MDR32F9Qx_RST_CLK_H
-N
-N/* Includes ------------------------------------------------------------------*/
-N#include "MDR32Fx.h"
-N#include "MDR32F9Qx_lib.h"
-N
-N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
-N  * @{
-N  */
-N
-N/** @addtogroup RST_CLK
-N  * @{
-N  */
-N
-N/** @defgroup RST_CLK_Exported_Types RST_CLK Exported Types
-N  * @{
-N  */
-N
-N/**
-N  * @brief Structure type for modules clocks frequencies expressed in Hz
-N  */
-N
-Ntypedef struct
-N{
-N  uint32_t CPU_CLK_Frequency;
-N  uint32_t USB_CLK_Frequency;
-N  uint32_t ADC_CLK_Frequency;
-N  uint32_t RTCHSI_Frequency;
-N  uint32_t RTCHSE_Frequency;
-N}RST_CLK_FreqTypeDef;
-N
-N/**
-N  * @brief RST_CLK unit non-volatile settings init structure
-N  */
-N
-Ntypedef struct {
-N     uint32_t REG_0F;
-N} Init_NonVolatile_RST_CLK_TypeDef;
-N
-N/** @} */ /* End of group RST_CLK_Exported_Types */
-N
-N/** @defgroup RST_CLK_Exported_Constants RST_CLK Exported Constants
-N  * @{
-N  */
-N
-N/** @defgroup HSE_configuration HSE configuration
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK HSE (High Speed External) clock mode and source selection constants
-N  */
-N
-N#define RST_CLK_HSE_OFF                      ((uint32_t)0x00000000)
-N#define RST_CLK_HSE_ON                       ((uint32_t)0x00000001)
-N#define RST_CLK_HSE_Bypass                   ((uint32_t)0x00000002)
-N
-N#define IS_RST_CLK_HSE(HSE)                  (((HSE) == RST_CLK_HSE_OFF) || \
-N                                              ((HSE) == RST_CLK_HSE_ON)  || \
-N                                              ((HSE) == RST_CLK_HSE_Bypass))
-X#define IS_RST_CLK_HSE(HSE)                  (((HSE) == RST_CLK_HSE_OFF) ||                                               ((HSE) == RST_CLK_HSE_ON)  ||                                               ((HSE) == RST_CLK_HSE_Bypass))
-N
-N/** @} */ /* End of group HSE_configuration */
-N
-N/** @defgroup LSE_configuration LSE configuration
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK LSE (Low Speed External) clock mode and source selection constants
-N  */
-N
-N#define RST_CLK_LSE_OFF                      ((uint32_t)0x00000000)
-N#define RST_CLK_LSE_ON                       ((uint32_t)0x00000001)
-N#define RST_CLK_LSE_Bypass                   ((uint32_t)0x00000002)
-N
-N#define IS_RST_CLK_LSE(LSE)                  (((LSE) == RST_CLK_LSE_OFF) || \
-N                                              ((LSE) == RST_CLK_LSE_ON)  || \
-N                                              ((LSE) == RST_CLK_LSE_Bypass))
-X#define IS_RST_CLK_LSE(LSE)                  (((LSE) == RST_CLK_LSE_OFF) ||                                               ((LSE) == RST_CLK_LSE_ON)  ||                                               ((LSE) == RST_CLK_LSE_Bypass))
-N
-N/** @} */ /* End of group LSE_configuration */
-N
-N/** @defgroup CPU_PLL_entry_clock_source CPU PLL entry clock source
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK CPU_PLL clock mode and source selection constants
-N  */
-N
-N#define RST_CLK_CPU_PLLsrcHSIdiv1           ((uint32_t)0x00000000)
-N#define RST_CLK_CPU_PLLsrcHSIdiv2           ((uint32_t)0x00000001)
-N#define RST_CLK_CPU_PLLsrcHSEdiv1           ((uint32_t)0x00000002)
-N#define RST_CLK_CPU_PLLsrcHSEdiv2           ((uint32_t)0x00000003)
-N
-N#define IS_RST_CLK_CPU_PLL_SOURCE(SRC)      (((SRC) == RST_CLK_CPU_PLLsrcHSIdiv1) || \
-N                                             ((SRC) == RST_CLK_CPU_PLLsrcHSIdiv2) || \
-N                                             ((SRC) == RST_CLK_CPU_PLLsrcHSEdiv1) || \
-N                                             ((SRC) == RST_CLK_CPU_PLLsrcHSEdiv2))
-X#define IS_RST_CLK_CPU_PLL_SOURCE(SRC)      (((SRC) == RST_CLK_CPU_PLLsrcHSIdiv1) ||                                              ((SRC) == RST_CLK_CPU_PLLsrcHSIdiv2) ||                                              ((SRC) == RST_CLK_CPU_PLLsrcHSEdiv1) ||                                              ((SRC) == RST_CLK_CPU_PLLsrcHSEdiv2))
-N
-N/** @} */ /* End of group CPU_PLL_entry_clock_source */
-N
-N/** @defgroup CPU_PLL_clock_multiplier CPU_PLL clock multiplier
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK PLL_CPU_MUL multiplier of the CPU_C1 clock constants
-N  */
-N
-N#define RST_CLK_CPU_PLLmul1                     ((uint32_t)0x00000000)
-N#define RST_CLK_CPU_PLLmul2                     ((uint32_t)0x00000001)
-N#define RST_CLK_CPU_PLLmul3                     ((uint32_t)0x00000002)
-N#define RST_CLK_CPU_PLLmul4                     ((uint32_t)0x00000003)
-N#define RST_CLK_CPU_PLLmul5                     ((uint32_t)0x00000004)
-N#define RST_CLK_CPU_PLLmul6                     ((uint32_t)0x00000005)
-N#define RST_CLK_CPU_PLLmul7                     ((uint32_t)0x00000006)
-N#define RST_CLK_CPU_PLLmul8                     ((uint32_t)0x00000007)
-N#define RST_CLK_CPU_PLLmul9                     ((uint32_t)0x00000008)
-N#define RST_CLK_CPU_PLLmul10                    ((uint32_t)0x00000009)
-N#define RST_CLK_CPU_PLLmul11                    ((uint32_t)0x0000000A)
-N#define RST_CLK_CPU_PLLmul12                    ((uint32_t)0x0000000B)
-N#define RST_CLK_CPU_PLLmul13                    ((uint32_t)0x0000000C)
-N#define RST_CLK_CPU_PLLmul14                    ((uint32_t)0x0000000D)
-N#define RST_CLK_CPU_PLLmul15                    ((uint32_t)0x0000000E)
-N#define RST_CLK_CPU_PLLmul16                    ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_CPU_PLL_MUL(SRC)             ((SRC>=0) && (SRC<16))
-N
-N/** @} */ /* End of group CPU_PLL_clock_multiplier */
-N
-N
-N/** @defgroup USB_PLL_entry_clock_source USB PLL entry clock source
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK USB_PLL clock mode and source selection constants
-N  */
-N
-N#define RST_CLK_USB_PLLsrcHSIdiv1           ((uint32_t)0x00000000)
-N#define RST_CLK_USB_PLLsrcHSIdiv2           ((uint32_t)0x00000001)
-N#define RST_CLK_USB_PLLsrcHSEdiv1           ((uint32_t)0x00000002)
-N#define RST_CLK_USB_PLLsrcHSEdiv2           ((uint32_t)0x00000003)
-N
-N#define IS_RST_CLK_USB_PLL_SOURCE(SRC)      (((SRC) == RST_CLK_USB_PLLsrcHSIdiv1) ||\
-N                                             ((SRC) == RST_CLK_USB_PLLsrcHSIdiv2) ||\
-N                                             ((SRC) == RST_CLK_USB_PLLsrcHSEdiv1) ||\
-N                                             ((SRC) == RST_CLK_USB_PLLsrcHSEdiv2))
-X#define IS_RST_CLK_USB_PLL_SOURCE(SRC)      (((SRC) == RST_CLK_USB_PLLsrcHSIdiv1) ||                                             ((SRC) == RST_CLK_USB_PLLsrcHSIdiv2) ||                                             ((SRC) == RST_CLK_USB_PLLsrcHSEdiv1) ||                                             ((SRC) == RST_CLK_USB_PLLsrcHSEdiv2))
-N
-N/** @} */ /* End of group USB_PLL_entry_clock_source */
-N
-N/** @defgroup USB_PLL_clock_multiplier USB_PLL clock multiplier
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK USB_C1 clock PLL_USB_MUL multiplier constants
-N  */
-N
-N#define RST_CLK_USB_PLLmul1                     ((uint32_t)0x00000000)
-N#define RST_CLK_USB_PLLmul2                     ((uint32_t)0x00000001)
-N#define RST_CLK_USB_PLLmul3                     ((uint32_t)0x00000002)
-N#define RST_CLK_USB_PLLmul4                     ((uint32_t)0x00000003)
-N#define RST_CLK_USB_PLLmul5                     ((uint32_t)0x00000004)
-N#define RST_CLK_USB_PLLmul6                     ((uint32_t)0x00000005)
-N#define RST_CLK_USB_PLLmul7                     ((uint32_t)0x00000006)
-N#define RST_CLK_USB_PLLmul8                     ((uint32_t)0x00000007)
-N#define RST_CLK_USB_PLLmul9                     ((uint32_t)0x00000008)
-N#define RST_CLK_USB_PLLmul10                    ((uint32_t)0x00000009)
-N#define RST_CLK_USB_PLLmul11                    ((uint32_t)0x0000000A)
-N#define RST_CLK_USB_PLLmul12                    ((uint32_t)0x0000000B)
-N#define RST_CLK_USB_PLLmul13                    ((uint32_t)0x0000000C)
-N#define RST_CLK_USB_PLLmul14                    ((uint32_t)0x0000000D)
-N#define RST_CLK_USB_PLLmul15                    ((uint32_t)0x0000000E)
-N#define RST_CLK_USB_PLLmul16                    ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_USB_PLL_MUL(SRC)             ((SRC>=0) && (SRC<16))
-N
-N/** @} */ /* End of group USB_PLL_clock_multiplier */
-N
-N
-N/** @defgroup CPU_CLK_divider CPU CLK divider
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK CPU_PLL output clock CPU_CLK_DIV divider constants
-N  */
-N
-N#define RST_CLK_CPUclkDIV1                    ((uint32_t)0x00000000)
-N#define RST_CLK_CPUclkDIV2                    ((uint32_t)0x00000008)
-N#define RST_CLK_CPUclkDIV4                    ((uint32_t)0x00000009)
-N#define RST_CLK_CPUclkDIV8                    ((uint32_t)0x0000000A)
-N#define RST_CLK_CPUclkDIV16                   ((uint32_t)0x0000000B)
-N#define RST_CLK_CPUclkDIV32                   ((uint32_t)0x0000000C)
-N#define RST_CLK_CPUclkDIV64                   ((uint32_t)0x0000000D)
-N#define RST_CLK_CPUclkDIV128                  ((uint32_t)0x0000000E)
-N#define RST_CLK_CPUclkDIV256                  ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_CPUclkDIV(DIV)             (((DIV) == RST_CLK_CPUclkDIV1)   || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV2)   || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV4)   || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV8)   || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV16)  || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV32)  || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV64)  || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV128) || \
-N                                               ((DIV) == RST_CLK_CPUclkDIV256))
-X#define IS_RST_CLK_CPUclkDIV(DIV)             (((DIV) == RST_CLK_CPUclkDIV1)   ||                                                ((DIV) == RST_CLK_CPUclkDIV2)   ||                                                ((DIV) == RST_CLK_CPUclkDIV4)   ||                                                ((DIV) == RST_CLK_CPUclkDIV8)   ||                                                ((DIV) == RST_CLK_CPUclkDIV16)  ||                                                ((DIV) == RST_CLK_CPUclkDIV32)  ||                                                ((DIV) == RST_CLK_CPUclkDIV64)  ||                                                ((DIV) == RST_CLK_CPUclkDIV128) ||                                                ((DIV) == RST_CLK_CPUclkDIV256))
-N
-N/** @} */ /* End of group CPU_CLK_divider */
-N
-N/** @defgroup CPU_CLK_selector CPU CLK selector
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK CPU_CLK source CPU_CLK selector constants
-N  */
-N
-N#define RST_CLK_CPUclkHSI                     ((uint32_t)0x00000000)
-N#define RST_CLK_CPUclkCPU_C3                  ((uint32_t)0x00000100)
-N#define RST_CLK_CPUclkLSE                     ((uint32_t)0x00000200)
-N#define RST_CLK_CPUclkLSI                     ((uint32_t)0x00000300)
-N
-N#define IS_RST_CPU_CLK(SRC)                   (((SRC) == RST_CLK_CPUclkHSI)    || \
-N                                               ((SRC) == RST_CLK_CPUclkCPU_C3) || \
-N                                               ((SRC) == RST_CLK_CPUclkLSE)    || \
-N                                               ((SRC) == RST_CLK_CPUclkLSI))
-X#define IS_RST_CPU_CLK(SRC)                   (((SRC) == RST_CLK_CPUclkHSI)    ||                                                ((SRC) == RST_CLK_CPUclkCPU_C3) ||                                                ((SRC) == RST_CLK_CPUclkLSE)    ||                                                ((SRC) == RST_CLK_CPUclkLSI))
-N
-N/** @} */ /* End of group CPU_CLK_selector */
-N
-N/** @defgroup ADC_MCO_CLOCK_source ADC clock source
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK ADC_CLK selector constants
-N  */
-N#define RST_CLK_ADCclkCPU_C1                  ((uint32_t)0x00000020)
-N#define RST_CLK_ADCclkUSB_C1                  ((uint32_t)0x00000021)
-N#define RST_CLK_ADCclkCPU_C2                  ((uint32_t)0x00000022)
-N#define RST_CLK_ADCclkUSB_C2                  ((uint32_t)0x00000023)
-N#define RST_CLK_ADCclkLSE                     ((uint32_t)0x00000000)
-N#define RST_CLK_ADCclkLSI                     ((uint32_t)0x00000010)
-N#define RST_CLK_ADCclkHSI_C1                  ((uint32_t)0x00000030)
-N
-N#define IS_RST_CLK_ADCclk(SRC)                (((SRC) == RST_CLK_ADCclkCPU_C1) || \
-N                                               ((SRC) == RST_CLK_ADCclkUSB_C1) || \
-N                                               ((SRC) == RST_CLK_ADCclkCPU_C2) || \
-N                                               ((SRC) == RST_CLK_ADCclkUSB_C2) || \
-N                                               ((SRC) == RST_CLK_ADCclkLSE)    || \
-N                                               ((SRC) == RST_CLK_ADCclkLSI)    || \
-N                                               ((SRC) == RST_CLK_ADCclkHSI_C1))
-X#define IS_RST_CLK_ADCclk(SRC)                (((SRC) == RST_CLK_ADCclkCPU_C1) ||                                                ((SRC) == RST_CLK_ADCclkUSB_C1) ||                                                ((SRC) == RST_CLK_ADCclkCPU_C2) ||                                                ((SRC) == RST_CLK_ADCclkUSB_C2) ||                                                ((SRC) == RST_CLK_ADCclkLSE)    ||                                                ((SRC) == RST_CLK_ADCclkLSI)    ||                                                ((SRC) == RST_CLK_ADCclkHSI_C1))
-N/** @} */ /* End of group ADC_MCO_CLOCK_source */
-N
-N/** @defgroup ADC_MCO_CS3_SEL ADC clock divider
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK ADC_CS2_SEL output clock ADC_CS3_SEL divider constants
-N  */
-N
-N#define RST_CLK_ADCclkDIV1                    ((uint32_t)0x00000000)
-N#define RST_CLK_ADCclkDIV2                    ((uint32_t)0x00000008)
-N#define RST_CLK_ADCclkDIV4                    ((uint32_t)0x00000009)
-N#define RST_CLK_ADCclkDIV8                    ((uint32_t)0x0000000A)
-N#define RST_CLK_ADCclkDIV16                   ((uint32_t)0x0000000B)
-N#define RST_CLK_ADCclkDIV32                   ((uint32_t)0x0000000C)
-N#define RST_CLK_ADCclkDIV64                   ((uint32_t)0x0000000D)
-N#define RST_CLK_ADCclkDIV128                  ((uint32_t)0x0000000E)
-N#define RST_CLK_ADCclkDIV256                  ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_ADCclkDivValue(SRC)        (((SRC) == RST_CLK_ADCclkDIV1)    || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV2)    || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV4)    || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV8)    || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV16)   || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV32)   || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV64)   || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV128)  || \
-N                                               ((SRC) == RST_CLK_ADCclkDIV256))
-X#define IS_RST_CLK_ADCclkDivValue(SRC)        (((SRC) == RST_CLK_ADCclkDIV1)    ||                                                ((SRC) == RST_CLK_ADCclkDIV2)    ||                                                ((SRC) == RST_CLK_ADCclkDIV4)    ||                                                ((SRC) == RST_CLK_ADCclkDIV8)    ||                                                ((SRC) == RST_CLK_ADCclkDIV16)   ||                                                ((SRC) == RST_CLK_ADCclkDIV32)   ||                                                ((SRC) == RST_CLK_ADCclkDIV64)   ||                                                ((SRC) == RST_CLK_ADCclkDIV128)  ||                                                ((SRC) == RST_CLK_ADCclkDIV256))
-N
-N/** @} */ /* End of group ADC_MCO_CS3_SEL */
-N
-N
-N/** @defgroup CLK_peripheral CLK peripheral
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK peripheral modules clock constants
-N  */
-N
-N#define PCLK_BIT(BASE)              ((uint32_t)(1 << ((((uint32_t)BASE) >> 15) & 0x1F)))
-N
-N#define RST_CLK_PCLK_CAN1           PCLK_BIT(MDR_CAN1_BASE)
-N#define RST_CLK_PCLK_CAN2           PCLK_BIT(MDR_CAN2_BASE)
-N#define RST_CLK_PCLK_USB            PCLK_BIT(MDR_USB_BASE)
-N#define RST_CLK_PCLK_EEPROM         PCLK_BIT(MDR_EEPROM_BASE)
-N#define RST_CLK_PCLK_RST_CLK        PCLK_BIT(MDR_RST_CLK_BASE)
-N#define RST_CLK_PCLK_DMA            PCLK_BIT(MDR_DMA_BASE)
-N#define RST_CLK_PCLK_UART1          PCLK_BIT(MDR_UART1_BASE)
-N#define RST_CLK_PCLK_UART2          PCLK_BIT(MDR_UART2_BASE)
-N#define RST_CLK_PCLK_SSP1           PCLK_BIT(MDR_SSP1_BASE)
-N#define RST_CLK_PCLK_09             PCLK_BIT(0x40048000)
-N#define RST_CLK_PCLK_I2C            PCLK_BIT(MDR_I2C_BASE)
-N#define RST_CLK_PCLK_POWER          PCLK_BIT(MDR_POWER_BASE)
-N#define RST_CLK_PCLK_WWDG           PCLK_BIT(MDR_WWDG_BASE)
-N#define RST_CLK_PCLK_IWDG           PCLK_BIT(MDR_IWDG_BASE)
-N#define RST_CLK_PCLK_TIMER1         PCLK_BIT(MDR_TIMER1_BASE)
-N#define RST_CLK_PCLK_TIMER2         PCLK_BIT(MDR_TIMER2_BASE)
-N#define RST_CLK_PCLK_TIMER3         PCLK_BIT(MDR_TIMER3_BASE)
-N#define RST_CLK_PCLK_ADC            PCLK_BIT(MDR_ADC_BASE)
-N#define RST_CLK_PCLK_DAC            PCLK_BIT(MDR_DAC_BASE)
-N#define RST_CLK_PCLK_COMP           PCLK_BIT(MDR_COMP_BASE)
-N#define RST_CLK_PCLK_SSP2           PCLK_BIT(MDR_SSP2_BASE)
-N#define RST_CLK_PCLK_PORTA          PCLK_BIT(MDR_PORTA_BASE)
-N#define RST_CLK_PCLK_PORTB          PCLK_BIT(MDR_PORTB_BASE)
-N#define RST_CLK_PCLK_PORTC          PCLK_BIT(MDR_PORTC_BASE)
-N#define RST_CLK_PCLK_PORTD          PCLK_BIT(MDR_PORTD_BASE)
-N#define RST_CLK_PCLK_PORTE          PCLK_BIT(MDR_PORTE_BASE)
-N#define RST_CLK_PCLK_26             PCLK_BIT(0x400D0000)
-N#define RST_CLK_PCLK_BKP            PCLK_BIT(MDR_BKP_BASE)
-N#define RST_CLK_PCLK_28             PCLK_BIT(0x400E0000)
-N#define RST_CLK_PCLK_PORTF          PCLK_BIT(MDR_PORTF_BASE)
-N#define RST_CLK_PCLK_EBC            PCLK_BIT(MDR_EBC_BASE)
-N#define RST_CLK_PCLK_31             PCLK_BIT(0x400F8000)
-N
-N#define IS_RST_CLK_PCLK(PCLK)       ((((PCLK) & RST_CLK_PCLK_09) == 0x00) && \
-N                                     (((PCLK) & RST_CLK_PCLK_26) == 0x00) && \
-N                                     (((PCLK) & RST_CLK_PCLK_28) == 0x00) && \
-N                                     (((PCLK) & RST_CLK_PCLK_31) == 0x00))
-X#define IS_RST_CLK_PCLK(PCLK)       ((((PCLK) & RST_CLK_PCLK_09) == 0x00) &&                                      (((PCLK) & RST_CLK_PCLK_26) == 0x00) &&                                      (((PCLK) & RST_CLK_PCLK_28) == 0x00) &&                                      (((PCLK) & RST_CLK_PCLK_31) == 0x00))
-N
-N/** @} */ /* End of group CLK_peripheral */
-N
-N/** @defgroup RST_CLK_Flag RST_CLK Flag
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK flag identifiers
-N  */
-N
-N#define RST_CLK_FLAG_HSIRDY                   ((uint32_t)(0x00 | 23))
-N#define RST_CLK_FLAG_LSIRDY                   ((uint32_t)(0x00 | 21))
-N#define RST_CLK_FLAG_HSERDY                   ((uint32_t)(0x20 |  2))
-N#define RST_CLK_FLAG_LSERDY                   ((uint32_t)(0x00 | 13))
-N#define RST_CLK_FLAG_PLLCPURDY                ((uint32_t)(0x20 |  1))
-N#define RST_CLK_FLAG_PLLUSBRDY                ((uint32_t)(0x20 |  0))
-N
-N#define IS_RST_CLK_FLAG(FLAG)                 (((FLAG) == RST_CLK_FLAG_HSIRDY)    || \
-N                                               ((FLAG) == RST_CLK_FLAG_LSIRDY)    || \
-N                                               ((FLAG) == RST_CLK_FLAG_HSERDY)    || \
-N                                               ((FLAG) == RST_CLK_FLAG_LSERDY)    || \
-N                                               ((FLAG) == RST_CLK_FLAG_PLLCPURDY) || \
-N                                               ((FLAG) == RST_CLK_FLAG_PLLUSBRDY))
-X#define IS_RST_CLK_FLAG(FLAG)                 (((FLAG) == RST_CLK_FLAG_HSIRDY)    ||                                                ((FLAG) == RST_CLK_FLAG_LSIRDY)    ||                                                ((FLAG) == RST_CLK_FLAG_HSERDY)    ||                                                ((FLAG) == RST_CLK_FLAG_LSERDY)    ||                                                ((FLAG) == RST_CLK_FLAG_PLLCPURDY) ||                                                ((FLAG) == RST_CLK_FLAG_PLLUSBRDY))
-N
-N/** @} */ /* End of group RST_CLK_Flag */
-N
-N#define IS_RCC_CLK_HSI_TRIM_VALUE(TRIM)       ((TRIM) <= 0x3F)
-N#define IS_RCC_CLK_LSI_TRIM_VALUE(TRIM)       ((TRIM) <= 0x1F)
-N
-N/** @defgroup RST_CLK_HSI_C1_SEL HSI clock divider
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK HSI clock HSI_C1_SEL divider constants
-N  */
-N
-N#define RST_CLK_HSIclkDIV1                    ((uint32_t)0x00000000)
-N#define RST_CLK_HSIclkDIV2                    ((uint32_t)0x00000008)
-N#define RST_CLK_HSIclkDIV4                    ((uint32_t)0x00000009)
-N#define RST_CLK_HSIclkDIV8                    ((uint32_t)0x0000000A)
-N#define RST_CLK_HSIclkDIV16                   ((uint32_t)0x0000000B)
-N#define RST_CLK_HSIclkDIV32                   ((uint32_t)0x0000000C)
-N#define RST_CLK_HSIclkDIV64                   ((uint32_t)0x0000000D)
-N#define RST_CLK_HSIclkDIV128                  ((uint32_t)0x0000000E)
-N#define RST_CLK_HSIclkDIV256                  ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_HSIclkDivValue(SRC)        (((SRC) == RST_CLK_HSIclkDIV1)    || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV2)    || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV4)    || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV8)    || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV16)   || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV32)   || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV64)   || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV128)  || \
-N                                               ((SRC) == RST_CLK_HSIclkDIV256))
-X#define IS_RST_CLK_HSIclkDivValue(SRC)        (((SRC) == RST_CLK_HSIclkDIV1)    ||                                                ((SRC) == RST_CLK_HSIclkDIV2)    ||                                                ((SRC) == RST_CLK_HSIclkDIV4)    ||                                                ((SRC) == RST_CLK_HSIclkDIV8)    ||                                                ((SRC) == RST_CLK_HSIclkDIV16)   ||                                                ((SRC) == RST_CLK_HSIclkDIV32)   ||                                                ((SRC) == RST_CLK_HSIclkDIV64)   ||                                                ((SRC) == RST_CLK_HSIclkDIV128)  ||                                                ((SRC) == RST_CLK_HSIclkDIV256))
-N
-N/** @} */ /* End of group RST_CLK_HSI_C1_SEL */
-N
-N/** @defgroup RST_CLK_HSE_C1_SEL HSE clock divider
-N  * @{
-N  */
-N
-N/**
-N  * @brief RST_CLK HSE clock HSE_C1_SEL divider constants
-N  */
-N#define RST_CLK_HSEclkDIV1                    ((uint32_t)0x00000000)
-N#define RST_CLK_HSEclkDIV2                    ((uint32_t)0x00000008)
-N#define RST_CLK_HSEclkDIV4                    ((uint32_t)0x00000009)
-N#define RST_CLK_HSEclkDIV8                    ((uint32_t)0x0000000A)
-N#define RST_CLK_HSEclkDIV16                   ((uint32_t)0x0000000B)
-N#define RST_CLK_HSEclkDIV32                   ((uint32_t)0x0000000C)
-N#define RST_CLK_HSEclkDIV64                   ((uint32_t)0x0000000D)
-N#define RST_CLK_HSEclkDIV128                  ((uint32_t)0x0000000E)
-N#define RST_CLK_HSEclkDIV256                  ((uint32_t)0x0000000F)
-N
-N#define IS_RST_CLK_HSEclkDivValue(SRC)        (((SRC) == RST_CLK_HSEclkDIV1)    || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV2)    || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV4)    || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV8)    || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV16)   || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV32)   || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV64)   || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV128)  || \
-N                                               ((SRC) == RST_CLK_HSEclkDIV256))
-X#define IS_RST_CLK_HSEclkDivValue(SRC)        (((SRC) == RST_CLK_HSEclkDIV1)    ||                                                ((SRC) == RST_CLK_HSEclkDIV2)    ||                                                ((SRC) == RST_CLK_HSEclkDIV4)    ||                                                ((SRC) == RST_CLK_HSEclkDIV8)    ||                                                ((SRC) == RST_CLK_HSEclkDIV16)   ||                                                ((SRC) == RST_CLK_HSEclkDIV32)   ||                                                ((SRC) == RST_CLK_HSEclkDIV64)   ||                                                ((SRC) == RST_CLK_HSEclkDIV128)  ||                                                ((SRC) == RST_CLK_HSEclkDIV256))
-N
-N/** @} */ /* End of group RST_CLK_HSE_C1_SEL */
-N
-N/** @} */ /* End of group RST_CLK_Exported_Constants */
-N
-N/** @defgroup RST_CLK_Exported_Macros RST_CLK Exported Macros
-N  * @{
-N  */
-N
-N/** @} */ /* End of group RST_CLK_Exported_Macros */
-N
-N/** @defgroup RST_CLK_Exported_Functions RST_CLK Exported Functions
-N  * @{
-N  */
-N
-Nvoid RST_CLK_DeInit(void);
-Nvoid RST_CLK_WarmDeInit(void);
-N
-Nvoid RST_CLK_HSEconfig(uint32_t RST_CLK_HSE);
-NErrorStatus RST_CLK_HSEstatus(void);
-N
-Nvoid RST_CLK_LSEconfig(uint32_t RST_CLK_LSE);
-NErrorStatus RST_CLK_LSEstatus(void);
-N
-Nvoid RST_CLK_HSIcmd(FunctionalState NewState);
-Nvoid RST_CLK_HSIadjust(uint32_t HSItrimValue);
-NErrorStatus RST_CLK_HSIstatus(void);
-N
-Nvoid RST_CLK_LSIcmd(FunctionalState NewState);
-Nvoid RST_CLK_LSIadjust(uint32_t LSItrimValue);
-NErrorStatus RST_CLK_LSIstatus(void);
-N
-Nvoid RST_CLK_CPU_PLLconfig(uint32_t RST_CLK_CPU_PLLsource, uint32_t RST_CLK_CPU_PLLmul);
-Nvoid RST_CLK_CPU_PLLuse(FunctionalState UsePLL);
-Nvoid RST_CLK_CPU_PLLcmd(FunctionalState NewState);
-NErrorStatus RST_CLK_CPU_PLLstatus(void);
-N
-Nvoid RST_CLK_CPUclkPrescaler(uint32_t CPUclkDivValue);
-Nvoid RST_CLK_CPUclkSelection(uint32_t CPU_CLK);
-N
-Nvoid RST_CLK_USB_PLLconfig(uint32_t RST_CLK_USB_PLLsource, uint32_t RST_CLK_USB_PLLmul);
-Nvoid RST_CLK_USB_PLLuse(FunctionalState UsePLL);
-Nvoid RST_CLK_USB_PLLcmd(FunctionalState NewState);
-NErrorStatus RST_CLK_USB_PLLstatus(void);
-N
-Nvoid RST_CLK_USBclkPrescaler(FunctionalState NewState);
-Nvoid RST_CLK_USBclkEnable(FunctionalState NewState);
-N
-Nvoid RST_CLK_ADCclkSelection(uint32_t ADC_CLK);
-Nvoid RST_CLK_ADCclkPrescaler(uint32_t ADCclkDivValue);
-Nvoid RST_CLK_ADCclkEnable(FunctionalState NewState);
-N
-Nvoid RST_CLK_HSIclkPrescaler(uint32_t HSIclkDivValue);
-Nvoid RST_CLK_RTC_HSIclkEnable(FunctionalState NewState);
-N
-Nvoid RST_CLK_HSEclkPrescaler(uint32_t HSEclkDivValue);
-Nvoid RST_CLK_RTC_HSEclkEnable(FunctionalState NewState);
-N
-Nvoid RST_CLK_PCLKcmd(uint32_t RST_CLK_PCLK, FunctionalState NewState);
-N
-Nvoid RST_CLK_GetClocksFreq(RST_CLK_FreqTypeDef* RST_CLK_Clocks);
-N
-NFlagStatus RST_CLK_GetFlagStatus(uint32_t RST_CLK_FLAG);
-N
-N/** @} */ /* End of group RST_CLK_Exported_Functions */
-N
-N/** @} */ /* End of group RST_CLK */
-N
-N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
-N
-N#endif /* __MDR32F9Qx_RST_CLK_H */
-N
-N/******************* (C) COPYRIGHT 2010 Phyton *********************************
-N*
-N* END OF FILE MDR32F9Qx_rst_clk.h */
-N
-L 26 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c" 2
+L 25 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c" 2
 N#include "MDR32F9Qx_config.h"
 L 1 ".\MDR32F9Qx_config.h" 1
 N/**
@@ -7064,688 +6112,1098 @@ N/******************* (C) COPYRIGHT 2011 Phyton ********************************
 N*
 N* END OF FILE MDR32F9x_config.h */
 N
-L 27 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c" 2
+L 26 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c" 2
+N#include "MDR32F9Qx_dma.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_dma.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.0
+N  * @date    11/06/2010
+N  * @brief   This file contains all the functions prototypes for the DMA
+N  *          firmware library.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_dma.h
+N  */
 N
-N#define ASSERT_INFO_FILE_ID FILEID__MDR32F9X_UART_C
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9Qx_DMA_H
+N#define __MDR32F9Qx_DMA_H
+N
+N/* Includes ------------------------------------------------------------------*/
+N#include "MDR32Fx.h"
 N
 N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
 N  * @{
 N  */
 N
-N/** @addtogroup UART
+N/** @addtogroup DMA
 N  * @{
 N  */
 N
-N/** @defgroup UART_Private_Defines UART Private Defines
-N  * @{
-N  */
-N
-N#define CR_EN_Set                 ((uint16_t)0x0001)  /*!< UART Enable Mask */
-N#define CR_EN_Reset               ((uint16_t)0xFFFE)  /*!< UART Disable Mask */
-N
-N#define CR_SIREN_Set              ((uint16_t)0x0002)  /*!< UART IrDA mode Enable Mask */
-N#define CR_SIREN_Reset            ((uint16_t)0xFFFD)  /*!< UART IrDA mode Disable Mask */
-N
-N#define CR_FC_Mask                ((uint16_t)0xFF80)  /*!< UART CR Flow control Bits Mask */
-N
-N#define LCR_H_BRK_Set             ((uint16_t)0x0001)  /*!< UART Break Line Set Mask */
-N#define LCR_H_BRK_Reset           ((uint16_t)0xFFFE)  /*!< UART Break Line Reset Mask */
-N#define LCR_H_Clear_Mask          ((uint16_t)0x00FF)  /*!< UART LCR_H Mask */
-N
-N#define FBRD_Fract_Mask           ((uint16_t)0x003F)  /*!< Fractional divider Mask */
-N
-N#define IrLPBaud16                ((uint32_t)1843200) /*!< F_IrLPBaud16 nominal frequency Hz */
-N
-N#define UART1_BRG_Mask            ((uint32_t)0x0007)  /*!< UART1 clock divider Mask */
-N#define UART2_BRG_Mask            ((uint32_t)0x0700)  /*!< UART2 clock divider Mask */
-N#define UART2_BRG_Offs            ((uint32_t)0x0008)  /*!< UART2 clock divider Offset */
-N
-N/** @} */ /* End of group UART_Private_Defines */
-N
-N/** @defgroup UART_Private_Functions UART Private Functions
+N/** @defgroup DMA_Exported_Types DMA Exported Types
 N  * @{
 N  */
 N
 N/**
-N  * @brief  Resets the UARTx peripheral registers to their default reset values.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values: UART1, UART2.
+N  * @brief  DMA Channel Primary / Alternate Control Data initialization structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceBaseAddr;                 /*!< Specifies the source base address for DMA Channelx. */
+N
+N  uint32_t DMA_DestBaseAddr;                  /*!< Specifies the destination base address for DMA Channelx. */
+N
+N  uint32_t DMA_SourceIncSize;                 /*!< Specifies the source address register increment value.
+N                                                 This parameter can be a value of @ref DMA_source_incremented_mode */
+N
+N  uint32_t DMA_DestIncSize;                   /*!< Specifies the destination address register increment value.
+N                                                 This parameter can be a value of @ref DMA_dest_incremented_mode */
+N
+N  uint32_t DMA_MemoryDataSize;                /*!< Specifies the Memory data width.
+N                                                 This parameter can be a value of @ref DMA_memory_data_size */
+N
+N  uint32_t DMA_Mode;                          /*!< Specifies the operation mode of the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_operating_mode. */
+N
+N  uint32_t DMA_CycleSize;                     /*!< Specifies the  total number of DMA transfers that the DMA cycle contains.
+N                                                 This parameter can be a value of @ref DMA_cycle_size. */
+N
+N  uint32_t DMA_NumContinuous;                 /*!< Specifies how many DMA transfers can occur before the DMA controller rearbitrates.
+N                                                 This parameter can be a value of @ref DMA_number_continuous_transfers. */
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N} DMA_CtrlDataInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Control Data structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceEndAddr;                 /*!< Specifies the DMA channel source end address */
+N
+N  uint32_t DMA_DestEndAddr;                   /*!< Specifies the DMA channel destination end address. */
+N
+N  uint32_t DMA_Control;                       /*!< Specifies the DMA channel control data configuration. */
+N
+N  uint32_t DMA_Unused;                        /*!< Specifies the DMA channel unused memory. */
+N
+N}DMA_CtrlDataTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataInitTypeDef *DMA_PriCtrlData;   /*!< Specifies the pointer to the primary control data structure.
+N                                                 This parameter should be NULL if primary data structure is not used */
+N
+N  DMA_CtrlDataInitTypeDef *DMA_AltCtrlData;   /*!< Specifies the pointer to the alternate control data structure.
+N                                                 This parameter should be NULL if alternate data structure is not used */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N  uint8_t DMA_SelectDataStructure;            /*!< Specifies the primary /alternate data structure to use by the DMA channel.
+N                                                 This parameter can be a value of @ref DMA_data_structure_selection. */
+N
+N} DMA_ChannelInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Scatter-Gather Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataTypeDef *DMA_SG_TaskArray;      /*!< Specifies the pointer to the Scatter-Gather task structures array. The size
+N                                                 of the array should be equal to DMA_SG_TaskNumber.
+N                                                 Every structure of the array should contain the copy of the alternate control
+N                                                 data for the related task. It will be used by DMA to configure
+N                                                 the alternate control data while operating in the
+N                                                 scatter-gather mode */
+N
+N  uint32_t DMA_SG_TaskNumber;                 /*!< Specifies the number of scatter-gather tasks to be executed by DMA */
+N
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the Primary Control Data DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the Primary Control Data DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N} DMA_Channel_SG_InitTypeDef;
+N
+N
+N/** @} */ /* End of group DMA_Exported_Types */
+N
+N/** @defgroup DMA_Exported_Constants DMA Exported Constants
+N  * @{
+N  */
+N
+N/** @defgroup DMA_channels_number DMA channels number
+N  * @{
+N  */
+N
+N#define IS_DMA_CHANNELS(NUMBER) ((NUMBER >= 1) && (NUMBER <= 32))
+N
+N/** @} */ /* End of group DMA_channels_number */
+N
+N/** @defgroup DMA_alternate_data_usage DMA alternate data usage
+N  * @{
+N  */
+N
+N#define DMA_ALternateDataDisabled           ((uint16_t)(0x00))
+N#define DMA_ALternateDataEnabled            ((uint16_t)(0x01))
+N
+N#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) || \
+N                                            ((STATE)  == DMA_ALternateDataEnabled))
+X#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) ||                                             ((STATE)  == DMA_ALternateDataEnabled))
+N
+N/** @} */ /* End of group DMA_alternate_data_usage */
+N
+N/** @defgroup DMA_valid_channels DMA valid channels
+N  * @{
+N  */
+N#define DMA_Channel_UART1_TX    ((uint8_t)(0))
+N#define DMA_Channel_UART1_RX    ((uint8_t)(1))
+N#define DMA_Channel_UART2_TX    ((uint8_t)(2))
+N#define DMA_Channel_UART2_RX    ((uint8_t)(3))
+N#define DMA_Channel_SSP1_TX     ((uint8_t)(4))
+N#define DMA_Channel_SSP1_RX     ((uint8_t)(5))
+N#define DMA_Channel_SSP2_TX     ((uint8_t)(6))
+N#define DMA_Channel_SSP2_RX     ((uint8_t)(7))
+N#define DMA_Channel_ADC1        ((uint8_t)(8))
+N#define DMA_Channel_ADC2        ((uint8_t)(9))
+N#define DMA_Channel_TIM1        ((uint8_t)(10))
+N#define DMA_Channel_TIM2        ((uint8_t)(11))
+N#define DMA_Channel_TIM3        ((uint8_t)(12))
+N#define DMA_Channel_SW1         ((uint8_t)(13))
+N#define DMA_Channel_SW2         ((uint8_t)(14))
+N#define DMA_Channel_SW3         ((uint8_t)(15))
+N#define DMA_Channel_SW4         ((uint8_t)(16))
+N#define DMA_Channel_SW5         ((uint8_t)(17))
+N#define DMA_Channel_SW6         ((uint8_t)(18))
+N#define DMA_Channel_SW7         ((uint8_t)(19))
+N#define DMA_Channel_SW8         ((uint8_t)(20))
+N#define DMA_Channel_SW9         ((uint8_t)(21))
+N#define DMA_Channel_SW10        ((uint8_t)(22))
+N#define DMA_Channel_SW11        ((uint8_t)(23))
+N#define DMA_Channel_SW12        ((uint8_t)(24))
+N#define DMA_Channel_SW13        ((uint8_t)(25))
+N#define DMA_Channel_SW14        ((uint8_t)(26))
+N#define DMA_Channel_SW15        ((uint8_t)(27))
+N#define DMA_Channel_SW16        ((uint8_t)(28))
+N#define DMA_Channel_SW17        ((uint8_t)(29))
+N#define DMA_Channel_SW18        ((uint8_t)(30))
+N#define DMA_Channel_SW19        ((uint8_t)(31))
+N#define IS_DMA_CHANNEL(CHANNEL) (CHANNEL <= (DMA_Channels_Number - 1))
+N
+N/** @} */ /* End of group DMA_valid_channels */
+N
+N/** @defgroup DMA_source_incremented_mode DMA source incremented mode
+N  * @{
+N  */
+N
+N#define DMA_SourceIncByte                   ((uint32_t)(0 << 26))
+N#define DMA_SourceIncHalfword               ((uint32_t)(1 << 26))
+N#define DMA_SourceIncWord                   ((uint32_t)(2 << 26))
+N#define DMA_SourceIncNo                     ((uint32_t)(3 << 26))
+N#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     || \
+N                                            ((STATE)  == DMA_SourceIncHalfword) || \
+N                                            ((STATE)  == DMA_SourceIncWord)     || \
+N                                            ((STATE)  == DMA_SourceIncNo))
+X#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     ||                                             ((STATE)  == DMA_SourceIncHalfword) ||                                             ((STATE)  == DMA_SourceIncWord)     ||                                             ((STATE)  == DMA_SourceIncNo))
+N
+N/** @} */ /* End of group DMA_source_incremented_mode */
+N
+N/** @defgroup DMA_dest_incremented_mode DMA dest incremented mode
+N  * @{
+N  */
+N
+N#define DMA_DestIncByte                 ((uint32_t)(0x0UL << 30))
+N#define DMA_DestIncHalfword             ((uint32_t)(0x1UL << 30))
+N#define DMA_DestIncWord                 ((uint32_t)(0x2UL << 30))
+N#define DMA_DestIncNo                   ((uint32_t)(0x3UL << 30))
+N#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       || \
+N                                        ((STATE)  == DMA_DestIncHalfword)   || \
+N                                        ((STATE)  == DMA_DestIncWord)       || \
+N                                        ((STATE)  == DMA_DestIncNo))
+X#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       ||                                         ((STATE)  == DMA_DestIncHalfword)   ||                                         ((STATE)  == DMA_DestIncWord)       ||                                         ((STATE)  == DMA_DestIncNo))
+N
+N/** @} */ /* End of group DMA_dest_incremented_mode */
+N
+N/** @defgroup DMA_memory_data_size DMA memory data size
+N  * @{
+N  */
+N
+N#define DMA_MemoryDataSize_Byte        ((uint32_t)(0x00 << 24))
+N#define DMA_MemoryDataSize_HalfWord    ((uint32_t)(0x11 << 24))
+N#define DMA_MemoryDataSize_Word        ((uint32_t)(0x22 << 24))
+N#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      || \
+N                                       ((SIZE) == DMA_MemoryDataSize_HalfWord)  || \
+N                                       ((SIZE) == DMA_MemoryDataSize_Word))
+X#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      ||                                        ((SIZE) == DMA_MemoryDataSize_HalfWord)  ||                                        ((SIZE) == DMA_MemoryDataSize_Word))
+N
+N/** @} */ /* End of group DMA_memory_data_size */
+N
+N/** @defgroup DMA_operating_mode DMA operating mode
+N  * @{
+N  */
+N
+N#define DMA_Mode_Stop                       ((uint32_t)0x0)
+N#define DMA_Mode_Basic                      ((uint32_t)0x1)
+N#define DMA_Mode_AutoRequest                ((uint32_t)0x2)
+N#define DMA_Mode_PingPong                   ((uint32_t)0x3)
+N#define DMA_Mode_MemScatterPri              ((uint32_t)0x4)
+N#define DMA_Mode_MemScatterAlt              ((uint32_t)0x5)
+N#define DMA_Mode_PerScatterPri              ((uint32_t)0x6)
+N#define DMA_Mode_PerScatterAlt              ((uint32_t)0x7)
+N#define DMA_Mode_PerScatterAltBurst         ((uint32_t)0xF)
+N
+N#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           || \
+N                                    ((MODE) == DMA_Mode_Basic)          || \
+N                                    ((MODE) == DMA_Mode_AutoRequest)    || \
+N                                    ((MODE) == DMA_Mode_PingPong)       || \
+N                                    ((MODE) == DMA_Mode_MemScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_MemScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAltBurst))
+X#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           ||                                     ((MODE) == DMA_Mode_Basic)          ||                                     ((MODE) == DMA_Mode_AutoRequest)    ||                                     ((MODE) == DMA_Mode_PingPong)       ||                                     ((MODE) == DMA_Mode_MemScatterPri)  ||                                     ((MODE) == DMA_Mode_MemScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterPri)  ||                                     ((MODE) == DMA_Mode_PerScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterAltBurst))
+N
+N/** @} */ /* End of group DMA_operating_mode */
+N
+N/** @defgroup DMA_cycle_size DMA cycle size
+N  * @{
+N  */
+N
+N#define IS_DMA_CYCLE_SIZE(SIZE)   ((SIZE >= 1) && (SIZE <= 1024))
+N
+N/** @} */ /* End of group DMA_cycle_size */
+N
+N/** @defgroup DMA_priority_level DMA priority level
+N  * @{
+N  */
+N
+N#define DMA_Priority_Default                ((uint8_t)0x00)
+N#define DMA_Priority_High                   ((uint8_t)0x01)
+N#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) || \
+N                                            ((PRIORITY)  == DMA_Priority_High))
+X#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) ||                                             ((PRIORITY)  == DMA_Priority_High))
+N
+N/** @} */ /* End of group DMA_priority_level */
+N
+N/** @defgroup DMA_burst_mode DMA burst mode
+N  * @{
+N  */
+N
+N#define DMA_BurstClear                      ((uint8_t)0x00)
+N#define DMA_BurstSet                        ((uint8_t)0x01)
+N#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) || \
+N                                            ((STATE)  == DMA_BurstSet))
+X#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) ||                                             ((STATE)  == DMA_BurstSet))
+N
+N/** @} */ /* End of group DMA_burst_mode */
+N
+N
+N/** @defgroup DMA_source_protection_control DMA source protection control
+N  * @{
+N  */
+N
+N#define DMA_SourceCacheable                 ((uint32_t)(0x01 << 20))
+N#define DMA_SourceBufferable                ((uint32_t)(0x01 << 19))
+N#define DMA_SourcePrivileged                ((uint32_t)(0x01 << 18))
+N
+N#define IS_DMA_SOURCE_PROT(STATE)           ((STATE & (~(0x7 << 18))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_dest_protection_control DMA dest protection control
+N  * @{
+N  */
+N
+N#define DMA_DestCacheable                   ((uint32_t)(0x01 << 23))
+N#define DMA_DestBufferable                  ((uint32_t)(0x01 << 22))
+N#define DMA_DestPrivileged                  ((uint32_t)(0x01 << 21))
+N
+N#define IS_DMA_DEST_PROT(STATE)             ((STATE & (~(0x7 << 21))) == 0)
+N
+N/** @} */ /* End of group DMA_dest_protection_control */
+N
+N/** @defgroup DMA_AHB_protection_control DMA AHB-Lite protection control
+N  * @{
+N  */
+N
+N#define DMA_AHB_Cacheable                 ((uint32_t)(0x01 << 7))
+N#define DMA_AHB_Bufferable                ((uint32_t)(0x01 << 6))
+N#define DMA_AHB_Privileged                ((uint32_t)(0x01 << 5))
+N
+N#define IS_DMA_AHB_PROT(STATE)            ((STATE & (~(0x7 << 5))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_number_continuous_transfers DMA number continuous transfers
+N  * @{
+N  */
+N
+N#define DMA_Transfers_1                     ((uint32_t)(0x00 << 14))
+N#define DMA_Transfers_2                     ((uint32_t)(0x01 << 14))
+N#define DMA_Transfers_4                     ((uint32_t)(0x02 << 14))
+N#define DMA_Transfers_8                     ((uint32_t)(0x03 << 14))
+N#define DMA_Transfers_16                    ((uint32_t)(0x04 << 14))
+N#define DMA_Transfers_32                    ((uint32_t)(0x05 << 14))
+N#define DMA_Transfers_64                    ((uint32_t)(0x06 << 14))
+N#define DMA_Transfers_128                   ((uint32_t)(0x07 << 14))
+N#define DMA_Transfers_256                   ((uint32_t)(0x08 << 14))
+N#define DMA_Transfers_512                   ((uint32_t)(0x09 << 14))
+N#define DMA_Transfers_1024                  ((uint32_t)(0x0A << 14))
+N
+N#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      || \
+N                                            ((NUMBER)  == DMA_Transfers_2)      || \
+N                                            ((NUMBER)  == DMA_Transfers_4)      || \
+N                                            ((NUMBER)  == DMA_Transfers_8)      || \
+N                                            ((NUMBER)  == DMA_Transfers_16)     || \
+N                                            ((NUMBER)  == DMA_Transfers_32)     || \
+N                                            ((NUMBER)  == DMA_Transfers_64)     || \
+N                                            ((NUMBER)  == DMA_Transfers_128)    || \
+N                                            ((NUMBER)  == DMA_Transfers_256)    || \
+N                                            ((NUMBER)  == DMA_Transfers_512)    || \
+N                                            ((NUMBER)  == DMA_Transfers_1024))
+X#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      ||                                             ((NUMBER)  == DMA_Transfers_2)      ||                                             ((NUMBER)  == DMA_Transfers_4)      ||                                             ((NUMBER)  == DMA_Transfers_8)      ||                                             ((NUMBER)  == DMA_Transfers_16)     ||                                             ((NUMBER)  == DMA_Transfers_32)     ||                                             ((NUMBER)  == DMA_Transfers_64)     ||                                             ((NUMBER)  == DMA_Transfers_128)    ||                                             ((NUMBER)  == DMA_Transfers_256)    ||                                             ((NUMBER)  == DMA_Transfers_512)    ||                                             ((NUMBER)  == DMA_Transfers_1024))
+N
+N/** @} */ /* End of group DMA_number_continuous_transfers */
+N
+N/** @defgroup DMA_data_structure_selection DMA data structure selection
+N  * @{
+N  */
+N
+N#define DMA_CTRL_DATA_PRIMARY   ((uint8_t)0x00)
+N
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N
+N  #define DMA_CTRL_DATA_ALTERNATE ((uint8_t)0x01)
+N
+N  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      || \
+N                                              ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+X  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      ||                                               ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+N#else
+S  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY))
+N#endif
+N
+N/** @} */ /* End of group DMA_data_structure_selection */
+N
+N/** @defgroup DMA_flags_definition DMA flags definition
+N  * @{
+N  */
+N
+N#define DMA_FLAG_DMA_ENA        ((uint8_t)0x01)
+N#define DMA_FLAG_DMA_ERR        ((uint8_t)0x02)
+N#define DMA_FLAG_CHNL_ENA       ((uint8_t)0x03)
+N#define DMA_FLAG_CHNL_MASK      ((uint8_t)0x04)
+N#define DMA_FLAG_CHNL_WAIT      ((uint8_t)0x05)
+N#define DMA_FLAG_CHNL_BURST     ((uint8_t)0x06)
+N#define DMA_FLAG_CHNL_ALT       ((uint8_t)0x07)
+N#define DMA_FLAG_CHNL_PRIORITY  ((uint8_t)0x08)
+N
+N#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      || \
+N                                 ((FLAG)  == DMA_FLAG_DMA_ERR)      || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ENA)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_MASK)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_WAIT)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_BURST)   || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ALT)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+X#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      ||                                  ((FLAG)  == DMA_FLAG_DMA_ERR)      ||                                  ((FLAG)  == DMA_FLAG_CHNL_ENA)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_MASK)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_WAIT)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_BURST)   ||                                  ((FLAG)  == DMA_FLAG_CHNL_ALT)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+N
+N/** @} */ /* End of group DMA_flags_definition */
+N
+N/** @} */ /* End of group DMA_Exported_Constants */
+N
+N/** @defgroup DMA_Exported_Macros DMA Exported Macros
+N  * @{
+N  */
+N
+N/** @} */ /* End of group DMA_Exported_Macros */
+N
+N/** @defgroup DMA_Exported_Functions DMA Exported Functions
+N  * @{
+N  */
+N
+Nvoid DMA_DeInit(void);
+Nvoid DMA_Init(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_Init( uint8_t DMA_Channel, DMA_Channel_SG_InitTypeDef *DMA_SG_InitStruct);
+Nvoid DMA_StructInit(DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_StructInit(DMA_Channel_SG_InitTypeDef* DMA_InitStruct);
+Nvoid DMA_CtrlInit(uint8_t DMA_Channel, uint8_t DMA_CtrlDataType,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_SG_CtrlInit(uint32_t DMA_Task, DMA_CtrlDataTypeDef *DMA_SG_TaskArray,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_Cmd(uint8_t DMA_Channel, FunctionalState NewState);
+Nvoid DMA_Request(uint8_t DMA_Channel);
+Nvoid DMA_ClearError(void);
+Nuint32_t DMA_GetCurrTransferCounter(uint8_t DMA_Channel, uint8_t DMA_CtrlData);
+NFlagStatus DMA_GetFlagStatus(uint8_t DMA_Channel, uint8_t DMA_Flag);
+N
+N/** @} */ /* End of group DMA_Exported_Functions */
+N
+N/** @} */ /* End of group DMA */
+N
+N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
+N
+N#endif /* __MDR32F9Qx_DMA_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_dma.h */
+N
+L 27 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c" 2
+N
+N#define ASSERT_INFO_FILE_ID FILEID__MDR32F9X_DMA_C
+N
+N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
+N  * @{
+N  */
+N
+N/** @addtogroup DMA
+N  * @{
+N  */
+N
+N/** @defgroup DMA_Private_Constants DMA Private Constants
+N  * @{
+N  */
+N
+N#define DMA_CONTROL_MINUS_1   ((uint32_t)0x3FF0)      /* DMA control "n_minus_1" field mask */
+N
+N/** @} */ /* End of group DMA_Private_Constants */
+N
+N/** @defgroup DMA_Private_Variables DMA Private Variables
+N  * @{
+N  */
+N
+N/**
+N  * @brief  DMA Channel Control Data Table
+N  */
+N
+N/* Select data alignment */
+N#if (DMA_Channels_Number == 1)
+X#if (16 == 1)
+S#define DATA_ALIGN 32
+S#elif (DMA_Channels_Number == 2)
+X#elif (16 == 2)
+S#define DATA_ALIGN 64
+S#elif ((DMA_Channels_Number >= 3) && (DMA_Channels_Number <= 4))
+X#elif ((16 >= 3) && (16 <= 4))
+S#define DATA_ALIGN 128
+S#elif ((DMA_Channels_Number >= 5) && (DMA_Channels_Number <= 8))
+X#elif ((16 >= 5) && (16 <= 8))
+S#define DATA_ALIGN 256
+N#elif ((DMA_Channels_Number >= 9) && (DMA_Channels_Number <= 16))
+X#elif ((16 >= 9) && (16 <= 16))
+N#define DATA_ALIGN 512
+N#elif ((DMA_Channels_Number >= 17) && (DMA_Channels_Number <= 32))
+S#define DATA_ALIGN 1024
+N#endif
+N
+N#if defined ( __ICCARM__ )
+X#if 0L
+S  #pragma data_alignment = DATA_ALIGN
+S	DMA_CtrlDataTypeDef DMA_ControlTable[DMA_Channels_Number * (1 + DMA_AlternateData)];
+S#elif defined ( __CMCARM__ )
+X#elif 0L
+S  #pragma locate DMA_ControlTable 0x20000000 noinit
+S	DMA_CtrlDataTypeDef DMA_ControlTable[DMA_Channels_Number * (1 + DMA_AlternateData)];
+N#elif defined ( __CC_ARM )
+X#elif 1L
+N	DMA_CtrlDataTypeDef DMA_ControlTable[DMA_Channels_Number * (1 + DMA_AlternateData)] __attribute__ ((aligned (DATA_ALIGN)));
+X	DMA_CtrlDataTypeDef DMA_ControlTable[16 * (1 + 1)] __attribute__ ((aligned (512)));
+N#endif
+N
+N
+N/** @} */ /* End of group DMA_Private_Variables */
+N
+N/** @defgroup DMA_Private_FunctionPrototypes DMA Private Function Prototypes
+N  * @{
+N  */
+N
+Nvoid DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr);
+N
+N/** @} */ /* End of group DMA_Private_FunctionPrototypes */
+N
+N/** @defgroup DMA_Private_Functions DMA Private Functions
+N  * @{
+N  */
+N
+N/**
+N  * @brief  Initializes the DMA control data structure according to the specified
+N  *         parameters.
+N  * @param  DMA_ctrl_data_ptr: pointer to a DMA_CtrlDataInitTypeDef structure that
+N  *         contains the control data structure to initialize
+N  * @param  DMA_ctrl_table_ptr: pointer to a DMA_CtrlDataTypeDef structure that
+N  *         contains the initial control data configuration, provided by the application.
 N  * @retval None
 N  */
-Nvoid UART_DeInit(MDR_UART_TypeDef* UARTx)
+Nvoid DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr)
 N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
+N  /* Check DMA configuration parameters */
+N  assert_param(IS_DMA_CHANNELS(DMA_Channels_Number));
+X  ((void)0);
+N  assert_param(IS_DMA_ALTERNATE_DATA(DMA_AlternateData));
 X  ((void)0);
 N
-N  /* Clear UART CR */
-N  UARTx->CR = 0;
-N  UARTx->LCR_H = 0;
-N  UARTx->RSR_ECR = 0;
-N  UARTx->FR = UART_FLAG_TXFE | UART_FLAG_RXFE;
-X  UARTx->FR = ((uint32_t)0x00000080) | ((uint32_t)0x00000010);
-N  UARTx->ILPR = 0;
-N  UARTx->IBRD = 0;
-N  UARTx->FBRD = 0;
-N  UARTx->IFLS = UART_IT_FIFO_LVL_8words;
-X  UARTx->IFLS = ((uint32_t)0x00000002);
-N  UARTx->IMSC = 0;
-N  UARTx->DMACR = 0;
-N  /* Set UART CR[RXE] and UART CR[TXE] bits */
-N  UARTx->CR = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
-X  UARTx->CR = ((uint16_t)0x0200) | ((uint16_t)0x0100);
+N  /* Check the parameters */
+N  assert_param(IS_DMA_SOURCE_INC_STATE(DMA_ctrl_data_ptr->DMA_SourceIncSize));
+X  ((void)0);
+N  assert_param(IS_DMA_DEST_INC_STATE(DMA_ctrl_data_ptr->DMA_DestIncSize));
+X  ((void)0);
+N  assert_param(IS_DMA_MEMORY_DATA_SIZE(DMA_ctrl_data_ptr->DMA_MemoryDataSize));
+X  ((void)0);
+N  assert_param(IS_DMA_MODE(DMA_ctrl_data_ptr->DMA_Mode));
+X  ((void)0);
+N  assert_param(IS_DMA_CYCLE_SIZE(DMA_ctrl_data_ptr->DMA_CycleSize));
+X  ((void)0);
+N  assert_param(IS_DMA_CONTINUOUS_NUMBER(DMA_ctrl_data_ptr->DMA_NumContinuous));
+X  ((void)0);
+N  assert_param(IS_DMA_SOURCE_PROT(DMA_ctrl_data_ptr->DMA_SourceProtCtrl));
+X  ((void)0);
+N  assert_param(IS_DMA_DEST_PROT(DMA_ctrl_data_ptr->DMA_DestProtCtrl));
+X  ((void)0);
+N
+N  /* DMA Source Data End Address */
+N  if (DMA_ctrl_data_ptr->DMA_SourceIncSize == DMA_SourceIncNo)
+X  if (DMA_ctrl_data_ptr->DMA_SourceIncSize == ((uint32_t)(3 << 26)))
+N  {
+N    DMA_ctrl_table_ptr->DMA_SourceEndAddr = DMA_ctrl_data_ptr->DMA_SourceBaseAddr;
+N  }
+N  else
+N  {
+N    DMA_ctrl_table_ptr->DMA_SourceEndAddr = ( DMA_ctrl_data_ptr->DMA_SourceBaseAddr +
+N        ((DMA_ctrl_data_ptr->DMA_CycleSize - 1) << (DMA_ctrl_data_ptr->DMA_SourceIncSize >> 26)));
+N  }
+N
+N  /* DMA Destination Data End Address */
+N  if (DMA_ctrl_data_ptr->DMA_Mode == DMA_Mode_MemScatterPri)
+X  if (DMA_ctrl_data_ptr->DMA_Mode == ((uint32_t)0x4))
+N  {
+N    /* Memory Scatter-Gather mode */
+N    DMA_ctrl_table_ptr->DMA_DestEndAddr = (DMA_ctrl_data_ptr->DMA_DestBaseAddr + 12);
+N  }
+N  else
+N  {
+N    /* Other modes */
+N    if (DMA_ctrl_data_ptr->DMA_DestIncSize == DMA_DestIncNo)
+X    if (DMA_ctrl_data_ptr->DMA_DestIncSize == ((uint32_t)(0x3UL << 30)))
+N    {
+N      DMA_ctrl_table_ptr->DMA_DestEndAddr = DMA_ctrl_data_ptr->DMA_DestBaseAddr;
+N    }
+N    else
+N    {
+N      DMA_ctrl_table_ptr->DMA_DestEndAddr = ( DMA_ctrl_data_ptr->DMA_DestBaseAddr +
+N        ((DMA_ctrl_data_ptr->DMA_CycleSize - 1) << (DMA_ctrl_data_ptr->DMA_DestIncSize >> 30)));
+N    }
+N  }
+N
+N  /* DMA Control Data */
+N  DMA_ctrl_table_ptr->DMA_Control = (DMA_ctrl_data_ptr->DMA_DestIncSize     |
+N                                     DMA_ctrl_data_ptr->DMA_MemoryDataSize  |
+N                                     DMA_ctrl_data_ptr->DMA_SourceIncSize   |
+N                                     DMA_ctrl_data_ptr->DMA_DestProtCtrl    |
+N                                     DMA_ctrl_data_ptr->DMA_SourceProtCtrl  |
+N                                     DMA_ctrl_data_ptr->DMA_NumContinuous   |
+N                                     ((DMA_ctrl_data_ptr->DMA_CycleSize - 1) << 4)  |
+N                                     DMA_ctrl_data_ptr->DMA_Mode);
 N}
 N
 N/**
-N  * @brief  Initializes the UARTx peripheral according to the specified
-N  *         parameters in the UART_InitStruct.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_InitStruct: pointer to a UART_InitTypeDef structure
-N  *         that contains the configuration information for the specified UART peripheral.
-N  * @retval The Baud Rate status (BaudRateValid or BaudRateInvalid).
-N  */
-NBaudRateStatus UART_Init(MDR_UART_TypeDef* UARTx, UART_InitTypeDef* UART_InitStruct)
-N{
-N  uint32_t tmpreg, cpuclock;
-N  uint32_t realspeed, speederror;
-N  uint32_t divider;
-N  uint32_t integerdivider;
-N  uint32_t fractionaldivider;
-N  RST_CLK_FreqTypeDef RST_CLK_Clocks;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_BAUDRATE(UART_InitStruct->UART_BaudRate));
-X  ((void)0);
-N  assert_param(IS_UART_WORD_LENGTH(UART_InitStruct->UART_WordLength));
-X  ((void)0);
-N  assert_param(IS_UART_STOPBITS(UART_InitStruct->UART_StopBits));
-X  ((void)0);
-N  assert_param(IS_UART_PARITY(UART_InitStruct->UART_Parity));
-X  ((void)0);
-N  assert_param(IS_UART_FIFOMODE(UART_InitStruct->UART_FIFOMode));
-X  ((void)0);
-N  assert_param(IS_UART_HARDWARE_FLOW_CONTROL(UART_InitStruct->UART_HardwareFlowControl));
-X  ((void)0);
-N
-N  /* Configure the UART Baud Rate */
-N  RST_CLK_GetClocksFreq(&RST_CLK_Clocks);
-N  cpuclock = RST_CLK_Clocks.CPU_CLK_Frequency;
-N
-N  tmpreg = MDR_RST_CLK->UART_CLOCK;
-X  tmpreg = ((MDR_RST_CLK_TypeDef *) (0x40020000))->UART_CLOCK;
-N
-N  if (UARTx == MDR_UART1)
-X  if (UARTx == ((MDR_UART_TypeDef *) (0x40030000)))
-N  {
-N    cpuclock /= (1 << (tmpreg & UART1_BRG_Mask));
-X    cpuclock /= (1 << (tmpreg & ((uint32_t)0x0007)));
-N  }
-N  else if (UARTx == MDR_UART2)
-X  else if (UARTx == ((MDR_UART_TypeDef *) (0x40038000)))
-N  {
-N    cpuclock /= (1 << ((tmpreg & UART2_BRG_Mask) >> UART2_BRG_Offs));
-X    cpuclock /= (1 << ((tmpreg & ((uint32_t)0x0700)) >> ((uint32_t)0x0008)));
-N  }
-N
-N  /* Determine the integer part */
-N  divider = cpuclock / (UART_InitStruct->UART_BaudRate >> 2);
-N  integerdivider = divider >> 6;
-N  /* Determine the fractional part */
-N  fractionaldivider = (divider & FBRD_Fract_Mask);
-X  fractionaldivider = (divider & ((uint16_t)0x003F));
-N  /* Determine the speed error */
-N  realspeed = (cpuclock * 4) / ((integerdivider * 64) + fractionaldivider);
-N  speederror = ((realspeed - UART_InitStruct->UART_BaudRate) * 128) / UART_InitStruct->UART_BaudRate;
-N  if (speederror > 2)
-N  {
-N    return BaudRateInvalid;
-N  }
-N  /* Write UART Baud Rate */
-N  UARTx->IBRD = integerdivider;
-N  UARTx->FBRD = fractionaldivider;
-N
-N  /* UART LCR_H configuration */
-N  /* Set the WLEN bits according to UART_WordLength value */
-N  /* Set STP2 bit according to UART_StopBits value */
-N  /* Set PEN, EPS and SPS bits according to UART_Parity value */
-N  /* Set FEN bit according to UART_FIFOMode value */
-N  tmpreg = UARTx->LCR_H;
-N  tmpreg |= UART_InitStruct->UART_WordLength | UART_InitStruct->UART_StopBits |
-N                         UART_InitStruct->UART_Parity | UART_InitStruct->UART_FIFOMode;
-N  UARTx->LCR_H = tmpreg;
-N
-N  /* UART CR configuration */
-N  tmpreg = UARTx->CR;
-N  /* Clear UART CR Flow control bits */
-N  tmpreg &= ~CR_FC_Mask;
-X  tmpreg &= ~((uint16_t)0xFF80);
-N  /* Set UART CR Flow control bits */
-N  tmpreg |= UART_InitStruct->UART_HardwareFlowControl;
-N  /* Write to UART CR */
-N  UARTx->CR = tmpreg;
-N
-N  return BaudRateValid;
-N}
-N
-N/**
-N  * @brief  Fills each UART_InitStruct member with its default value.
-N  * @param  UART_InitStruct: pointer to a UART_InitTypeDef structure
-N  *         that is to be initialized.
+N  * @brief  Deinitializes the DMA registers to their default reset values.
+N  * @param  None
 N  * @retval None
 N  */
-Nvoid UART_StructInit(UART_InitTypeDef* UART_InitStruct)
+Nvoid DMA_DeInit(void)
 N{
-N  /* UART_InitStruct members default value */
-N  UART_InitStruct->UART_BaudRate = 9600;
-N  UART_InitStruct->UART_WordLength = UART_WordLength5b;
-X  UART_InitStruct->UART_WordLength = ((uint16_t)0x0000);
-N  UART_InitStruct->UART_StopBits = UART_StopBits1;
-X  UART_InitStruct->UART_StopBits = ((uint16_t)0x0000);
-N  UART_InitStruct->UART_Parity = UART_Parity_No;
-X  UART_InitStruct->UART_Parity = ((uint16_t)0x0000);
-N  UART_InitStruct->UART_FIFOMode = UART_FIFO_OFF;
-X  UART_InitStruct->UART_FIFOMode = ((uint16_t)0x0000);
-N  UART_InitStruct->UART_HardwareFlowControl = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
-X  UART_InitStruct->UART_HardwareFlowControl = ((uint16_t)0x0200) | ((uint16_t)0x0100);
+N  MDR_DMA->CFG = 0;                           /* Master Enable Off */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CFG = 0;                            
+N  MDR_DMA->CTRL_BASE_PTR = 0;                 /* Control data base pointer */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CTRL_BASE_PTR = 0;                  
+N  MDR_DMA->CHNL_SW_REQUEST = 0;               /* Disable all sw requests */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_SW_REQUEST = 0;                
+N  MDR_DMA->CHNL_USEBURST_CLR = 0xFFFFFFFF;    /* Disable burst mode */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_CLR = 0xFFFFFFFF;     
+N  MDR_DMA->CHNL_REQ_MASK_CLR = 0xFFFFFFFF;    /* Clear mask request */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_CLR = 0xFFFFFFFF;     
+N  MDR_DMA->CHNL_ENABLE_CLR = 0xFFFFFFFF;      /* Clear channel enable */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_CLR = 0xFFFFFFFF;       
+N  MDR_DMA->CHNL_PRI_ALT_CLR = 0xFFFFFFFF;     /* Reset to primary data structure */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_CLR = 0xFFFFFFFF;      
+N  MDR_DMA->CHNL_PRIORITY_CLR = 0xFFFFFFFF;    /* Reset to default priority */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_CLR = 0xFFFFFFFF;     
+N  MDR_DMA->ERR_CLR = 0x01;                    /* Clear dma_err status */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->ERR_CLR = 0x01;                     
 N}
 N
 N/**
-N  * @brief  Enables or disables the specified UART peripheral.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  NewState: new state of the UARTx peripheral.
+N  * @brief  Initializes the DMA Channel DMA_ControlTable structure according to the specified
+N  *         parameters.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  DMA_CtrlDataType: can be DMA_CTRL_DATA_PRIMARY or DMA_CTRL_DATA_ALTERNATE
+N  * @param  DMA_CtrlStruct: pointer to a DMA_CtrlDataInitTypeDef structure that
+N  *         contains the initial control data configuration, provided by the application
+N  * 				for the specified DMA Channel.
+N  * @retval None
+N  */
+Nvoid DMA_CtrlInit(uint8_t DMA_Channel, uint8_t DMA_CtrlDataType,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct)
+N{
+N  /* Primary Control Data Init */
+N  if (DMA_CtrlDataType == DMA_CTRL_DATA_PRIMARY)
+X  if (DMA_CtrlDataType == ((uint8_t)0x00))
+N  {
+N    DMA_CtrlDataInit(DMA_CtrlStruct, &DMA_ControlTable[DMA_Channel]);
+N  }
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N  /* Alternate Control Data Init */
+N  else
+N  {
+N    uint32_t ptr = (MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X    uint32_t ptr = (((MDR_DMA_TypeDef *) (0x40028000))->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+N    DMA_CtrlDataInit(DMA_CtrlStruct, (DMA_CtrlDataTypeDef *)ptr);
+N  }
+N#endif
+N}
+N
+N/**
+N  * @brief  Initializes the DMA Scatter-Gather Task structure according to the specified
+N  *         parameters.
+N  * @param  DMA_Task: specifies the current task number. Begins with 0.
+N  * @param  DMA_CtrlStruct: pointer to a DMA_CtrlDataInitTypeDef structure that
+N  *         contains the control data information for the specified task.
+N  * @param  DMA_SG_TaskArray: pointer to a DMA_CtrlDataTypeDef array that
+N  *         contains the copy of the alternate control data information for the specified task.
+N  * @retval None
+N  */
+Nvoid DMA_SG_CtrlInit(uint32_t DMA_Task, DMA_CtrlDataTypeDef *DMA_SG_TaskArray,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct)
+N{
+N  DMA_CtrlDataInit(DMA_CtrlStruct, &DMA_SG_TaskArray[DMA_Task]);
+N}
+N
+N/**
+N  * @brief  Initializes the DMA Channel in Memory Scatter-Gather mode
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  DMA_SG_InitStruct: pointer to a DMA_Channel_SG_InitTypeDef array that
+N  *         contains the configuration information for the specified DMA Channel.
+N  * @retval None
+N  */
+Nvoid DMA_SG_Init( uint8_t DMA_Channel, DMA_Channel_SG_InitTypeDef *DMA_SG_InitStruct)
+N{
+N  DMA_CtrlDataInitTypeDef DMA_PriCtrlData;
+N
+N  /* Check the parameters */
+N  assert_param(DMA_AlternateData == 1);
+X  ((void)0);
+N  assert_param(DMA_SG_InitStruct != 0);
+X  ((void)0);
+N  assert_param(DMA_SG_InitStruct->DMA_SG_TaskNumber != 0);
+X  ((void)0);
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
+X  ((void)0);
+N  assert_param(IS_DMA_AHB_PROT(DMA_SG_InitStruct->DMA_ProtCtrl));
+X  ((void)0);
+N  assert_param(IS_DMA_PRIORITY(DMA_SG_InitStruct->DMA_Priority));
+X  ((void)0);
+N  assert_param(IS_DMA_SOURCE_PROT(DMA_SG_InitStruct->DMA_SourceProtCtrl));
+X  ((void)0);
+N  assert_param(IS_DMA_DEST_PROT(DMA_SG_InitStruct->DMA_DestProtCtrl));
+X  ((void)0);
+N  assert_param(IS_DMA_BURST(DMA_SG_InitStruct->DMA_UseBurst));
+X  ((void)0);
+N
+N  /* Check the CTRL_BASE_PTR initialisation */
+N  MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+N
+N  /* Primary Control Data Init */
+N  DMA_PriCtrlData.DMA_SourceBaseAddr = (uint32_t)(DMA_SG_InitStruct->DMA_SG_TaskArray);
+N  DMA_PriCtrlData.DMA_DestBaseAddr = (MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X  DMA_PriCtrlData.DMA_DestBaseAddr = (((MDR_DMA_TypeDef *) (0x40028000))->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+N  DMA_PriCtrlData.DMA_SourceIncSize = DMA_SourceIncWord;
+X  DMA_PriCtrlData.DMA_SourceIncSize = ((uint32_t)(2 << 26));
+N  DMA_PriCtrlData.DMA_DestIncSize = DMA_DestIncWord;
+X  DMA_PriCtrlData.DMA_DestIncSize = ((uint32_t)(0x2UL << 30));
+N  DMA_PriCtrlData.DMA_MemoryDataSize = DMA_MemoryDataSize_Word;
+X  DMA_PriCtrlData.DMA_MemoryDataSize = ((uint32_t)(0x22 << 24));
+N  DMA_PriCtrlData.DMA_Mode = DMA_Mode_MemScatterPri;
+X  DMA_PriCtrlData.DMA_Mode = ((uint32_t)0x4);
+N  DMA_PriCtrlData.DMA_CycleSize = DMA_SG_InitStruct->DMA_SG_TaskNumber << 2;
+N  DMA_PriCtrlData.DMA_NumContinuous = DMA_Transfers_4;
+X  DMA_PriCtrlData.DMA_NumContinuous = ((uint32_t)(0x02 << 14));
+N  DMA_PriCtrlData.DMA_SourceProtCtrl = DMA_SG_InitStruct->DMA_SourceProtCtrl;
+N  DMA_PriCtrlData.DMA_DestProtCtrl = DMA_SG_InitStruct->DMA_DestProtCtrl;
+N
+N  DMA_CtrlDataInit(&DMA_PriCtrlData, &DMA_ControlTable[DMA_Channel]);
+N
+N  /* DMA configuration register */
+N  MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_SG_InitStruct->DMA_ProtCtrl;
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CFG = ((uint32_t)0x00000001) || DMA_SG_InitStruct->DMA_ProtCtrl;
+N
+N  /* Burst mode */
+N  if (DMA_SG_InitStruct->DMA_UseBurst == DMA_BurstSet)
+X  if (DMA_SG_InitStruct->DMA_UseBurst == ((uint8_t)0x01))
+N  {
+N    MDR_DMA->CHNL_USEBURST_SET = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET = (1 << DMA_Channel);
+N  }
+N  else
+N  {
+N    MDR_DMA->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+N  }
+N
+N  /* Channel mask clear */
+N  MDR_DMA->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+N
+N  /* Enable channel */
+N  MDR_DMA->CHNL_ENABLE_SET = (1 << DMA_Channel);
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET = (1 << DMA_Channel);
+N
+N  /* Primary - Alternate control data structure selection */
+N  MDR_DMA->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);       /* Use Primary */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);        
+N
+N  /* Channel priority set */
+N  if (DMA_SG_InitStruct->DMA_Priority == DMA_Priority_High)
+X  if (DMA_SG_InitStruct->DMA_Priority == ((uint8_t)0x01))
+N  {
+N    MDR_DMA->CHNL_PRIORITY_SET = (1 << DMA_Channel);      /* High priority */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_SET = (1 << DMA_Channel);       
+N  }
+N  else
+N  {
+N    MDR_DMA->CHNL_PRIORITY_CLR = (1 << DMA_Channel);      /* Default priority */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_CLR = (1 << DMA_Channel);       
+N  }
+N}
+N
+N/**
+N  * @brief  Initializes the DMA Channel according to the specified
+N  *         parameters in the DMA_InitStruct.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  DMA_InitStruct: pointer to a DMA_ChannelInitTypeDef structure that
+N  *         contains the configuration information for the specified DMA Channel.
+N  * @retval None
+N  */
+Nvoid DMA_Init(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct)
+N{
+N  /* Check the parameters */
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
+X  ((void)0);
+N  assert_param(IS_DMA_AHB_PROT(DMA_InitStruct->DMA_ProtCtrl));
+X  ((void)0);
+N  assert_param(IS_DMA_PRIORITY(DMA_InitStruct->DMA_Priority));
+X  ((void)0);
+N  assert_param(IS_DMA_BURST(DMA_InitStruct->DMA_UseBurst));
+X  ((void)0);
+N  assert_param(IS_DMA_SELECT_DATA_STRUCTURE(DMA_InitStruct->DMA_SelectDataStructure));
+X  ((void)0);
+N
+N  /* Check the CTRL_BASE_PTR initialisation */
+N  MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+N
+N  /* Primary Control Data Init */
+N  if (DMA_InitStruct->DMA_PriCtrlData)
+N  {
+N    DMA_CtrlDataInit(DMA_InitStruct->DMA_PriCtrlData, &DMA_ControlTable[DMA_Channel]);
+N  }
+N
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N  /* Alternate Control Data Init */
+N  if (DMA_InitStruct->DMA_AltCtrlData)
+N  {
+N    uint32_t ptr = (MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X    uint32_t ptr = (((MDR_DMA_TypeDef *) (0x40028000))->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+N    DMA_CtrlDataInit(DMA_InitStruct->DMA_AltCtrlData, (DMA_CtrlDataTypeDef *)ptr);
+N  }
+N#endif
+N
+N  /* DMA configuration register */
+N  MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_InitStruct->DMA_ProtCtrl;
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CFG = ((uint32_t)0x00000001) || DMA_InitStruct->DMA_ProtCtrl;
+N
+N  /* Burst mode */
+N  if (DMA_InitStruct->DMA_UseBurst == DMA_BurstSet)
+X  if (DMA_InitStruct->DMA_UseBurst == ((uint8_t)0x01))
+N  {
+N    MDR_DMA->CHNL_USEBURST_SET = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET = (1 << DMA_Channel);
+N  }
+N  else
+N  {
+N    MDR_DMA->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+N  }
+N
+N  /* Channel mask clear */
+N  MDR_DMA->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+N
+N  /* Enable channel */
+N  MDR_DMA->CHNL_ENABLE_SET = (1 << DMA_Channel);
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET = (1 << DMA_Channel);
+N
+N  /* Primary - Alternate control data structure selection */
+N  if (DMA_InitStruct->DMA_SelectDataStructure == DMA_CTRL_DATA_PRIMARY)
+X  if (DMA_InitStruct->DMA_SelectDataStructure == ((uint8_t)0x00))
+N  {
+N    MDR_DMA->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);       /* Use Primary */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);        
+N  }
+N  else
+N  {
+N    MDR_DMA->CHNL_PRI_ALT_SET = (1 << DMA_Channel);       /* Use Alternate */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_SET = (1 << DMA_Channel);        
+N  }
+N
+N  /* Channel priority set */
+N  if (DMA_InitStruct->DMA_Priority == DMA_Priority_High)
+X  if (DMA_InitStruct->DMA_Priority == ((uint8_t)0x01))
+N  {
+N    MDR_DMA->CHNL_PRIORITY_SET = (1 << DMA_Channel);      /* High priority */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_SET = (1 << DMA_Channel);       
+N  }
+N  else
+N  {
+N    MDR_DMA->CHNL_PRIORITY_CLR = (1 << DMA_Channel);      /* Default priority */
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_CLR = (1 << DMA_Channel);       
+N  }
+N}
+N
+N/**
+N  * @brief  Fills each DMA_InitStruct member with its default value.
+N  * @param  DMA_InitStruct : pointer to a DMA_ChannelInitTypeDef structure which will
+N  *         be initialized.
+N  * @retval None
+N  */
+Nvoid DMA_StructInit(DMA_ChannelInitTypeDef* DMA_InitStruct)
+N{
+N  DMA_InitStruct->DMA_PriCtrlData = 0;
+N  DMA_InitStruct->DMA_AltCtrlData = 0;
+N  DMA_InitStruct->DMA_ProtCtrl = 0;
+N  DMA_InitStruct->DMA_Priority = 0;
+N  DMA_InitStruct->DMA_UseBurst = 0;
+N  DMA_InitStruct->DMA_SelectDataStructure = 0;
+N}
+N
+N/**
+N  * @brief  Fills each DMA_SG_InitStruct member with its default value.
+N  * @param  DMA_SG_InitStruct : pointer to a DMA_Channel_SG_InitTypeDef structure which will
+N  *         be initialized.
+N  * @retval None
+N  */
+Nvoid DMA_SG_StructInit(DMA_Channel_SG_InitTypeDef* DMA_SG_InitStruct)
+N{
+N  DMA_SG_InitStruct->DMA_SG_TaskArray = 0;
+N  DMA_SG_InitStruct->DMA_SG_TaskNumber = 0;
+N  DMA_SG_InitStruct->DMA_SourceProtCtrl = 0;
+N  DMA_SG_InitStruct->DMA_DestProtCtrl = 0;
+N  DMA_SG_InitStruct->DMA_ProtCtrl = 0;
+N  DMA_SG_InitStruct->DMA_Priority = 0;
+N  DMA_SG_InitStruct->DMA_UseBurst = 0;
+N}
+N
+N/**
+N  * @brief  Enables or disables the specified DMA Channel.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  NewState: new state of the DMA Channel.
 N  *         This parameter can be: ENABLE or DISABLE.
 N  * @retval None
 N  */
-Nvoid UART_Cmd(MDR_UART_TypeDef* UARTx, FunctionalState NewState)
+Nvoid DMA_Cmd(uint8_t DMA_Channel, FunctionalState NewState)
 N{
 N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_FUNCTIONAL_STATE(NewState));
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
 X  ((void)0);
 N
-N  if (NewState != DISABLE)
+N  /* Channel Enable/Disable */
+N  if ( NewState == ENABLE)
 N  {
-N    /* Enable the selected UART by setting the UARTEN bit in the CR register */
-N    UARTx->CR |= CR_EN_Set;
-X    UARTx->CR |= ((uint16_t)0x0001);
+N    MDR_DMA->CHNL_ENABLE_SET = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET = (1 << DMA_Channel);
 N  }
 N  else
 N  {
-N    /* Disable the selected UART by clearing the UARTEN bit in the CR register */
-N    UARTx->CR &= CR_EN_Reset;
-X    UARTx->CR &= ((uint16_t)0xFFFE);
+N    MDR_DMA->CHNL_ENABLE_CLR = (1 << DMA_Channel);
+X    ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_CLR = (1 << DMA_Channel);
 N  }
 N}
 N
 N/**
-N  * @brief  Enables or disables the specified UART interrupts.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IT: specifies the UART interrupt sources to be enabled or disabled.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_OE:  Buffer overflow interrupt (UARTOEINTR).
-N  *           @arg UART_IT_BE:  Line break interrupt (UARTBEINTR).
-N  *           @arg UART_IT_PE:  Parity error interrupt (UARTPEINTR).
-N  *           @arg UART_IT_FE:  Frame structure error interrupt (UARTFEINTR).
-N  *           @arg UART_IT_RT:  Data input timeout interrupt (UARTRTINTR).
-N  *           @arg UART_IT_TX:  Transmitter interrupt (UARTTXINTR).
-N  *           @arg UART_IT_RX:  Receiver interrupt (UARTRXINTR).
-N  *           @arg UART_IT_DSR: Line nUARTDSR change interrupt (UARTDSRINTR).
-N  *           @arg UART_IT_DCD: Line nUARTDCD change interrupt (UARTDCDINTR).
-N  *           @arg UART_IT_CTS: Line nUARTCTS change interrupt (UARTCTSINTR).
-N  *           @arg UART_IT_RI:  Line nUARTRI change interrupt (UARTRIINTR).
-N  * @param  NewState: new state of the specified UARTx interrupts.
-N  *         This parameter can be: ENABLE or DISABLE.
+N  * @brief  Generates the specified DMA Channel software request.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
 N  * @retval None
 N  */
-Nvoid UART_ITConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IT, FunctionalState NewState)
+Nvoid DMA_Request(uint8_t DMA_Channel)
 N{
 N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_CONFIG_IT(UART_IT));
-X  ((void)0);
-N  assert_param(IS_FUNCTIONAL_STATE(NewState));
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
 X  ((void)0);
 N
-N  if (NewState != DISABLE)
+N  /* Set SW Request */
+N  MDR_DMA->CHNL_SW_REQUEST = (1 << DMA_Channel);
+X  ((MDR_DMA_TypeDef *) (0x40028000))->CHNL_SW_REQUEST = (1 << DMA_Channel);
+N}
+N
+N/**
+N  * @brief  Clears the DMA Error bit.
+N  * @param  None
+N  * @retval None
+N  */
+Nvoid DMA_ClearError(void)
+N{
+N  MDR_DMA->ERR_CLR = 0x01;            /* Clear dma_err status */
+X  ((MDR_DMA_TypeDef *) (0x40028000))->ERR_CLR = 0x01;             
+N}
+N
+N/**
+N  * @brief  Returns the number of remaining transfers in the current
+N  *         DMA Channel cycle.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  DMA_CtrlData: specifies the primary / alternate control data table to check.
+N  *         This parameter can be a value of @ref DMA_data_structure_selection.
+N  * @retval The number of remaining transfers in the current DMA Channel
+N  *         cycle and the current control data structure.
+N  */
+Nuint32_t DMA_GetCurrTransferCounter(uint8_t DMA_Channel, uint8_t DMA_CtrlData)
+N{
+N  DMA_CtrlDataTypeDef *ptr;     /* Pointer to the channels's data structure */
+N
+N  /* Check the parameters */
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
+X  ((void)0);
+N  assert_param(IS_DMA_SELECT_DATA_STRUCTURE(DMA_CtrlData));
+X  ((void)0);
+N
+N  /* Init the control data pointer */
+N  if (DMA_CtrlData == DMA_CTRL_DATA_PRIMARY)
+X  if (DMA_CtrlData == ((uint8_t)0x00))
 N  {
-N    UARTx->IMSC |= UART_IT;
+N    ptr = (DMA_CtrlDataTypeDef *)(MDR_DMA->CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X    ptr = (DMA_CtrlDataTypeDef *)(((MDR_DMA_TypeDef *) (0x40028000))->CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
 N  }
 N  else
 N  {
-N    UARTx->IMSC &= ~UART_IT;
+N    ptr = (DMA_CtrlDataTypeDef *)(MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X    ptr = (DMA_CtrlDataTypeDef *)(((MDR_DMA_TypeDef *) (0x40028000))->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
 N  }
+N
+N  /* Read the number of remaining transfers */
+N  return (((ptr->DMA_Control & DMA_CONTROL_MINUS_1)>>4) + 1);
+X  return (((ptr->DMA_Control & ((uint32_t)0x3FF0))>>4) + 1);
 N}
 N
 N/**
-N  * @brief  Checks whether the specified UART interrupt has occurred or not.
-N  * @param  UARTx: Select the UART peripheral.
+N  * @brief  Checks whether the specified DMA Channel flag is set or not.
+N  * @param  DMA_Channel: can be 0 to 31 or a value of @ref DMA_valid_channels to select the DMA Channel.
+N  * @param  DMA_Flag: specifies the flag to check.
 N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IT: specifies the UART interrupt source to check.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_OE:  Buffer overflow interrupt (UARTOEINTR).
-N  *           @arg UART_IT_BE:  Line break interrupt (UARTBEINTR).
-N  *           @arg UART_IT_PE:  Parity error interrupt (UARTPEINTR).
-N  *           @arg UART_IT_FE:  Frame structure error interrupt (UARTFEINTR).
-N  *           @arg UART_IT_RT:  Data input timeout interrupt (UARTRTINTR).
-N  *           @arg UART_IT_TX:  Transmitter interrupt (UARTTXINTR).
-N  *           @arg UART_IT_RX:  Receiver interrupt (UARTRXINTR).
-N  *           @arg UART_IT_DSR: Line nUARTDSR change interrupt (UARTDSRINTR).
-N  *           @arg UART_IT_DCD: Line nUARTDCD change interrupt (UARTDCDINTR).
-N  *           @arg UART_IT_CTS: Line nUARTCTS change interrupt (UARTCTSINTR).
-N  *           @arg UART_IT_RI:  Line nUARTRI change interrupt (UARTRIINTR).
-N  * @retval The new state of UART_IT (SET or RESET).
+N  *           @arg DMA_FLAG_DMA_ENA:       DMA unit global enable status.
+N  *           @arg DMA_FLAG_DMA_ERR:       DMA unit bus error status.
+N  *           @arg DMA_FLAG_CHNL_ENA:      DMA channel enable status.
+N  *           @arg DMA_FLAG_CHNL_MASK:     DMA channel request mask status.
+N  *           @arg DMA_FLAG_CHNL_WAIT:     DMA channel wait on request status.
+N  *           @arg DMA_FLAG_CHNL_BURST:    DMA channel burst mode status.
+N  *           @arg DMA_FLAG_CHNL_ALT:      DMA channel alternate control data status.
+N  *           @arg DMA_FLAG_CHNL_PRIORITY: DMA channel priority status.
+N  * @retval The new state of DMA_FLAG (SET or RESET).
 N  */
-NITStatus UART_GetITStatus(MDR_UART_TypeDef* UARTx, uint32_t UART_IT)
-N{
-N  ITStatus bitstatus;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_CONFIG_IT(UART_IT));
-X  ((void)0);
-N
-N  if ((UARTx->RIS & UART_IT) == UART_IT)
-N  {
-N    bitstatus = SET;
-N  }
-N  else
-N  {
-N    bitstatus = RESET;
-N  }
-N
-N  return bitstatus;
-N}
-N
-N/**
-N  * @brief  Checks whether the specified UART interrupt (masked) has occurred or not.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IT: specifies the UART interrupt source to check.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_OE:  Buffer overflow interrupt (UARTOEINTR).
-N  *           @arg UART_IT_BE:  Line break interrupt (UARTBEINTR).
-N  *           @arg UART_IT_PE:  Parity error interrupt (UARTPEINTR).
-N  *           @arg UART_IT_FE:  Frame structure error interrupt (UARTFEINTR).
-N  *           @arg UART_IT_RT:  Data input timeout interrupt (UARTRTINTR).
-N  *           @arg UART_IT_TX:  Transmitter interrupt (UARTTXINTR).
-N  *           @arg UART_IT_RX:  Receiver interrupt (UARTRXINTR).
-N  *           @arg UART_IT_DSR: Line nUARTDSR change interrupt (UARTDSRINTR).
-N  *           @arg UART_IT_DCD: Line nUARTDCD change interrupt (UARTDCDINTR).
-N  *           @arg UART_IT_CTS: Line nUARTCTS change interrupt (UARTCTSINTR).
-N  *           @arg UART_IT_RI:  Line nUARTRI change interrupt (UARTRIINTR).
-N  * @retval The new state of UART_IT (SET or RESET).
-N  */
-NITStatus UART_GetITStatusMasked(MDR_UART_TypeDef* UARTx, uint32_t UART_IT)
-N{
-N  ITStatus bitstatus;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_CONFIG_IT(UART_IT));
-X  ((void)0);
-N
-N  if (UARTx->MIS & UART_IT)
-N  {
-N    bitstatus = SET;
-N  }
-N  else
-N  {
-N    bitstatus = RESET;
-N  }
-N
-N  return bitstatus;
-N}
-N
-N/**
-N  * @brief  Clears the UARTx’s interrupt pending bits.
-N  * @param  UARTx: Select the UART or the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IT: specifies the interrupt pending bit to clear.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_OE:  Buffer overflow interrupt (UARTOEINTR).
-N  *           @arg UART_IT_BE:  Line break interrupt (UARTBEINTR).
-N  *           @arg UART_IT_PE:  Parity error interrupt (UARTPEINTR).
-N  *           @arg UART_IT_FE:  Frame structure error interrupt (UARTFEINTR).
-N  *           @arg UART_IT_RT:  Data input timeout interrupt (UARTRTINTR).
-N  *           @arg UART_IT_TX:  Transmitter interrupt (UARTTXINTR).
-N  *           @arg UART_IT_RX:  Receiver interrupt (UARTRXINTR).
-N  *           @arg UART_IT_DSR: Line nUARTDSR change interrupt (UARTDSRINTR).
-N  *           @arg UART_IT_DCD: Line nUARTDCD change interrupt (UARTDCDINTR).
-N  *           @arg UART_IT_CTS: Line nUARTCTS change interrupt (UARTCTSINTR).
-N  *           @arg UART_IT_RI:  Line nUARTRI change interrupt (UARTRIINTR).
-N  * @retval None
-N  */
-Nvoid UART_ClearITPendingBit(MDR_UART_TypeDef* UARTx, uint32_t UART_IT)
+NFlagStatus DMA_GetFlagStatus(uint8_t DMA_Channel, uint8_t DMA_Flag)
 N{
 N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
+N  assert_param(IS_DMA_CHANNEL(DMA_Channel));
 X  ((void)0);
-N  assert_param(IS_UART_CONFIG_IT(UART_IT));
-X  ((void)0);
-N
-N  UARTx->ICR |= UART_IT;
-N}
-N
-N/**
-N  * @brief  Specified the UART DMA buffer interrupt level.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IT_RB_LVL: specifies the receiver buffer.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_FIFO_LVL_2words:  Interrupt on 1/8 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_4words:  Interrupt on 1/4 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_8words:  Interrupt on 1/2 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_12words: Interrupt on 3/4 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_14words: Interrupt on 7/8 buffer filled
-N  * @param  UART_IT_TB_LVL: specifies the transmitter buffer.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IT_FIFO_LVL_2words:  Interrupt on 1/8 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_4words:  Interrupt on 1/4 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_8words:  Interrupt on 1/2 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_12words: Interrupt on 3/4 buffer filled
-N  *           @arg UART_IT_FIFO_LVL_14words: Interrupt on 7/8 buffer filled
-N  * @retval None
-N  */
-Nvoid UART_DMAConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IT_RB_LVL, uint32_t UART_IT_TB_LVL)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_IT_FIFO_LVL(UART_IT_RB_LVL));
-X  ((void)0);
-N  assert_param(IS_UART_IT_FIFO_LVL(UART_IT_TB_LVL));
+N  assert_param(IS_DMA_FLAG(DMA_Flag));
 X  ((void)0);
 N
-N  UARTx->IFLS = (UART_IT_RB_LVL << 3) | UART_IT_TB_LVL;
-N}
-N
-N/**
-N  * @brief  Enables or disables the UART’s DMA interface.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_DMAReq: specifies the DMA request.
-N  *         This parameter can be any combination of the following values:
-N  *           @arg UART_DMA_RXE: UART DMA receive request
-N  *           @arg UART_DMA_TXE: UART DMA transmit request
-N  *           @arg UART_DMA_ONERR: UART DMA blocking transmit with error
-N  * @param  NewState: new state of the DMA Request sources.
-N  *         This parameter can be: ENABLE or DISABLE.
-N  * @note The DMA mode is not available for UART5.
-N  * @retval None
-N  */
-Nvoid UART_DMACmd(MDR_UART_TypeDef* UARTx, uint32_t UART_DMAReq, FunctionalState NewState)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_DMAREQ(UART_DMAReq));
-X  ((void)0);
-N  assert_param(IS_FUNCTIONAL_STATE(NewState));
-X  ((void)0);
-N
-N  if (NewState != DISABLE)
+N  /* Read Flag Status */
+N  switch(DMA_Flag)
 N  {
-N    /* Enable the DMA transfer for selected requests and DMAONERR bit
-N       in the UART DMACR register */
-N    UARTx->DMACR |= UART_DMAReq;
-N  }
-N  else
-N  {
-N    /* Disable the DMA transfer for selected requests and DMAONERR bit
-N       in the UART DMACR register */
-N    UARTx->DMACR &= (uint16_t)~UART_DMAReq;
+N    case DMA_FLAG_DMA_ENA:
+X    case ((uint8_t)0x01):
+N      return (FlagStatus)(MDR_DMA->STATUS & DMA_STATUS_MASTER_ENABLE);
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->STATUS & ((uint32_t)0x00000001));
+N    case DMA_FLAG_DMA_ERR:
+X    case ((uint8_t)0x02):
+N      return (FlagStatus)(MDR_DMA->ERR_CLR & 0x01);
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->ERR_CLR & 0x01);
+N    case DMA_FLAG_CHNL_ENA:
+X    case ((uint8_t)0x03):
+N      return (FlagStatus)(MDR_DMA->CHNL_ENABLE_SET & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET & (1 << DMA_Channel));
+N    case DMA_FLAG_CHNL_MASK:
+X    case ((uint8_t)0x04):
+N      return (FlagStatus)(MDR_DMA->CHNL_REQ_MASK_SET & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_SET & (1 << DMA_Channel));
+N    case DMA_FLAG_CHNL_WAIT:
+X    case ((uint8_t)0x05):
+N      return (FlagStatus)(MDR_DMA->WAITONREQ_STATUS & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->WAITONREQ_STATUS & (1 << DMA_Channel));
+N    case DMA_FLAG_CHNL_BURST:
+X    case ((uint8_t)0x06):
+N      return (FlagStatus)(MDR_DMA->CHNL_USEBURST_SET & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET & (1 << DMA_Channel));
+N    case DMA_FLAG_CHNL_ALT:
+X    case ((uint8_t)0x07):
+N      return (FlagStatus)(MDR_DMA->CHNL_PRI_ALT_SET & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_SET & (1 << DMA_Channel));
+N    case DMA_FLAG_CHNL_PRIORITY:
+X    case ((uint8_t)0x08):
+N      return (FlagStatus)(MDR_DMA->CHNL_PRIORITY_SET & (1 << DMA_Channel));
+X      return (FlagStatus)(((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_SET & (1 << DMA_Channel));
+N    default:
+N      return (FlagStatus)0;
 N  }
 N}
 N
-N/**
-N  * @brief  Transmits single data through the UARTx peripheral.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  Data: the data to transmit.
-N  * @retval None
-N  */
-Nvoid UART_SendData(MDR_UART_TypeDef* UARTx, uint16_t Data)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_DATA(Data));
-X  ((void)0);
+N/** @} */ /* End of group DMA_Private_Functions */
 N
-N  /* Transmit Data */
-N  UARTx->DR = (Data & (uint16_t)0x01FF);
-N}
-N
-N/**
-N  * @brief  Returns the most recent received data by the UARTx peripheral.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @retval The received data (7:0) and error flags (15:8).
-N  */
-Nuint16_t UART_ReceiveData(MDR_UART_TypeDef* UARTx)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N
-N  /* Receive Data */
-N  return (uint16_t)(UARTx->DR);
-N}
-N
-N/**
-N  * @brief  Break transmit.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  NewState: new state of the Line.
-N  *         This parameter can be: ENABLE or DISABLE.
-N  * @retval None
-N  */
-Nvoid UART_BreakLine(MDR_UART_TypeDef* UARTx, FunctionalState NewState)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_FUNCTIONAL_STATE(NewState));
-X  ((void)0);
-N
-N  if (NewState != DISABLE)
-N  {
-N    /* Set BRK bit in the UART LCR_H register */
-N    UARTx->LCR_H |= LCR_H_BRK_Set;
-X    UARTx->LCR_H |= ((uint16_t)0x0001);
-N  }
-N  else
-N  {
-N    /* Reset BRK bit in the UART LCR_H register */
-N    UARTx->LCR_H |= LCR_H_BRK_Reset;
-X    UARTx->LCR_H |= ((uint16_t)0xFFFE);
-N  }
-N}
-N
-N/**
-N  * @brief  Configures the UART’s IrDA interface.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_IrDAMode: specifies the IrDA mode.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_IrDAMode_LowPower
-N  *           @arg UART_IrDAMode_Normal
-N  * @retval None
-N  */
-Nvoid UART_IrDAConfig(MDR_UART_TypeDef* UARTx, uint32_t UART_IrDAMode)
-N{
-N  uint32_t cpuclock;
-N  RST_CLK_FreqTypeDef RST_CLK_Clocks;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_IRDA_MODE(UART_IrDAMode));
-X  ((void)0);
-N
-N  if (UART_IrDAMode == UART_IrDAMode_LowPower)
-X  if (UART_IrDAMode == ((uint32_t)0x00000004))
-N  {
-N    /* Configure the UART ILPR */
-N    RST_CLK_GetClocksFreq(&RST_CLK_Clocks);
-N    cpuclock = RST_CLK_Clocks.CPU_CLK_Frequency;
-N    UARTx->ILPR = cpuclock / IrLPBaud16;
-X    UARTx->ILPR = cpuclock / ((uint32_t)1843200);
-N  }
-N  UARTx->CR |= UART_IrDAMode;
-N}
-N
-N/**
-N  * @brief  Enables or disables the UART’s IrDA interface.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  NewState: new state of the IrDA mode.
-N  *         This parameter can be: ENABLE or DISABLE.
-N  * @retval None
-N  */
-Nvoid UART_IrDACmd(MDR_UART_TypeDef* UARTx, FunctionalState NewState)
-N{
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_FUNCTIONAL_STATE(NewState));
-X  ((void)0);
-N
-N  if (NewState != DISABLE)
-N  {
-N    /* Set SIREN bit in the UART CR register */
-N    UARTx->CR |= CR_SIREN_Set;
-X    UARTx->CR |= ((uint16_t)0x0002);
-N  }
-N  else
-N  {
-N    /* Reset SIREN bit in the UART CR register */
-N    UARTx->CR |= CR_SIREN_Reset;
-X    UARTx->CR |= ((uint16_t)0xFFFD);
-N  }
-N}
-N
-N/**
-N  * @brief  Checks whether the specified UART flag is set or not.
-N  * @param  UARTx: Select the UART or the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2, UART3, UART4 or UART5.
-N  * @param  UART_FLAG: specifies the flag to check.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_FLAG_RI  : nUARTRI line inverted value
-N  *           @arg UART_FLAG_TXFE: Transmit buffer is empty flag
-N  *           @arg UART_FLAG_RXFF: Receive buffer is full flag
-N  *           @arg UART_FLAG_TXFF: Transmit buffer is full flag
-N  *           @arg UART_FLAG_RXFE: Receive buffer is empty flag
-N  *           @arg UART_FLAG_BUSY: Transmit Busy flag
-N  *           @arg UART_FLAG_DCD:  nUARTDCD line inverted value
-N  *           @arg UART_FLAG_DSR:  nUARTDSR line inverted value
-N  *           @arg UART_FLAG_CTS:  nUARTCTS line inverted value
-N  * @retval The new state of UART_FLAG (SET or RESET).
-N  */
-NFlagStatus UART_GetFlagStatus(MDR_UART_TypeDef* UARTx, uint32_t UART_FLAG)
-N{
-N  FlagStatus bitstatus;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_FLAG(UART_FLAG));
-X  ((void)0);
-N
-N  if (UARTx->FR & UART_FLAG)
-N  {
-N    bitstatus = SET;
-N  }
-N  else
-N  {
-N    bitstatus = RESET;
-N  }
-N  return bitstatus;
-N}
-N
-N/**
-N  * @brief  Initializes the UARTx peripheral Clock according to the
-N  *         specified parameters.
-N  * @param  UARTx: Select the UART peripheral.
-N  *         This parameter can be one of the following values:
-N  *         UART1, UART2.
-N  * @param  UART_BRG: specifies the HCLK division factor.
-N  *         This parameter can be one of the following values:
-N  *           @arg UART_HCLKdiv1
-N  *           @arg UART_HCLKdiv2
-N  *           @arg UART_HCLKdiv4
-N  *           @arg UART_HCLKdiv8
-N  *           @arg UART_HCLKdiv16
-N  *           @arg UART_HCLKdiv32
-N  *           @arg UART_HCLKdiv64
-N  *           @arg UART_HCLKdiv128
-N  * @retval None
-N  */
-Nvoid UART_BRGInit(MDR_UART_TypeDef* UARTx, uint32_t UART_BRG)
-N{
-N  uint32_t tmpreg;
-N
-N  /* Check the parameters */
-N  assert_param(IS_UART_ALL_PERIPH(UARTx));
-X  ((void)0);
-N  assert_param(IS_UART_CLOCK_BRG(UART_BRG));
-X  ((void)0);
-N
-N  tmpreg = MDR_RST_CLK->UART_CLOCK;
-X  tmpreg = ((MDR_RST_CLK_TypeDef *) (0x40020000))->UART_CLOCK;
-N
-N  if (UARTx == MDR_UART1)
-X  if (UARTx == ((MDR_UART_TypeDef *) (0x40030000)))
-N  {
-N    tmpreg |= RST_CLK_UART_CLOCK_UART1_CLK_EN;
-X    tmpreg |= ((uint32_t)0x01000000);
-N    tmpreg &= ~RST_CLK_UART_CLOCK_UART1_BRG_Msk;
-X    tmpreg &= ~((uint32_t)0x000000FF);
-N    tmpreg |= UART_BRG;
-N  }
-N  else if (UARTx == MDR_UART2)
-X  else if (UARTx == ((MDR_UART_TypeDef *) (0x40038000)))
-N  {
-N    tmpreg |= RST_CLK_UART_CLOCK_UART2_CLK_EN;
-X    tmpreg |= ((uint32_t)0x02000000);
-N    tmpreg &= ~RST_CLK_UART_CLOCK_UART2_BRG_Msk;
-X    tmpreg &= ~((uint32_t)0x0000FF00);
-N    tmpreg |= (UART_BRG << 8);
-N  }
-N  MDR_RST_CLK->UART_CLOCK = tmpreg;
-X  ((MDR_RST_CLK_TypeDef *) (0x40020000))->UART_CLOCK = tmpreg;
-N}
-N
-N/** @} */ /* End of group UART_Private_Functions */
-N
-N/** @} */ /* End of group UART */
+N/** @} */ /* End of group DMA */
 N
 N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
 N
 N/******************* (C) COPYRIGHT 2010 Phyton *********************************
 N*
-N* END OF FILE MDR32F9Qx_uart.c */
+N* END OF FILE MDR32F9Qx_dma.c */
 N

@@ -15,6 +15,7 @@
 #include "MDR32F9Qx_timer.h"
 #include "MDR32F9Qx_i2c.h"
 #include "MDR32F9Qx_adc.h"
+#include "MDR32F9Qx_dma.h"
 
 #include "systemfunc.h"
 #include "defines.h"
@@ -286,6 +287,8 @@ void HW_UARTInit(void)
 	UART_StructInit(&sUART);
 	
 	//--------------- UART2 INIT ---------------//
+	UART_DeInit(MDR_UART2);
+	
 	sUART.UART_BaudRate                           = 115200;
 	sUART.UART_WordLength                         = UART_WordLength8b;
 	sUART.UART_StopBits                           = UART_StopBits1;
@@ -298,6 +301,8 @@ void HW_UARTInit(void)
 	UART_Cmd(MDR_UART2,ENABLE);
 	
 	//--------------- UART1 INIT ---------------//
+	UART_DeInit(MDR_UART1);
+	
 	sUART.UART_BaudRate                           = 115200;
 	sUART.UART_WordLength                         = UART_WordLength8b;
 	sUART.UART_StopBits                           = UART_StopBits1;
@@ -310,13 +315,13 @@ void HW_UARTInit(void)
 	UART_Cmd(MDR_UART1,ENABLE);
 	
 	//------------ UART DMA features------------//
-	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
-	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+	//UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
+	//UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
 	
 	/* Enable UART1 DMA Rx and Tx request */
-	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+	//UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 	/* Enable UART2 DMA Rx and Tx request */
-	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+	//UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 }
 
 //-----------------------------------------------------------------//

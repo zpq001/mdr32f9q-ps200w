@@ -6326,8 +6326,8 @@ N	if (! (temp & (1<<ENC_BTN)) )
 X	if (! (temp & (1<<5)) )
 N		raw_buttons |= BTN_ENCODER;
 X		raw_buttons |= 0x10;
-N	if (temp & (1<<EEN))
-X	if (temp & (1<<2))
+N	if (! (temp & (1<<EEN)) )
+X	if (! (temp & (1<<2)) )
 N		raw_buttons |= SW_EXTERNAL;
 X		raw_buttons |= 0x0100;
 N	temp = MDR_PORTB->RXTX;

@@ -6075,7 +6075,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:

@@ -8,9 +8,9 @@
 #include "MDR32F9Qx_ssp.h"
 #include "MDR32F9Qx_port.h"
 
-#include "lcd_1202_defs.h"		// LCD-specific command definitions
+#include "lcd_1202_defs.h"			// LCD-specific command definitions
 #include "lcd_1202.h"					
-#include "defines.h"					// Contains port defines
+#include "defines.h"				// Contains port defines
 #include "dwt_delay.h"				// Delays used for LCD
 
 

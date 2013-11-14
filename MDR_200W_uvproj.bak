@@ -438,6 +438,11 @@
               <FileType>1</FileType>
               <FilePath>..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c</FilePath>
             </File>
+            <File>
+              <FileName>MDR32F9Qx_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -532,6 +537,16 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\sound_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound_samples.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\sound_samples.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -676,7 +691,7 @@
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\</ListingPath>
+          <ListingPath>.\listing\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -1064,6 +1079,11 @@
               <FileType>1</FileType>
               <FilePath>..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_uart.c</FilePath>
             </File>
+            <File>
+              <FileName>MDR32F9Qx_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\src\MDR32F9Qx_dma.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1158,6 +1178,16 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\sound_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound_samples.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\sound_samples.c</FilePath>
             </File>
           </Files>
         </Group>

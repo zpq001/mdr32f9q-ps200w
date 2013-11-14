@@ -28,10 +28,10 @@
 
 
 // Globals used for communicating with converter control task called from ISR
-uint8_t state_HWProcess = STATE_HW_OFF;	
-uint8_t ctrl_HWProcess = 0;
+volatile uint8_t state_HWProcess = STATE_HW_OFF;	
+volatile uint8_t ctrl_HWProcess = 0;
 
-uint8_t cmd_ADC_to_HWProcess = 0;
+volatile uint8_t cmd_ADC_to_HWProcess = 0;
 
 
 
@@ -39,7 +39,7 @@ converter_regulation_t channel_5v_setting;
 converter_regulation_t channel_12v_setting;
 converter_regulation_t *regulation_setting_p;
 
-uint8_t HW_request = 0;
+
 
 
 
@@ -72,12 +72,12 @@ static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
 	// First check soft limits
 	if (regulation_setting_p->soft_voltage_range_enable)
 	{
-		if (new_set_voltage < (int32_t)regulation_setting_p->soft_min_voltage)
+		if (new_set_voltage <= (int32_t)regulation_setting_p->soft_min_voltage)
 		{
 			new_set_voltage = (int32_t)regulation_setting_p->soft_min_voltage;
 			error = VCHECK_SOFT_MIN;
 		}
-		else if (new_set_voltage > (int32_t)regulation_setting_p->soft_max_voltage)
+		else if (new_set_voltage >= (int32_t)regulation_setting_p->soft_max_voltage)
 		{
 			new_set_voltage = (int32_t)regulation_setting_p->soft_max_voltage;
 			error = VCHECK_SOFT_MAX;
@@ -85,12 +85,12 @@ static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
 	}
 	
 	// Check absolute limits
-	if (new_set_voltage < (int32_t)regulation_setting_p->MIN_VOLTAGE)
+	if (new_set_voltage <= (int32_t)regulation_setting_p->MIN_VOLTAGE)
 	{
 		new_set_voltage = (int32_t)regulation_setting_p->MIN_VOLTAGE;
 		error = VCHECK_ABS_MIN;
 	}
-	else if (new_set_voltage > (int32_t)regulation_setting_p->MAX_VOLTAGE)
+	else if (new_set_voltage >= (int32_t)regulation_setting_p->MAX_VOLTAGE)
 	{
 		new_set_voltage = (int32_t)regulation_setting_p->MAX_VOLTAGE;
 		error = VCHECK_ABS_MAX;
@@ -121,12 +121,12 @@ static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
 	// First check soft limits
 	if (regulation_setting_p->soft_current_range_enable)
 	{
-		if (new_set_current < (int32_t)regulation_setting_p->soft_min_current)
+		if (new_set_current <= (int32_t)regulation_setting_p->soft_min_current)
 		{
 			new_set_current = (int32_t)regulation_setting_p->soft_min_current;
 			error = CCHECK_SOFT_MIN;
 		}
-		else if (new_set_current > (int32_t)regulation_setting_p->soft_max_current)
+		else if (new_set_current >= (int32_t)regulation_setting_p->soft_max_current)
 		{
 			new_set_current = (int32_t)regulation_setting_p->soft_max_current;
 			error = CCHECK_SOFT_MAX;
@@ -135,12 +135,12 @@ static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
 	
 	// Check absolute limits - this will overwrite possibly incorrect soft limits
 	// This can happen for exapmle, if soft_min = 35A and current limit is switched to 20A
-	if (new_set_current < min_current)
+	if (new_set_current <= min_current)
 	{
 		new_set_current = min_current;
 		error = CCHECK_ABS_MIN;
 	}
-	else if (new_set_current > max_current)
+	else if (new_set_current >= max_current)
 	{
 		new_set_current = max_current;
 		error = CCHECK_ABS_MAX;
@@ -160,16 +160,6 @@ uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p,
 	
 	switch (mode)
 	{
-		case SET_LOW_VOLTAGE_SOFT_LIMIT:
-			lim_p = &reg_p->soft_min_voltage;
-			minimum = reg_p->SOFT_MIN_VOLTAGE_LIMIT;
-			maximum = reg_p->soft_max_voltage;
-			break;
-		case SET_HIGH_VOLTAGE_SOFT_LIMIT:
-			lim_p = &reg_p->soft_max_voltage;
-			minimum = reg_p->soft_min_voltage;
-			maximum = reg_p->SOFT_MAX_VOLTAGE_LIMIT;
-			break;
 		case SET_LOW_CURRENT_SOFT_LIMIT:
 			lim_p = &reg_p->soft_min_current;
 			minimum = reg_p->SOFT_MIN_CURRENT_LIMIT;
@@ -179,6 +169,16 @@ uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p,
 			lim_p = &reg_p->soft_max_current;
 			minimum = reg_p->soft_min_current;
 			maximum = reg_p->SOFT_MAX_CURRENT_LIMIT;
+			break;
+		case SET_LOW_VOLTAGE_SOFT_LIMIT:
+			lim_p = &reg_p->soft_min_voltage;
+			minimum = reg_p->SOFT_MIN_VOLTAGE_LIMIT;
+			maximum = reg_p->soft_max_voltage;
+			break;
+		default: // SET_HIGH_VOLTAGE_SOFT_LIMIT:
+			lim_p = &reg_p->soft_max_voltage;
+			minimum = reg_p->soft_min_voltage;
+			maximum = reg_p->SOFT_MAX_VOLTAGE_LIMIT;
 			break;
 	}
 	
@@ -370,9 +370,9 @@ void vTaskConverter(void *pvParameters)
 		{
 			case CONVERTER_SET_VOLTAGE:
 				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
-				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MAX))
+				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
-				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MAX))
+				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else
 					sound_msg = SND_CONV_SETTING_OK;
@@ -381,9 +381,9 @@ void vTaskConverter(void *pvParameters)
 				break;
 			case CONVERTER_SET_CURRENT:
 				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
-				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MAX))
+				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
-				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MAX))
+				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else
 					sound_msg = SND_CONV_SETTING_OK;
@@ -475,9 +475,10 @@ void vTaskConverter(void *pvParameters)
 					conv_state |= analyzeAndResetHWErrorState();
 					if (conv_state & CONV_OVERLOAD)
 					{
-						// Send message to sound driver - TODO
-						//sound_msg == SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
-						//xQueueSendToBack(xQueueSound, &sound_msg, 0);
+						// Send message to sound driver
+						// TODO: send this message in other cases (when overload is detected simultaneously with button)
+						sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+						xQueueSendToBack(xQueueSound, &sound_msg, 0);
 					}
 					break;
 				}

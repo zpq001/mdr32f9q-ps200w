@@ -14331,7 +14331,7 @@ N
 N#define GUI_UPDATE_INTERVAL			25		// OS ticks
 N#define CONVERTER_TICK_INTERVAL		50		// OS ticks
 N#define DISPATCHER_TICK_INTERVAL	10		// OS ticks
-N
+N#define SOUND_DRIVER_TICK_INTERVAL	5
 N
 Ntypedef struct {
 N	uint32_t max_ticks_in_Systick_hook;
@@ -14631,6 +14631,8 @@ N
 N
 L 20 "src\uart.c" 2
 N
+N// Test
+N#define MDR_UARTx MDR_UART1
 Nuint8_t test_mode = 0;
 N
 Nstatic ring_buffer_t uart2_tx_rbuf;
@@ -14886,8 +14888,8 @@ N			}
 N		}  // \getFromRingBuffer()
 N		
 N	}
-W "src\uart.c" 53 11 variable "i" was declared but never referenced
-W "src\uart.c" 54 11 variable "temp32u" was declared but never referenced
+W "src\uart.c" 55 11 variable "i" was declared but never referenced
+W "src\uart.c" 56 11 variable "temp32u" was declared but never referenced
 N}
 N
 N
@@ -14895,11 +14897,11 @@ N
 Nvoid processUartRX(void)
 N{
 N	uint16_t temp;
-N	while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
-X	while ( (UART_GetFlagStatus(((MDR_UART_TypeDef *) (0x40038000)),((uint32_t)0x00000010)) == RESET) && (!((uint16_t)(uart2_rx_rbuf . write_count - uart2_rx_rbuf . read_count) == uart2_rx_rbuf . size)) )
+N	while ( (UART_GetFlagStatus(MDR_UARTx,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
+X	while ( (UART_GetFlagStatus(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000010)) == RESET) && (!((uint16_t)(uart2_rx_rbuf . write_count - uart2_rx_rbuf . read_count) == uart2_rx_rbuf . size)) )
 N	{
-N		temp = UART_ReceiveData(MDR_UART2);
-X		temp = UART_ReceiveData(((MDR_UART_TypeDef *) (0x40038000)));
+N		temp = UART_ReceiveData(MDR_UARTx);
+X		temp = UART_ReceiveData(((MDR_UART_TypeDef *) (0x40030000)));
 N		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
 X		if ((temp & ( (1<<0x0A) | (1<<0x09) | (1<<0x08) )) == 0)
 N		{
@@ -14918,12 +14920,12 @@ N// Simple function to send two 0-terminated strings
 Nvoid sendString2(char *pstr1, char *pstr2)
 N{
 N	char temp_char;
-W "src\uart.c" 273 8 assignment in condition
+W "src\uart.c" 275 8 assignment in condition
 N	while(temp_char = *pstr1++)
 N	{
 N		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
 N	}	
-W "src\uart.c" 277 8 assignment in condition
+W "src\uart.c" 279 8 assignment in condition
 N	while(temp_char = *pstr2++)
 N	{
 N		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
@@ -14935,12 +14937,12 @@ Nvoid processUartTX(void)
 N{
 N	char temp;
 N	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
-N	while ( (!(MDR_UART2->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
-X	while ( (!(((MDR_UART_TypeDef *) (0x40038000))->FR & ((uint32_t)0x00000020))) && (!(uart2_tx_rbuf . write_count == uart2_tx_rbuf . read_count)) ) 
+N	while ( (!(MDR_UARTx->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
+X	while ( (!(((MDR_UART_TypeDef *) (0x40030000))->FR & ((uint32_t)0x00000020))) && (!(uart2_tx_rbuf . write_count == uart2_tx_rbuf . read_count)) ) 
 N	{
 N		getFromRingBuffer(&uart2_tx_rbuf, &temp);
-N		UART_SendData(MDR_UART2,(uint16_t)temp);
-X		UART_SendData(((MDR_UART_TypeDef *) (0x40038000)),(uint16_t)temp);
+N		UART_SendData(MDR_UARTx,(uint16_t)temp);
+X		UART_SendData(((MDR_UART_TypeDef *) (0x40030000)),(uint16_t)temp);
 N	}
 N}
 N

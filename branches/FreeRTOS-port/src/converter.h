@@ -176,7 +176,7 @@ extern const conveter_message_t converter_tick_message;
 
 extern converter_regulation_t *regulation_setting_p;
 
-extern uint8_t cmd_ADC_to_HWProcess;
+extern volatile uint8_t cmd_ADC_to_HWProcess;
 
 extern uint16_t voltage_adc;	// [mV]
 extern uint16_t current_adc;	// [mA]

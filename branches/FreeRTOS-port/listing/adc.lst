@@ -6040,7 +6040,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -13146,11 +13146,11 @@ N
 N// These defines set behavior of controller in case when 
 N// error status is generated simultaneously with processing OFF command
 N// Either must be set
-N#define CMD_HAS_PRIORITY 	0		// - no error will be shown
-N#define ERROR_HAS_PRIORITY	1		// - error will be shown
+N#define CMD_HAS_PRIORITY 	1		// - no error will be shown
+N#define ERROR_HAS_PRIORITY	0		// - error will be shown
 N
 N#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
-X#if ((0 && 1) || (!0 && !1))
+X#if ((1 && 0) || (!1 && !0))
 S#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
 N#endif 
 N
@@ -13217,7 +13217,7 @@ Nextern const conveter_message_t converter_tick_message;
 N
 Nextern converter_regulation_t *regulation_setting_p;
 N
-Nextern uint8_t cmd_ADC_to_HWProcess;
+Nextern volatile uint8_t cmd_ADC_to_HWProcess;
 N
 Nextern uint16_t voltage_adc;	// [mV]
 Nextern uint16_t current_adc;	// [mA]
@@ -13336,7 +13336,7 @@ N
 Nstatic uint16_t adc_voltage_counts;	// [ADC counts]
 Nstatic uint16_t adc_current_counts;	// [ADC counts]
 N
-Nstatic uint8_t ctrl_ADCProcess = 0;
+Nstatic volatile uint8_t ctrl_ADCProcess = 0;
 N
 NxQueueHandle xQueueADC;
 NxSemaphoreHandle xSemaphoreADC;

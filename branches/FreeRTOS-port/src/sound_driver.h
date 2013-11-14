@@ -1,13 +1,13 @@
 
 //---------------------------------------------//
 // Sound driver message codes
-#define SYNC 								0xFFFF
-#define SND_CONV_CMD_OK						0x0001
-#define SND_CONV_CMD_ILLEGAL				0x0002
+#define SYNC 								0xFFFF0000
+#define SND_CONV_CMD_OK						0x00010000
+#define SND_CONV_CMD_ILLEGAL				0x00020000
 #define SND_CONV_SETTING_OK					SND_CONV_CMD_OK
 #define SND_CONV_SETTING_ILLEGAL			SND_CONV_CMD_ILLEGAL
-#define SND_CONV_OVERLOADED					0x0003
-#define SND_CONV_INSTANT_OVERLOAD			0x0004
+#define SND_CONV_OVERLOADED					0x00030000
+#define SND_CONV_INSTANT_OVERLOAD			0x00040000
 
 //---------------------------------------------//
 // Sound driver priorities

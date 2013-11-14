@@ -18,6 +18,7 @@
 #include "dispatcher.h"
 #include "uart.h"
 #include "dwt_delay.h"
+#include "sound_driver.h"
 
 /* —четчик 
 volatile uint32_t sysTicks = 0;
@@ -38,6 +39,7 @@ void vApplicationTickHook( void )
 	static uint32_t tmr_gui_update = GUI_UPDATE_INTERVAL;
 	static uint32_t tmr_converter_tick = CONVERTER_TICK_INTERVAL;
 	static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+	static uint32_t tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
 	portBASE_TYPE xHigherPriorityTaskWokenByPost;
 	uint32_t msg;
 	// Time profiling
@@ -65,6 +67,12 @@ void vApplicationTickHook( void )
 	{
 		xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
 		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+	}
+	
+	if (--tmr_sound_driver_tick == 0)
+	{
+		xQueueSendToBackFromISR(xQueueSound, &sound_driver_sync_msg, &xHigherPriorityTaskWokenByPost);
+		tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
 	}
 	
 	// Force context switching if required

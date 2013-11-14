@@ -19,7 +19,7 @@ uint32_t power_adc;			// [mW]
 static uint16_t adc_voltage_counts;	// [ADC counts]
 static uint16_t adc_current_counts;	// [ADC counts]
 
-static uint8_t ctrl_ADCProcess = 0;
+static volatile uint8_t ctrl_ADCProcess = 0;
 
 xQueueHandle xQueueADC;
 xSemaphoreHandle xSemaphoreADC;

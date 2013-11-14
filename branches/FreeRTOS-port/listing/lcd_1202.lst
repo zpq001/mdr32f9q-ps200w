@@ -6447,7 +6447,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -6804,7 +6804,7 @@ N* END OF FILE MDR32F9Qx_port.h */
 N
 L 10 "src\lcd_1202.c" 2
 N
-N#include "lcd_1202_defs.h"		// LCD-specific command definitions
+N#include "lcd_1202_defs.h"			// LCD-specific command definitions
 L 1 "src\lcd_1202_defs.h" 1
 N/***********************************************************************
 N	Definitions for Nokia 1202 LCD (ste2007 controller)
@@ -7085,7 +7085,7 @@ N
 N
 N
 L 13 "src\lcd_1202.c" 2
-N#include "defines.h"					// Contains port defines
+N#include "defines.h"				// Contains port defines
 L 1 ".\defines.h" 1
 N
 N

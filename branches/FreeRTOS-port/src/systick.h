@@ -25,7 +25,7 @@
 #define GUI_UPDATE_INTERVAL			25		// OS ticks
 #define CONVERTER_TICK_INTERVAL		50		// OS ticks
 #define DISPATCHER_TICK_INTERVAL	10		// OS ticks
-
+#define SOUND_DRIVER_TICK_INTERVAL	5
 
 typedef struct {
 	uint32_t max_ticks_in_Systick_hook;

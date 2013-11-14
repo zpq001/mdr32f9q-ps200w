@@ -1,6 +1,7 @@
 
 #include "sound_defs.h"
 
+
 extern const sample_t sample_beep_1000Hz_50ms;
 extern const sample_t sample_beep_800Hz_50ms;
 extern const sample_t sample_beep_800Hz_x3;

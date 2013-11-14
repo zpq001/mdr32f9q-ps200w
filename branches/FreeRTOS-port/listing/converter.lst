@@ -6146,7 +6146,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -6502,8 +6502,6 @@ N*
 N* END OF FILE MDR32F9Qx_port.h */
 N
 L 16 "src\converter.c" 2
-N//#include "MDR32F9Qx_adc.h"
-N//#include "MDR32F9Qx_timer.h"
 N
 N#include "FreeRTOS.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h" 1
@@ -8209,7 +8207,7 @@ N#define eTaskStateGet eTaskGetState
 N
 N#endif /* INC_FREERTOS_H */
 N
-L 20 "src\converter.c" 2
+L 18 "src\converter.c" 2
 N#include "task.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h" 1
 N/*
@@ -10170,7 +10168,7 @@ N#endif /* INC_TASK_H */
 N
 N
 N
-L 21 "src\converter.c" 2
+L 19 "src\converter.c" 2
 N#include "queue.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h" 1
 N/*
@@ -11893,7 +11891,7 @@ N#endif
 N
 N#endif /* QUEUE_H */
 N
-L 22 "src\converter.c" 2
+L 20 "src\converter.c" 2
 N
 N#include "systemfunc.h"
 L 1 "src\systemfunc.h" 1
@@ -11907,8 +11905,8 @@ N
 N// Peripheral blocks, used in design											
 N#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
 N									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
-N									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
-X#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | 									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART2 )
+N									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
+X#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | 									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
 N
 N
 N
@@ -11927,6 +11925,7 @@ Nvoid HW_SSPInit(void);
 Nvoid HW_I2CInit(void);
 Nvoid HW_ADCInit(void);
 Nvoid HW_TimersInit(void);
+Nvoid HW_DMAInit(void);
 N
 Nvoid LcdSetBacklight(uint16_t value);
 N
@@ -11949,7 +11948,7 @@ N
 N
 N//void ProcessTemperature(void);
 N//void ProcessCooler(void);
-L 24 "src\converter.c" 2
+L 22 "src\converter.c" 2
 N#include "led.h"
 L 1 "src\led.h" 1
 N
@@ -11962,7 +11961,7 @@ N
 N// Update LEDs
 Nvoid UpdateLEDs(uint8_t led_state);
 N
-L 25 "src\converter.c" 2
+L 23 "src\converter.c" 2
 N#include "adc.h"
 L 1 "src\adc.h" 1
 N
@@ -11977,7 +11976,7 @@ Nvoid vTaskADC(void *pvParameters);
 N
 N
 N
-L 26 "src\converter.c" 2
+L 24 "src\converter.c" 2
 N#include "defines.h"
 L 1 ".\defines.h" 1
 N
@@ -12108,7 +12107,7 @@ N
 N
 N
 N
-L 27 "src\converter.c" 2
+L 25 "src\converter.c" 2
 N#include "control.h"
 L 1 "src\control.h" 1
 N
@@ -12179,7 +12178,7 @@ Nvoid SetFeedbackChannel(uint8_t newChannel);
 Nvoid SetCurrentLimit(uint8_t newLimit);
 Nvoid SetOutputLoad(uint8_t newLoad);
 N
-L 28 "src\converter.c" 2
+L 26 "src\converter.c" 2
 N#include "converter.h"
 L 1 "src\converter.h" 1
 N
@@ -12290,11 +12289,11 @@ N
 N// These defines set behavior of controller in case when 
 N// error status is generated simultaneously with processing OFF command
 N// Either must be set
-N#define CMD_HAS_PRIORITY 	0		// - no error will be shown
-N#define ERROR_HAS_PRIORITY	1		// - error will be shown
+N#define CMD_HAS_PRIORITY 	1		// - no error will be shown
+N#define ERROR_HAS_PRIORITY	0		// - error will be shown
 N
 N#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
-X#if ((0 && 1) || (!0 && !1))
+X#if ((1 && 0) || (!1 && !0))
 S#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
 N#endif 
 N
@@ -12361,7 +12360,7 @@ Nextern const conveter_message_t converter_tick_message;
 N
 Nextern converter_regulation_t *regulation_setting_p;
 N
-Nextern uint8_t cmd_ADC_to_HWProcess;
+Nextern volatile uint8_t cmd_ADC_to_HWProcess;
 N
 Nextern uint16_t voltage_adc;	// [mV]
 Nextern uint16_t current_adc;	// [mA]
@@ -12385,15 +12384,55 @@ Nvoid Converter_HWProcess(void);
 Nvoid Converter_HW_ADCProcess(void);
 N
 N
-L 29 "src\converter.c" 2
+L 27 "src\converter.c" 2
+N#include "sound_driver.h"
+L 1 "src\sound_driver.h" 1
+N
+N//---------------------------------------------//
+N// Sound driver message codes
+N#define SYNC 								0xFFFF0000
+N#define SND_CONV_CMD_OK						0x00010000
+N#define SND_CONV_CMD_ILLEGAL				0x00020000
+N#define SND_CONV_SETTING_OK					SND_CONV_CMD_OK
+N#define SND_CONV_SETTING_ILLEGAL			SND_CONV_CMD_ILLEGAL
+N#define SND_CONV_OVERLOADED					0x00030000
+N#define SND_CONV_INSTANT_OVERLOAD			0x00040000
+N
+N//---------------------------------------------//
+N// Sound driver priorities
+N#define SND_CONVERTER_PRIORITY_NORMAL		50
+N#define SND_CONVERTER_PRIORITY_HIGH			51
+N#define SND_CONVERTER_PRIORITY_HIGHEST		52
+N
+N
+N
+N//---------------------------------------------//
+N// Sound driver FSM states - private
+N#define IDLE							0x00
+N#define START_NEW_SAMPLE				0x01
+N#define GET_NEXT_SAMPLE_RECORD			0x02
+N#define APPLY_CURRENT_SAMPLE_RECORD		0x03
+N#define APPLY_NEXT_TONE_RECORD			0x04
+N#define WAIT_FOR_CURRENT_TONE			0x05
+N
+N
+N
+Nextern xQueueHandle xQueueSound;
+Nextern const uint32_t sound_driver_sync_msg;
+Nextern const uint32_t sound_instant_overload_msg;
+N
+Nvoid vTaskSound(void *pvParameters);
+N
+N
+L 28 "src\converter.c" 2
 N
 N
 N// Globals used for communicating with converter control task called from ISR
-Nuint8_t state_HWProcess = STATE_HW_OFF;	
-Xuint8_t state_HWProcess = 0x02;	
-Nuint8_t ctrl_HWProcess = 0;
+Nvolatile uint8_t state_HWProcess = STATE_HW_OFF;	
+Xvolatile uint8_t state_HWProcess = 0x02;	
+Nvolatile uint8_t ctrl_HWProcess = 0;
 N
-Nuint8_t cmd_ADC_to_HWProcess = 0;
+Nvolatile uint8_t cmd_ADC_to_HWProcess = 0;
 N
 N
 N
@@ -12401,7 +12440,7 @@ Nconverter_regulation_t channel_5v_setting;
 Nconverter_regulation_t channel_12v_setting;
 Nconverter_regulation_t *regulation_setting_p;
 N
-Nuint8_t HW_request = 0;
+N
 N
 N
 N
@@ -12438,13 +12477,13 @@ N
 N	// First check soft limits
 N	if (regulation_setting_p->soft_voltage_range_enable)
 N	{
-N		if (new_set_voltage < (int32_t)regulation_setting_p->soft_min_voltage)
+N		if (new_set_voltage <= (int32_t)regulation_setting_p->soft_min_voltage)
 N		{
 N			new_set_voltage = (int32_t)regulation_setting_p->soft_min_voltage;
 N			error = VCHECK_SOFT_MIN;
 X			error = 0x05;
 N		}
-N		else if (new_set_voltage > (int32_t)regulation_setting_p->soft_max_voltage)
+N		else if (new_set_voltage >= (int32_t)regulation_setting_p->soft_max_voltage)
 N		{
 N			new_set_voltage = (int32_t)regulation_setting_p->soft_max_voltage;
 N			error = VCHECK_SOFT_MAX;
@@ -12453,13 +12492,13 @@ N		}
 N	}
 N	
 N	// Check absolute limits
-N	if (new_set_voltage < (int32_t)regulation_setting_p->MIN_VOLTAGE)
+N	if (new_set_voltage <= (int32_t)regulation_setting_p->MIN_VOLTAGE)
 N	{
 N		new_set_voltage = (int32_t)regulation_setting_p->MIN_VOLTAGE;
 N		error = VCHECK_ABS_MIN;
 X		error = 0x03;
 N	}
-N	else if (new_set_voltage > (int32_t)regulation_setting_p->MAX_VOLTAGE)
+N	else if (new_set_voltage >= (int32_t)regulation_setting_p->MAX_VOLTAGE)
 N	{
 N		new_set_voltage = (int32_t)regulation_setting_p->MAX_VOLTAGE;
 N		error = VCHECK_ABS_MAX;
@@ -12493,13 +12532,13 @@ N
 N	// First check soft limits
 N	if (regulation_setting_p->soft_current_range_enable)
 N	{
-N		if (new_set_current < (int32_t)regulation_setting_p->soft_min_current)
+N		if (new_set_current <= (int32_t)regulation_setting_p->soft_min_current)
 N		{
 N			new_set_current = (int32_t)regulation_setting_p->soft_min_current;
 N			error = CCHECK_SOFT_MIN;
 X			error = 0x0C;
 N		}
-N		else if (new_set_current > (int32_t)regulation_setting_p->soft_max_current)
+N		else if (new_set_current >= (int32_t)regulation_setting_p->soft_max_current)
 N		{
 N			new_set_current = (int32_t)regulation_setting_p->soft_max_current;
 N			error = CCHECK_SOFT_MAX;
@@ -12509,13 +12548,13 @@ N	}
 N	
 N	// Check absolute limits - this will overwrite possibly incorrect soft limits
 N	// This can happen for exapmle, if soft_min = 35A and current limit is switched to 20A
-N	if (new_set_current < min_current)
+N	if (new_set_current <= min_current)
 N	{
 N		new_set_current = min_current;
 N		error = CCHECK_ABS_MIN;
 X		error = 0x0A;
 N	}
-N	else if (new_set_current > max_current)
+N	else if (new_set_current >= max_current)
 N	{
 N		new_set_current = max_current;
 N		error = CCHECK_ABS_MAX;
@@ -12537,18 +12576,6 @@ N	int32_t maximum;
 N	
 N	switch (mode)
 N	{
-N		case SET_LOW_VOLTAGE_SOFT_LIMIT:
-X		case 0x01:
-N			lim_p = &reg_p->soft_min_voltage;
-N			minimum = reg_p->SOFT_MIN_VOLTAGE_LIMIT;
-N			maximum = reg_p->soft_max_voltage;
-N			break;
-N		case SET_HIGH_VOLTAGE_SOFT_LIMIT:
-X		case 0x02:
-N			lim_p = &reg_p->soft_max_voltage;
-N			minimum = reg_p->soft_min_voltage;
-N			maximum = reg_p->SOFT_MAX_VOLTAGE_LIMIT;
-N			break;
 N		case SET_LOW_CURRENT_SOFT_LIMIT:
 X		case 0x03:
 N			lim_p = &reg_p->soft_min_current;
@@ -12560,6 +12587,17 @@ X		case 0x04:
 N			lim_p = &reg_p->soft_max_current;
 N			minimum = reg_p->soft_min_current;
 N			maximum = reg_p->SOFT_MAX_CURRENT_LIMIT;
+N			break;
+N		case SET_LOW_VOLTAGE_SOFT_LIMIT:
+X		case 0x01:
+N			lim_p = &reg_p->soft_min_voltage;
+N			minimum = reg_p->SOFT_MIN_VOLTAGE_LIMIT;
+N			maximum = reg_p->soft_max_voltage;
+N			break;
+N		default: // SET_HIGH_VOLTAGE_SOFT_LIMIT:
+N			lim_p = &reg_p->soft_max_voltage;
+N			minimum = reg_p->soft_min_voltage;
+N			maximum = reg_p->SOFT_MAX_VOLTAGE_LIMIT;
 N			break;
 N	}
 N	
@@ -12725,24 +12763,23 @@ N{
 N	uint32_t new_state;
 N	
 N#if CMD_HAS_PRIORITY == 1
-X#if 0 == 1
-S	// If error status is generated simultaneously with OFF command,
-S	// converter will be turned off and no error status will be shown
-S	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
-S	while(ctrl_HWProcess);
-S	new_state = CONV_OFF;		
-S	
-N#elif ERROR_HAS_PRIORITY == 1
-X#elif 1 == 1
+X#if 1 == 1
 N	// If error status is generated simultaneously with OFF command,
-N	// converter will be turned off, but error status will be indicated
-N	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
-X	ctrl_HWProcess = 0x02;					
+N	// converter will be turned off and no error status will be shown
+N	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
+X	ctrl_HWProcess = 0x02 | 0x04;	
 N	while(ctrl_HWProcess);
-N	new_state = CONV_OFF;	
-X	new_state = 0x01;	
-N	new_state |= analyzeAndResetHWErrorState();	
-N						
+N	new_state = CONV_OFF;		
+X	new_state = 0x01;		
+N	
+N#elif ERROR_HAS_PRIORITY == 1
+S	// If error status is generated simultaneously with OFF command,
+S	// converter will be turned off, but error status will be indicated
+S	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
+S	while(ctrl_HWProcess);
+S	new_state = CONV_OFF;	
+S	new_state |= analyzeAndResetHWErrorState();	
+S						
 N#endif
 N	return new_state;
 N}
@@ -12759,6 +12796,7 @@ N	conveter_message_t msg;
 N	
 N	uint8_t err_code;
 N	uint32_t adc_msg;
+N	uint32_t sound_msg;
 N	
 N	// Initialize
 N	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
@@ -12782,10 +12820,40 @@ N		{
 N			case CONVERTER_SET_VOLTAGE:
 X			case 0x07:
 N				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+N				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
+X				if ((err_code == 0x02) || (err_code == 0x03))
+N					sound_msg = SND_CONV_SETTING_ILLEGAL;
+X					sound_msg = 0x00020000;
+N				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MIN))
+X				else if ((err_code == 0x04) || (err_code == 0x05))
+N					sound_msg = SND_CONV_SETTING_ILLEGAL;
+X					sound_msg = 0x00020000;
+N				else
+N					sound_msg = SND_CONV_SETTING_OK;
+X					sound_msg = 0x00010000;
+N				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+X				sound_msg |= 50;
+N				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+X				xQueueGenericSend( ( xQueueSound ), ( &sound_msg ), ( 0 ), ( ( long ) 0 ) );
 N				break;
 N			case CONVERTER_SET_CURRENT:
 X			case 0x08:
 N				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+N				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
+X				if ((err_code == 0x09) || (err_code == 0x0A))
+N					sound_msg = SND_CONV_SETTING_ILLEGAL;
+X					sound_msg = 0x00020000;
+N				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
+X				else if ((err_code == 0x0B) || (err_code == 0x0C))
+N					sound_msg = SND_CONV_SETTING_ILLEGAL;
+X					sound_msg = 0x00020000;
+N				else
+N					sound_msg = SND_CONV_SETTING_OK;
+X					sound_msg = 0x00010000;
+N				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+X				sound_msg |= 50;
+N				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+X				xQueueGenericSend( ( xQueueSound ), ( &sound_msg ), ( 0 ), ( ( long ) 0 ) );
 N				break;
 N		}
 N		
@@ -12899,7 +12967,12 @@ N					conv_state |= analyzeAndResetHWErrorState();
 N					if (conv_state & CONV_OVERLOAD)
 X					if (conv_state & 0x10)
 N					{
-N						// Send message to sound driver - TODO
+N						// Send message to sound driver
+N						// TODO: send this message in other cases (when overload is detected simultaneously with button)
+N						sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+X						sound_msg = 0x00030000 | 52;
+N						xQueueSendToBack(xQueueSound, &sound_msg, 0);
+X						xQueueGenericSend( ( xQueueSound ), ( &sound_msg ), ( 0 ), ( ( long ) 0 ) );
 N					}
 N					break;
 N				}
@@ -13109,7 +13182,8 @@ N	// Overload sound warning
 N	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
 X	if ((raw_overload_flag == 0x1) && (overload_warning_counter == 0))
 N	{
-N		//xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+N		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+X		xQueueGenericSendFromISR( ( xQueueSound ), ( &sound_instant_overload_msg ), ( 0 ), ( ( long ) 1 ) );	
 N		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
 X		overload_warning_counter = (5*200);
 N	}

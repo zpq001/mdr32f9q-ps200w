@@ -20,7 +20,7 @@
 // Test
 uint8_t test_mode = 0;
 
-#define MDR_UARTn MDR_UART2
+#define MDR_UARTn MDR_UART1
 
 #if MDR_UARTn == MDR_UART2
 const uint8_t DMA_Channel_UART_RX = DMA_Channel_UART2_RX;
@@ -333,20 +333,6 @@ void vTaskUARTReceiver(void *pvParameters)
 }
 
 
-/*
-void processUartRX(void)
-{
-	uint16_t temp;
-	while ( (UART_GetFlagStatus(MDR_UARTx,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
-	{
-		temp = UART_ReceiveData(MDR_UARTx);
-		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
-		{
-			putIntoRingBuffer(&uart2_rx_rbuf, (char)temp);
-		}
-	} 
-}
-*/
 
 //=================================================================//
 //=================================================================//
@@ -462,52 +448,7 @@ void vTaskUARTTransmitter(void *pvParameters)
 	}
 }
 
-void DMA_IRQHandler(void)
-{
-	if (DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_CHNL_ENA) == RESET)
-	{
-		// postSemaphoreFromISR(__complete__);
-	}
 
-	// Error handling
-	if (DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_DMA_ERR) == SET)
-	{
-		DMA_ClearError();	// normally this should not happen
-	}
-	
-}
-
-
-
-
-
-/*
-// Simple function to send two 0-terminated strings
-void sendString2(char *pstr1, char *pstr2)
-{
-	char temp_char;
-	while(temp_char = *pstr1++)
-	{
-		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-	}	
-	while(temp_char = *pstr2++)
-	{
-		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-	}	
-}
-
-
-void processUartTX(void)
-{
-	char temp;
-	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
-	while ( (!(MDR_UARTx->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
-	{
-		getFromRingBuffer(&uart2_tx_rbuf, &temp);
-		UART_SendData(MDR_UARTx,(uint16_t)temp);
-	}
-}
-*/
 
 
 

@@ -148,6 +148,8 @@ void Timer2_IRQHandler(void)
 	uint32_t time_mark1 = 0;
 	uint32_t time_mark2 = 0;
 	uint32_t ticks_count;
+	
+	time_mark1 = DWT_Get();
 /*	
 	// Debug
 	if (MDR_PORTA->RXTX & (1<<TXD1))
@@ -164,7 +166,7 @@ void Timer2_IRQHandler(void)
 		Converter_HW_ADCProcess();	// Converter low-level ADC control
 		//-------------------------------//
 	}
-	
+/*	
 	//-------------------------------//
 	// 2369
 	if (--hw_uart2_rx_counter == 0)
@@ -186,7 +188,7 @@ void Timer2_IRQHandler(void)
 		time_mark2 = DWT_Get();
 	}
 	//-------------------------------//
-	
+*/	
 	
 	//-------------------------------//
 	// 608
@@ -205,6 +207,7 @@ void Timer2_IRQHandler(void)
 	TIMER_ClearFlag(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2);
 	//-------------------------------//
 	
+	time_mark2 = DWT_Get();
 	
 	
 	// Update time

@@ -315,13 +315,13 @@ void HW_UARTInit(void)
 	UART_Cmd(MDR_UART1,ENABLE);
 	
 	//------------ UART DMA features------------//
-	//UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
-	//UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
+	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
 	
 	/* Enable UART1 DMA Rx and Tx request */
-	//UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+//	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 	/* Enable UART2 DMA Rx and Tx request */
-	//UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+//	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 }
 
 //-----------------------------------------------------------------//
@@ -333,11 +333,21 @@ void HW_DMAInit(void)
 	// Reset all DMA settings
 	DMA_DeInit();	
 	
-	/*
-		NVIC_EnableIRQ(DMA_IRQn);
+	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
+	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
 	
 	
-	*/
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
+	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
+	MDR_SSP1->DMACR = 0;
+	MDR_SSP2->DMACR = 0;
+	
+	NVIC->ICPR[0] = 0xFFFFFFFF;
+	NVIC->ICER[0] = 0xFFFFFFFF;
+	
+	
+	
+	NVIC_EnableIRQ(DMA_IRQn);
 }
 
 
@@ -732,11 +742,5 @@ void ProcessPowerOff(void)
 		 
 	}
 }
-	
-	 
-	
-
-
-
 
 

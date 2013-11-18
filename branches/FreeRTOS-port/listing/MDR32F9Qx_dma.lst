@@ -6063,7 +6063,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -6619,22 +6619,23 @@ N  */
 N
 N/* Select data alignment */
 N#if (DMA_Channels_Number == 1)
-X#if (16 == 1)
+X#if (32 == 1)
 S#define DATA_ALIGN 32
 S#elif (DMA_Channels_Number == 2)
-X#elif (16 == 2)
+X#elif (32 == 2)
 S#define DATA_ALIGN 64
 S#elif ((DMA_Channels_Number >= 3) && (DMA_Channels_Number <= 4))
-X#elif ((16 >= 3) && (16 <= 4))
+X#elif ((32 >= 3) && (32 <= 4))
 S#define DATA_ALIGN 128
 S#elif ((DMA_Channels_Number >= 5) && (DMA_Channels_Number <= 8))
-X#elif ((16 >= 5) && (16 <= 8))
+X#elif ((32 >= 5) && (32 <= 8))
 S#define DATA_ALIGN 256
-N#elif ((DMA_Channels_Number >= 9) && (DMA_Channels_Number <= 16))
-X#elif ((16 >= 9) && (16 <= 16))
-N#define DATA_ALIGN 512
+S#elif ((DMA_Channels_Number >= 9) && (DMA_Channels_Number <= 16))
+X#elif ((32 >= 9) && (32 <= 16))
+S#define DATA_ALIGN 512
 N#elif ((DMA_Channels_Number >= 17) && (DMA_Channels_Number <= 32))
-S#define DATA_ALIGN 1024
+X#elif ((32 >= 17) && (32 <= 32))
+N#define DATA_ALIGN 1024
 N#endif
 N
 N#if defined ( __ICCARM__ )
@@ -6648,7 +6649,7 @@ S	DMA_CtrlDataTypeDef DMA_ControlTable[DMA_Channels_Number * (1 + DMA_AlternateD
 N#elif defined ( __CC_ARM )
 X#elif 1L
 N	DMA_CtrlDataTypeDef DMA_ControlTable[DMA_Channels_Number * (1 + DMA_AlternateData)] __attribute__ ((aligned (DATA_ALIGN)));
-X	DMA_CtrlDataTypeDef DMA_ControlTable[16 * (1 + 1)] __attribute__ ((aligned (512)));
+X	DMA_CtrlDataTypeDef DMA_ControlTable[32 * (1 + 1)] __attribute__ ((aligned (1024)));
 N#endif
 N
 N

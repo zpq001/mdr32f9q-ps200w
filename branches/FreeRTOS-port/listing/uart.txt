@@ -4,877 +4,856 @@
 
                           AREA ||.text||, CODE, READONLY, ALIGN=2
 
-                          REQUIRE _printf_percent
-                          REQUIRE _printf_d
-                          REQUIRE _printf_int_dec
-                  UARTInit PROC
-;;;34     
-;;;35     void UARTInit(void)
-000000  b510              PUSH     {r4,lr}
-;;;36     {
-;;;37     	initRingBuffer(&uart2_rx_rbuf, uart2_rx_data_buff, RX_RING_BUFFER_SIZE);
-000002  49d5              LDR      r1,|L1.856|
-000004  22c8              MOVS     r2,#0xc8
-000006  f1a100d8          SUB      r0,r1,#0xd8
-00000a  f7fffffe          BL       initRingBuffer
-;;;38     	initRingBuffer(&uart2_tx_rbuf, uart2_tx_data_buff, TX_RING_BUFFER_SIZE);
-00000e  49d2              LDR      r1,|L1.856|
-000010  22c8              MOVS     r2,#0xc8
-000012  39c8              SUBS     r1,r1,#0xc8
-000014  e8bd4010          POP      {r4,lr}
-000018  f1a10020          SUB      r0,r1,#0x20
-00001c  f7ffbffe          B.W      initRingBuffer
-;;;39     }
-;;;40     
+                  UART_Init_RX_buffer PROC
+;;;62     
+;;;63     static void UART_Init_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *data, uint32_t size)
+000000  6041              STR      r1,[r0,#4]
+;;;64     {
+;;;65     	rx_buffer->data = data;
+;;;66     	rx_buffer->size = size;
+000002  8042              STRH     r2,[r0,#2]
+;;;67     	rx_buffer->read_index = 0;
+000004  2300              MOVS     r3,#0
+000006  8003              STRH     r3,[r0,#0]
+;;;68     	
+;;;69     	// Fill buffer with invalid data
+;;;70     	while(size)
+;;;71     	{
+;;;72     		data[--size] = EMPTY_DATA;
+000008  f64f70ff          MOV      r0,#0xffff
+00000c  e002              B        |L1.20|
+                  |L1.14|
+00000e  1e52              SUBS     r2,r2,#1
+000010  f8210012          STRH     r0,[r1,r2,LSL #1]
+                  |L1.20|
+000014  2a00              CMP      r2,#0                 ;70
+000016  d1fa              BNE      |L1.14|
+;;;73     	}
+;;;74     }
+000018  4770              BX       lr
+;;;75     
                           ENDP
 
-                  sendString2 PROC
-;;;271    // Simple function to send two 0-terminated strings
-;;;272    void sendString2(char *pstr1, char *pstr2)
-000020  b570              PUSH     {r4-r6,lr}
-;;;273    {
-000022  4604              MOV      r4,r0
-000024  460d              MOV      r5,r1
-;;;274    	char temp_char;
-;;;275    	while(temp_char = *pstr1++)
-;;;276    	{
-;;;277    		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-000026  e006              B        |L1.54|
-                  |L1.40|
-000028  48cb              LDR      r0,|L1.856|
-00002a  4631              MOV      r1,r6
-00002c  38e8              SUBS     r0,r0,#0xe8
-00002e  f7fffffe          BL       putIntoRingBuffer
-000032  2800              CMP      r0,#0
-000034  d0f8              BEQ      |L1.40|
-                  |L1.54|
-000036  f8146b01          LDRB     r6,[r4],#1            ;275
-00003a  2e00              CMP      r6,#0                 ;275
-00003c  d1f4              BNE      |L1.40|
-00003e  e006              B        |L1.78|
-                  |L1.64|
-;;;278    	}	
-;;;279    	while(temp_char = *pstr2++)
-;;;280    	{
-;;;281    		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-000040  48c5              LDR      r0,|L1.856|
-000042  4621              MOV      r1,r4
-000044  38e8              SUBS     r0,r0,#0xe8
-000046  f7fffffe          BL       putIntoRingBuffer
-00004a  2800              CMP      r0,#0
-00004c  d0f8              BEQ      |L1.64|
-                  |L1.78|
-00004e  f8154b01          LDRB     r4,[r5],#1            ;279
-000052  2c00              CMP      r4,#0                 ;279
-000054  d1f4              BNE      |L1.64|
-;;;282    	}	
-;;;283    }
-000056  bd70              POP      {r4-r6,pc}
-;;;284    
+                  UART_Get_from_RX_buffer PROC
+;;;76     uint8_t UART_Get_from_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *rx_word)
+00001a  8803              LDRH     r3,[r0,#0]
+;;;77     {
+;;;78     	*rx_word = rx_buffer->data[rx_buffer->read_index];
+00001c  6842              LDR      r2,[r0,#4]
+00001e  f8322013          LDRH     r2,[r2,r3,LSL #1]
+000022  800a              STRH     r2,[r1,#0]
+;;;79     	if (*rx_word != EMPTY_DATA)
+000024  f64f71ff          MOV      r1,#0xffff
+000028  428a              CMP      r2,r1
+00002a  d00e              BEQ      |L1.74|
+;;;80     	{
+;;;81     		// Valid data had been put into buffer by DMA
+;;;82     		rx_buffer->data[rx_buffer->read_index] = EMPTY_DATA;	
+00002c  8803              LDRH     r3,[r0,#0]
+00002e  6842              LDR      r2,[r0,#4]
+000030  f8221013          STRH     r1,[r2,r3,LSL #1]
+;;;83     		rx_buffer->read_index = (rx_buffer->read_index < (rx_buffer->size - 1)) ? rx_buffer->read_index + 1 : 0;
+000034  8842              LDRH     r2,[r0,#2]
+000036  8801              LDRH     r1,[r0,#0]
+000038  1e52              SUBS     r2,r2,#1
+00003a  4291              CMP      r1,r2
+00003c  da01              BGE      |L1.66|
+00003e  1c49              ADDS     r1,r1,#1
+000040  e000              B        |L1.68|
+                  |L1.66|
+000042  2100              MOVS     r1,#0
+                  |L1.68|
+000044  8001              STRH     r1,[r0,#0]
+;;;84     		return 1;
+000046  2001              MOVS     r0,#1
+;;;85     	}
+;;;86     	return 0;
+;;;87     }
+000048  4770              BX       lr
+                  |L1.74|
+00004a  2000              MOVS     r0,#0                 ;86
+00004c  4770              BX       lr
+;;;88     
+                          ENDP
+
+                  UART_init_RX_DMA PROC
+;;;90     
+;;;91     static void UART_init_RX_DMA(MDR_UART_TypeDef *MDR_UARTx, uint16_t *rx_buffer, uint32_t buffer_size)
+00004e  b570              PUSH     {r4-r6,lr}
+;;;92     {
+000050  b08e              SUB      sp,sp,#0x38
+000052  4605              MOV      r5,r0
+000054  460e              MOV      r6,r1
+000056  4614              MOV      r4,r2
+;;;93     	uint32_t *tcb_ptr;
+;;;94     	DMA_ChannelInitTypeDef DMA_InitStr;
+;;;95     	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+;;;96     	DMA_StructInit(&DMA_InitStr);
+000058  a80a              ADD      r0,sp,#0x28
+00005a  f7fffffe          BL       DMA_StructInit
+;;;97     	
+;;;98     	// DMA channel UARTx RX configuration 
+;;;99     	// Using Ping-pong mode
+;;;100    	
+;;;101    	// Set Primary Control Data 
+;;;102    	DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)(&(MDR_UARTx->DR));
+00005e  9500              STR      r5,[sp,#0]
+;;;103    	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)rx_buffer;					// dest (buffer of 16-bit shorts)
+000060  9601              STR      r6,[sp,#4]
+;;;104    	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncNo;
+000062  f04f6040          MOV      r0,#0xc000000
+000066  9002              STR      r0,[sp,#8]
+;;;105    	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncHalfword ;
+000068  f04f4080          MOV      r0,#0x40000000
+00006c  9003              STR      r0,[sp,#0xc]
+;;;106    	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+00006e  f04f5088          MOV      r0,#0x11000000
+000072  9004              STR      r0,[sp,#0x10]
+;;;107    	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;								// 
+000074  2101              MOVS     r1,#1
+000076  9105              STR      r1,[sp,#0x14]
+;;;108    	DMA_PriCtrlStr.DMA_CycleSize = buffer_size;								// count of 16-bit shorts
+000078  9406              STR      r4,[sp,#0x18]
+;;;109    	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+00007a  2000              MOVS     r0,#0
+00007c  9007              STR      r0,[sp,#0x1c]
+;;;110    	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
+00007e  048a              LSLS     r2,r1,#18
+000080  9208              STR      r2,[sp,#0x20]
+;;;111    	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
+000082  054a              LSLS     r2,r1,#21
+000084  9209              STR      r2,[sp,#0x24]
+;;;112    					
+;;;113    	
+;;;114    	// Set Channel Structure
+;;;115    	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+000086  f8cdd028          STR      sp,[sp,#0x28]
+;;;116    	DMA_InitStr.DMA_Priority = DMA_Priority_High ;
+00008a  f88d1034          STRB     r1,[sp,#0x34]
+;;;117    	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
+00008e  f88d0035          STRB     r0,[sp,#0x35]
+;;;118    	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+000092  f88d0036          STRB     r0,[sp,#0x36]
+;;;119    	
+;;;120    	// Init DMA channel
+;;;121    	DMA_Init(DMA_Channel_UART1_RX, &DMA_InitStr);
+000096  a90a              ADD      r1,sp,#0x28
+000098  2001              MOVS     r0,#1
+00009a  f7fffffe          BL       DMA_Init
+;;;122    	
+;;;123    	// Save created RX UART DMA control block for use in DMA ISR
+;;;124    	tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UART1_RX];
+00009e  488d              LDR      r0,|L1.724|
+;;;125    	UART1_RX_saved_TCB[0] = *tcb_ptr++;
+0000a0  498d              LDR      r1,|L1.728|
+0000a2  6902              LDR      r2,[r0,#0x10]
+0000a4  600a              STR      r2,[r1,#0]  ; UART1_RX_saved_TCB
+;;;126    	UART1_RX_saved_TCB[1] = *tcb_ptr++;
+0000a6  6942              LDR      r2,[r0,#0x14]
+0000a8  604a              STR      r2,[r1,#4]  ; UART1_RX_saved_TCB
+;;;127    	UART1_RX_saved_TCB[2] = *tcb_ptr;
+0000aa  6980              LDR      r0,[r0,#0x18]
+0000ac  6088              STR      r0,[r1,#8]  ; UART1_RX_saved_TCB
+;;;128    	
+;;;129    	// Enable UART1 DMA Rx request
+;;;130    	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
+0000ae  2201              MOVS     r2,#1
+0000b0  4611              MOV      r1,r2
+0000b2  488a              LDR      r0,|L1.732|
+0000b4  f7fffffe          BL       UART_DMACmd
+;;;131    	// Enable UART2 DMA Rx request
+;;;132    	//UART_DMACmd(MDR_UART2,UART_DMA_RXE, ENABLE);
+;;;133    }
+0000b8  b00e              ADD      sp,sp,#0x38
+0000ba  bd70              POP      {r4-r6,pc}
+;;;134    
+                          ENDP
+
+                  UART_sendStrAlloc PROC
+;;;372    
+;;;373    static void UART_sendStrAlloc(char *str)
+0000bc  b51c              PUSH     {r2-r4,lr}
+;;;374    {
+0000be  4604              MOV      r4,r0
+;;;375    	uart_transmiter_msg_t msg;
+;;;376    	uint32_t str_length = strlen(str);
+0000c0  4620              MOV      r0,r4
+0000c2  f7fffffe          BL       strlen
+;;;377    	msg.pdata = pvPortMalloc(str_length);		// heap_3 or heap_4 should be used
+0000c6  f7fffffe          BL       pvPortMalloc
+0000ca  9001              STR      r0,[sp,#4]
+;;;378    	if (msg.pdata == 0)
+0000cc  9801              LDR      r0,[sp,#4]
+0000ce  2800              CMP      r0,#0
+0000d0  d012              BEQ      |L1.248|
+;;;379    		return;
+;;;380    	strcpy(msg.pdata, str);
+0000d2  4621              MOV      r1,r4
+0000d4  9801              LDR      r0,[sp,#4]
+0000d6  f7fffffe          BL       strcpy
+;;;381    	msg.type = SEND_ALLOCATED_STRING;
+0000da  2002              MOVS     r0,#2
+0000dc  f8ad0000          STRH     r0,[sp,#0]
+;;;382    	if (xQueueSendToBack(xQueueUART1TX, &msg, 0) == errQUEUE_FULL)
+0000e0  487f              LDR      r0,|L1.736|
+0000e2  2300              MOVS     r3,#0
+0000e4  461a              MOV      r2,r3
+0000e6  4669              MOV      r1,sp
+0000e8  6800              LDR      r0,[r0,#0]  ; xQueueUART1TX
+0000ea  f7fffffe          BL       xQueueGenericSend
+0000ee  2800              CMP      r0,#0
+0000f0  d102              BNE      |L1.248|
+;;;383    		vPortFree(msg.pdata);
+0000f2  9801              LDR      r0,[sp,#4]
+0000f4  f7fffffe          BL       vPortFree
+                  |L1.248|
+;;;384    }
+0000f8  bd1c              POP      {r2-r4,pc}
+;;;385    
                           ENDP
 
                   vTaskUARTReceiver PROC
-;;;42     
-;;;43     void vTaskUARTReceiver(void *pvParameters) 
-000058  b0ba              SUB      sp,sp,#0xe8
-;;;44     {
-;;;45     	char received_msg[RX_MESSAGE_MAX_LENGTH];
-;;;46     	uint16_t msg_length = 0;
-00005a  2400              MOVS     r4,#0
-;;;47     	char *argv[MAX_WORDS_IN_MESSAGE];		// Array of pointers to separate words
-;;;48     	uint16_t argc = 0;						// Count of words in message
-00005c  2500              MOVS     r5,#0
-;;;49     	char temp_char;
-;;;50     	uint16_t search_for_word = 1;
-00005e  2601              MOVS     r6,#1
-;;;51     	uint8_t cmd_ok;
-;;;52     	
-;;;53     	
-;;;54     	// Debug
-;;;55     	uint16_t i;
-;;;56     	uint32_t temp32u;
-;;;57     	
-;;;58     	char temp_str[50];
-;;;59     	
-;;;60     	portTickType lastExecutionTime = xTaskGetTickCount();
-000060  f7fffffe          BL       xTaskGetTickCount
-000064  9003              STR      r0,[sp,#0xc]
-000066  f10d0898          ADD      r8,sp,#0x98           ;45
-00006a  46a1              MOV      r9,r4                 ;46
-;;;61     	
-;;;62     	dispatch_incoming_msg_t dispatcher_msg;
-;;;63     	
-;;;64     	
-;;;65     	while(1)
-;;;66     	{
-;;;67     		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
-;;;68     
-;;;69     		// Read full message from buffer
-;;;70     		while(getFromRingBuffer(&uart2_rx_rbuf, &temp_char))
-;;;71     		{
-;;;72     			if (test_mode)
-;;;73     			{
-;;;74     				while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-;;;75     				continue;
-;;;76     			}
-;;;77     			if (temp_char == SPACING_SYMBOL)
-;;;78     			{
-;;;79     				received_msg[msg_length++] = '\0';
-;;;80     				search_for_word = 1;
-;;;81     			}
-;;;82     			else if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE))
-;;;83     			{
-;;;84     				received_msg[msg_length++] = '\0';
-;;;85     			}
-;;;86     			else
-;;;87     			{
-;;;88     				// Normal char
-;;;89     				if (search_for_word == 1)
-;;;90     				{
-;;;91     					argv[argc++] = &received_msg[msg_length];		// Found start position of a word
-;;;92     					search_for_word = 0;
-;;;93     				}
-;;;94     				received_msg[msg_length++] = temp_char;
-;;;95     			}
-;;;96     			
-;;;97     			
-;;;98     			if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE) || (msg_length == RX_MESSAGE_MAX_LENGTH))
-;;;99     			{
-;;;100    				// Received full message OR maximum allowed message length is reached
-;;;101    				// Parse message
-;;;102    				if (argc != 0)
-;;;103    				{
-;;;104    					cmd_ok = 1;
-;;;105    					dispatcher_msg.type = 0;
-;;;106    					//----- Debug -----//
-;;;107    			/*		for (i=0;i<argc;i++)
-;;;108    					{
-;;;109    						//printf("%s\r",argv[i]);	
-;;;110    						sendString2(argv[i], "\r");
-;;;111    					} */
-;;;112    					//-----------------//
-;;;113    					
-;;;114    					//---------- Converter control -----------//
-;;;115    					if (strcmp(argv[0], "on") == 0)							// Turn converter ON	
-;;;116    					{
-;;;117    						dispatcher_msg.type = DP_CONVERTER_TURN_ON;
-;;;118    					}
-;;;119    					else if (strcmp(argv[0], "off") == 0)					// Turn converter OFF
-;;;120    					{
-;;;121    						dispatcher_msg.type = DP_CONVERTER_TURN_OFF;
-;;;122    					}
-;;;123    					else if (strcmp(argv[0], "set_voltage") == 0)			// Setting converter voltage
-;;;124    					{
-;;;125    						if (argc < 2)
-;;;126    						{
-;;;127    							sendString2(argv[0], " ERR: missing argument [mV]\r");
-;;;128    							cmd_ok = 0;
-;;;129    						}
-;;;130    						else
-;;;131    						{
-;;;132    							// Second argument is voltage value [mV]
-;;;133    							dispatcher_msg.type = DP_CONVERTER_SET_VOLTAGE;
-;;;134    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
-;;;135    						}
-;;;136    					}
-;;;137    					else if (strcmp(argv[0], "set_current") == 0)			// Setting converter current
-;;;138    					{
-;;;139    						if (argc < 2)
-;;;140    						{
-;;;141    							sendString2(argv[0], " ERR: missing argument [mA]\r");
-;;;142    							cmd_ok = 0;
-;;;143    						}
-;;;144    						else
-;;;145    						{
-;;;146    							// Second argument is current value [mA]
-;;;147    							dispatcher_msg.type = DP_CONVERTER_SET_CURRENT;
-;;;148    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
-;;;149    						}
-;;;150    					}
-;;;151    					else if (strcmp(argv[0], "set_current_limit") == 0)			// Setting converter current limit
-;;;152    					{
-;;;153    						if (argc < 2)
-;;;154    						{
-;;;155    							sendString2(argv[0], " ERR: missing argument (20/40)[A]\r");
-;;;156    							cmd_ok = 0;
-;;;157    						}
-;;;158    						else
-;;;159    						{
-;;;160    							// Second argument is current limit value [A]
-;;;161    							dispatcher_msg.type = DP_CONVERTER_SET_CURRENT_LIMIT;
-;;;162    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
-;;;163    						}
-;;;164    					}
-;;;165    					//----- button and encoder emulation -----//
-;;;166    					else if (strcmp(argv[0], "btn_esc") == 0)				// ESC button
-;;;167    					{
-;;;168    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-00006c  02b7              LSLS     r7,r6,#10
-                  |L1.110|
-00006e  2105              MOVS     r1,#5                 ;67
-000070  a803              ADD      r0,sp,#0xc            ;67
-000072  f7fffffe          BL       vTaskDelayUntil
-000076  e0a6              B        |L1.454|
-                  |L1.120|
-000078  48b8              LDR      r0,|L1.860|
-00007a  7800              LDRB     r0,[r0,#0]            ;72  ; test_mode
-00007c  b140              CBZ      r0,|L1.144|
-                  |L1.126|
-00007e  48b6              LDR      r0,|L1.856|
-000080  f89d1044          LDRB     r1,[sp,#0x44]         ;74
-000084  38e8              SUBS     r0,r0,#0xe8           ;74
-000086  f7fffffe          BL       putIntoRingBuffer
-00008a  2800              CMP      r0,#0                 ;74
-00008c  d0f7              BEQ      |L1.126|
-00008e  e09a              B        |L1.454|
-                  |L1.144|
-000090  f89d0044          LDRB     r0,[sp,#0x44]         ;77
-000094  2820              CMP      r0,#0x20              ;77
-000096  d006              BEQ      |L1.166|
-000098  280d              CMP      r0,#0xd               ;82
-00009a  d00b              BEQ      |L1.180|
-00009c  280a              CMP      r0,#0xa               ;82
-00009e  d009              BEQ      |L1.180|
-0000a0  2e01              CMP      r6,#1                 ;89
-0000a2  d00d              BEQ      |L1.192|
-0000a4  e015              B        |L1.210|
-                  |L1.166|
-0000a6  4621              MOV      r1,r4                 ;79
-0000a8  1c64              ADDS     r4,r4,#1              ;79
-0000aa  b2a4              UXTH     r4,r4                 ;79
-0000ac  f8089001          STRB     r9,[r8,r1]            ;79
-0000b0  2601              MOVS     r6,#1                 ;80
-0000b2  e013              B        |L1.220|
-                  |L1.180|
-0000b4  4621              MOV      r1,r4                 ;84
-0000b6  1c64              ADDS     r4,r4,#1              ;84
-0000b8  b2a4              UXTH     r4,r4                 ;84
-0000ba  f8089001          STRB     r9,[r8,r1]            ;84
-0000be  e00d              B        |L1.220|
-                  |L1.192|
-0000c0  4629              MOV      r1,r5                 ;91
-0000c2  ab12              ADD      r3,sp,#0x48           ;91
-0000c4  eb080204          ADD      r2,r8,r4              ;91
-0000c8  1c6d              ADDS     r5,r5,#1              ;91
-0000ca  b2ad              UXTH     r5,r5                 ;91
-0000cc  f8432021          STR      r2,[r3,r1,LSL #2]     ;91
-0000d0  2600              MOVS     r6,#0                 ;92
-                  |L1.210|
-0000d2  4621              MOV      r1,r4                 ;94
-0000d4  1c64              ADDS     r4,r4,#1              ;94
-0000d6  b2a4              UXTH     r4,r4                 ;94
-0000d8  f8080001          STRB     r0,[r8,r1]            ;94
-                  |L1.220|
-0000dc  280d              CMP      r0,#0xd               ;98
-0000de  d003              BEQ      |L1.232|
-0000e0  280a              CMP      r0,#0xa               ;98
-0000e2  d001              BEQ      |L1.232|
-0000e4  2c50              CMP      r4,#0x50              ;98
-0000e6  d16e              BNE      |L1.454|
-                  |L1.232|
-0000e8  2d00              CMP      r5,#0                 ;102
-0000ea  d069              BEQ      |L1.448|
-0000ec  2401              MOVS     r4,#1                 ;104
-0000ee  f8cd9004          STR      r9,[sp,#4]            ;105
-0000f2  a19b              ADR      r1,|L1.864|
-0000f4  9812              LDR      r0,[sp,#0x48]         ;115
-0000f6  f7fffffe          BL       strcmp
-0000fa  2800              CMP      r0,#0                 ;115
-0000fc  d06c              BEQ      |L1.472|
-0000fe  a199              ADR      r1,|L1.868|
-000100  9812              LDR      r0,[sp,#0x48]         ;119
-000102  f7fffffe          BL       strcmp
-000106  2800              CMP      r0,#0                 ;119
-000108  d06a              BEQ      |L1.480|
-00010a  a197              ADR      r1,|L1.872|
-00010c  9812              LDR      r0,[sp,#0x48]         ;123
-00010e  f7fffffe          BL       strcmp
-000112  2800              CMP      r0,#0                 ;123
-000114  d068              BEQ      |L1.488|
-000116  a197              ADR      r1,|L1.884|
-000118  9812              LDR      r0,[sp,#0x48]         ;137
-00011a  f7fffffe          BL       strcmp
-00011e  2800              CMP      r0,#0                 ;137
-000120  d077              BEQ      |L1.530|
-000122  a197              ADR      r1,|L1.896|
-000124  9812              LDR      r0,[sp,#0x48]         ;151
-000126  f7fffffe          BL       strcmp
-00012a  2800              CMP      r0,#0                 ;151
-00012c  d06f              BEQ      |L1.526|
-00012e  a199              ADR      r1,|L1.916|
-000130  9812              LDR      r0,[sp,#0x48]         ;166
-000132  f7fffffe          BL       strcmp
-000136  2800              CMP      r0,#0                 ;166
-000138  d06a              BEQ      |L1.528|
-;;;169    						dispatcher_msg.data = BTN_ESC;
-;;;170    					}
-;;;171    					else if (strcmp(argv[0], "btn_ok") == 0)				// OK button
-00013a  a198              ADR      r1,|L1.924|
-00013c  9812              LDR      r0,[sp,#0x48]
-00013e  f7fffffe          BL       strcmp
-000142  2800              CMP      r0,#0
-000144  d077              BEQ      |L1.566|
-;;;172    					{
-;;;173    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;174    						dispatcher_msg.data = BTN_OK;
-;;;175    					}
-;;;176    					else if (strcmp(argv[0], "btn_left") == 0)				// LEFT button
-000146  a197              ADR      r1,|L1.932|
-000148  9812              LDR      r0,[sp,#0x48]
-00014a  f7fffffe          BL       strcmp
-00014e  2800              CMP      r0,#0
-000150  d072              BEQ      |L1.568|
-;;;177    					{
-;;;178    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;179    						dispatcher_msg.data = BTN_LEFT;
-;;;180    					}
-;;;181    					else if (strcmp(argv[0], "btn_right") == 0)				// RIGHT button
-000152  a197              ADR      r1,|L1.944|
-000154  9812              LDR      r0,[sp,#0x48]
-000156  f7fffffe          BL       strcmp
-00015a  2800              CMP      r0,#0
-00015c  d06d              BEQ      |L1.570|
-;;;182    					{
-;;;183    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;184    						dispatcher_msg.data = BTN_RIGHT;
-;;;185    					}
-;;;186    					else if (strcmp(argv[0], "btn_on") == 0)				// ON button
-00015e  a197              ADR      r1,|L1.956|
-000160  9812              LDR      r0,[sp,#0x48]
-000162  f7fffffe          BL       strcmp
-000166  2800              CMP      r0,#0
-000168  d068              BEQ      |L1.572|
-;;;187    					{
-;;;188    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;189    						dispatcher_msg.data = BTN_ON;
-;;;190    					}
-;;;191    					else if (strcmp(argv[0], "btn_off") == 0)				// OFF button
-00016a  a196              ADR      r1,|L1.964|
-00016c  9812              LDR      r0,[sp,#0x48]
-00016e  f7fffffe          BL       strcmp
-000172  2800              CMP      r0,#0
-000174  d075              BEQ      |L1.610|
-;;;192    					{
-;;;193    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;194    						dispatcher_msg.data = BTN_OFF;
-;;;195    					}
-;;;196    					else if (strcmp(argv[0], "push_encoder") == 0)			// Encoder push
-000176  a195              ADR      r1,|L1.972|
-000178  9812              LDR      r0,[sp,#0x48]
-00017a  f7fffffe          BL       strcmp
-00017e  2800              CMP      r0,#0
-000180  d070              BEQ      |L1.612|
-;;;197    					{
-;;;198    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-;;;199    						dispatcher_msg.data = BTN_ENCODER;
-;;;200    					}
-;;;201    					else if (strcmp(argv[0], "encoder_delta") == 0)			// Encoder delta
-000182  a196              ADR      r1,|L1.988|
-000184  9812              LDR      r0,[sp,#0x48]
-000186  f7fffffe          BL       strcmp
-00018a  2800              CMP      r0,#0
-00018c  d06b              BEQ      |L1.614|
-;;;202    					{
-;;;203    						if (argc < 2)
-;;;204    						{
-;;;205    							sendString2(argv[0], " ERR: missing argument [ticks]\r");
-;;;206    							cmd_ok = 0;
-;;;207    						}
-;;;208    						else
-;;;209    						{
-;;;210    							// Second argument is encoder ticks (signed)
-;;;211    							dispatcher_msg.type = DP_EMU_ENC_DELTA;
-;;;212    							dispatcher_msg.data = (uint32_t)strtol(argv[1], 0, 0);
-;;;213    						}
-;;;214    					}
-;;;215    					//----------------- misc -----------------//
-;;;216    					else if (strcmp(argv[0], "get_time_profiling") == 0)			// Time profiling
-00018e  a197              ADR      r1,|L1.1004|
-000190  9812              LDR      r0,[sp,#0x48]
-000192  f7fffffe          BL       strcmp
-000196  2800              CMP      r0,#0
-000198  d072              BEQ      |L1.640|
-;;;217    					{
-;;;218    						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Systick_hook);
-;;;219    						sendString2("Systick hook max ticks: ", temp_str);
-;;;220    						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Timer2_ISR);
-;;;221    						sendString2("Timer2 ISR max ticks: ", temp_str);
-;;;222    					}
-;;;223    					//------------ unknown command -----------//
-;;;224    					else
+;;;136    
+;;;137    void vTaskUARTReceiver(void *pvParameters) 
+0000fa  b50e              PUSH     {r1-r3,lr}
+;;;138    {
+;;;139    	char received_msg[RX_MESSAGE_MAX_LENGTH];
+;;;140    	uint16_t msg_length = 0;
+;;;141    	char *argv[MAX_WORDS_IN_MESSAGE];		// Array of pointers to separate words
+;;;142    	uint16_t argc = 0;						// Count of words in message
+;;;143    	char temp_char;
+;;;144    	uint16_t uart_rx_word;
+;;;145    	uint16_t search_for_word = 1;
+;;;146    	uint8_t cmd_ok;
+;;;147    	
+;;;148    	
+;;;149    	// Debug
+;;;150    	uint16_t i;
+;;;151    	uint32_t temp32u;
+;;;152    	
+;;;153    	char temp_str[50];
+;;;154    	
+;;;155    	portTickType lastExecutionTime = xTaskGetTickCount();
+0000fc  f7fffffe          BL       xTaskGetTickCount
+000100  9002              STR      r0,[sp,#8]
+;;;156    	dispatch_incoming_msg_t dispatcher_msg;
+;;;157    	uart_transmiter_msg_t transmitter_msg;
+;;;158    	
+;;;159    	UART_Init_RX_buffer(&uart1_rx_dma_buffer, uart1_rx_data_buff, RX_BUFFER_SIZE);
+000102  4877              LDR      r0,|L1.736|
+000104  22c8              MOVS     r2,#0xc8
+000106  4977              LDR      r1,|L1.740|
+000108  3008              ADDS     r0,r0,#8
+00010a  f7fffffe          BL       UART_Init_RX_buffer
+;;;160    	UART_init_RX_DMA(MDR_UART1, uart1_rx_data_buff, RX_BUFFER_SIZE);
+00010e  22c8              MOVS     r2,#0xc8
+000110  4974              LDR      r1,|L1.740|
+000112  4872              LDR      r0,|L1.732|
+000114  f7fffffe          BL       UART_init_RX_DMA
+;;;161    	
+;;;162    	
+;;;163    	while(1)
+;;;164    	{
+;;;165    		/////////////////////////
+;;;166    		while(1)
+;;;167    		{
+;;;168    			vTaskDelayUntil(&lastExecutionTime, 5);
+;;;169    			
+;;;170    			transmitter_msg.type = UNKNOWN_CMD;
+;;;171    			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+000118  4c71              LDR      r4,|L1.736|
+00011a  f2401501          MOV      r5,#0x101             ;170
+                  |L1.286|
+00011e  2105              MOVS     r1,#5                 ;168
+000120  a802              ADD      r0,sp,#8              ;168
+000122  f7fffffe          BL       vTaskDelayUntil
+000126  f8ad5000          STRH     r5,[sp,#0]            ;170
+00012a  2300              MOVS     r3,#0
+00012c  461a              MOV      r2,r3
+00012e  4669              MOV      r1,sp
+000130  6820              LDR      r0,[r4,#0]  ; xQueueUART1TX
+000132  f7fffffe          BL       xQueueGenericSend
+;;;172    			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+000136  2300              MOVS     r3,#0
+000138  461a              MOV      r2,r3
+00013a  4669              MOV      r1,sp
+00013c  6820              LDR      r0,[r4,#0]  ; xQueueUART1TX
+00013e  f7fffffe          BL       xQueueGenericSend
+;;;173    			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+000142  2300              MOVS     r3,#0
+000144  461a              MOV      r2,r3
+000146  4669              MOV      r1,sp
+000148  6820              LDR      r0,[r4,#0]  ; xQueueUART1TX
+00014a  f7fffffe          BL       xQueueGenericSend
+;;;174    			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+00014e  2300              MOVS     r3,#0
+000150  461a              MOV      r2,r3
+000152  4669              MOV      r1,sp
+000154  6820              LDR      r0,[r4,#0]  ; xQueueUART1TX
+000156  f7fffffe          BL       xQueueGenericSend
+;;;175    			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+00015a  2300              MOVS     r3,#0
+00015c  461a              MOV      r2,r3
+00015e  4669              MOV      r1,sp
+000160  6820              LDR      r0,[r4,#0]  ; xQueueUART1TX
+000162  f7fffffe          BL       xQueueGenericSend
+000166  e7da              B        |L1.286|
+;;;176    		}
+;;;177    		
+;;;178    		/////////////////////////
+;;;179    		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
+;;;180    
+;;;181    		// Read full message from buffer
+;;;182    		while(UART_Get_from_RX_buffer(&uart1_rx_dma_buffer, &uart_rx_word))
+;;;183    		{
+;;;184    			if ((uart_rx_word & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) != 0)
+;;;185    				continue;
+;;;186    				
+;;;187    			temp_char = (char)(uart_rx_word);
+;;;188    			
+;;;189    			if (temp_char == SPACING_SYMBOL)
+;;;190    			{
+;;;191    				received_msg[msg_length++] = '\0';
+;;;192    				search_for_word = 1;
+;;;193    			}
+;;;194    			else if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE))
+;;;195    			{
+;;;196    				received_msg[msg_length++] = '\0';
+;;;197    			}
+;;;198    			else
+;;;199    			{
+;;;200    				// Normal char
+;;;201    				if (search_for_word == 1)
+;;;202    				{
+;;;203    					argv[argc++] = &received_msg[msg_length];		// Found start position of a word
+;;;204    					search_for_word = 0;
+;;;205    				}
+;;;206    				received_msg[msg_length++] = temp_char;
+;;;207    			}
+;;;208    			
+;;;209    			
+;;;210    			if ((temp_char == MESSAGE_END_SYMBOL) || (temp_char == MESSAGE_NEW_LINE) || (msg_length == RX_MESSAGE_MAX_LENGTH))
+;;;211    			{
+;;;212    				// Received full message OR maximum allowed message length is reached
+;;;213    				// Parse message
+;;;214    				if (argc != 0)
+;;;215    				{
+;;;216    					dispatcher_msg.type = 0;
+;;;217    					transmitter_msg.type = RESPONSE_OK;
+;;;218    					
+;;;219    					//---------- Converter control -----------//
+;;;220    					if (strcmp(argv[0], "on") == 0)							// Turn converter ON	
+;;;221    					{
+;;;222    						dispatcher_msg.type = DP_CONVERTER_TURN_ON;
+;;;223    					}
+;;;224    					else if (strcmp(argv[0], "off") == 0)					// Turn converter OFF
 ;;;225    					{
-;;;226    						sendString2(argv[0], " ERR: unknown cmd\r");
-00019a  a199              ADR      r1,|L1.1024|
-00019c  9812              LDR      r0,[sp,#0x48]
-00019e  f7fffffe          BL       sendString2
-;;;227    						cmd_ok = 0;
-0001a2  2400              MOVS     r4,#0
-                  |L1.420|
-;;;228    					}
-;;;229    					
-;;;230    					//----------------------------------------//
-;;;231    					
-;;;232    					// Send result to dispatcher
-;;;233    					if (dispatcher_msg.type)
-0001a4  9801              LDR      r0,[sp,#4]
-0001a6  b130              CBZ      r0,|L1.438|
-;;;234    						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-0001a8  489a              LDR      r0,|L1.1044|
-0001aa  2300              MOVS     r3,#0
-0001ac  461a              MOV      r2,r3
-0001ae  a901              ADD      r1,sp,#4
-0001b0  6800              LDR      r0,[r0,#0]  ; xQueueDispatcher
-0001b2  f7fffffe          BL       xQueueGenericSend
-                  |L1.438|
-;;;235    					
-;;;236    					// Confirm
-;;;237    					if (cmd_ok)
-0001b6  b11c              CBZ      r4,|L1.448|
-;;;238    						sendString2(argv[0], " OK\r");
-0001b8  a197              ADR      r1,|L1.1048|
-0001ba  9812              LDR      r0,[sp,#0x48]
-0001bc  f7fffffe          BL       sendString2
-                  |L1.448|
-;;;239    			
-;;;240    				}			
-;;;241    				msg_length = 0;
-0001c0  2400              MOVS     r4,#0
-;;;242    				argc = 0;
-0001c2  2500              MOVS     r5,#0
-;;;243    				search_for_word = 1;
-0001c4  2601              MOVS     r6,#1
-                  |L1.454|
-0001c6  4864              LDR      r0,|L1.856|
-0001c8  a911              ADD      r1,sp,#0x44           ;70
-0001ca  38d8              SUBS     r0,r0,#0xd8           ;70
-0001cc  f7fffffe          BL       getFromRingBuffer
-0001d0  2800              CMP      r0,#0                 ;70
-0001d2  f43faf4c          BEQ      |L1.110|
-0001d6  e74f              B        |L1.120|
-                  |L1.472|
-0001d8  f44f7000          MOV      r0,#0x200             ;117
-0001dc  9001              STR      r0,[sp,#4]            ;117
-0001de  e7e1              B        |L1.420|
-                  |L1.480|
-0001e0  f2402001          MOV      r0,#0x201             ;121
-0001e4  9001              STR      r0,[sp,#4]            ;121
-0001e6  e7dd              B        |L1.420|
-                  |L1.488|
-0001e8  2d02              CMP      r5,#2                 ;125
-0001ea  d205              BCS      |L1.504|
-0001ec  a18c              ADR      r1,|L1.1056|
-0001ee  9812              LDR      r0,[sp,#0x48]         ;127
-0001f0  f7fffffe          BL       sendString2
-0001f4  2400              MOVS     r4,#0                 ;128
-0001f6  e7d5              B        |L1.420|
-                  |L1.504|
-0001f8  f44f7004          MOV      r0,#0x210             ;133
-0001fc  9001              STR      r0,[sp,#4]            ;133
-0001fe  2200              MOVS     r2,#0                 ;134
-000200  4611              MOV      r1,r2                 ;134
-000202  9813              LDR      r0,[sp,#0x4c]         ;134
-000204  f7fffffe          BL       strtoul
-000208  9002              STR      r0,[sp,#8]            ;134
-00020a  e7cb              B        |L1.420|
-00020c  e001              B        |L1.530|
-                  |L1.526|
-00020e  e016              B        |L1.574|
-                  |L1.528|
-000210  e02a              B        |L1.616|
-                  |L1.530|
-000212  2d02              CMP      r5,#2                 ;139
-000214  d205              BCS      |L1.546|
-000216  a18a              ADR      r1,|L1.1088|
-000218  9812              LDR      r0,[sp,#0x48]         ;141
-00021a  f7fffffe          BL       sendString2
-00021e  2400              MOVS     r4,#0                 ;142
-000220  e7c0              B        |L1.420|
-                  |L1.546|
-000222  f2402011          MOV      r0,#0x211             ;147
-000226  9001              STR      r0,[sp,#4]            ;147
-000228  2200              MOVS     r2,#0                 ;148
-00022a  4611              MOV      r1,r2                 ;148
-00022c  9813              LDR      r0,[sp,#0x4c]         ;148
-00022e  f7fffffe          BL       strtoul
-000232  9002              STR      r0,[sp,#8]            ;148
-000234  e7b6              B        |L1.420|
-                  |L1.566|
-000236  e01b              B        |L1.624|
-                  |L1.568|
-000238  e01e              B        |L1.632|
-                  |L1.570|
-00023a  e022              B        |L1.642|
-                  |L1.572|
-00023c  e025              B        |L1.650|
-                  |L1.574|
-00023e  2d02              CMP      r5,#2                 ;153
-000240  d205              BCS      |L1.590|
-000242  a187              ADR      r1,|L1.1120|
-000244  9812              LDR      r0,[sp,#0x48]         ;155
-000246  f7fffffe          BL       sendString2
-00024a  2400              MOVS     r4,#0                 ;156
-00024c  e7aa              B        |L1.420|
-                  |L1.590|
-00024e  f2402012          MOV      r0,#0x212             ;161
-000252  9001              STR      r0,[sp,#4]            ;161
-000254  2200              MOVS     r2,#0                 ;162
-000256  4611              MOV      r1,r2                 ;162
-000258  9813              LDR      r0,[sp,#0x4c]         ;162
-00025a  f7fffffe          BL       strtoul
-00025e  9002              STR      r0,[sp,#8]            ;162
-000260  e7a0              B        |L1.420|
-                  |L1.610|
-000262  e016              B        |L1.658|
-                  |L1.612|
-000264  e019              B        |L1.666|
-                  |L1.614|
-000266  e01c              B        |L1.674|
-                  |L1.616|
-000268  9701              STR      r7,[sp,#4]            ;168
-00026a  2001              MOVS     r0,#1                 ;169
-00026c  9002              STR      r0,[sp,#8]            ;169
-00026e  e799              B        |L1.420|
+;;;226    						dispatcher_msg.type = DP_CONVERTER_TURN_OFF;
+;;;227    					}
+;;;228    					else if (strcmp(argv[0], "set_voltage") == 0)			// Setting converter voltage
+;;;229    					{
+;;;230    						if (argc < 2)
+;;;231    						{
+;;;232    							transmitter_msg.type = SEND_STRING;
+;;;233    							transmitter_msg.pdata = "ERR: missing argument [mV]\r";
+;;;234    						}
+;;;235    						else
+;;;236    						{
+;;;237    							// Second argument is voltage value [mV]
+;;;238    							dispatcher_msg.type = DP_CONVERTER_SET_VOLTAGE;
+;;;239    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
+;;;240    						}
+;;;241    					}
+;;;242    					else if (strcmp(argv[0], "set_current") == 0)			// Setting converter current
+;;;243    					{
+;;;244    						if (argc < 2)
+;;;245    						{
+;;;246    							transmitter_msg.type = SEND_STRING;
+;;;247    							transmitter_msg.pdata = "ERR: missing argument [mA]\r";
+;;;248    						}
+;;;249    						else
+;;;250    						{
+;;;251    							// Second argument is current value [mA]
+;;;252    							dispatcher_msg.type = DP_CONVERTER_SET_CURRENT;
+;;;253    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
+;;;254    						}
+;;;255    					}
+;;;256    					else if (strcmp(argv[0], "set_current_limit") == 0)			// Setting converter current limit
+;;;257    					{
+;;;258    						if (argc < 2)
+;;;259    						{
+;;;260    							transmitter_msg.type = SEND_STRING;
+;;;261    							transmitter_msg.pdata = "ERR: missing argument (20/40)[A]\r";
+;;;262    						}
+;;;263    						else
+;;;264    						{
+;;;265    							// Second argument is current limit value [A]
+;;;266    							dispatcher_msg.type = DP_CONVERTER_SET_CURRENT_LIMIT;
+;;;267    							dispatcher_msg.data = strtoul(argv[1], 0, 0);
+;;;268    						}
+;;;269    					}
+;;;270    					//----- button and encoder emulation -----//
+;;;271    					else if (strcmp(argv[0], "btn_esc") == 0)				// ESC button
+;;;272    					{
+;;;273    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;274    						dispatcher_msg.data = BTN_ESC;
+;;;275    					}
+;;;276    					else if (strcmp(argv[0], "btn_ok") == 0)				// OK button
+;;;277    					{
+;;;278    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;279    						dispatcher_msg.data = BTN_OK;
+;;;280    					}
+;;;281    					else if (strcmp(argv[0], "btn_left") == 0)				// LEFT button
+;;;282    					{
+;;;283    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;284    						dispatcher_msg.data = BTN_LEFT;
+;;;285    					}
+;;;286    					else if (strcmp(argv[0], "btn_right") == 0)				// RIGHT button
+;;;287    					{
+;;;288    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;289    						dispatcher_msg.data = BTN_RIGHT;
+;;;290    					}
+;;;291    					else if (strcmp(argv[0], "btn_on") == 0)				// ON button
+;;;292    					{
+;;;293    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;294    						dispatcher_msg.data = BTN_ON;
+;;;295    					}
+;;;296    					else if (strcmp(argv[0], "btn_off") == 0)				// OFF button
+;;;297    					{
+;;;298    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;299    						dispatcher_msg.data = BTN_OFF;
+;;;300    					}
+;;;301    					else if (strcmp(argv[0], "push_encoder") == 0)			// Encoder push
+;;;302    					{
+;;;303    						dispatcher_msg.type = DP_EMU_BTN_DOWN;
+;;;304    						dispatcher_msg.data = BTN_ENCODER;
+;;;305    					}
+;;;306    					else if (strcmp(argv[0], "encoder_delta") == 0)			// Encoder delta
+;;;307    					{
+;;;308    						if (argc < 2)
+;;;309    						{
+;;;310    							transmitter_msg.type = SEND_STRING;
+;;;311    							transmitter_msg.pdata = "ERR: missing argument [ticks]\r";
+;;;312    						}
+;;;313    						else
+;;;314    						{
+;;;315    							// Second argument is encoder ticks (signed)
+;;;316    							dispatcher_msg.type = DP_EMU_ENC_DELTA;
+;;;317    							dispatcher_msg.data = (uint32_t)strtol(argv[1], 0, 0);
+;;;318    						}
+;;;319    					}
+;;;320    					//----------------- misc -----------------//
+;;;321    					else if (strcmp(argv[0], "get_time_profiling") == 0)			// Time profiling
+;;;322    					{
+;;;323    						// FIXME
+;;;324    						sprintf(temp_str,"Systick hook max ticks: %d\r",time_profile.max_ticks_in_Systick_hook);
+;;;325    						UART_sendStrAlloc(temp_str);
+;;;326    						sprintf(temp_str,"Timer2 ISR max ticks: %d\r",time_profile.max_ticks_in_Timer2_ISR);
+;;;327    						UART_sendStrAlloc(temp_str);
+;;;328    					}
+;;;329    					//------------ unknown command -----------//
+;;;330    					else
+;;;331    					{
+;;;332    						transmitter_msg.type = UNKNOWN_CMD;
+;;;333    					}
+;;;334    					
+;;;335    					//----------------------------------------//
+;;;336    					
+;;;337    					// Send result to dispatcher
+;;;338    					if (dispatcher_msg.type)
+;;;339    						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+;;;340    					
+;;;341    					// Send response over UART
+;;;342    					xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+;;;343    			
+;;;344    				}			
+;;;345    				msg_length = 0;
+;;;346    				argc = 0;
+;;;347    				search_for_word = 1;
+;;;348    			}
+;;;349    		}  // \UART_Get_from_RX_buffer()
+;;;350    		
+;;;351    	}
+;;;352    }
+;;;353    
+                          ENDP
+
+                  vTaskUARTTransmitter PROC
+;;;388    
+;;;389    void vTaskUARTTransmitter(void *pvParameters) 
+000168  b090              SUB      sp,sp,#0x40
+;;;390    {
+;;;391    	uart_transmiter_msg_t income_msg;
+;;;392    	uint32_t src_address;
+;;;393    	uint32_t n;
+;;;394    	
+;;;395    	
+;;;396    	DMA_ChannelInitTypeDef DMA_InitStr;
+;;;397    	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+;;;398    	DMA_StructInit(&DMA_InitStr);
+00016a  a80a              ADD      r0,sp,#0x28
+00016c  f7fffffe          BL       DMA_StructInit
+;;;399    	
+;;;400    	// DMA channel UARTx RX configuration 
+;;;401    	// Using normal mode
+;;;402    	
+;;;403    	// Set Primary Control Data 
+;;;404    	//DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)tx_buffer;
+;;;405    	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)(&(MDR_UART1->DR));			
+000170  f8df9168          LDR      r9,|L1.732|
+000174  f8cd9004          STR      r9,[sp,#4]
+;;;406    	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncByte;
+000178  2000              MOVS     r0,#0
+00017a  9002              STR      r0,[sp,#8]
+;;;407    	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncNo;
+00017c  f04f4140          MOV      r1,#0xc0000000
+000180  9103              STR      r1,[sp,#0xc]
+;;;408    	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+000182  9004              STR      r0,[sp,#0x10]
+;;;409    	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Stop; 
+000184  9005              STR      r0,[sp,#0x14]
+;;;410    	//DMA_PriCtrlStr.DMA_CycleSize = buffer_size;							
+;;;411    	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+000186  9007              STR      r0,[sp,#0x1c]
+;;;412    	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
+000188  f44f2180          MOV      r1,#0x40000
+00018c  9108              STR      r1,[sp,#0x20]
+;;;413    	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
+00018e  00c9              LSLS     r1,r1,#3
+000190  9109              STR      r1,[sp,#0x24]
+;;;414    	
+;;;415    	// Set Channel Structure
+;;;416    	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+000192  f8cdd028          STR      sp,[sp,#0x28]
+;;;417    	DMA_InitStr.DMA_Priority = DMA_Priority_High;
+000196  2401              MOVS     r4,#1
+000198  f88d4034          STRB     r4,[sp,#0x34]
+;;;418    	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
+00019c  f88d0035          STRB     r0,[sp,#0x35]
+;;;419    	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+0001a0  f88d0036          STRB     r0,[sp,#0x36]
+;;;420    	
+;;;421    	// Init DMA channel
+;;;422    	DMA_Init(DMA_Channel_UART1_TX, &DMA_InitStr);
+0001a4  a90a              ADD      r1,sp,#0x28
+0001a6  f7fffffe          BL       DMA_Init
+;;;423    	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;
+0001aa  9405              STR      r4,[sp,#0x14]
+;;;424    	
+;;;425    	// Initialize
+;;;426    	xQueueUART1TX = xQueueCreate( 10, sizeof( uart_transmiter_msg_t ) );
+0001ac  2200              MOVS     r2,#0
+0001ae  2108              MOVS     r1,#8
+0001b0  200a              MOVS     r0,#0xa
+0001b2  f7fffffe          BL       xQueueGenericCreate
+0001b6  4e4a              LDR      r6,|L1.736|
+0001b8  6030              STR      r0,[r6,#0]  ; xQueueUART1TX
+;;;427    	if( xQueueUART1TX == 0 )
+0001ba  2800              CMP      r0,#0
+0001bc  d057              BEQ      |L1.622|
+;;;428    	{
+;;;429    		// Queue was not created and must not be used.
+;;;430    		while(1);
+;;;431    	}
+;;;432    	
+;;;433    	vSemaphoreCreateBinary( xSemaphoreUART1TX );
+0001be  2203              MOVS     r2,#3
+0001c0  2100              MOVS     r1,#0
+0001c2  2001              MOVS     r0,#1
+0001c4  f7fffffe          BL       xQueueGenericCreate
+0001c8  6070              STR      r0,[r6,#4]  ; xSemaphoreUART1TX
+0001ca  b120              CBZ      r0,|L1.470|
+0001cc  2300              MOVS     r3,#0
+0001ce  461a              MOV      r2,r3
+0001d0  4619              MOV      r1,r3
+0001d2  f7fffffe          BL       xQueueGenericSend
+                  |L1.470|
+;;;434    	if( xSemaphoreUART1TX == 0 )
+0001d6  6870              LDR      r0,[r6,#4]  ; xSemaphoreUART1TX
+0001d8  b3f0              CBZ      r0,|L1.600|
+;;;435        {
+;;;436            while(1);
+;;;437        }
+;;;438    	
+;;;439    	xSemaphoreTake(xSemaphoreUART1TX, 0);	
+0001da  2300              MOVS     r3,#0
+0001dc  461a              MOV      r2,r3
+0001de  4619              MOV      r1,r3
+0001e0  f7fffffe          BL       xQueueGenericReceive
+;;;440    	
+;;;441    	while(1)
+;;;442    	{
+;;;443    		xQueueReceive(xQueueUART1TX, &income_msg, portMAX_DELAY);
+;;;444    		if ( (income_msg.type == SEND_STRING) || (income_msg.type == SEND_ALLOCATED_STRING) )
+;;;445    		{
+;;;446    			src_address = (uint32_t)income_msg.pdata;
+;;;447    		}
+;;;448    		else if (income_msg.type == RESPONSE_OK)
+;;;449    		{
+;;;450    			src_address = (uint32_t)(&(_resp_OK));
+;;;451    		}
+;;;452    		else //if (income_msg.type == UNKNOWN_CMD)
+;;;453    		{
+;;;454    			src_address = (uint32_t)(&(_resp_UNKN_CMD));
+;;;455    		}
+;;;456    		
+;;;457    		// Get number of chars to transmit
+;;;458    		n = strlen((char*)src_address);
+;;;459    		// DMA cannot read from program memory, copy data to temporary buffer
+;;;460    		if (src_address < 0x20000000UL)
+0001e4  f04f5800          MOV      r8,#0x20000000
+0001e8  f04f37ff          MOV      r7,#0xffffffff        ;443
+                  |L1.492|
+0001ec  2300              MOVS     r3,#0                 ;443
+0001ee  463a              MOV      r2,r7                 ;443
+0001f0  a90e              ADD      r1,sp,#0x38           ;443
+0001f2  6830              LDR      r0,[r6,#0]            ;443  ; xQueueUART1TX
+0001f4  f7fffffe          BL       xQueueGenericReceive
+0001f8  f8bd0038          LDRH     r0,[sp,#0x38]         ;444
+0001fc  2801              CMP      r0,#1                 ;444
+0001fe  d038              BEQ      |L1.626|
+000200  2802              CMP      r0,#2                 ;444
+000202  d036              BEQ      |L1.626|
+000204  f5b07f80          CMP      r0,#0x100             ;448
+000208  d035              BEQ      |L1.630|
+00020a  4c37              LDR      r4,|L1.744|
+                  |L1.524|
+00020c  4620              MOV      r0,r4                 ;458
+00020e  f7fffffe          BL       strlen
+000212  4605              MOV      r5,r0                 ;458
+000214  4544              CMP      r4,r8
+000216  d20a              BCS      |L1.558|
+;;;461    		{
+;;;462    			if (n > TX_BUFFER_SIZE)
+000218  2d64              CMP      r5,#0x64
+00021a  d900              BLS      |L1.542|
+;;;463    				n = TX_BUFFER_SIZE;
+00021c  2564              MOVS     r5,#0x64
+                  |L1.542|
+;;;464    			strncpy(uart1_tx_data_buff, (char*)src_address, n);
+00021e  4831              LDR      r0,|L1.740|
+000220  462a              MOV      r2,r5
+000222  4621              MOV      r1,r4
+000224  3864              SUBS     r0,r0,#0x64
+000226  f7fffffe          BL       strncpy
+;;;465    			src_address = (uint32_t)&uart1_tx_data_buff;
+00022a  4c2e              LDR      r4,|L1.740|
+00022c  3c64              SUBS     r4,r4,#0x64
+                  |L1.558|
+;;;466    		}
+;;;467    		// Program DMA control block
+;;;468    		DMA_PriCtrlStr.DMA_SourceBaseAddr = src_address;
+00022e  9400              STR      r4,[sp,#0]
+;;;469    		DMA_PriCtrlStr.DMA_CycleSize = n;
+000230  9506              STR      r5,[sp,#0x18]
+;;;470    		// Start DMA
+;;;471    		DMA_CtrlInit (DMA_Channel_UART1_TX, DMA_CTRL_DATA_PRIMARY, &DMA_PriCtrlStr);
+000232  2100              MOVS     r1,#0
+000234  466a              MOV      r2,sp
+000236  4608              MOV      r0,r1
+000238  f7fffffe          BL       DMA_CtrlInit
+;;;472    		DMA_Cmd(DMA_Channel_UART1_TX, ENABLE);
+00023c  2101              MOVS     r1,#1
+00023e  2000              MOVS     r0,#0
+000240  f7fffffe          BL       DMA_Cmd
+;;;473    		// Enable UART1 DMA Tx request
+;;;474    		UART_DMACmd(MDR_UART1,UART_DMA_TXE, ENABLE);
+000244  2201              MOVS     r2,#1
+000246  2102              MOVS     r1,#2
+000248  4648              MOV      r0,r9
+00024a  f7fffffe          BL       UART_DMACmd
+;;;475    
+;;;476    			
+;;;477    		// Wait for DMA
+;;;478    		//while((DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_CHNL_ENA)));
+;;;479    		xSemaphoreTake(xSemaphoreUART1TX, portMAX_DELAY);
+00024e  2300              MOVS     r3,#0
+000250  463a              MOV      r2,r7
+000252  4619              MOV      r1,r3
+000254  6870              LDR      r0,[r6,#4]  ; xSemaphoreUART1TX
+000256  e000              B        |L1.602|
+                  |L1.600|
+000258  e00a              B        |L1.624|
+                  |L1.602|
+00025a  f7fffffe          BL       xQueueGenericReceive
+;;;480    	
+;;;481    		// Free memory
+;;;482    		if (income_msg.type == SEND_ALLOCATED_STRING)
+00025e  f8bd0038          LDRH     r0,[sp,#0x38]
+000262  2802              CMP      r0,#2
+000264  d1c2              BNE      |L1.492|
+;;;483    		{
+;;;484    			vPortFree(income_msg.pdata);		// heap_3 or heap_4 should be used
+000266  980f              LDR      r0,[sp,#0x3c]
+000268  f7fffffe          BL       vPortFree
+00026c  e7be              B        |L1.492|
+                  |L1.622|
+00026e  e7fe              B        |L1.622|
                   |L1.624|
-000270  9701              STR      r7,[sp,#4]            ;173
-000272  2008              MOVS     r0,#8                 ;174
-000274  9002              STR      r0,[sp,#8]            ;174
-000276  e795              B        |L1.420|
-                  |L1.632|
-000278  9701              STR      r7,[sp,#4]            ;178
-00027a  2002              MOVS     r0,#2                 ;179
-00027c  9002              STR      r0,[sp,#8]            ;179
-00027e  e791              B        |L1.420|
-                  |L1.640|
-000280  e021              B        |L1.710|
-                  |L1.642|
-000282  9701              STR      r7,[sp,#4]            ;183
-000284  2004              MOVS     r0,#4                 ;184
-000286  9002              STR      r0,[sp,#8]            ;184
-000288  e78c              B        |L1.420|
-                  |L1.650|
-00028a  9701              STR      r7,[sp,#4]            ;188
-00028c  2040              MOVS     r0,#0x40              ;189
-00028e  9002              STR      r0,[sp,#8]            ;189
-000290  e788              B        |L1.420|
-                  |L1.658|
-000292  9701              STR      r7,[sp,#4]            ;193
-000294  2080              MOVS     r0,#0x80              ;194
-000296  9002              STR      r0,[sp,#8]            ;194
-000298  e784              B        |L1.420|
-                  |L1.666|
-00029a  9701              STR      r7,[sp,#4]            ;198
-00029c  2010              MOVS     r0,#0x10              ;199
-00029e  9002              STR      r0,[sp,#8]            ;199
-0002a0  e780              B        |L1.420|
-                  |L1.674|
-0002a2  2d02              CMP      r5,#2                 ;203
-0002a4  d205              BCS      |L1.690|
-0002a6  a177              ADR      r1,|L1.1156|
-0002a8  9812              LDR      r0,[sp,#0x48]         ;205
-0002aa  f7fffffe          BL       sendString2
-0002ae  2400              MOVS     r4,#0                 ;206
-0002b0  e778              B        |L1.420|
-                  |L1.690|
-0002b2  f44f6082          MOV      r0,#0x410             ;211
-0002b6  9001              STR      r0,[sp,#4]            ;211
-0002b8  2200              MOVS     r2,#0                 ;212
-0002ba  4611              MOV      r1,r2                 ;212
-0002bc  9813              LDR      r0,[sp,#0x4c]         ;212
-0002be  f7fffffe          BL       strtol
-0002c2  9002              STR      r0,[sp,#8]            ;212
-0002c4  e76e              B        |L1.420|
-                  |L1.710|
-0002c6  4d77              LDR      r5,|L1.1188|
-0002c8  a177              ADR      r1,|L1.1192|
-0002ca  a804              ADD      r0,sp,#0x10           ;218
-0002cc  682a              LDR      r2,[r5,#0]            ;218  ; time_profile
-0002ce  f7fffffe          BL       __2sprintf
-0002d2  a904              ADD      r1,sp,#0x10           ;219
-0002d4  a075              ADR      r0,|L1.1196|
-0002d6  f7fffffe          BL       sendString2
-0002da  a173              ADR      r1,|L1.1192|
-0002dc  a804              ADD      r0,sp,#0x10           ;220
-0002de  686a              LDR      r2,[r5,#4]            ;220  ; time_profile
-0002e0  f7fffffe          BL       __2sprintf
-0002e4  a904              ADD      r1,sp,#0x10           ;221
-0002e6  a078              ADR      r0,|L1.1224|
-0002e8  f7fffffe          BL       sendString2
-0002ec  e75a              B        |L1.420|
-;;;244    			}
-;;;245    		}  // \getFromRingBuffer()
-;;;246    		
-;;;247    	}
-;;;248    }
-;;;249    
+000270  e7fe              B        |L1.624|
+                  |L1.626|
+000272  9c0f              LDR      r4,[sp,#0x3c]         ;446
+000274  e7ca              B        |L1.524|
+                  |L1.630|
+000276  4c1c              LDR      r4,|L1.744|
+000278  1f24              SUBS     r4,r4,#4              ;450
+00027a  e7c7              B        |L1.524|
+;;;485    		}
+;;;486    	}
+;;;487    }
+;;;488    
                           ENDP
 
-                  processUartRX PROC
-;;;251    
-;;;252    void processUartRX(void)
-0002ee  b570              PUSH     {r4-r6,lr}
-;;;253    {
-;;;254    	uint16_t temp;
-;;;255    	while ( (UART_GetFlagStatus(MDR_UARTx,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
-;;;256    	{
-;;;257    		temp = UART_ReceiveData(MDR_UARTx);
-;;;258    		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
-;;;259    		{
-;;;260    			putIntoRingBuffer(&uart2_rx_rbuf, (char)temp);
-0002f0  4c19              LDR      r4,|L1.856|
-0002f2  4d7b              LDR      r5,|L1.1248|
-0002f4  3cd8              SUBS     r4,r4,#0xd8
-0002f6  e00a              B        |L1.782|
-                  |L1.760|
-0002f8  4628              MOV      r0,r5                 ;257
-0002fa  f7fffffe          BL       UART_ReceiveData
-0002fe  f4106fe0          TST      r0,#0x700             ;258
-000302  d104              BNE      |L1.782|
-000304  b2c1              UXTB     r1,r0
-000306  4814              LDR      r0,|L1.856|
-000308  38d8              SUBS     r0,r0,#0xd8
-00030a  f7fffffe          BL       putIntoRingBuffer
-                  |L1.782|
-00030e  2110              MOVS     r1,#0x10              ;255
-000310  4628              MOV      r0,r5                 ;255
-000312  f7fffffe          BL       UART_GetFlagStatus
-000316  2800              CMP      r0,#0                 ;255
-000318  d106              BNE      |L1.808|
-00031a  8920              LDRH     r0,[r4,#8]            ;255  ; uart2_rx_rbuf
-00031c  8961              LDRH     r1,[r4,#0xa]          ;255  ; uart2_rx_rbuf
-00031e  1a40              SUBS     r0,r0,r1              ;255
-000320  89a1              LDRH     r1,[r4,#0xc]          ;255  ; uart2_rx_rbuf
-000322  b280              UXTH     r0,r0                 ;255
-000324  4288              CMP      r0,r1                 ;255
-000326  d1e7              BNE      |L1.760|
-                  |L1.808|
-;;;261    		}
-;;;262    	} 
-;;;263    }
-000328  bd70              POP      {r4-r6,pc}
-;;;264    
+                  DMA_IRQHandler PROC
+;;;495    // instead of extra variable
+;;;496    void DMA_IRQHandler(void)
+00027c  b538              PUSH     {r3-r5,lr}
+;;;497    {
+;;;498    	uint32_t *tcb_ptr;
+;;;499    	portBASE_TYPE xHigherPriorityTaskWokenByPost = pdFALSE;
+00027e  2000              MOVS     r0,#0
+000280  9000              STR      r0,[sp,#0]
+;;;500    	
+;;;501    	if ((MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART1_TX)) == 0)	
+000282  4c1a              LDR      r4,|L1.748|
+000284  6aa0              LDR      r0,[r4,#0x28]
+000286  07c0              LSLS     r0,r0,#31
+000288  d10e              BNE      |L1.680|
+;;;502    	{
+;;;503    		// UART 1 DMA transfer complete
+;;;504    		if (MDR_UART1->DMACR & UART_DMACR_TXDMAE)
+00028a  4814              LDR      r0,|L1.732|
+00028c  6c81              LDR      r1,[r0,#0x48]
+00028e  0789              LSLS     r1,r1,#30
+000290  d50a              BPL      |L1.680|
+;;;505    		{
+;;;506    			// Disable UART1 DMA Tx request
+;;;507    			MDR_UART1->DMACR &= ~UART_DMACR_TXDMAE;
+000292  6c81              LDR      r1,[r0,#0x48]
+000294  f0210102          BIC      r1,r1,#2
+000298  6481              STR      r1,[r0,#0x48]
+;;;508    			xSemaphoreGiveFromISR( xSemaphoreUART1TX, &xHigherPriorityTaskWokenByPost );
+00029a  4811              LDR      r0,|L1.736|
+00029c  2300              MOVS     r3,#0
+00029e  466a              MOV      r2,sp
+0002a0  4619              MOV      r1,r3
+0002a2  6840              LDR      r0,[r0,#4]  ; xSemaphoreUART1TX
+0002a4  f7fffffe          BL       xQueueGenericSendFromISR
+                  |L1.680|
+;;;509    		}
+;;;510    	}
+;;;511    	/*
+;;;512    	if (MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART2_TX) == 0)	
+;;;513    	{
+;;;514    		// UART 2 DMA transfer complete
+;;;515    		// Disable UART2 DMA Tx request
+;;;516    		UART_DMACmd(MDR_UART2,UART_DMA_TXE, DISABLE);
+;;;517    		// postSemaphoreFromISR(__complete__);
+;;;518    	}	
+;;;519    	*/
+;;;520    	
+;;;521    	if ((MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART1_RX)) == 0)	
+0002a8  6aa0              LDR      r0,[r4,#0x28]
+0002aa  0780              LSLS     r0,r0,#30
+0002ac  d409              BMI      |L1.706|
+;;;522    	{
+;;;523    		// Reload TCB
+;;;524    		tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UART1_RX];
+0002ae  4809              LDR      r0,|L1.724|
+;;;525    		*tcb_ptr++ = UART1_RX_saved_TCB[0];
+0002b0  4909              LDR      r1,|L1.728|
+0002b2  680a              LDR      r2,[r1,#0]  ; UART1_RX_saved_TCB
+0002b4  6102              STR      r2,[r0,#0x10]
+;;;526    		*tcb_ptr++ = UART1_RX_saved_TCB[1];
+0002b6  684a              LDR      r2,[r1,#4]  ; UART1_RX_saved_TCB
+0002b8  6142              STR      r2,[r0,#0x14]
+;;;527    		*tcb_ptr = UART1_RX_saved_TCB[2];
+0002ba  6889              LDR      r1,[r1,#8]  ; UART1_RX_saved_TCB
+0002bc  6181              STR      r1,[r0,#0x18]
+;;;528    		MDR_DMA->CHNL_ENABLE_SET = (1 << DMA_Channel_UART1_RX);
+0002be  2002              MOVS     r0,#2
+0002c0  62a0              STR      r0,[r4,#0x28]
+                  |L1.706|
+;;;529    	}
+;;;530    		
+;;;531    	
+;;;532    	// Error handling
+;;;533    	if (DMA_GetFlagStatus(0, DMA_FLAG_DMA_ERR) == SET)
+0002c2  2102              MOVS     r1,#2
+0002c4  2000              MOVS     r0,#0
+0002c6  f7fffffe          BL       DMA_GetFlagStatus
+0002ca  2801              CMP      r0,#1
+0002cc  d101              BNE      |L1.722|
+;;;534    	{
+;;;535    		DMA_ClearError();	// normally this should not happen
+0002ce  f7fffffe          BL       DMA_ClearError
+                  |L1.722|
+;;;536    	}
+;;;537    	
+;;;538    	// Force context switching if required
+;;;539    	//portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
+;;;540    }
+0002d2  bd38              POP      {r3-r5,pc}
+;;;541    
                           ENDP
 
-                  processUartTX PROC
-;;;285    
-;;;286    void processUartTX(void)
-00032a  b538              PUSH     {r3-r5,lr}
-;;;287    {
-;;;288    	char temp;
-;;;289    	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
-;;;290    	while ( (!(MDR_UARTx->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
-;;;291    	{
-;;;292    		getFromRingBuffer(&uart2_tx_rbuf, &temp);
-00032c  4d0a              LDR      r5,|L1.856|
-;;;293    		UART_SendData(MDR_UARTx,(uint16_t)temp);
-00032e  4c6c              LDR      r4,|L1.1248|
-000330  3de8              SUBS     r5,r5,#0xe8           ;292
-000332  e009              B        |L1.840|
-                  |L1.820|
-000334  4808              LDR      r0,|L1.856|
-000336  4669              MOV      r1,sp                 ;292
-000338  38e8              SUBS     r0,r0,#0xe8           ;292
-00033a  f7fffffe          BL       getFromRingBuffer
-00033e  f89d1000          LDRB     r1,[sp,#0]
-000342  4620              MOV      r0,r4
-000344  f7fffffe          BL       UART_SendData
-                  |L1.840|
-000348  69a1              LDR      r1,[r4,#0x18]         ;290
-00034a  0689              LSLS     r1,r1,#26             ;290
-00034c  d403              BMI      |L1.854|
-00034e  8929              LDRH     r1,[r5,#8]            ;290  ; uart2_tx_rbuf
-000350  896a              LDRH     r2,[r5,#0xa]          ;290  ; uart2_tx_rbuf
-000352  4291              CMP      r1,r2                 ;290
-000354  d1ee              BNE      |L1.820|
-                  |L1.854|
-;;;294    	}
-;;;295    }
-000356  bd38              POP      {r3-r5,pc}
-;;;296    
-                          ENDP
-
-                  |L1.856|
-                          DCD      ||.bss||+0xe8
-                  |L1.860|
-                          DCD      ||.data||
-                  |L1.864|
-000360  6f6e00            DCB      "on",0
-000363  00                DCB      0
-                  |L1.868|
-000364  6f666600          DCB      "off",0
-                  |L1.872|
-000368  7365745f          DCB      "set_voltage",0
-00036c  766f6c74
-000370  61676500
-                  |L1.884|
-000374  7365745f          DCB      "set_current",0
-000378  63757272
-00037c  656e7400
-                  |L1.896|
-000380  7365745f          DCB      "set_current_limit",0
-000384  63757272
-000388  656e745f
-00038c  6c696d69
-000390  7400    
-000392  00                DCB      0
-000393  00                DCB      0
-                  |L1.916|
-000394  62746e5f          DCB      "btn_esc",0
-000398  65736300
-                  |L1.924|
-00039c  62746e5f          DCB      "btn_ok",0
-0003a0  6f6b00  
-0003a3  00                DCB      0
-                  |L1.932|
-0003a4  62746e5f          DCB      "btn_left",0
-0003a8  6c656674
-0003ac  00      
-0003ad  00                DCB      0
-0003ae  00                DCB      0
-0003af  00                DCB      0
-                  |L1.944|
-0003b0  62746e5f          DCB      "btn_right",0
-0003b4  72696768
-0003b8  7400    
-0003ba  00                DCB      0
-0003bb  00                DCB      0
-                  |L1.956|
-0003bc  62746e5f          DCB      "btn_on",0
-0003c0  6f6e00  
-0003c3  00                DCB      0
-                  |L1.964|
-0003c4  62746e5f          DCB      "btn_off",0
-0003c8  6f666600
-                  |L1.972|
-0003cc  70757368          DCB      "push_encoder",0
-0003d0  5f656e63
-0003d4  6f646572
-0003d8  00      
-0003d9  00                DCB      0
-0003da  00                DCB      0
-0003db  00                DCB      0
-                  |L1.988|
-0003dc  656e636f          DCB      "encoder_delta",0
-0003e0  6465725f
-0003e4  64656c74
-0003e8  6100    
-0003ea  00                DCB      0
-0003eb  00                DCB      0
-                  |L1.1004|
-0003ec  6765745f          DCB      "get_time_profiling",0
-0003f0  74696d65
-0003f4  5f70726f
-0003f8  66696c69
-0003fc  6e6700  
-0003ff  00                DCB      0
-                  |L1.1024|
-000400  20455252          DCB      " ERR: unknown cmd\r",0
-000404  3a20756e
-000408  6b6e6f77
-00040c  6e20636d
-000410  640d00  
-000413  00                DCB      0
-                  |L1.1044|
-                          DCD      xQueueDispatcher
-                  |L1.1048|
-000418  204f4b0d          DCB      " OK\r",0
-00041c  00      
-00041d  00                DCB      0
-00041e  00                DCB      0
-00041f  00                DCB      0
-                  |L1.1056|
-000420  20455252          DCB      " ERR: missing argument [mV]\r",0
-000424  3a206d69
-000428  7373696e
-00042c  67206172
-000430  67756d65
-000434  6e74205b
-000438  6d565d0d
-00043c  00      
-00043d  00                DCB      0
-00043e  00                DCB      0
-00043f  00                DCB      0
-                  |L1.1088|
-000440  20455252          DCB      " ERR: missing argument [mA]\r",0
-000444  3a206d69
-000448  7373696e
-00044c  67206172
-000450  67756d65
-000454  6e74205b
-000458  6d415d0d
-00045c  00      
-00045d  00                DCB      0
-00045e  00                DCB      0
-00045f  00                DCB      0
-                  |L1.1120|
-000460  20455252          DCB      " ERR: missing argument (20/40)[A]\r",0
-000464  3a206d69
-000468  7373696e
-00046c  67206172
-000470  67756d65
-000474  6e742028
-000478  32302f34
-00047c  30295b41
-000480  5d0d00  
-000483  00                DCB      0
-                  |L1.1156|
-000484  20455252          DCB      " ERR: missing argument [ticks]\r",0
-000488  3a206d69
-00048c  7373696e
-000490  67206172
-000494  67756d65
-000498  6e74205b
-00049c  7469636b
-0004a0  735d0d00
-                  |L1.1188|
-                          DCD      time_profile
-                  |L1.1192|
-0004a8  25640d00          DCB      "%d\r",0
-                  |L1.1196|
-0004ac  53797374          DCB      "Systick hook max ticks: ",0
-0004b0  69636b20
-0004b4  686f6f6b
-0004b8  206d6178
-0004bc  20746963
-0004c0  6b733a20
-0004c4  00      
-0004c5  00                DCB      0
-0004c6  00                DCB      0
-0004c7  00                DCB      0
-                  |L1.1224|
-0004c8  54696d65          DCB      "Timer2 ISR max ticks: ",0
-0004cc  72322049
-0004d0  5352206d
-0004d4  61782074
-0004d8  69636b73
-0004dc  3a2000  
-0004df  00                DCB      0
-                  |L1.1248|
+                  |L1.724|
+                          DCD      DMA_ControlTable
+                  |L1.728|
+                          DCD      ||.bss||+0x1f4
+                  |L1.732|
                           DCD      0x40030000
+                  |L1.736|
+                          DCD      ||area_number.7||
+                  |L1.740|
+                          DCD      ||.bss||+0x64
+                  |L1.744|
+                          DCD      ||.constdata||+0x4
+                  |L1.748|
+                          DCD      0x40028000
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
-                  uart2_tx_rbuf
-                          %        16
-                  uart2_rx_rbuf
-                          %        16
-                  uart2_tx_data_buff
-                          %        200
-                  uart2_rx_data_buff
-                          %        200
+                  uart1_tx_data_buff
+                          %        100
+                  uart1_rx_data_buff
+                          %        400
+                  UART1_RX_saved_TCB
+                          %        12
+
+                          AREA ||.constdata||, DATA, READONLY, ALIGN=0
+
+                  _resp_OK
+000000  4f4b0d00          DCB      0x4f,0x4b,0x0d,0x00
+                  _resp_UNKN_CMD
+000004  556e6b6e          DCB      0x55,0x6e,0x6b,0x6e
+000008  6f776e20          DCB      0x6f,0x77,0x6e,0x20
+00000c  636d640d          DCB      0x63,0x6d,0x64,0x0d
+000010  00                DCB      0x00
 
                           AREA ||.data||, DATA, ALIGN=0
 
                   test_mode
 000000  00                DCB      0x00
 
+                          AREA ||area_number.7||, DATA, ALIGN=2
+
+                          EXPORTAS ||area_number.7||, ||.data||
+                  xQueueUART1TX
+                          DCD      0x00000000
+                  xSemaphoreUART1TX
+                          DCD      0x00000000
+                  uart1_rx_dma_buffer
+                          %        8
+
 ;*** Start embedded assembler ***
 
 #line 1 "src\\uart.c"
 	AREA ||.rev16_text||, CODE, READONLY
 	THUMB
-	EXPORT |__asm___6_uart_c_92b36d64____REV16|
+	EXPORT |__asm___6_uart_c__resp_OK____REV16|
 #line 115 "C:\\Keil\\ARM\\CMSIS\\Include\\core_cmInstr.h"
-|__asm___6_uart_c_92b36d64____REV16| PROC
+|__asm___6_uart_c__resp_OK____REV16| PROC
 #line 116
 
  rev16 r0, r0
@@ -882,9 +861,9 @@
 	ENDP
 	AREA ||.revsh_text||, CODE, READONLY
 	THUMB
-	EXPORT |__asm___6_uart_c_92b36d64____REVSH|
+	EXPORT |__asm___6_uart_c__resp_OK____REVSH|
 #line 130
-|__asm___6_uart_c_92b36d64____REVSH| PROC
+|__asm___6_uart_c__resp_OK____REVSH| PROC
 #line 131
 
  revsh r0, r0

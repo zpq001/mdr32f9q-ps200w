@@ -614,11 +614,6 @@
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h</FilePath>
             </File>
             <File>
-              <FileName>heap_2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_2.c</FilePath>
-            </File>
-            <File>
               <FileName>croutine.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\croutine.c</FilePath>
@@ -642,6 +637,11 @@
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -974,7 +974,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -1255,11 +1255,6 @@
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\portmacro.h</FilePath>
             </File>
             <File>
-              <FileName>heap_2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_2.c</FilePath>
-            </File>
-            <File>
               <FileName>croutine.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\croutine.c</FilePath>
@@ -1283,6 +1278,11 @@
               <FileName>timers.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
             </File>
           </Files>
         </Group>

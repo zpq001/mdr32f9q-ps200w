@@ -8911,6 +8911,482 @@ N*
 N* END OF FILE MDR32F9Qx_uart.h */
 N
 L 7 "src\uart.c" 2
+N#include "MDR32F9Qx_dma.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_dma.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.0
+N  * @date    11/06/2010
+N  * @brief   This file contains all the functions prototypes for the DMA
+N  *          firmware library.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_dma.h
+N  */
+N
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9Qx_DMA_H
+N#define __MDR32F9Qx_DMA_H
+N
+N/* Includes ------------------------------------------------------------------*/
+N#include "MDR32Fx.h"
+N
+N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
+N  * @{
+N  */
+N
+N/** @addtogroup DMA
+N  * @{
+N  */
+N
+N/** @defgroup DMA_Exported_Types DMA Exported Types
+N  * @{
+N  */
+N
+N/**
+N  * @brief  DMA Channel Primary / Alternate Control Data initialization structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceBaseAddr;                 /*!< Specifies the source base address for DMA Channelx. */
+N
+N  uint32_t DMA_DestBaseAddr;                  /*!< Specifies the destination base address for DMA Channelx. */
+N
+N  uint32_t DMA_SourceIncSize;                 /*!< Specifies the source address register increment value.
+N                                                 This parameter can be a value of @ref DMA_source_incremented_mode */
+N
+N  uint32_t DMA_DestIncSize;                   /*!< Specifies the destination address register increment value.
+N                                                 This parameter can be a value of @ref DMA_dest_incremented_mode */
+N
+N  uint32_t DMA_MemoryDataSize;                /*!< Specifies the Memory data width.
+N                                                 This parameter can be a value of @ref DMA_memory_data_size */
+N
+N  uint32_t DMA_Mode;                          /*!< Specifies the operation mode of the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_operating_mode. */
+N
+N  uint32_t DMA_CycleSize;                     /*!< Specifies the  total number of DMA transfers that the DMA cycle contains.
+N                                                 This parameter can be a value of @ref DMA_cycle_size. */
+N
+N  uint32_t DMA_NumContinuous;                 /*!< Specifies how many DMA transfers can occur before the DMA controller rearbitrates.
+N                                                 This parameter can be a value of @ref DMA_number_continuous_transfers. */
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N} DMA_CtrlDataInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Control Data structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceEndAddr;                 /*!< Specifies the DMA channel source end address */
+N
+N  uint32_t DMA_DestEndAddr;                   /*!< Specifies the DMA channel destination end address. */
+N
+N  uint32_t DMA_Control;                       /*!< Specifies the DMA channel control data configuration. */
+N
+N  uint32_t DMA_Unused;                        /*!< Specifies the DMA channel unused memory. */
+N
+N}DMA_CtrlDataTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataInitTypeDef *DMA_PriCtrlData;   /*!< Specifies the pointer to the primary control data structure.
+N                                                 This parameter should be NULL if primary data structure is not used */
+N
+N  DMA_CtrlDataInitTypeDef *DMA_AltCtrlData;   /*!< Specifies the pointer to the alternate control data structure.
+N                                                 This parameter should be NULL if alternate data structure is not used */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N  uint8_t DMA_SelectDataStructure;            /*!< Specifies the primary /alternate data structure to use by the DMA channel.
+N                                                 This parameter can be a value of @ref DMA_data_structure_selection. */
+N
+N} DMA_ChannelInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Scatter-Gather Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataTypeDef *DMA_SG_TaskArray;      /*!< Specifies the pointer to the Scatter-Gather task structures array. The size
+N                                                 of the array should be equal to DMA_SG_TaskNumber.
+N                                                 Every structure of the array should contain the copy of the alternate control
+N                                                 data for the related task. It will be used by DMA to configure
+N                                                 the alternate control data while operating in the
+N                                                 scatter-gather mode */
+N
+N  uint32_t DMA_SG_TaskNumber;                 /*!< Specifies the number of scatter-gather tasks to be executed by DMA */
+N
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the Primary Control Data DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the Primary Control Data DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N} DMA_Channel_SG_InitTypeDef;
+N
+N
+N/** @} */ /* End of group DMA_Exported_Types */
+N
+N/** @defgroup DMA_Exported_Constants DMA Exported Constants
+N  * @{
+N  */
+N
+N/** @defgroup DMA_channels_number DMA channels number
+N  * @{
+N  */
+N
+N#define IS_DMA_CHANNELS(NUMBER) ((NUMBER >= 1) && (NUMBER <= 32))
+N
+N/** @} */ /* End of group DMA_channels_number */
+N
+N/** @defgroup DMA_alternate_data_usage DMA alternate data usage
+N  * @{
+N  */
+N
+N#define DMA_ALternateDataDisabled           ((uint16_t)(0x00))
+N#define DMA_ALternateDataEnabled            ((uint16_t)(0x01))
+N
+N#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) || \
+N                                            ((STATE)  == DMA_ALternateDataEnabled))
+X#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) ||                                             ((STATE)  == DMA_ALternateDataEnabled))
+N
+N/** @} */ /* End of group DMA_alternate_data_usage */
+N
+N/** @defgroup DMA_valid_channels DMA valid channels
+N  * @{
+N  */
+N#define DMA_Channel_UART1_TX    ((uint8_t)(0))
+N#define DMA_Channel_UART1_RX    ((uint8_t)(1))
+N#define DMA_Channel_UART2_TX    ((uint8_t)(2))
+N#define DMA_Channel_UART2_RX    ((uint8_t)(3))
+N#define DMA_Channel_SSP1_TX     ((uint8_t)(4))
+N#define DMA_Channel_SSP1_RX     ((uint8_t)(5))
+N#define DMA_Channel_SSP2_TX     ((uint8_t)(6))
+N#define DMA_Channel_SSP2_RX     ((uint8_t)(7))
+N#define DMA_Channel_ADC1        ((uint8_t)(8))
+N#define DMA_Channel_ADC2        ((uint8_t)(9))
+N#define DMA_Channel_TIM1        ((uint8_t)(10))
+N#define DMA_Channel_TIM2        ((uint8_t)(11))
+N#define DMA_Channel_TIM3        ((uint8_t)(12))
+N#define DMA_Channel_SW1         ((uint8_t)(13))
+N#define DMA_Channel_SW2         ((uint8_t)(14))
+N#define DMA_Channel_SW3         ((uint8_t)(15))
+N#define DMA_Channel_SW4         ((uint8_t)(16))
+N#define DMA_Channel_SW5         ((uint8_t)(17))
+N#define DMA_Channel_SW6         ((uint8_t)(18))
+N#define DMA_Channel_SW7         ((uint8_t)(19))
+N#define DMA_Channel_SW8         ((uint8_t)(20))
+N#define DMA_Channel_SW9         ((uint8_t)(21))
+N#define DMA_Channel_SW10        ((uint8_t)(22))
+N#define DMA_Channel_SW11        ((uint8_t)(23))
+N#define DMA_Channel_SW12        ((uint8_t)(24))
+N#define DMA_Channel_SW13        ((uint8_t)(25))
+N#define DMA_Channel_SW14        ((uint8_t)(26))
+N#define DMA_Channel_SW15        ((uint8_t)(27))
+N#define DMA_Channel_SW16        ((uint8_t)(28))
+N#define DMA_Channel_SW17        ((uint8_t)(29))
+N#define DMA_Channel_SW18        ((uint8_t)(30))
+N#define DMA_Channel_SW19        ((uint8_t)(31))
+N#define IS_DMA_CHANNEL(CHANNEL) (CHANNEL <= (DMA_Channels_Number - 1))
+N
+N/** @} */ /* End of group DMA_valid_channels */
+N
+N/** @defgroup DMA_source_incremented_mode DMA source incremented mode
+N  * @{
+N  */
+N
+N#define DMA_SourceIncByte                   ((uint32_t)(0 << 26))
+N#define DMA_SourceIncHalfword               ((uint32_t)(1 << 26))
+N#define DMA_SourceIncWord                   ((uint32_t)(2 << 26))
+N#define DMA_SourceIncNo                     ((uint32_t)(3 << 26))
+N#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     || \
+N                                            ((STATE)  == DMA_SourceIncHalfword) || \
+N                                            ((STATE)  == DMA_SourceIncWord)     || \
+N                                            ((STATE)  == DMA_SourceIncNo))
+X#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     ||                                             ((STATE)  == DMA_SourceIncHalfword) ||                                             ((STATE)  == DMA_SourceIncWord)     ||                                             ((STATE)  == DMA_SourceIncNo))
+N
+N/** @} */ /* End of group DMA_source_incremented_mode */
+N
+N/** @defgroup DMA_dest_incremented_mode DMA dest incremented mode
+N  * @{
+N  */
+N
+N#define DMA_DestIncByte                 ((uint32_t)(0x0UL << 30))
+N#define DMA_DestIncHalfword             ((uint32_t)(0x1UL << 30))
+N#define DMA_DestIncWord                 ((uint32_t)(0x2UL << 30))
+N#define DMA_DestIncNo                   ((uint32_t)(0x3UL << 30))
+N#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       || \
+N                                        ((STATE)  == DMA_DestIncHalfword)   || \
+N                                        ((STATE)  == DMA_DestIncWord)       || \
+N                                        ((STATE)  == DMA_DestIncNo))
+X#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       ||                                         ((STATE)  == DMA_DestIncHalfword)   ||                                         ((STATE)  == DMA_DestIncWord)       ||                                         ((STATE)  == DMA_DestIncNo))
+N
+N/** @} */ /* End of group DMA_dest_incremented_mode */
+N
+N/** @defgroup DMA_memory_data_size DMA memory data size
+N  * @{
+N  */
+N
+N#define DMA_MemoryDataSize_Byte        ((uint32_t)(0x00 << 24))
+N#define DMA_MemoryDataSize_HalfWord    ((uint32_t)(0x11 << 24))
+N#define DMA_MemoryDataSize_Word        ((uint32_t)(0x22 << 24))
+N#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      || \
+N                                       ((SIZE) == DMA_MemoryDataSize_HalfWord)  || \
+N                                       ((SIZE) == DMA_MemoryDataSize_Word))
+X#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      ||                                        ((SIZE) == DMA_MemoryDataSize_HalfWord)  ||                                        ((SIZE) == DMA_MemoryDataSize_Word))
+N
+N/** @} */ /* End of group DMA_memory_data_size */
+N
+N/** @defgroup DMA_operating_mode DMA operating mode
+N  * @{
+N  */
+N
+N#define DMA_Mode_Stop                       ((uint32_t)0x0)
+N#define DMA_Mode_Basic                      ((uint32_t)0x1)
+N#define DMA_Mode_AutoRequest                ((uint32_t)0x2)
+N#define DMA_Mode_PingPong                   ((uint32_t)0x3)
+N#define DMA_Mode_MemScatterPri              ((uint32_t)0x4)
+N#define DMA_Mode_MemScatterAlt              ((uint32_t)0x5)
+N#define DMA_Mode_PerScatterPri              ((uint32_t)0x6)
+N#define DMA_Mode_PerScatterAlt              ((uint32_t)0x7)
+N#define DMA_Mode_PerScatterAltBurst         ((uint32_t)0xF)
+N
+N#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           || \
+N                                    ((MODE) == DMA_Mode_Basic)          || \
+N                                    ((MODE) == DMA_Mode_AutoRequest)    || \
+N                                    ((MODE) == DMA_Mode_PingPong)       || \
+N                                    ((MODE) == DMA_Mode_MemScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_MemScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAltBurst))
+X#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           ||                                     ((MODE) == DMA_Mode_Basic)          ||                                     ((MODE) == DMA_Mode_AutoRequest)    ||                                     ((MODE) == DMA_Mode_PingPong)       ||                                     ((MODE) == DMA_Mode_MemScatterPri)  ||                                     ((MODE) == DMA_Mode_MemScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterPri)  ||                                     ((MODE) == DMA_Mode_PerScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterAltBurst))
+N
+N/** @} */ /* End of group DMA_operating_mode */
+N
+N/** @defgroup DMA_cycle_size DMA cycle size
+N  * @{
+N  */
+N
+N#define IS_DMA_CYCLE_SIZE(SIZE)   ((SIZE >= 1) && (SIZE <= 1024))
+N
+N/** @} */ /* End of group DMA_cycle_size */
+N
+N/** @defgroup DMA_priority_level DMA priority level
+N  * @{
+N  */
+N
+N#define DMA_Priority_Default                ((uint8_t)0x00)
+N#define DMA_Priority_High                   ((uint8_t)0x01)
+N#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) || \
+N                                            ((PRIORITY)  == DMA_Priority_High))
+X#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) ||                                             ((PRIORITY)  == DMA_Priority_High))
+N
+N/** @} */ /* End of group DMA_priority_level */
+N
+N/** @defgroup DMA_burst_mode DMA burst mode
+N  * @{
+N  */
+N
+N#define DMA_BurstClear                      ((uint8_t)0x00)
+N#define DMA_BurstSet                        ((uint8_t)0x01)
+N#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) || \
+N                                            ((STATE)  == DMA_BurstSet))
+X#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) ||                                             ((STATE)  == DMA_BurstSet))
+N
+N/** @} */ /* End of group DMA_burst_mode */
+N
+N
+N/** @defgroup DMA_source_protection_control DMA source protection control
+N  * @{
+N  */
+N
+N#define DMA_SourceCacheable                 ((uint32_t)(0x01 << 20))
+N#define DMA_SourceBufferable                ((uint32_t)(0x01 << 19))
+N#define DMA_SourcePrivileged                ((uint32_t)(0x01 << 18))
+N
+N#define IS_DMA_SOURCE_PROT(STATE)           ((STATE & (~(0x7 << 18))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_dest_protection_control DMA dest protection control
+N  * @{
+N  */
+N
+N#define DMA_DestCacheable                   ((uint32_t)(0x01 << 23))
+N#define DMA_DestBufferable                  ((uint32_t)(0x01 << 22))
+N#define DMA_DestPrivileged                  ((uint32_t)(0x01 << 21))
+N
+N#define IS_DMA_DEST_PROT(STATE)             ((STATE & (~(0x7 << 21))) == 0)
+N
+N/** @} */ /* End of group DMA_dest_protection_control */
+N
+N/** @defgroup DMA_AHB_protection_control DMA AHB-Lite protection control
+N  * @{
+N  */
+N
+N#define DMA_AHB_Cacheable                 ((uint32_t)(0x01 << 7))
+N#define DMA_AHB_Bufferable                ((uint32_t)(0x01 << 6))
+N#define DMA_AHB_Privileged                ((uint32_t)(0x01 << 5))
+N
+N#define IS_DMA_AHB_PROT(STATE)            ((STATE & (~(0x7 << 5))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_number_continuous_transfers DMA number continuous transfers
+N  * @{
+N  */
+N
+N#define DMA_Transfers_1                     ((uint32_t)(0x00 << 14))
+N#define DMA_Transfers_2                     ((uint32_t)(0x01 << 14))
+N#define DMA_Transfers_4                     ((uint32_t)(0x02 << 14))
+N#define DMA_Transfers_8                     ((uint32_t)(0x03 << 14))
+N#define DMA_Transfers_16                    ((uint32_t)(0x04 << 14))
+N#define DMA_Transfers_32                    ((uint32_t)(0x05 << 14))
+N#define DMA_Transfers_64                    ((uint32_t)(0x06 << 14))
+N#define DMA_Transfers_128                   ((uint32_t)(0x07 << 14))
+N#define DMA_Transfers_256                   ((uint32_t)(0x08 << 14))
+N#define DMA_Transfers_512                   ((uint32_t)(0x09 << 14))
+N#define DMA_Transfers_1024                  ((uint32_t)(0x0A << 14))
+N
+N#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      || \
+N                                            ((NUMBER)  == DMA_Transfers_2)      || \
+N                                            ((NUMBER)  == DMA_Transfers_4)      || \
+N                                            ((NUMBER)  == DMA_Transfers_8)      || \
+N                                            ((NUMBER)  == DMA_Transfers_16)     || \
+N                                            ((NUMBER)  == DMA_Transfers_32)     || \
+N                                            ((NUMBER)  == DMA_Transfers_64)     || \
+N                                            ((NUMBER)  == DMA_Transfers_128)    || \
+N                                            ((NUMBER)  == DMA_Transfers_256)    || \
+N                                            ((NUMBER)  == DMA_Transfers_512)    || \
+N                                            ((NUMBER)  == DMA_Transfers_1024))
+X#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      ||                                             ((NUMBER)  == DMA_Transfers_2)      ||                                             ((NUMBER)  == DMA_Transfers_4)      ||                                             ((NUMBER)  == DMA_Transfers_8)      ||                                             ((NUMBER)  == DMA_Transfers_16)     ||                                             ((NUMBER)  == DMA_Transfers_32)     ||                                             ((NUMBER)  == DMA_Transfers_64)     ||                                             ((NUMBER)  == DMA_Transfers_128)    ||                                             ((NUMBER)  == DMA_Transfers_256)    ||                                             ((NUMBER)  == DMA_Transfers_512)    ||                                             ((NUMBER)  == DMA_Transfers_1024))
+N
+N/** @} */ /* End of group DMA_number_continuous_transfers */
+N
+N/** @defgroup DMA_data_structure_selection DMA data structure selection
+N  * @{
+N  */
+N
+N#define DMA_CTRL_DATA_PRIMARY   ((uint8_t)0x00)
+N
+N#if (DMA_AlternateData == 1)
+S
+S  #define DMA_CTRL_DATA_ALTERNATE ((uint8_t)0x01)
+S
+S  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      || \
+S                                              ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+X  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      ||                                               ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+N#else
+N  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY))
+N#endif
+N
+N/** @} */ /* End of group DMA_data_structure_selection */
+N
+N/** @defgroup DMA_flags_definition DMA flags definition
+N  * @{
+N  */
+N
+N#define DMA_FLAG_DMA_ENA        ((uint8_t)0x01)
+N#define DMA_FLAG_DMA_ERR        ((uint8_t)0x02)
+N#define DMA_FLAG_CHNL_ENA       ((uint8_t)0x03)
+N#define DMA_FLAG_CHNL_MASK      ((uint8_t)0x04)
+N#define DMA_FLAG_CHNL_WAIT      ((uint8_t)0x05)
+N#define DMA_FLAG_CHNL_BURST     ((uint8_t)0x06)
+N#define DMA_FLAG_CHNL_ALT       ((uint8_t)0x07)
+N#define DMA_FLAG_CHNL_PRIORITY  ((uint8_t)0x08)
+N
+N#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      || \
+N                                 ((FLAG)  == DMA_FLAG_DMA_ERR)      || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ENA)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_MASK)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_WAIT)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_BURST)   || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ALT)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+X#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      ||                                  ((FLAG)  == DMA_FLAG_DMA_ERR)      ||                                  ((FLAG)  == DMA_FLAG_CHNL_ENA)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_MASK)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_WAIT)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_BURST)   ||                                  ((FLAG)  == DMA_FLAG_CHNL_ALT)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+N
+N/** @} */ /* End of group DMA_flags_definition */
+N
+N/** @} */ /* End of group DMA_Exported_Constants */
+N
+N/** @defgroup DMA_Exported_Macros DMA Exported Macros
+N  * @{
+N  */
+N
+N/** @} */ /* End of group DMA_Exported_Macros */
+N
+N/** @defgroup DMA_Exported_Functions DMA Exported Functions
+N  * @{
+N  */
+N
+Nvoid DMA_DeInit(void);
+Nvoid DMA_Init(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_Init( uint8_t DMA_Channel, DMA_Channel_SG_InitTypeDef *DMA_SG_InitStruct);
+Nvoid DMA_StructInit(DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_StructInit(DMA_Channel_SG_InitTypeDef* DMA_InitStruct);
+Nvoid DMA_CtrlInit(uint8_t DMA_Channel, uint8_t DMA_CtrlDataType,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_SG_CtrlInit(uint32_t DMA_Task, DMA_CtrlDataTypeDef *DMA_SG_TaskArray,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_Cmd(uint8_t DMA_Channel, FunctionalState NewState);
+Nvoid DMA_Request(uint8_t DMA_Channel);
+Nvoid DMA_ClearError(void);
+Nuint32_t DMA_GetCurrTransferCounter(uint8_t DMA_Channel, uint8_t DMA_CtrlData);
+NFlagStatus DMA_GetFlagStatus(uint8_t DMA_Channel, uint8_t DMA_Flag);
+N
+N/** @} */ /* End of group DMA_Exported_Functions */
+N
+N/** @} */ /* End of group DMA */
+N
+N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
+N
+N#endif /* __MDR32F9Qx_DMA_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_dma.h */
+N
+L 8 "src\uart.c" 2
 N
 N#include "FreeRTOS.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\FreeRTOS.h" 1
@@ -10616,7 +11092,7 @@ N#define eTaskStateGet eTaskGetState
 N
 N#endif /* INC_FREERTOS_H */
 N
-L 9 "src\uart.c" 2
+L 10 "src\uart.c" 2
 N#include "task.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h" 1
 N/*
@@ -12577,7 +13053,7 @@ N#endif /* INC_TASK_H */
 N
 N
 N
-L 10 "src\uart.c" 2
+L 11 "src\uart.c" 2
 N#include "queue.h"
 L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h" 1
 N/*
@@ -14300,7 +14776,797 @@ N#endif
 N
 N#endif /* QUEUE_H */
 N
-L 11 "src\uart.c" 2
+L 12 "src\uart.c" 2
+N#include "semphr.h"
+L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\semphr.h" 1
+N/*
+N    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+N    All rights reserved
+N
+N    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+N
+N    ***************************************************************************
+N     *                                                                       *
+N     *    FreeRTOS provides completely free yet professionally developed,    *
+N     *    robust, strictly quality controlled, supported, and cross          *
+N     *    platform software that has become a de facto standard.             *
+N     *                                                                       *
+N     *    Help yourself get started quickly and support the FreeRTOS         *
+N     *    project by purchasing a FreeRTOS tutorial book, reference          *
+N     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
+N     *                                                                       *
+N     *    Thank you!                                                         *
+N     *                                                                       *
+N    ***************************************************************************
+N
+N    This file is part of the FreeRTOS distribution.
+N
+N    FreeRTOS is free software; you can redistribute it and/or modify it under
+N    the terms of the GNU General Public License (version 2) as published by the
+N    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+N
+N    >>! NOTE: The modification to the GPL is included to allow you to distribute
+N    >>! a combined work that includes FreeRTOS without being obliged to provide
+N    >>! the source code for proprietary components outside of the FreeRTOS
+N    >>! kernel.
+N
+N    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+N    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+N    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+N    link: http://www.freertos.org/a00114.html
+N
+N    1 tab == 4 spaces!
+N
+N    ***************************************************************************
+N     *                                                                       *
+N     *    Having a problem?  Start by reading the FAQ "My application does   *
+N     *    not run, what could be wrong?"                                     *
+N     *                                                                       *
+N     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+N     *                                                                       *
+N    ***************************************************************************
+N
+N    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+N    license and Real Time Engineers Ltd. contact details.
+N
+N    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+N    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+N    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+N
+N    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+N    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+N    licenses offer ticketed support, indemnification and middleware.
+N
+N    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+N    engineered and independently SIL3 certified version for use in safety and
+N    mission critical applications that require provable dependability.
+N
+N    1 tab == 4 spaces!
+N*/
+N
+N#ifndef SEMAPHORE_H
+N#define SEMAPHORE_H
+N
+N#ifndef INC_FREERTOS_H
+S	#error "include FreeRTOS.h" must appear in source files before "include semphr.h"
+N#endif
+N
+N#include "queue.h"
+N
+Ntypedef xQueueHandle xSemaphoreHandle;
+N
+N#define semBINARY_SEMAPHORE_QUEUE_LENGTH	( ( unsigned char ) 1U )
+N#define semSEMAPHORE_QUEUE_ITEM_LENGTH		( ( unsigned char ) 0U )
+N#define semGIVE_BLOCK_TIME					( ( portTickType ) 0U )
+N
+N
+N/**
+N * semphr. h
+N * <pre>vSemaphoreCreateBinary( xSemaphoreHandle xSemaphore )</pre>
+N *
+N * <i>Macro</i> that implements a semaphore by using the existing queue mechanism.
+N * The queue length is 1 as this is a binary semaphore.  The data size is 0
+N * as we don't want to actually store any data - we just want to know if the
+N * queue is empty or full.
+N *
+N * This type of semaphore can be used for pure synchronisation between tasks or
+N * between an interrupt and a task.  The semaphore need not be given back once
+N * obtained, so one task/interrupt can continuously 'give' the semaphore while
+N * another continuously 'takes' the semaphore.  For this reason this type of
+N * semaphore does not use a priority inheritance mechanism.  For an alternative
+N * that does use priority inheritance see xSemaphoreCreateMutex().
+N *
+N * @param xSemaphore Handle to the created semaphore.  Should be of type xSemaphoreHandle.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore;
+N
+N void vATask( void * pvParameters )
+N {
+N    // Semaphore cannot be used before a call to vSemaphoreCreateBinary ().
+N    // This is a macro so pass the variable in directly.
+N    vSemaphoreCreateBinary( xSemaphore );
+N
+N    if( xSemaphore != NULL )
+N    {
+N        // The semaphore was created successfully.
+N        // The semaphore can now be used.  
+N    }
+N }
+N </pre>
+N * \defgroup vSemaphoreCreateBinary vSemaphoreCreateBinary
+N * \ingroup Semaphores
+N */
+N#define vSemaphoreCreateBinary( xSemaphore )																									\
+N	{																																			\
+N		( xSemaphore ) = xQueueGenericCreate( ( unsigned portBASE_TYPE ) 1, semSEMAPHORE_QUEUE_ITEM_LENGTH, queueQUEUE_TYPE_BINARY_SEMAPHORE );	\
+N		if( ( xSemaphore ) != NULL )																											\
+N		{																																		\
+N			( void ) xSemaphoreGive( ( xSemaphore ) );																									\
+N		}																																		\
+N	}
+X#define vSemaphoreCreateBinary( xSemaphore )																										{																																					( xSemaphore ) = xQueueGenericCreate( ( unsigned portBASE_TYPE ) 1, semSEMAPHORE_QUEUE_ITEM_LENGTH, queueQUEUE_TYPE_BINARY_SEMAPHORE );			if( ( xSemaphore ) != NULL )																													{																																					( void ) xSemaphoreGive( ( xSemaphore ) );																											}																																			}
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreTake( 
+N *                   xSemaphoreHandle xSemaphore, 
+N *                   portTickType xBlockTime 
+N *               )</pre>
+N *
+N * <i>Macro</i> to obtain a semaphore.  The semaphore must have previously been
+N * created with a call to vSemaphoreCreateBinary(), xSemaphoreCreateMutex() or
+N * xSemaphoreCreateCounting().
+N *
+N * @param xSemaphore A handle to the semaphore being taken - obtained when
+N * the semaphore was created.
+N *
+N * @param xBlockTime The time in ticks to wait for the semaphore to become
+N * available.  The macro portTICK_RATE_MS can be used to convert this to a
+N * real time.  A block time of zero can be used to poll the semaphore.  A block
+N * time of portMAX_DELAY can be used to block indefinitely (provided
+N * INCLUDE_vTaskSuspend is set to 1 in FreeRTOSConfig.h).
+N *
+N * @return pdTRUE if the semaphore was obtained.  pdFALSE
+N * if xBlockTime expired without the semaphore becoming available.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore = NULL;
+N
+N // A task that creates a semaphore.
+N void vATask( void * pvParameters )
+N {
+N    // Create the semaphore to guard a shared resource.
+N    vSemaphoreCreateBinary( xSemaphore );
+N }
+N
+N // A task that uses the semaphore.
+N void vAnotherTask( void * pvParameters )
+N {
+N    // ... Do other things.
+N
+N    if( xSemaphore != NULL )
+N    {
+N        // See if we can obtain the semaphore.  If the semaphore is not available
+N        // wait 10 ticks to see if it becomes free.	
+N        if( xSemaphoreTake( xSemaphore, ( portTickType ) 10 ) == pdTRUE )
+N        {
+N            // We were able to obtain the semaphore and can now access the
+N            // shared resource.
+N
+N            // ...
+N
+N            // We have finished accessing the shared resource.  Release the 
+N            // semaphore.
+N            xSemaphoreGive( xSemaphore );
+N        }
+N        else
+N        {
+N            // We could not obtain the semaphore and can therefore not access
+N            // the shared resource safely.
+N        }
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreTake xSemaphoreTake
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreTake( xSemaphore, xBlockTime )		xQueueGenericReceive( ( xQueueHandle ) ( xSemaphore ), NULL, ( xBlockTime ), pdFALSE )
+N
+N/**
+N * semphr. h
+N * xSemaphoreTakeRecursive( 
+N *                          xSemaphoreHandle xMutex, 
+N *                          portTickType xBlockTime 
+N *                        )
+N *
+N * <i>Macro</i> to recursively obtain, or 'take', a mutex type semaphore.  
+N * The mutex must have previously been created using a call to 
+N * xSemaphoreCreateRecursiveMutex();
+N * 
+N * configUSE_RECURSIVE_MUTEXES must be set to 1 in FreeRTOSConfig.h for this
+N * macro to be available.
+N * 
+N * This macro must not be used on mutexes created using xSemaphoreCreateMutex().
+N *
+N * A mutex used recursively can be 'taken' repeatedly by the owner. The mutex 
+N * doesn't become available again until the owner has called 
+N * xSemaphoreGiveRecursive() for each successful 'take' request.  For example, 
+N * if a task successfully 'takes' the same mutex 5 times then the mutex will 
+N * not be available to any other task until it has also  'given' the mutex back
+N * exactly five times.
+N *
+N * @param xMutex A handle to the mutex being obtained.  This is the
+N * handle returned by xSemaphoreCreateRecursiveMutex();
+N *
+N * @param xBlockTime The time in ticks to wait for the semaphore to become
+N * available.  The macro portTICK_RATE_MS can be used to convert this to a
+N * real time.  A block time of zero can be used to poll the semaphore.  If
+N * the task already owns the semaphore then xSemaphoreTakeRecursive() will
+N * return immediately no matter what the value of xBlockTime. 
+N *
+N * @return pdTRUE if the semaphore was obtained.  pdFALSE if xBlockTime
+N * expired without the semaphore becoming available.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xMutex = NULL;
+N
+N // A task that creates a mutex.
+N void vATask( void * pvParameters )
+N {
+N    // Create the mutex to guard a shared resource.
+N    xMutex = xSemaphoreCreateRecursiveMutex();
+N }
+N
+N // A task that uses the mutex.
+N void vAnotherTask( void * pvParameters )
+N {
+N    // ... Do other things.
+N
+N    if( xMutex != NULL )
+N    {
+N        // See if we can obtain the mutex.  If the mutex is not available
+N        // wait 10 ticks to see if it becomes free.	
+N        if( xSemaphoreTakeRecursive( xSemaphore, ( portTickType ) 10 ) == pdTRUE )
+N        {
+N            // We were able to obtain the mutex and can now access the
+N            // shared resource.
+N
+N            // ...
+N            // For some reason due to the nature of the code further calls to 
+N			// xSemaphoreTakeRecursive() are made on the same mutex.  In real
+N			// code these would not be just sequential calls as this would make
+N			// no sense.  Instead the calls are likely to be buried inside
+N			// a more complex call structure.
+N            xSemaphoreTakeRecursive( xMutex, ( portTickType ) 10 );
+N            xSemaphoreTakeRecursive( xMutex, ( portTickType ) 10 );
+N
+N            // The mutex has now been 'taken' three times, so will not be 
+N			// available to another task until it has also been given back
+N			// three times.  Again it is unlikely that real code would have
+N			// these calls sequentially, but instead buried in a more complex
+N			// call structure.  This is just for illustrative purposes.
+N            xSemaphoreGiveRecursive( xMutex );
+N			xSemaphoreGiveRecursive( xMutex );
+N			xSemaphoreGiveRecursive( xMutex );
+N
+N			// Now the mutex can be taken by other tasks.
+N        }
+N        else
+N        {
+N            // We could not obtain the mutex and can therefore not access
+N            // the shared resource safely.
+N        }
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreTakeRecursive xSemaphoreTakeRecursive
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreTakeRecursive( xMutex, xBlockTime )	xQueueTakeMutexRecursive( ( xMutex ), ( xBlockTime ) )
+N
+N
+N/* 
+N * xSemaphoreAltTake() is an alternative version of xSemaphoreTake().
+N *
+N * The source code that implements the alternative (Alt) API is much 
+N * simpler	because it executes everything from within a critical section.  
+N * This is	the approach taken by many other RTOSes, but FreeRTOS.org has the 
+N * preferred fully featured API too.  The fully featured API has more 
+N * complex	code that takes longer to execute, but makes much less use of 
+N * critical sections.  Therefore the alternative API sacrifices interrupt 
+N * responsiveness to gain execution speed, whereas the fully featured API
+N * sacrifices execution speed to ensure better interrupt responsiveness.
+N */
+N#define xSemaphoreAltTake( xSemaphore, xBlockTime )		xQueueAltGenericReceive( ( xQueueHandle ) ( xSemaphore ), NULL, ( xBlockTime ), pdFALSE )
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreGive( xSemaphoreHandle xSemaphore )</pre>
+N *
+N * <i>Macro</i> to release a semaphore.  The semaphore must have previously been
+N * created with a call to vSemaphoreCreateBinary(), xSemaphoreCreateMutex() or
+N * xSemaphoreCreateCounting(). and obtained using sSemaphoreTake().
+N *
+N * This macro must not be used from an ISR.  See xSemaphoreGiveFromISR () for
+N * an alternative which can be used from an ISR.
+N *
+N * This macro must also not be used on semaphores created using 
+N * xSemaphoreCreateRecursiveMutex().
+N *
+N * @param xSemaphore A handle to the semaphore being released.  This is the
+N * handle returned when the semaphore was created.
+N *
+N * @return pdTRUE if the semaphore was released.  pdFALSE if an error occurred.
+N * Semaphores are implemented using queues.  An error can occur if there is
+N * no space on the queue to post a message - indicating that the 
+N * semaphore was not first obtained correctly.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore = NULL;
+N
+N void vATask( void * pvParameters )
+N {
+N    // Create the semaphore to guard a shared resource.
+N    vSemaphoreCreateBinary( xSemaphore );
+N
+N    if( xSemaphore != NULL )
+N    {
+N        if( xSemaphoreGive( xSemaphore ) != pdTRUE )
+N        {
+N            // We would expect this call to fail because we cannot give
+N            // a semaphore without first "taking" it!
+N        }
+N
+N        // Obtain the semaphore - don't block if the semaphore is not
+N        // immediately available.
+N        if( xSemaphoreTake( xSemaphore, ( portTickType ) 0 ) )
+N        {
+N            // We now have the semaphore and can access the shared resource.
+N
+N            // ...
+N
+N            // We have finished accessing the shared resource so can free the
+N            // semaphore.
+N            if( xSemaphoreGive( xSemaphore ) != pdTRUE )
+N            {
+N                // We would not expect this call to fail because we must have
+N                // obtained the semaphore to get here.
+N            }
+N        }
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreGive xSemaphoreGive
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreGive( xSemaphore )		xQueueGenericSend( ( xQueueHandle ) ( xSemaphore ), NULL, semGIVE_BLOCK_TIME, queueSEND_TO_BACK )
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreGiveRecursive( xSemaphoreHandle xMutex )</pre>
+N *
+N * <i>Macro</i> to recursively release, or 'give', a mutex type semaphore.
+N * The mutex must have previously been created using a call to 
+N * xSemaphoreCreateRecursiveMutex();
+N * 
+N * configUSE_RECURSIVE_MUTEXES must be set to 1 in FreeRTOSConfig.h for this
+N * macro to be available.
+N *
+N * This macro must not be used on mutexes created using xSemaphoreCreateMutex().
+N * 
+N * A mutex used recursively can be 'taken' repeatedly by the owner. The mutex 
+N * doesn't become available again until the owner has called 
+N * xSemaphoreGiveRecursive() for each successful 'take' request.  For example, 
+N * if a task successfully 'takes' the same mutex 5 times then the mutex will 
+N * not be available to any other task until it has also  'given' the mutex back
+N * exactly five times.
+N *
+N * @param xMutex A handle to the mutex being released, or 'given'.  This is the
+N * handle returned by xSemaphoreCreateMutex();
+N *
+N * @return pdTRUE if the semaphore was given.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xMutex = NULL;
+N
+N // A task that creates a mutex.
+N void vATask( void * pvParameters )
+N {
+N    // Create the mutex to guard a shared resource.
+N    xMutex = xSemaphoreCreateRecursiveMutex();
+N }
+N
+N // A task that uses the mutex.
+N void vAnotherTask( void * pvParameters )
+N {
+N    // ... Do other things.
+N
+N    if( xMutex != NULL )
+N    {
+N        // See if we can obtain the mutex.  If the mutex is not available
+N        // wait 10 ticks to see if it becomes free.	
+N        if( xSemaphoreTakeRecursive( xMutex, ( portTickType ) 10 ) == pdTRUE )
+N        {
+N            // We were able to obtain the mutex and can now access the
+N            // shared resource.
+N
+N            // ...
+N            // For some reason due to the nature of the code further calls to 
+N			// xSemaphoreTakeRecursive() are made on the same mutex.  In real
+N			// code these would not be just sequential calls as this would make
+N			// no sense.  Instead the calls are likely to be buried inside
+N			// a more complex call structure.
+N            xSemaphoreTakeRecursive( xMutex, ( portTickType ) 10 );
+N            xSemaphoreTakeRecursive( xMutex, ( portTickType ) 10 );
+N
+N            // The mutex has now been 'taken' three times, so will not be 
+N			// available to another task until it has also been given back
+N			// three times.  Again it is unlikely that real code would have
+N			// these calls sequentially, it would be more likely that the calls
+N			// to xSemaphoreGiveRecursive() would be called as a call stack
+N			// unwound.  This is just for demonstrative purposes.
+N            xSemaphoreGiveRecursive( xMutex );
+N			xSemaphoreGiveRecursive( xMutex );
+N			xSemaphoreGiveRecursive( xMutex );
+N
+N			// Now the mutex can be taken by other tasks.
+N        }
+N        else
+N        {
+N            // We could not obtain the mutex and can therefore not access
+N            // the shared resource safely.
+N        }
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreGiveRecursive xSemaphoreGiveRecursive
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreGiveRecursive( xMutex )	xQueueGiveMutexRecursive( ( xMutex ) )
+N
+N/* 
+N * xSemaphoreAltGive() is an alternative version of xSemaphoreGive().
+N *
+N * The source code that implements the alternative (Alt) API is much 
+N * simpler	because it executes everything from within a critical section.  
+N * This is	the approach taken by many other RTOSes, but FreeRTOS.org has the 
+N * preferred fully featured API too.  The fully featured API has more 
+N * complex	code that takes longer to execute, but makes much less use of 
+N * critical sections.  Therefore the alternative API sacrifices interrupt 
+N * responsiveness to gain execution speed, whereas the fully featured API
+N * sacrifices execution speed to ensure better interrupt responsiveness.
+N */
+N#define xSemaphoreAltGive( xSemaphore )		xQueueAltGenericSend( ( xQueueHandle ) ( xSemaphore ), NULL, semGIVE_BLOCK_TIME, queueSEND_TO_BACK )
+N
+N/**
+N * semphr. h
+N * <pre>
+N xSemaphoreGiveFromISR( 
+N                          xSemaphoreHandle xSemaphore, 
+N                          signed portBASE_TYPE *pxHigherPriorityTaskWoken
+N                      )</pre>
+N *
+N * <i>Macro</i> to  release a semaphore.  The semaphore must have previously been
+N * created with a call to vSemaphoreCreateBinary() or xSemaphoreCreateCounting().
+N *
+N * Mutex type semaphores (those created using a call to xSemaphoreCreateMutex())
+N * must not be used with this macro.
+N *
+N * This macro can be used from an ISR.
+N *
+N * @param xSemaphore A handle to the semaphore being released.  This is the
+N * handle returned when the semaphore was created.
+N *
+N * @param pxHigherPriorityTaskWoken xSemaphoreGiveFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if giving the semaphore caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xSemaphoreGiveFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return pdTRUE if the semaphore was successfully given, otherwise errQUEUE_FULL.
+N *
+N * Example usage:
+N <pre>
+N \#define LONG_TIME 0xffff
+N \#define TICKS_TO_WAIT	10
+N xSemaphoreHandle xSemaphore = NULL;
+N
+N // Repetitive task.
+N void vATask( void * pvParameters )
+N {
+N    for( ;; )
+N    {
+N        // We want this task to run every 10 ticks of a timer.  The semaphore 
+N        // was created before this task was started.
+N
+N        // Block waiting for the semaphore to become available.
+N        if( xSemaphoreTake( xSemaphore, LONG_TIME ) == pdTRUE )
+N        {
+N            // It is time to execute.
+N
+N            // ...
+N
+N            // We have finished our task.  Return to the top of the loop where
+N            // we will block on the semaphore until it is time to execute 
+N            // again.  Note when using the semaphore for synchronisation with an
+N			// ISR in this manner there is no need to 'give' the semaphore back.
+N        }
+N    }
+N }
+N
+N // Timer ISR
+N void vTimerISR( void * pvParameters )
+N {
+N static unsigned char ucLocalTickCount = 0;
+N static signed portBASE_TYPE xHigherPriorityTaskWoken;
+N
+N    // A timer tick has occurred.
+N
+N    // ... Do other time functions.
+N
+N    // Is it time for vATask () to run?
+N	xHigherPriorityTaskWoken = pdFALSE;
+N    ucLocalTickCount++;
+N    if( ucLocalTickCount >= TICKS_TO_WAIT )
+N    {
+N        // Unblock the task by releasing the semaphore.
+N        xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+N
+N        // Reset the count so we release the semaphore again in 10 ticks time.
+N        ucLocalTickCount = 0;
+N    }
+N
+N    if( xHigherPriorityTaskWoken != pdFALSE )
+N    {
+N        // We can force a context switch here.  Context switching from an
+N        // ISR uses port specific syntax.  Check the demo task for your port
+N        // to find the syntax required.
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreGiveFromISR xSemaphoreGiveFromISR
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreGiveFromISR( xSemaphore, pxHigherPriorityTaskWoken )			xQueueGenericSendFromISR( ( xQueueHandle ) ( xSemaphore ), NULL, ( pxHigherPriorityTaskWoken ), queueSEND_TO_BACK )
+N
+N/**
+N * semphr. h
+N * <pre>
+N xSemaphoreTakeFromISR( 
+N                          xSemaphoreHandle xSemaphore, 
+N                          signed portBASE_TYPE *pxHigherPriorityTaskWoken
+N                      )</pre>
+N *
+N * <i>Macro</i> to  take a semaphore from an ISR.  The semaphore must have 
+N * previously been created with a call to vSemaphoreCreateBinary() or 
+N * xSemaphoreCreateCounting().
+N *
+N * Mutex type semaphores (those created using a call to xSemaphoreCreateMutex())
+N * must not be used with this macro.
+N *
+N * This macro can be used from an ISR, however taking a semaphore from an ISR
+N * is not a common operation.  It is likely to only be useful when taking a
+N * counting semaphore when an interrupt is obtaining an object from a resource
+N * pool (when the semaphore count indicates the number of resources available).
+N *
+N * @param xSemaphore A handle to the semaphore being taken.  This is the
+N * handle returned when the semaphore was created.
+N *
+N * @param pxHigherPriorityTaskWoken xSemaphoreTakeFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if taking the semaphore caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xSemaphoreTakeFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return pdTRUE if the semaphore was successfully taken, otherwise 
+N * pdFALSE
+N */
+N#define xSemaphoreTakeFromISR( xSemaphore, pxHigherPriorityTaskWoken )			xQueueReceiveFromISR( ( xQueueHandle ) ( xSemaphore ), NULL, ( pxHigherPriorityTaskWoken ) )
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreHandle xSemaphoreCreateMutex( void )</pre>
+N *
+N * <i>Macro</i> that implements a mutex semaphore by using the existing queue 
+N * mechanism.
+N *
+N * Mutexes created using this macro can be accessed using the xSemaphoreTake()
+N * and xSemaphoreGive() macros.  The xSemaphoreTakeRecursive() and 
+N * xSemaphoreGiveRecursive() macros should not be used.
+N * 
+N * This type of semaphore uses a priority inheritance mechanism so a task 
+N * 'taking' a semaphore MUST ALWAYS 'give' the semaphore back once the 
+N * semaphore it is no longer required.  
+N *
+N * Mutex type semaphores cannot be used from within interrupt service routines.  
+N *
+N * See vSemaphoreCreateBinary() for an alternative implementation that can be 
+N * used for pure synchronisation (where one task or interrupt always 'gives' the 
+N * semaphore and another always 'takes' the semaphore) and from within interrupt 
+N * service routines.
+N *
+N * @return xSemaphore Handle to the created mutex semaphore.  Should be of type 
+N *		xSemaphoreHandle.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore;
+N
+N void vATask( void * pvParameters )
+N {
+N    // Semaphore cannot be used before a call to xSemaphoreCreateMutex().
+N    // This is a macro so pass the variable in directly.
+N    xSemaphore = xSemaphoreCreateMutex();
+N
+N    if( xSemaphore != NULL )
+N    {
+N        // The semaphore was created successfully.
+N        // The semaphore can now be used.  
+N    }
+N }
+N </pre>
+N * \defgroup vSemaphoreCreateMutex vSemaphoreCreateMutex
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreCreateMutex() xQueueCreateMutex( queueQUEUE_TYPE_MUTEX )
+N
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreHandle xSemaphoreCreateRecursiveMutex( void )</pre>
+N *
+N * <i>Macro</i> that implements a recursive mutex by using the existing queue 
+N * mechanism.
+N *
+N * Mutexes created using this macro can be accessed using the 
+N * xSemaphoreTakeRecursive() and xSemaphoreGiveRecursive() macros.  The 
+N * xSemaphoreTake() and xSemaphoreGive() macros should not be used.
+N *
+N * A mutex used recursively can be 'taken' repeatedly by the owner. The mutex 
+N * doesn't become available again until the owner has called 
+N * xSemaphoreGiveRecursive() for each successful 'take' request.  For example, 
+N * if a task successfully 'takes' the same mutex 5 times then the mutex will 
+N * not be available to any other task until it has also  'given' the mutex back
+N * exactly five times.
+N * 
+N * This type of semaphore uses a priority inheritance mechanism so a task 
+N * 'taking' a semaphore MUST ALWAYS 'give' the semaphore back once the 
+N * semaphore it is no longer required.  
+N *
+N * Mutex type semaphores cannot be used from within interrupt service routines.  
+N *
+N * See vSemaphoreCreateBinary() for an alternative implementation that can be 
+N * used for pure synchronisation (where one task or interrupt always 'gives' the 
+N * semaphore and another always 'takes' the semaphore) and from within interrupt 
+N * service routines.
+N *
+N * @return xSemaphore Handle to the created mutex semaphore.  Should be of type 
+N *		xSemaphoreHandle.
+N *
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore;
+N
+N void vATask( void * pvParameters )
+N {
+N    // Semaphore cannot be used before a call to xSemaphoreCreateMutex().
+N    // This is a macro so pass the variable in directly.
+N    xSemaphore = xSemaphoreCreateRecursiveMutex();
+N
+N    if( xSemaphore != NULL )
+N    {
+N        // The semaphore was created successfully.
+N        // The semaphore can now be used.  
+N    }
+N }
+N </pre>
+N * \defgroup vSemaphoreCreateMutex vSemaphoreCreateMutex
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreCreateRecursiveMutex() xQueueCreateMutex( queueQUEUE_TYPE_RECURSIVE_MUTEX )
+N
+N/**
+N * semphr. h
+N * <pre>xSemaphoreHandle xSemaphoreCreateCounting( unsigned portBASE_TYPE uxMaxCount, unsigned portBASE_TYPE uxInitialCount )</pre>
+N *
+N * <i>Macro</i> that creates a counting semaphore by using the existing 
+N * queue mechanism.  
+N *
+N * Counting semaphores are typically used for two things:
+N *
+N * 1) Counting events.  
+N *
+N *    In this usage scenario an event handler will 'give' a semaphore each time
+N *    an event occurs (incrementing the semaphore count value), and a handler 
+N *    task will 'take' a semaphore each time it processes an event 
+N *    (decrementing the semaphore count value).  The count value is therefore 
+N *    the difference between the number of events that have occurred and the 
+N *    number that have been processed.  In this case it is desirable for the 
+N *    initial count value to be zero.
+N *
+N * 2) Resource management.
+N *
+N *    In this usage scenario the count value indicates the number of resources
+N *    available.  To obtain control of a resource a task must first obtain a 
+N *    semaphore - decrementing the semaphore count value.  When the count value
+N *    reaches zero there are no free resources.  When a task finishes with the
+N *    resource it 'gives' the semaphore back - incrementing the semaphore count
+N *    value.  In this case it is desirable for the initial count value to be
+N *    equal to the maximum count value, indicating that all resources are free.
+N *
+N * @param uxMaxCount The maximum count value that can be reached.  When the 
+N *        semaphore reaches this value it can no longer be 'given'.
+N *
+N * @param uxInitialCount The count value assigned to the semaphore when it is
+N *        created.
+N *
+N * @return Handle to the created semaphore.  Null if the semaphore could not be
+N *         created.
+N * 
+N * Example usage:
+N <pre>
+N xSemaphoreHandle xSemaphore;
+N
+N void vATask( void * pvParameters )
+N {
+N xSemaphoreHandle xSemaphore = NULL;
+N
+N    // Semaphore cannot be used before a call to xSemaphoreCreateCounting().
+N    // The max value to which the semaphore can count should be 10, and the
+N    // initial value assigned to the count should be 0.
+N    xSemaphore = xSemaphoreCreateCounting( 10, 0 );
+N
+N    if( xSemaphore != NULL )
+N    {
+N        // The semaphore was created successfully.
+N        // The semaphore can now be used.  
+N    }
+N }
+N </pre>
+N * \defgroup xSemaphoreCreateCounting xSemaphoreCreateCounting
+N * \ingroup Semaphores
+N */
+N#define xSemaphoreCreateCounting( uxMaxCount, uxInitialCount ) xQueueCreateCountingSemaphore( ( uxMaxCount ), ( uxInitialCount ) )
+N
+N/**
+N * semphr. h
+N * <pre>void vSemaphoreDelete( xSemaphoreHandle xSemaphore );</pre>
+N *
+N * Delete a semaphore.  This function must be used with care.  For example,
+N * do not delete a mutex type semaphore if the mutex is held by a task.
+N *
+N * @param xSemaphore A handle to the semaphore to be deleted.
+N *
+N * \defgroup vSemaphoreDelete vSemaphoreDelete
+N * \ingroup Semaphores
+N */
+N#define vSemaphoreDelete( xSemaphore ) vQueueDelete( ( xQueueHandle ) ( xSemaphore ) )
+N
+N/**
+N * semphr.h
+N * <pre>xTaskHandle xSemaphoreGetMutexHolder( xSemaphoreHandle xMutex );</pre>
+N *
+N * If xMutex is indeed a mutex type semaphore, return the current mutex holder.
+N * If xMutex is not a mutex type semaphore, or the mutex is available (not held
+N * by a task), return NULL.
+N *
+N * Note: This Is is a good way of determining if the calling task is the mutex 
+N * holder, but not a good way of determining the identity of the mutex holder as
+N * the holder may change between the function exiting and the returned value
+N * being tested.
+N */
+N#define xSemaphoreGetMutexHolder( xSemaphore ) xQueueGetMutexHolder( ( xSemaphore ) )
+N
+N#endif /* SEMAPHORE_H */
+N
+N
+L 13 "src\uart.c" 2
 N
 N#include "systick.h"
 L 1 "src\systick.h" 1
@@ -14362,43 +15628,31 @@ N/*=============================================================================
 N * Конец файла systick.h
 N *============================================================================================*/
 N
-L 13 "src\uart.c" 2
-N#include "stdint.h"
-N#include "ring_buffer.h"
-L 1 "src\ring_buffer.h" 1
-N
-N#include "stdint.h"
-N
-N
-Ntypedef struct {
-N	char *data;
-N	uint16_t tail_index;
-N	uint16_t head_index;
-N	uint16_t write_count;
-N	uint16_t read_count;
-N	uint16_t size;
-N} ring_buffer_t;
-N
-N
-N#define ringBufferIsFull(rb)	((uint16_t)(rb.write_count - rb.read_count) == rb.size)
-N#define ringBufferIsEmpty(rb)	(rb.write_count == rb.read_count)
-N#define ringBufferCount(rb)		((uint16_t)(rb.write_count - rb.read_count))
-N
-N
-Nvoid initRingBuffer(ring_buffer_t *rb, char *data, uint16_t size);
-Nuint8_t putIntoRingBuffer(ring_buffer_t *rb, char item);
-Nuint8_t getFromRingBuffer(ring_buffer_t *rb,  char *item);
-N
-N
-N
 L 15 "src\uart.c" 2
+N#include "stdint.h"
 N#include "uart.h"
 L 1 "src\uart.h" 1
 N
+Ntypedef struct {
+N	uint16_t read_index;
+N	uint16_t size;
+N	uint16_t *data;
+N} uart_dma_rx_buffer_t;
+N
+Ntypedef struct {
+N	uint16_t type;
+N	char *pdata;
+N} uart_transmiter_msg_t;
+N
+N
+N
+N
 N//---------------------------------------------//
 N// Buffer settings
-N#define RX_RING_BUFFER_SIZE		200
-N#define TX_RING_BUFFER_SIZE		200
+N#define RX_BUFFER_SIZE			200		// Filled by DMA in cyclical way
+N#define TX_BUFFER_SIZE			100
+N
+N#define EMPTY_DATA				0xFFFF
 N
 N// Parser settings
 N#define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length
@@ -14414,19 +15668,25 @@ N
 N
 N
 N
+N//---------------------------------------------//
+N// Task message definitions
+N#define SEND_STRING					0x0001
+N#define SEND_ALLOCATED_STRING		0x0002
+N#define RESPONSE_OK					0x0100
+N#define UNKNOWN_CMD					0x0101
+N#define BAD_CMD_SET_VOLTAGE			0x0102
+N#define BAD_CMD_SET_CURRENT			0x0103
+N#define BAD_CMD_SET_CURRENT_LIMIT	0x0104
+N#define BAD_CMD_ENCODER_DELTA		0x0105
 N
 N
 N
-N
-N
-Nvoid UARTInit(void);
 Nvoid vTaskUARTReceiver(void *pvParameters);
-Nvoid processUartRX(void);
-N
-Nvoid processUartTX(void);
+Nvoid vTaskUARTTransmitter(void *pvParameters);
 N
 N
-L 16 "src\uart.c" 2
+N
+L 17 "src\uart.c" 2
 N#include "dispatcher.h"
 L 1 "src\dispatcher.h" 1
 N
@@ -14458,7 +15718,7 @@ Nvoid vTaskDispatcher(void *pvParameters);
 N
 N
 N
-L 17 "src\uart.c" 2
+L 18 "src\uart.c" 2
 N#include "buttons.h"
 L 1 "src\buttons.h" 1
 N/**********************************************************
@@ -14605,7 +15865,7 @@ Nvoid ProcessButtons(void);
 N
 N
 N
-L 18 "src\uart.c" 2
+L 19 "src\uart.c" 2
 N
 N#include "dwt_delay.h"
 L 1 "src\dwt_delay.h" 1
@@ -14629,30 +15889,137 @@ N
 N
 N
 N
-L 20 "src\uart.c" 2
+L 21 "src\uart.c" 2
+N
+Nextern DMA_CtrlDataTypeDef DMA_ControlTable[];
+N
+N	const char _resp_OK[] = "OK\r";
+N	const char _resp_UNKN_CMD[] = "Unknown cmd\r";
+N
 N
 N// Test
-N#define MDR_UARTx MDR_UART1
 Nuint8_t test_mode = 0;
 N
-Nstatic ring_buffer_t uart2_tx_rbuf;
-Nstatic ring_buffer_t uart2_rx_rbuf;
-Nstatic char uart2_tx_data_buff[TX_RING_BUFFER_SIZE];
-Xstatic char uart2_tx_data_buff[200];
-Nstatic char uart2_rx_data_buff[RX_RING_BUFFER_SIZE];
-Xstatic char uart2_rx_data_buff[200];
+N#define USE_UART1
+N//#define USE_UART2
+N
+N#ifdef USE_UART1
+N//#define MDR_UARTn MDR_UART1
+N//const uint8_t DMA_Channel_UART_RX = DMA_Channel_UART1_RX;
+N//const uint8_t DMA_Channel_UART_TX = DMA_Channel_UART1_TX;
+N#endif
+N
+N#ifdef USE_UART2
+S//#define MDR_UARTn MDR_UART2
+S//const uint8_t DMA_Channel_UART_RX = DMA_Channel_UART2_RX;
+S//const uint8_t DMA_Channel_UART_TX = DMA_Channel_UART2_TX;
+N#endif
 N
 N
-N// Private functions
-Nstatic void sendString2(char *pstr1, char *pstr2);
+N// Transmitter buffers
+Nstatic char 					uart1_tx_data_buff[TX_BUFFER_SIZE];
+Xstatic char 					uart1_tx_data_buff[100];
+N// Receiver buffers
+Nstatic uint16_t 				uart1_rx_data_buff[RX_BUFFER_SIZE];
+Xstatic uint16_t 				uart1_rx_data_buff[200];
+Nstatic uart_dma_rx_buffer_t 	uart1_rx_dma_buffer;
+N
+NxQueueHandle xQueueUART1TX;
+NxSemaphoreHandle xSemaphoreUART1TX;
+N
+Nstatic uint32_t UART1_RX_saved_TCB[3];
 N
 N
-Nvoid UARTInit(void)
+Nstatic void UART_sendStr(char *str);
+Nstatic void UART_sendStrAlloc(char *str);
+N
+N
+Nstatic void UART_Init_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *data, uint32_t size)
 N{
-N	initRingBuffer(&uart2_rx_rbuf, uart2_rx_data_buff, RX_RING_BUFFER_SIZE);
-X	initRingBuffer(&uart2_rx_rbuf, uart2_rx_data_buff, 200);
-N	initRingBuffer(&uart2_tx_rbuf, uart2_tx_data_buff, TX_RING_BUFFER_SIZE);
-X	initRingBuffer(&uart2_tx_rbuf, uart2_tx_data_buff, 200);
+N	rx_buffer->data = data;
+N	rx_buffer->size = size;
+N	rx_buffer->read_index = 0;
+N	
+N	// Fill buffer with invalid data
+N	while(size)
+N	{
+N		data[--size] = EMPTY_DATA;
+X		data[--size] = 0xFFFF;
+N	}
+N}
+N
+Nuint8_t UART_Get_from_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *rx_word)
+N{
+N	*rx_word = rx_buffer->data[rx_buffer->read_index];
+N	if (*rx_word != EMPTY_DATA)
+X	if (*rx_word != 0xFFFF)
+N	{
+N		// Valid data had been put into buffer by DMA
+N		rx_buffer->data[rx_buffer->read_index] = EMPTY_DATA;	
+X		rx_buffer->data[rx_buffer->read_index] = 0xFFFF;	
+N		rx_buffer->read_index = (rx_buffer->read_index < (rx_buffer->size - 1)) ? rx_buffer->read_index + 1 : 0;
+N		return 1;
+N	}
+N	return 0;
+N}
+N
+N
+N
+Nstatic void UART_init_RX_DMA(MDR_UART_TypeDef *MDR_UARTx, uint16_t *rx_buffer, uint32_t buffer_size)
+N{
+N	uint32_t *tcb_ptr;
+N	DMA_ChannelInitTypeDef DMA_InitStr;
+N	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+N	DMA_StructInit(&DMA_InitStr);
+N	
+N	// DMA channel UARTx RX configuration 
+N	// Using Ping-pong mode
+N	
+N	// Set Primary Control Data 
+N	DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)(&(MDR_UARTx->DR));
+N	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)rx_buffer;					// dest (buffer of 16-bit shorts)
+N	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncNo;
+X	DMA_PriCtrlStr.DMA_SourceIncSize = ((uint32_t)(3 << 26));
+N	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncHalfword ;
+X	DMA_PriCtrlStr.DMA_DestIncSize = ((uint32_t)(0x1UL << 30)) ;
+N	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+X	DMA_PriCtrlStr.DMA_MemoryDataSize = ((uint32_t)(0x11 << 24));
+N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;								// 
+X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x1);								
+N	DMA_PriCtrlStr.DMA_CycleSize = buffer_size;								// count of 16-bit shorts
+N	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+X	DMA_PriCtrlStr.DMA_NumContinuous = ((uint32_t)(0x00 << 14));
+N	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
+X	DMA_PriCtrlStr.DMA_SourceProtCtrl = ((uint32_t)(0x01 << 18));				
+N	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
+X	DMA_PriCtrlStr.DMA_DestProtCtrl = ((uint32_t)(0x01 << 21));					
+N					
+N	
+N	// Set Channel Structure
+N	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+N	DMA_InitStr.DMA_Priority = DMA_Priority_High ;
+X	DMA_InitStr.DMA_Priority = ((uint8_t)0x01) ;
+N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
+X	DMA_InitStr.DMA_UseBurst = ((uint8_t)0x00);								
+N	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+X	DMA_InitStr.DMA_SelectDataStructure = ((uint8_t)0x00);
+N	
+N	// Init DMA channel
+N	DMA_Init(DMA_Channel_UART1_RX, &DMA_InitStr);
+X	DMA_Init(((uint8_t)(1)), &DMA_InitStr);
+N	
+N	// Save created RX UART DMA control block for use in DMA ISR
+N	tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UART1_RX];
+X	tcb_ptr = (uint32_t*)&DMA_ControlTable[((uint8_t)(1))];
+N	UART1_RX_saved_TCB[0] = *tcb_ptr++;
+N	UART1_RX_saved_TCB[1] = *tcb_ptr++;
+N	UART1_RX_saved_TCB[2] = *tcb_ptr;
+N	
+N	// Enable UART1 DMA Rx request
+N	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
+X	UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000001), ENABLE);
+N	// Enable UART2 DMA Rx request
+N	//UART_DMACmd(MDR_UART2,UART_DMA_RXE, ENABLE);
 N}
 N
 N
@@ -14666,6 +16033,7 @@ N	char *argv[MAX_WORDS_IN_MESSAGE];		// Array of pointers to separate words
 X	char *argv[20];		
 N	uint16_t argc = 0;						// Count of words in message
 N	char temp_char;
+N	uint16_t uart_rx_word;
 N	uint16_t search_for_word = 1;
 N	uint8_t cmd_ok;
 N	
@@ -14677,22 +16045,49 @@ N
 N	char temp_str[50];
 N	
 N	portTickType lastExecutionTime = xTaskGetTickCount();
-N	
 N	dispatch_incoming_msg_t dispatcher_msg;
+N	uart_transmiter_msg_t transmitter_msg;
+N	
+N	UART_Init_RX_buffer(&uart1_rx_dma_buffer, uart1_rx_data_buff, RX_BUFFER_SIZE);
+X	UART_Init_RX_buffer(&uart1_rx_dma_buffer, uart1_rx_data_buff, 200);
+N	UART_init_RX_DMA(MDR_UART1, uart1_rx_data_buff, RX_BUFFER_SIZE);
+X	UART_init_RX_DMA(((MDR_UART_TypeDef *) (0x40030000)), uart1_rx_data_buff, 200);
 N	
 N	
 N	while(1)
 N	{
+N		/////////////////////////
+N		while(1)
+N		{
+N			vTaskDelayUntil(&lastExecutionTime, 5);
+N			
+N			transmitter_msg.type = UNKNOWN_CMD;
+X			transmitter_msg.type = 0x0101;
+N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
+N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
+N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
+N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
+N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
+N		}
+N		
+N		/////////////////////////
+W "src\uart.c" 179 3 statement is unreachable
 N		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
 N
 N		// Read full message from buffer
-N		while(getFromRingBuffer(&uart2_rx_rbuf, &temp_char))
+N		while(UART_Get_from_RX_buffer(&uart1_rx_dma_buffer, &uart_rx_word))
 N		{
-N			if (test_mode)
-N			{
-N				while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
+N			if ((uart_rx_word & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) != 0)
+X			if ((uart_rx_word & ( (1<<0x0A) | (1<<0x09) | (1<<0x08) )) != 0)
 N				continue;
-N			}
+N				
+N			temp_char = (char)(uart_rx_word);
+N			
 N			if (temp_char == SPACING_SYMBOL)
 X			if (temp_char == ' ')
 N			{
@@ -14723,15 +16118,9 @@ N				// Received full message OR maximum allowed message length is reached
 N				// Parse message
 N				if (argc != 0)
 N				{
-N					cmd_ok = 1;
 N					dispatcher_msg.type = 0;
-N					//----- Debug -----//
-N			/*		for (i=0;i<argc;i++)
-N					{
-N						//printf("%s\r",argv[i]);	
-N						sendString2(argv[i], "\r");
-N					} */
-N					//-----------------//
+N					transmitter_msg.type = RESPONSE_OK;
+X					transmitter_msg.type = 0x0100;
 N					
 N					//---------- Converter control -----------//
 N					if (strcmp(argv[0], "on") == 0)							// Turn converter ON	
@@ -14748,8 +16137,9 @@ N					else if (strcmp(argv[0], "set_voltage") == 0)			// Setting converter volta
 N					{
 N						if (argc < 2)
 N						{
-N							sendString2(argv[0], " ERR: missing argument [mV]\r");
-N							cmd_ok = 0;
+N							transmitter_msg.type = SEND_STRING;
+X							transmitter_msg.type = 0x0001;
+N							transmitter_msg.pdata = "ERR: missing argument [mV]\r";
 N						}
 N						else
 N						{
@@ -14763,8 +16153,9 @@ N					else if (strcmp(argv[0], "set_current") == 0)			// Setting converter curre
 N					{
 N						if (argc < 2)
 N						{
-N							sendString2(argv[0], " ERR: missing argument [mA]\r");
-N							cmd_ok = 0;
+N							transmitter_msg.type = SEND_STRING;
+X							transmitter_msg.type = 0x0001;
+N							transmitter_msg.pdata = "ERR: missing argument [mA]\r";
 N						}
 N						else
 N						{
@@ -14778,8 +16169,9 @@ N					else if (strcmp(argv[0], "set_current_limit") == 0)			// Setting converter
 N					{
 N						if (argc < 2)
 N						{
-N							sendString2(argv[0], " ERR: missing argument (20/40)[A]\r");
-N							cmd_ok = 0;
+N							transmitter_msg.type = SEND_STRING;
+X							transmitter_msg.type = 0x0001;
+N							transmitter_msg.pdata = "ERR: missing argument (20/40)[A]\r";
 N						}
 N						else
 N						{
@@ -14843,8 +16235,9 @@ N					else if (strcmp(argv[0], "encoder_delta") == 0)			// Encoder delta
 N					{
 N						if (argc < 2)
 N						{
-N							sendString2(argv[0], " ERR: missing argument [ticks]\r");
-N							cmd_ok = 0;
+N							transmitter_msg.type = SEND_STRING;
+X							transmitter_msg.type = 0x0001;
+N							transmitter_msg.pdata = "ERR: missing argument [ticks]\r";
 N						}
 N						else
 N						{
@@ -14857,16 +16250,17 @@ N					}
 N					//----------------- misc -----------------//
 N					else if (strcmp(argv[0], "get_time_profiling") == 0)			// Time profiling
 N					{
-N						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Systick_hook);
-N						sendString2("Systick hook max ticks: ", temp_str);
-N						sprintf(temp_str,"%d\r",time_profile.max_ticks_in_Timer2_ISR);
-N						sendString2("Timer2 ISR max ticks: ", temp_str);
+N						// FIXME
+N						sprintf(temp_str,"Systick hook max ticks: %d\r",time_profile.max_ticks_in_Systick_hook);
+N						UART_sendStrAlloc(temp_str);
+N						sprintf(temp_str,"Timer2 ISR max ticks: %d\r",time_profile.max_ticks_in_Timer2_ISR);
+N						UART_sendStrAlloc(temp_str);
 N					}
 N					//------------ unknown command -----------//
 N					else
 N					{
-N						sendString2(argv[0], " ERR: unknown cmd\r");
-N						cmd_ok = 0;
+N						transmitter_msg.type = UNKNOWN_CMD;
+X						transmitter_msg.type = 0x0101;
 N					}
 N					
 N					//----------------------------------------//
@@ -14876,73 +16270,185 @@ N					if (dispatcher_msg.type)
 N						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 X						xQueueGenericSend( ( xQueueDispatcher ), ( &dispatcher_msg ), ( 0 ), ( ( long ) 0 ) );
 N					
-N					// Confirm
-N					if (cmd_ok)
-N						sendString2(argv[0], " OK\r");
+N					// Send response over UART
+N					xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
+X					xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N			
 N				}			
 N				msg_length = 0;
 N				argc = 0;
 N				search_for_word = 1;
 N			}
-N		}  // \getFromRingBuffer()
+N		}  // \UART_Get_from_RX_buffer()
 N		
 N	}
-W "src\uart.c" 55 11 variable "i" was declared but never referenced
-W "src\uart.c" 56 11 variable "temp32u" was declared but never referenced
+W "src\uart.c" 146 10 variable "cmd_ok" was declared but never referenced
+W "src\uart.c" 150 11 variable "i" was declared but never referenced
+W "src\uart.c" 151 11 variable "temp32u" was declared but never referenced
 N}
 N
-N
-N
-Nvoid processUartRX(void)
-N{
-N	uint16_t temp;
-N	while ( (UART_GetFlagStatus(MDR_UARTx,UART_FLAG_RXFE) == RESET) && (!ringBufferIsFull(uart2_rx_rbuf)) )
-X	while ( (UART_GetFlagStatus(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000010)) == RESET) && (!((uint16_t)(uart2_rx_rbuf . write_count - uart2_rx_rbuf . read_count) == uart2_rx_rbuf . size)) )
-N	{
-N		temp = UART_ReceiveData(MDR_UARTx);
-X		temp = UART_ReceiveData(((MDR_UART_TypeDef *) (0x40030000)));
-N		if ((temp & ( (1<<UART_Data_BE) | (1<<UART_Data_PE) | (1<<UART_Data_FE) )) == 0)
-X		if ((temp & ( (1<<0x0A) | (1<<0x09) | (1<<0x08) )) == 0)
-N		{
-N			putIntoRingBuffer(&uart2_rx_rbuf, (char)temp);
-N		}
-N	} 
-N}
 N
 N
 N//=================================================================//
 N//=================================================================//
 N// Transmitter
 N
+N// 1. Send a string from program memory (make a copy inside transmitter task)
+N// 2. Send a string from data memory (make a copy using malloc())
+N// 3. Send a string from data memory (constant)
 N
-N// Simple function to send two 0-terminated strings
-Nvoid sendString2(char *pstr1, char *pstr2)
+N
+Nstatic void UART_sendStr(char *str)
 N{
-N	char temp_char;
-W "src\uart.c" 275 8 assignment in condition
-N	while(temp_char = *pstr1++)
-N	{
-N		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-N	}	
-W "src\uart.c" 279 8 assignment in condition
-N	while(temp_char = *pstr2++)
-N	{
-N		while(!putIntoRingBuffer(&uart2_tx_rbuf, temp_char));			
-N	}	
+N	uart_transmiter_msg_t msg;
+N	msg.type = SEND_STRING;
+X	msg.type = 0x0001;
+N	msg.pdata = str;
+N	xQueueSendToBack(xQueueUART1TX, &msg, 0); 
+X	xQueueGenericSend( ( xQueueUART1TX ), ( &msg ), ( 0 ), ( ( long ) 0 ) ); 
+N}
+N
+Nstatic void UART_sendStrAlloc(char *str)
+N{
+N	uart_transmiter_msg_t msg;
+N	uint32_t str_length = strlen(str);
+N	msg.pdata = pvPortMalloc(str_length);		// heap_3 or heap_4 should be used
+N	if (msg.pdata == 0)
+N		return;
+N	strcpy(msg.pdata, str);
+N	msg.type = SEND_ALLOCATED_STRING;
+X	msg.type = 0x0002;
+N	if (xQueueSendToBack(xQueueUART1TX, &msg, 0) == errQUEUE_FULL)
+X	if (xQueueGenericSend( ( xQueueUART1TX ), ( &msg ), ( 0 ), ( ( long ) 0 ) ) == ( ( long ) 0 ))
+N		vPortFree(msg.pdata);
 N}
 N
 N
-Nvoid processUartTX(void)
+N
+N
+Nvoid vTaskUARTTransmitter(void *pvParameters) 
 N{
-N	char temp;
-N	//while ( (UART_GetFlagStatus(MDR_UART2,UART_FLAG_TXFF) == RESET) && (!ringBufferIsEmpty(uart2_tx_rbuf)) )	//2216
-N	while ( (!(MDR_UARTx->FR & UART_FLAG_TXFF)) && (!ringBufferIsEmpty(uart2_tx_rbuf)) ) //1868
-X	while ( (!(((MDR_UART_TypeDef *) (0x40030000))->FR & ((uint32_t)0x00000020))) && (!(uart2_tx_rbuf . write_count == uart2_tx_rbuf . read_count)) ) 
+N	uart_transmiter_msg_t income_msg;
+N	uint32_t src_address;
+N	uint32_t n;
+N	
+N	
+N	DMA_ChannelInitTypeDef DMA_InitStr;
+N	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+N	DMA_StructInit(&DMA_InitStr);
+N	
+N	// DMA channel UARTx RX configuration 
+N	// Using normal mode
+N	
+N	// Set Primary Control Data 
+N	//DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)tx_buffer;
+N	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)(&(MDR_UART1->DR));			
+X	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)(&(((MDR_UART_TypeDef *) (0x40030000))->DR));			
+N	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncByte;
+X	DMA_PriCtrlStr.DMA_SourceIncSize = ((uint32_t)(0 << 26));
+N	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncNo;
+X	DMA_PriCtrlStr.DMA_DestIncSize = ((uint32_t)(0x3UL << 30));
+N	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+X	DMA_PriCtrlStr.DMA_MemoryDataSize = ((uint32_t)(0x00 << 24));
+N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Stop; 
+X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x0); 
+N	//DMA_PriCtrlStr.DMA_CycleSize = buffer_size;							
+N	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+X	DMA_PriCtrlStr.DMA_NumContinuous = ((uint32_t)(0x00 << 14));
+N	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
+X	DMA_PriCtrlStr.DMA_SourceProtCtrl = ((uint32_t)(0x01 << 18));				
+N	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
+X	DMA_PriCtrlStr.DMA_DestProtCtrl = ((uint32_t)(0x01 << 21));					
+N	
+N	// Set Channel Structure
+N	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+N	DMA_InitStr.DMA_Priority = DMA_Priority_High;
+X	DMA_InitStr.DMA_Priority = ((uint8_t)0x01);
+N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
+X	DMA_InitStr.DMA_UseBurst = ((uint8_t)0x00);								
+N	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+X	DMA_InitStr.DMA_SelectDataStructure = ((uint8_t)0x00);
+N	
+N	// Init DMA channel
+N	DMA_Init(DMA_Channel_UART1_TX, &DMA_InitStr);
+X	DMA_Init(((uint8_t)(0)), &DMA_InitStr);
+N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;
+X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x1);
+N	
+N	// Initialize
+N	xQueueUART1TX = xQueueCreate( 10, sizeof( uart_transmiter_msg_t ) );
+X	xQueueUART1TX = xQueueGenericCreate( 10, sizeof( uart_transmiter_msg_t ), ( ( unsigned char ) 0U ) );
+N	if( xQueueUART1TX == 0 )
 N	{
-N		getFromRingBuffer(&uart2_tx_rbuf, &temp);
-N		UART_SendData(MDR_UARTx,(uint16_t)temp);
-X		UART_SendData(((MDR_UART_TypeDef *) (0x40030000)),(uint16_t)temp);
+N		// Queue was not created and must not be used.
+N		while(1);
+N	}
+N	
+N	vSemaphoreCreateBinary( xSemaphoreUART1TX );
+X	{ ( xSemaphoreUART1TX ) = xQueueGenericCreate( ( unsigned long ) 1, ( ( unsigned char ) 0U ), ( ( unsigned char ) 3U ) ); if( ( xSemaphoreUART1TX ) != 0 ) { ( void ) xQueueGenericSend( ( xQueueHandle ) ( ( xSemaphoreUART1TX ) ), 0, ( ( portTickType ) 0U ), ( ( long ) 0 ) ); } };
+N	if( xSemaphoreUART1TX == 0 )
+N    {
+N        while(1);
+N    }
+N	
+N	xSemaphoreTake(xSemaphoreUART1TX, 0);	
+X	xQueueGenericReceive( ( xQueueHandle ) ( xSemaphoreUART1TX ), 0, ( 0 ), ( ( long ) 0 ) );	
+N	
+N	while(1)
+N	{
+N		xQueueReceive(xQueueUART1TX, &income_msg, portMAX_DELAY);
+X		xQueueGenericReceive( ( xQueueUART1TX ), ( &income_msg ), ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
+N		if ( (income_msg.type == SEND_STRING) || (income_msg.type == SEND_ALLOCATED_STRING) )
+X		if ( (income_msg.type == 0x0001) || (income_msg.type == 0x0002) )
+N		{
+N			src_address = (uint32_t)income_msg.pdata;
+N		}
+N		else if (income_msg.type == RESPONSE_OK)
+X		else if (income_msg.type == 0x0100)
+N		{
+N			src_address = (uint32_t)(&(_resp_OK));
+N		}
+N		else //if (income_msg.type == UNKNOWN_CMD)
+N		{
+N			src_address = (uint32_t)(&(_resp_UNKN_CMD));
+N		}
+N		
+N		// Get number of chars to transmit
+N		n = strlen((char*)src_address);
+N		// DMA cannot read from program memory, copy data to temporary buffer
+N		if (src_address < 0x20000000UL)
+N		{
+N			if (n > TX_BUFFER_SIZE)
+X			if (n > 100)
+N				n = TX_BUFFER_SIZE;
+X				n = 100;
+N			strncpy(uart1_tx_data_buff, (char*)src_address, n);
+N			src_address = (uint32_t)&uart1_tx_data_buff;
+N		}
+N		// Program DMA control block
+N		DMA_PriCtrlStr.DMA_SourceBaseAddr = src_address;
+N		DMA_PriCtrlStr.DMA_CycleSize = n;
+N		// Start DMA
+N		DMA_CtrlInit (DMA_Channel_UART1_TX, DMA_CTRL_DATA_PRIMARY, &DMA_PriCtrlStr);
+X		DMA_CtrlInit (((uint8_t)(0)), ((uint8_t)0x00), &DMA_PriCtrlStr);
+N		DMA_Cmd(DMA_Channel_UART1_TX, ENABLE);
+X		DMA_Cmd(((uint8_t)(0)), ENABLE);
+N		// Enable UART1 DMA Tx request
+N		UART_DMACmd(MDR_UART1,UART_DMA_TXE, ENABLE);
+X		UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000002), ENABLE);
+N
+N			
+N		// Wait for DMA
+N		//while((DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_CHNL_ENA)));
+N		xSemaphoreTake(xSemaphoreUART1TX, portMAX_DELAY);
+X		xQueueGenericReceive( ( xQueueHandle ) ( xSemaphoreUART1TX ), 0, ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
+N	
+N		// Free memory
+N		if (income_msg.type == SEND_ALLOCATED_STRING)
+X		if (income_msg.type == 0x0002)
+N		{
+N			vPortFree(income_msg.pdata);		// heap_3 or heap_4 should be used
+N		}
 N	}
 N}
 N
@@ -14951,6 +16457,65 @@ N
 N
 N
 N
+N// Possibly will be enough to analyze and reset UART request enable ?
+N// instead of extra variable
+Nvoid DMA_IRQHandler(void)
+N{
+N	uint32_t *tcb_ptr;
+N	portBASE_TYPE xHigherPriorityTaskWokenByPost = pdFALSE;
+X	long xHigherPriorityTaskWokenByPost = ( ( long ) 0 );
+N	
+N	if ((MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART1_TX)) == 0)	
+X	if ((((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET & (1<<((uint8_t)(0)))) == 0)	
+N	{
+N		// UART 1 DMA transfer complete
+N		if (MDR_UART1->DMACR & UART_DMACR_TXDMAE)
+X		if (((MDR_UART_TypeDef *) (0x40030000))->DMACR & ((uint32_t)0x00000002))
+N		{
+N			// Disable UART1 DMA Tx request
+N			MDR_UART1->DMACR &= ~UART_DMACR_TXDMAE;
+X			((MDR_UART_TypeDef *) (0x40030000))->DMACR &= ~((uint32_t)0x00000002);
+N			xSemaphoreGiveFromISR( xSemaphoreUART1TX, &xHigherPriorityTaskWokenByPost );
+X			xQueueGenericSendFromISR( ( xQueueHandle ) ( xSemaphoreUART1TX ), 0, ( &xHigherPriorityTaskWokenByPost ), ( ( long ) 0 ) );
+N		}
+N	}
+N	/*
+N	if (MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART2_TX) == 0)	
+N	{
+N		// UART 2 DMA transfer complete
+N		// Disable UART2 DMA Tx request
+N		UART_DMACmd(MDR_UART2,UART_DMA_TXE, DISABLE);
+N		// postSemaphoreFromISR(__complete__);
+N	}	
+N	*/
+N	
+N	if ((MDR_DMA->CHNL_ENABLE_SET & (1<<DMA_Channel_UART1_RX)) == 0)	
+X	if ((((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET & (1<<((uint8_t)(1)))) == 0)	
+N	{
+N		// Reload TCB
+N		tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UART1_RX];
+X		tcb_ptr = (uint32_t*)&DMA_ControlTable[((uint8_t)(1))];
+N		*tcb_ptr++ = UART1_RX_saved_TCB[0];
+N		*tcb_ptr++ = UART1_RX_saved_TCB[1];
+N		*tcb_ptr = UART1_RX_saved_TCB[2];
+N		MDR_DMA->CHNL_ENABLE_SET = (1 << DMA_Channel_UART1_RX);
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_SET = (1 << ((uint8_t)(1)));
+N	}
+N		
+N	
+N	// Error handling
+N	if (DMA_GetFlagStatus(0, DMA_FLAG_DMA_ERR) == SET)
+X	if (DMA_GetFlagStatus(0, ((uint8_t)0x02)) == SET)
+N	{
+N		DMA_ClearError();	// normally this should not happen
+N	}
+N	
+N	// Force context switching if required
+N	//portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
+N}
 N
 N
 N
+N
+N
+W "src\uart.c" 365 13 function "UART_sendStr" was declared but never referenced

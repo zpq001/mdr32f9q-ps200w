@@ -81,13 +81,13 @@
 ;;;83     	// Enable clock on all ports (macro are defined in systemfunc.h)
 ;;;84     	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
 000054  2101              MOVS     r1,#1
-000056  48fe              LDR      r0,|L1.1104|
+000056  48fb              LDR      r0,|L1.1092|
 000058  f7fffffe          BL       RST_CLK_PCLKcmd
 ;;;85     	// Enable clock on peripheral blocks used in design
 ;;;86     	RST_CLK_PCLKcmd(PERIPHERALS_CLK ,ENABLE);
 00005c  e8bd4010          POP      {r4,lr}
 000060  2101              MOVS     r1,#1
-000062  48fc              LDR      r0,|L1.1108|
+000062  48f9              LDR      r0,|L1.1096|
 000064  f7ffbffe          B.W      RST_CLK_PCLKcmd
 ;;;87     }
 ;;;88     
@@ -102,23 +102,23 @@
 ;;;97       
 ;;;98     	
 ;;;99     	PORT_DeInit(MDR_PORTA);
-00006c  f8dfb3e8          LDR      r11,|L1.1112|
+00006c  f8dfb3dc          LDR      r11,|L1.1100|
 000070  4658              MOV      r0,r11
 000072  f7fffffe          BL       PORT_DeInit
 ;;;100    	PORT_DeInit(MDR_PORTB);
-000076  48f9              LDR      r0,|L1.1116|
+000076  48f6              LDR      r0,|L1.1104|
 000078  f7fffffe          BL       PORT_DeInit
 ;;;101    	PORT_DeInit(MDR_PORTC);
-00007c  48f8              LDR      r0,|L1.1120|
+00007c  48f5              LDR      r0,|L1.1108|
 00007e  f7fffffe          BL       PORT_DeInit
 ;;;102    	PORT_DeInit(MDR_PORTD);
-000082  48f8              LDR      r0,|L1.1124|
+000082  48f5              LDR      r0,|L1.1112|
 000084  f7fffffe          BL       PORT_DeInit
 ;;;103    	PORT_DeInit(MDR_PORTE);
-000088  48f7              LDR      r0,|L1.1128|
+000088  48f4              LDR      r0,|L1.1116|
 00008a  f7fffffe          BL       PORT_DeInit
 ;;;104    	PORT_DeInit(MDR_PORTF);
-00008e  48f7              LDR      r0,|L1.1132|
+00008e  48f4              LDR      r0,|L1.1120|
 000090  f7fffffe          BL       PORT_DeInit
 ;;;105    	
 ;;;106    	// default output value is 0
@@ -126,7 +126,7 @@
 ;;;108    	//PORT_SetBits(MDR_PORTA, (1<<BUZ1) | (1<<BUZ2) );
 ;;;109    	PORT_SetBits(MDR_PORTB, (1<<LGREEN) | (1<<LRED) );
 000094  21c0              MOVS     r1,#0xc0
-000096  48f1              LDR      r0,|L1.1116|
+000096  48ee              LDR      r0,|L1.1104|
 000098  f7fffffe          BL       PORT_SetBits
 ;;;110    	
 ;;;111    	/*
@@ -249,7 +249,7 @@
 00013e  f88d400a          STRB     r4,[sp,#0xa]
 ;;;177    	PORT_Init(MDR_PORTB, &PORT_InitStructure);
 000142  4669              MOV      r1,sp
-000144  48c5              LDR      r0,|L1.1116|
+000144  48c2              LDR      r0,|L1.1104|
 000146  f7fffffe          BL       PORT_Init
 ;;;178    	
 ;;;179    	// Power good 
@@ -259,7 +259,7 @@
 00014c  f8ad0000          STRH     r0,[sp,#0]
 ;;;182    	PORT_Init(MDR_PORTB, &PORT_InitStructure);
 000150  4669              MOV      r1,sp
-000152  48c2              LDR      r0,|L1.1116|
+000152  48bf              LDR      r0,|L1.1104|
 000154  f7fffffe          BL       PORT_Init
 ;;;183    	
 ;;;184    	// Leds and buttons SB_ON, SB_OFF
@@ -272,7 +272,7 @@
 000162  f88d4009          STRB     r4,[sp,#9]
 ;;;188    	PORT_Init(MDR_PORTB, &PORT_InitStructure);
 000166  4669              MOV      r1,sp
-000168  48bc              LDR      r0,|L1.1116|
+000168  48b9              LDR      r0,|L1.1104|
 00016a  f7fffffe          BL       PORT_Init
 ;;;189    
 ;;;190    	
@@ -292,7 +292,7 @@
 000180  f88d4009          STRB     r4,[sp,#9]
 ;;;199    	PORT_Init(MDR_PORTC, &PORT_InitStructure);
 000184  4669              MOV      r1,sp
-000186  48b6              LDR      r0,|L1.1120|
+000186  48b3              LDR      r0,|L1.1108|
 000188  f7fffffe          BL       PORT_Init
 ;;;200    	
 ;;;201    	// I2C
@@ -302,7 +302,7 @@
 000190  f88d5009          STRB     r5,[sp,#9]
 ;;;204    	PORT_Init(MDR_PORTC, &PORT_InitStructure);
 000194  4669              MOV      r1,sp
-000196  48b2              LDR      r0,|L1.1120|
+000196  48af              LDR      r0,|L1.1108|
 000198  f7fffffe          BL       PORT_Init
 ;;;205    	
 ;;;206    	
@@ -317,7 +317,7 @@
 0001a4  f8ad0000          STRH     r0,[sp,#0]
 ;;;212    	PORT_Init(MDR_PORTD, &PORT_InitStructure);
 0001a8  4669              MOV      r1,sp
-0001aa  48ae              LDR      r0,|L1.1124|
+0001aa  48ab              LDR      r0,|L1.1112|
 0001ac  f7fffffe          BL       PORT_Init
 ;;;213    	
 ;;;214    	// LCD CLK and CS
@@ -334,7 +334,7 @@
 0001c2  f88d4002          STRB     r4,[sp,#2]
 ;;;220    	PORT_Init(MDR_PORTD, &PORT_InitStructure);
 0001c6  4669              MOV      r1,sp
-0001c8  48a6              LDR      r0,|L1.1124|
+0001c8  48a3              LDR      r0,|L1.1112|
 0001ca  f7fffffe          BL       PORT_Init
 ;;;221    	
 ;;;222    	// MOSI 
@@ -344,7 +344,7 @@
 0001d2  f88d4004          STRB     r4,[sp,#4]
 ;;;225    	PORT_Init(MDR_PORTD, &PORT_InitStructure);
 0001d6  4669              MOV      r1,sp
-0001d8  48a2              LDR      r0,|L1.1124|
+0001d8  489f              LDR      r0,|L1.1112|
 0001da  f7fffffe          BL       PORT_Init
 ;;;226    	
 ;;;227    
@@ -366,7 +366,7 @@
 0001f2  f88d4002          STRB     r4,[sp,#2]
 ;;;237    	PORT_Init(MDR_PORTE, &PORT_InitStructure);
 0001f6  4669              MOV      r1,sp
-0001f8  489b              LDR      r0,|L1.1128|
+0001f8  4898              LDR      r0,|L1.1116|
 0001fa  f7fffffe          BL       PORT_Init
 ;;;238    
 ;;;239    	// cooler PWM output (TMR3.CH3N)
@@ -376,7 +376,7 @@
 000202  f88d6008          STRB     r6,[sp,#8]
 ;;;242    	PORT_Init(MDR_PORTE, &PORT_InitStructure);
 000206  4669              MOV      r1,sp
-000208  4897              LDR      r0,|L1.1128|
+000208  4894              LDR      r0,|L1.1116|
 00020a  f7fffffe          BL       PORT_Init
 ;;;243    	
 ;;;244    	// voltage and current PWM outputs (TMR2.CH1N, TMR2.CH3N)
@@ -387,7 +387,7 @@
 000214  f88d5008          STRB     r5,[sp,#8]
 ;;;247    	PORT_Init(MDR_PORTE, &PORT_InitStructure);
 000218  4669              MOV      r1,sp
-00021a  4893              LDR      r0,|L1.1128|
+00021a  4890              LDR      r0,|L1.1116|
 00021c  f7fffffe          BL       PORT_Init
 ;;;248    	
 ;;;249    	
@@ -409,7 +409,7 @@
 000234  f88d4002          STRB     r4,[sp,#2]
 ;;;259    	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 000238  4669              MOV      r1,sp
-00023a  488c              LDR      r0,|L1.1132|
+00023a  4889              LDR      r0,|L1.1120|
 00023c  f7fffffe          BL       PORT_Init
 ;;;260    	
 ;;;261    	// USART2 functions	
@@ -429,7 +429,7 @@
 000256  f88d4002          STRB     r4,[sp,#2]
 ;;;269    	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 00025a  4669              MOV      r1,sp
-00025c  4883              LDR      r0,|L1.1132|
+00025c  4880              LDR      r0,|L1.1120|
 00025e  f7fffffe          BL       PORT_Init
 ;;;270    	// RX pin
 ;;;271    	PORT_InitStructure.PORT_Pin   = 1<<RXD2;
@@ -438,7 +438,7 @@
 000266  f88d8002          STRB     r8,[sp,#2]
 ;;;273    	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 00026a  4669              MOV      r1,sp
-00026c  487f              LDR      r0,|L1.1132|
+00026c  487c              LDR      r0,|L1.1120|
 00026e  f7fffffe          BL       PORT_Init
 ;;;274    }
 000272  e8bd8ffe          POP      {r1-r11,pc}
@@ -458,7 +458,7 @@
 ;;;288    	
 ;;;289    	//--------------- UART2 INIT ---------------//
 ;;;290    	UART_DeInit(MDR_UART2);
-000280  f8df91ec          LDR      r9,|L1.1136|
+000280  f8df91e0          LDR      r9,|L1.1124|
 000284  4648              MOV      r0,r9
 000286  f7fffffe          BL       UART_DeInit
 ;;;291    	
@@ -474,11 +474,11 @@
 ;;;295    	sUART.UART_Parity                             = UART_Parity_No;
 00029c  f8ad4008          STRH     r4,[sp,#8]
 ;;;296    	sUART.UART_FIFOMode                           = UART_FIFO_ON;
-0002a0  2510              MOVS     r5,#0x10
-0002a2  f8ad500a          STRH     r5,[sp,#0xa]
+0002a0  f04f0810          MOV      r8,#0x10
+0002a4  f8ad800a          STRH     r8,[sp,#0xa]
 ;;;297    	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
-0002a6  f44f7840          MOV      r8,#0x300
-0002aa  f8ad800c          STRH     r8,[sp,#0xc]
+0002a8  00fd              LSLS     r5,r7,#3
+0002aa  f8ad500c          STRH     r5,[sp,#0xc]
 ;;;298    	
 ;;;299    	UART_BRGInit(MDR_UART2,UART_HCLKdiv1);
 0002ae  2100              MOVS     r1,#0
@@ -495,8 +495,8 @@
 ;;;302    	
 ;;;303    	//--------------- UART1 INIT ---------------//
 ;;;304    	UART_DeInit(MDR_UART1);
-0002c6  f8df91ac          LDR      r9,|L1.1140|
-0002ca  4648              MOV      r0,r9
+0002c6  f8dfa1a0          LDR      r10,|L1.1128|
+0002ca  4650              MOV      r0,r10
 0002cc  f7fffffe          BL       UART_DeInit
 ;;;305    	
 ;;;306    	sUART.UART_BaudRate                           = 115200;
@@ -508,823 +508,867 @@
 ;;;309    	sUART.UART_Parity                             = UART_Parity_No;
 0002da  f8ad4008          STRH     r4,[sp,#8]
 ;;;310    	sUART.UART_FIFOMode                           = UART_FIFO_ON;
-0002de  f8ad500a          STRH     r5,[sp,#0xa]
+0002de  f8ad800a          STRH     r8,[sp,#0xa]
 ;;;311    	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
-0002e2  f8ad800c          STRH     r8,[sp,#0xc]
+0002e2  f8ad500c          STRH     r5,[sp,#0xc]
 ;;;312    	
 ;;;313    	UART_BRGInit(MDR_UART1,UART_HCLKdiv1);
 0002e6  2100              MOVS     r1,#0
-0002e8  4648              MOV      r0,r9
+0002e8  4650              MOV      r0,r10
 0002ea  f7fffffe          BL       UART_BRGInit
 ;;;314    	initStatus = UART_Init(MDR_UART1,&sUART);
 0002ee  4669              MOV      r1,sp
-0002f0  4648              MOV      r0,r9
+0002f0  4650              MOV      r0,r10
 0002f2  f7fffffe          BL       UART_Init
 ;;;315    	UART_Cmd(MDR_UART1,ENABLE);
 0002f6  2101              MOVS     r1,#1
-0002f8  4648              MOV      r0,r9
+0002f8  4650              MOV      r0,r10
 0002fa  f7fffffe          BL       UART_Cmd
 ;;;316    	
 ;;;317    	//------------ UART DMA features------------//
-;;;318    	//UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
-;;;319    	//UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+;;;318    	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
+0002fe  2202              MOVS     r2,#2
+000300  4611              MOV      r1,r2
+000302  4650              MOV      r0,r10
+000304  f7fffffe          BL       UART_DMAConfig
+;;;319    	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+000308  2202              MOVS     r2,#2
+00030a  4611              MOV      r1,r2
+00030c  4648              MOV      r0,r9
+00030e  f7fffffe          BL       UART_DMAConfig
 ;;;320    	
 ;;;321    	/* Enable UART1 DMA Rx and Tx request */
-;;;322    	//UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+;;;322    //	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 ;;;323    	/* Enable UART2 DMA Rx and Tx request */
-;;;324    	//UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+;;;324    //	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 ;;;325    }
-0002fe  e8bd87ff          POP      {r0-r10,pc}
+000312  e8bd87ff          POP      {r0-r10,pc}
 ;;;326    
                           ENDP
 
                   HW_DMAInit PROC
 ;;;330    //-----------------------------------------------------------------//
 ;;;331    void HW_DMAInit(void)
-000302  f7ffbffe          B.W      DMA_DeInit
+000316  b570              PUSH     {r4-r6,lr}
 ;;;332    {
 ;;;333    	// Reset all DMA settings
 ;;;334    	DMA_DeInit();	
+000318  f7fffffe          BL       DMA_DeInit
 ;;;335    	
-;;;336    	/*
-;;;337    		NVIC_EnableIRQ(DMA_IRQn);
+;;;336    	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
+00031c  4853              LDR      r0,|L1.1132|
+00031e  f04f34ff          MOV      r4,#0xffffffff
+000322  6204              STR      r4,[r0,#0x20]
+;;;337    	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
+000324  6184              STR      r4,[r0,#0x18]
 ;;;338    	
 ;;;339    	
-;;;340    	*/
-;;;341    }
-;;;342    
+;;;340    	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
+000326  2101              MOVS     r1,#1
+000328  1580              ASRS     r0,r0,#22
+00032a  f7fffffe          BL       RST_CLK_PCLKcmd
+;;;341    	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
+00032e  4d50              LDR      r5,|L1.1136|
+000330  2100              MOVS     r1,#0
+000332  4628              MOV      r0,r5
+000334  f7fffffe          BL       SSP_BRGInit
+;;;342    	MDR_SSP1->DMACR = 0;
+000338  2100              MOVS     r1,#0
+00033a  6269              STR      r1,[r5,#0x24]
+;;;343    	MDR_SSP2->DMACR = 0;
+00033c  484d              LDR      r0,|L1.1140|
+00033e  6241              STR      r1,[r0,#0x24]
+;;;344    	
+;;;345    	NVIC->ICPR[0] = 0xFFFFFFFF;
+000340  484d              LDR      r0,|L1.1144|
+000342  f8c041fc          STR      r4,[r0,#0x1fc]
+;;;346    	NVIC->ICER[0] = 0xFFFFFFFF;
+000346  f8c040fc          STR      r4,[r0,#0xfc]
+00034a  f04f0120          MOV      r1,#0x20
+00034e  67c1              STR      r1,[r0,#0x7c]
+;;;347    	
+;;;348    	
+;;;349    	
+;;;350    	NVIC_EnableIRQ(DMA_IRQn);
+;;;351    }
+000350  bd70              POP      {r4-r6,pc}
+;;;352    
                           ENDP
 
                   HW_SSPInit PROC
-;;;351    //-----------------------------------------------------------------//
-;;;352    void HW_SSPInit(void)
-000306  b51f              PUSH     {r0-r4,lr}
-;;;353    {
-;;;354    	SSP_InitTypeDef sSSP;
-;;;355    	SSP_StructInit (&sSSP);
-000308  4668              MOV      r0,sp
-00030a  f7fffffe          BL       SSP_StructInit
-;;;356    
-;;;357    	SSP_BRGInit(MDR_SSP2,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
-00030e  4c5a              LDR      r4,|L1.1144|
-000310  2100              MOVS     r1,#0
-000312  4620              MOV      r0,r4
-000314  f7fffffe          BL       SSP_BRGInit
-;;;358    	
-;;;359    	sSSP.SSP_SCR  = 0x04;		// 0 to 255
-000318  2004              MOVS     r0,#4
-00031a  f8ad0000          STRH     r0,[sp,#0]
-;;;360    	sSSP.SSP_CPSDVSR = 2;		// even 2 to 254
-00031e  2202              MOVS     r2,#2
-000320  f8ad2002          STRH     r2,[sp,#2]
-;;;361    	sSSP.SSP_Mode = SSP_ModeMaster;
-000324  2100              MOVS     r1,#0
-000326  f8ad1004          STRH     r1,[sp,#4]
-;;;362    	sSSP.SSP_WordLength = SSP_WordLength9b;
-00032a  2008              MOVS     r0,#8
-00032c  f8ad0006          STRH     r0,[sp,#6]
-;;;363    	sSSP.SSP_SPH = SSP_SPH_1Edge;
-000330  f8ad1008          STRH     r1,[sp,#8]
-;;;364    	sSSP.SSP_SPO = SSP_SPO_Low;
-000334  f8ad100a          STRH     r1,[sp,#0xa]
-;;;365    	sSSP.SSP_FRF = SSP_FRF_SPI_Motorola;
-000338  f8ad100c          STRH     r1,[sp,#0xc]
-;;;366    	sSSP.SSP_HardwareFlowControl = SSP_HardwareFlowControl_SSE;
-00033c  f8ad200e          STRH     r2,[sp,#0xe]
-;;;367    	SSP_Init (MDR_SSP2,&sSSP);
-000340  4669              MOV      r1,sp
-000342  4620              MOV      r0,r4
-000344  f7fffffe          BL       SSP_Init
-;;;368    
-;;;369    	SSP_Cmd(MDR_SSP2, ENABLE);
-000348  2101              MOVS     r1,#1
-00034a  4620              MOV      r0,r4
-00034c  f7fffffe          BL       SSP_Cmd
-;;;370    }
-000350  bd1f              POP      {r0-r4,pc}
-;;;371    
+;;;361    //-----------------------------------------------------------------//
+;;;362    void HW_SSPInit(void)
+000352  b51f              PUSH     {r0-r4,lr}
+;;;363    {
+;;;364    	SSP_InitTypeDef sSSP;
+;;;365    	SSP_StructInit (&sSSP);
+000354  4668              MOV      r0,sp
+000356  f7fffffe          BL       SSP_StructInit
+;;;366    
+;;;367    	SSP_BRGInit(MDR_SSP2,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
+00035a  4c46              LDR      r4,|L1.1140|
+00035c  2100              MOVS     r1,#0
+00035e  4620              MOV      r0,r4
+000360  f7fffffe          BL       SSP_BRGInit
+;;;368    	
+;;;369    	sSSP.SSP_SCR  = 0x04;		// 0 to 255
+000364  2004              MOVS     r0,#4
+000366  f8ad0000          STRH     r0,[sp,#0]
+;;;370    	sSSP.SSP_CPSDVSR = 2;		// even 2 to 254
+00036a  2202              MOVS     r2,#2
+00036c  f8ad2002          STRH     r2,[sp,#2]
+;;;371    	sSSP.SSP_Mode = SSP_ModeMaster;
+000370  2100              MOVS     r1,#0
+000372  f8ad1004          STRH     r1,[sp,#4]
+;;;372    	sSSP.SSP_WordLength = SSP_WordLength9b;
+000376  2008              MOVS     r0,#8
+000378  f8ad0006          STRH     r0,[sp,#6]
+;;;373    	sSSP.SSP_SPH = SSP_SPH_1Edge;
+00037c  f8ad1008          STRH     r1,[sp,#8]
+;;;374    	sSSP.SSP_SPO = SSP_SPO_Low;
+000380  f8ad100a          STRH     r1,[sp,#0xa]
+;;;375    	sSSP.SSP_FRF = SSP_FRF_SPI_Motorola;
+000384  f8ad100c          STRH     r1,[sp,#0xc]
+;;;376    	sSSP.SSP_HardwareFlowControl = SSP_HardwareFlowControl_SSE;
+000388  f8ad200e          STRH     r2,[sp,#0xe]
+;;;377    	SSP_Init (MDR_SSP2,&sSSP);
+00038c  4669              MOV      r1,sp
+00038e  4620              MOV      r0,r4
+000390  f7fffffe          BL       SSP_Init
+;;;378    
+;;;379    	SSP_Cmd(MDR_SSP2, ENABLE);
+000394  2101              MOVS     r1,#1
+000396  4620              MOV      r0,r4
+000398  f7fffffe          BL       SSP_Cmd
+;;;380    }
+00039c  bd1f              POP      {r0-r4,pc}
+;;;381    
                           ENDP
 
                   HW_I2CInit PROC
-;;;376    //-----------------------------------------------------------------//
-;;;377    void HW_I2CInit(void)
-000352  b51c              PUSH     {r2-r4,lr}
-;;;378    {
-;;;379    	//--------------- I2C INIT ---------------//
-;;;380    I2C_InitTypeDef I2C_InitStruct;
-;;;381    	
-;;;382    	// Enables I2C peripheral
-;;;383    	I2C_Cmd(ENABLE);
-000354  2001              MOVS     r0,#1
-000356  f7fffffe          BL       I2C_Cmd
-;;;384    	
-;;;385    	// Initialize I2C_InitStruct
-;;;386    	I2C_InitStruct.I2C_ClkDiv = 256;		// 0x0000 to 0xFFFF
-00035a  f44f7080          MOV      r0,#0x100
-00035e  9000              STR      r0,[sp,#0]
-;;;387    	I2C_InitStruct.I2C_Speed = I2C_SPEED_UP_TO_400KHz;
-000360  2000              MOVS     r0,#0
-000362  9001              STR      r0,[sp,#4]
-;;;388    
-;;;389    	// Configure I2C parameters
-;;;390    	I2C_Init(&I2C_InitStruct);
-000364  4668              MOV      r0,sp
-000366  f7fffffe          BL       I2C_Init
-;;;391    }
-00036a  bd1c              POP      {r2-r4,pc}
-;;;392    
+;;;386    //-----------------------------------------------------------------//
+;;;387    void HW_I2CInit(void)
+00039e  b51c              PUSH     {r2-r4,lr}
+;;;388    {
+;;;389    	//--------------- I2C INIT ---------------//
+;;;390    I2C_InitTypeDef I2C_InitStruct;
+;;;391    	
+;;;392    	// Enables I2C peripheral
+;;;393    	I2C_Cmd(ENABLE);
+0003a0  2001              MOVS     r0,#1
+0003a2  f7fffffe          BL       I2C_Cmd
+;;;394    	
+;;;395    	// Initialize I2C_InitStruct
+;;;396    	I2C_InitStruct.I2C_ClkDiv = 256;		// 0x0000 to 0xFFFF
+0003a6  f44f7080          MOV      r0,#0x100
+0003aa  9000              STR      r0,[sp,#0]
+;;;397    	I2C_InitStruct.I2C_Speed = I2C_SPEED_UP_TO_400KHz;
+0003ac  2000              MOVS     r0,#0
+0003ae  9001              STR      r0,[sp,#4]
+;;;398    
+;;;399    	// Configure I2C parameters
+;;;400    	I2C_Init(&I2C_InitStruct);
+0003b0  4668              MOV      r0,sp
+0003b2  f7fffffe          BL       I2C_Init
+;;;401    }
+0003b6  bd1c              POP      {r2-r4,pc}
+;;;402    
                           ENDP
 
                   HW_ADCInit PROC
-;;;400    //-----------------------------------------------------------------//
-;;;401    void HW_ADCInit(void)
-00036c  b530              PUSH     {r4,r5,lr}
-;;;402    {
-00036e  b093              SUB      sp,sp,#0x4c
-;;;403    	ADC_InitTypeDef sADC;
-;;;404    	ADCx_InitTypeDef sADCx;
-;;;405    	
-;;;406    	// ADC Configuration
-;;;407    	// Reset all ADC settings
-;;;408    	ADC_DeInit();
-000370  f7fffffe          BL       ADC_DeInit
-;;;409    	ADC_StructInit(&sADC);
-000374  a80c              ADD      r0,sp,#0x30
-000376  f7fffffe          BL       ADC_StructInit
-;;;410    
-;;;411    	sADC.ADC_SynchronousMode      = ADC_SyncMode_Independent;
-00037a  2400              MOVS     r4,#0
-00037c  940c              STR      r4,[sp,#0x30]
-;;;412    	sADC.ADC_StartDelay           = 10;
-00037e  200a              MOVS     r0,#0xa
-000380  900d              STR      r0,[sp,#0x34]
-;;;413    	sADC.ADC_TempSensor           = ADC_TEMP_SENSOR_Enable;
-000382  f44f3000          MOV      r0,#0x20000
-000386  900e              STR      r0,[sp,#0x38]
-;;;414    	sADC.ADC_TempSensorAmplifier  = ADC_TEMP_SENSOR_AMPLIFIER_Enable;
-000388  0040              LSLS     r0,r0,#1
-00038a  900f              STR      r0,[sp,#0x3c]
-;;;415    	sADC.ADC_TempSensorConversion = ADC_TEMP_SENSOR_CONVERSION_Enable;
-00038c  0040              LSLS     r0,r0,#1
-00038e  9010              STR      r0,[sp,#0x40]
-;;;416    	sADC.ADC_IntVRefConversion    = ADC_VREF_CONVERSION_Enable;
-000390  0040              LSLS     r0,r0,#1
-000392  9011              STR      r0,[sp,#0x44]
-;;;417    	sADC.ADC_IntVRefTrimming      = 1;
-000394  2501              MOVS     r5,#1
-000396  9512              STR      r5,[sp,#0x48]
-;;;418    	ADC_Init (&sADC);
-000398  a80c              ADD      r0,sp,#0x30
-00039a  f7fffffe          BL       ADC_Init
-;;;419    
-;;;420    	// ADC1 Configuration 
-;;;421    	ADCx_StructInit (&sADCx);
-00039e  a801              ADD      r0,sp,#4
-0003a0  f7fffffe          BL       ADCx_StructInit
-;;;422    	sADCx.ADC_ClockSource      = ADC_CLOCK_SOURCE_ADC;
-0003a4  2004              MOVS     r0,#4
-0003a6  9001              STR      r0,[sp,#4]
-;;;423    	sADCx.ADC_SamplingMode     = ADC_SAMPLING_MODE_SINGLE_CONV;
-0003a8  9402              STR      r4,[sp,#8]
-;;;424    	sADCx.ADC_ChannelSwitching = ADC_CH_SWITCHING_Disable;
-0003aa  9403              STR      r4,[sp,#0xc]
-;;;425    	sADCx.ADC_ChannelNumber    = ADC_CH_TEMP_SENSOR;		
-0003ac  201f              MOVS     r0,#0x1f
-0003ae  9004              STR      r0,[sp,#0x10]
-;;;426    	sADCx.ADC_Channels         = 0;
-0003b0  9405              STR      r4,[sp,#0x14]
-;;;427    	sADCx.ADC_LevelControl     = ADC_LEVEL_CONTROL_Disable;
-0003b2  9406              STR      r4,[sp,#0x18]
-;;;428    	sADCx.ADC_LowLevel         = 0;
-0003b4  f8ad401c          STRH     r4,[sp,#0x1c]
-;;;429    	sADCx.ADC_HighLevel        = 0;
-0003b8  f8ad401e          STRH     r4,[sp,#0x1e]
-;;;430    	sADCx.ADC_VRefSource       = ADC_VREF_SOURCE_EXTERNAL;
-0003bc  02e8              LSLS     r0,r5,#11
-0003be  9008              STR      r0,[sp,#0x20]
-;;;431    	sADCx.ADC_IntVRefSource    = ADC_INT_VREF_SOURCE_EXACT;
-0003c0  9509              STR      r5,[sp,#0x24]
-;;;432    	sADCx.ADC_Prescaler        = ADC_CLK_div_128;
-0003c2  f44f40e0          MOV      r0,#0x7000
-0003c6  900a              STR      r0,[sp,#0x28]
-;;;433    	sADCx.ADC_DelayGo          = 0;		// CHECKME
-0003c8  940b              STR      r4,[sp,#0x2c]
-;;;434    	ADC1_Init (&sADCx);
-0003ca  a801              ADD      r0,sp,#4
-0003cc  f7fffffe          BL       ADC1_Init
-;;;435    	ADC2_Init (&sADCx);
-0003d0  a801              ADD      r0,sp,#4
-0003d2  f7fffffe          BL       ADC2_Init
-;;;436    
-;;;437    	// Disable ADC interupts
-;;;438    	ADC1_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
-0003d6  2100              MOVS     r1,#0
-0003d8  2006              MOVS     r0,#6
-0003da  f7fffffe          BL       ADC1_ITConfig
-;;;439    	ADC2_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
-0003de  2100              MOVS     r1,#0
-0003e0  2006              MOVS     r0,#6
-0003e2  f7fffffe          BL       ADC2_ITConfig
-;;;440    
-;;;441    	// ADC1 enable
-;;;442    	ADC1_Cmd (ENABLE);
-0003e6  2001              MOVS     r0,#1
-0003e8  f7fffffe          BL       ADC1_Cmd
-;;;443    	ADC2_Cmd (ENABLE);
-0003ec  2001              MOVS     r0,#1
-0003ee  f7fffffe          BL       ADC2_Cmd
-;;;444    	
-;;;445    	
-;;;446    	//-------------------//
-;;;447    /*	ADC1_SetChannel(ADC_CH_TEMP_SENSOR);
-;;;448    	ADC1_Start();
-;;;449    	while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-;;;450      temp_adc = ADC1_GetResult();
-;;;451    	
-;;;452    	ADC1_Start();
-;;;453    	while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
-;;;454      temp_adc = ADC1_GetResult();
+;;;410    //-----------------------------------------------------------------//
+;;;411    void HW_ADCInit(void)
+0003b8  b530              PUSH     {r4,r5,lr}
+;;;412    {
+0003ba  b093              SUB      sp,sp,#0x4c
+;;;413    	ADC_InitTypeDef sADC;
+;;;414    	ADCx_InitTypeDef sADCx;
+;;;415    	
+;;;416    	// ADC Configuration
+;;;417    	// Reset all ADC settings
+;;;418    	ADC_DeInit();
+0003bc  f7fffffe          BL       ADC_DeInit
+;;;419    	ADC_StructInit(&sADC);
+0003c0  a80c              ADD      r0,sp,#0x30
+0003c2  f7fffffe          BL       ADC_StructInit
+;;;420    
+;;;421    	sADC.ADC_SynchronousMode      = ADC_SyncMode_Independent;
+0003c6  2400              MOVS     r4,#0
+0003c8  940c              STR      r4,[sp,#0x30]
+;;;422    	sADC.ADC_StartDelay           = 10;
+0003ca  200a              MOVS     r0,#0xa
+0003cc  900d              STR      r0,[sp,#0x34]
+;;;423    	sADC.ADC_TempSensor           = ADC_TEMP_SENSOR_Enable;
+0003ce  f44f3000          MOV      r0,#0x20000
+0003d2  900e              STR      r0,[sp,#0x38]
+;;;424    	sADC.ADC_TempSensorAmplifier  = ADC_TEMP_SENSOR_AMPLIFIER_Enable;
+0003d4  0040              LSLS     r0,r0,#1
+0003d6  900f              STR      r0,[sp,#0x3c]
+;;;425    	sADC.ADC_TempSensorConversion = ADC_TEMP_SENSOR_CONVERSION_Enable;
+0003d8  0040              LSLS     r0,r0,#1
+0003da  9010              STR      r0,[sp,#0x40]
+;;;426    	sADC.ADC_IntVRefConversion    = ADC_VREF_CONVERSION_Enable;
+0003dc  0040              LSLS     r0,r0,#1
+0003de  9011              STR      r0,[sp,#0x44]
+;;;427    	sADC.ADC_IntVRefTrimming      = 1;
+0003e0  2501              MOVS     r5,#1
+0003e2  9512              STR      r5,[sp,#0x48]
+;;;428    	ADC_Init (&sADC);
+0003e4  a80c              ADD      r0,sp,#0x30
+0003e6  f7fffffe          BL       ADC_Init
+;;;429    
+;;;430    	// ADC1 Configuration 
+;;;431    	ADCx_StructInit (&sADCx);
+0003ea  a801              ADD      r0,sp,#4
+0003ec  f7fffffe          BL       ADCx_StructInit
+;;;432    	sADCx.ADC_ClockSource      = ADC_CLOCK_SOURCE_ADC;
+0003f0  2004              MOVS     r0,#4
+0003f2  9001              STR      r0,[sp,#4]
+;;;433    	sADCx.ADC_SamplingMode     = ADC_SAMPLING_MODE_SINGLE_CONV;
+0003f4  9402              STR      r4,[sp,#8]
+;;;434    	sADCx.ADC_ChannelSwitching = ADC_CH_SWITCHING_Disable;
+0003f6  9403              STR      r4,[sp,#0xc]
+;;;435    	sADCx.ADC_ChannelNumber    = ADC_CH_TEMP_SENSOR;		
+0003f8  201f              MOVS     r0,#0x1f
+0003fa  9004              STR      r0,[sp,#0x10]
+;;;436    	sADCx.ADC_Channels         = 0;
+0003fc  9405              STR      r4,[sp,#0x14]
+;;;437    	sADCx.ADC_LevelControl     = ADC_LEVEL_CONTROL_Disable;
+0003fe  9406              STR      r4,[sp,#0x18]
+;;;438    	sADCx.ADC_LowLevel         = 0;
+000400  f8ad401c          STRH     r4,[sp,#0x1c]
+;;;439    	sADCx.ADC_HighLevel        = 0;
+000404  f8ad401e          STRH     r4,[sp,#0x1e]
+;;;440    	sADCx.ADC_VRefSource       = ADC_VREF_SOURCE_EXTERNAL;
+000408  02e8              LSLS     r0,r5,#11
+00040a  9008              STR      r0,[sp,#0x20]
+;;;441    	sADCx.ADC_IntVRefSource    = ADC_INT_VREF_SOURCE_EXACT;
+00040c  9509              STR      r5,[sp,#0x24]
+;;;442    	sADCx.ADC_Prescaler        = ADC_CLK_div_128;
+00040e  f44f40e0          MOV      r0,#0x7000
+000412  900a              STR      r0,[sp,#0x28]
+;;;443    	sADCx.ADC_DelayGo          = 0;		// CHECKME
+000414  940b              STR      r4,[sp,#0x2c]
+;;;444    	ADC1_Init (&sADCx);
+000416  a801              ADD      r0,sp,#4
+000418  f7fffffe          BL       ADC1_Init
+;;;445    	ADC2_Init (&sADCx);
+00041c  a801              ADD      r0,sp,#4
+00041e  f7fffffe          BL       ADC2_Init
+;;;446    
+;;;447    	// Disable ADC interupts
+;;;448    	ADC1_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
+000422  2100              MOVS     r1,#0
+000424  2006              MOVS     r0,#6
+000426  f7fffffe          BL       ADC1_ITConfig
+;;;449    	ADC2_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
+00042a  2100              MOVS     r1,#0
+00042c  2006              MOVS     r0,#6
+00042e  f7fffffe          BL       ADC2_ITConfig
+;;;450    
+;;;451    	// ADC1 enable
+;;;452    	ADC1_Cmd (ENABLE);
+000432  2001              MOVS     r0,#1
+000434  f7fffffe          BL       ADC1_Cmd
+;;;453    	ADC2_Cmd (ENABLE);
+000438  2001              MOVS     r0,#1
+00043a  f7fffffe          BL       ADC2_Cmd
+;;;454    	
 ;;;455    	
-;;;456    	temp_adc = temp_adc;
-;;;457    	*/
-;;;458    	
-;;;459    }
-0003f2  b013              ADD      sp,sp,#0x4c
-0003f4  bd30              POP      {r4,r5,pc}
-;;;460    
+;;;456    	//-------------------//
+;;;457    /*	ADC1_SetChannel(ADC_CH_TEMP_SENSOR);
+;;;458    	ADC1_Start();
+;;;459    	while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
+;;;460      temp_adc = ADC1_GetResult();
+;;;461    	
+;;;462    	ADC1_Start();
+;;;463    	while( ADC_GetFlagStatus(ADC1_FLAG_END_OF_CONVERSION)==RESET );
+;;;464      temp_adc = ADC1_GetResult();
+;;;465    	
+;;;466    	temp_adc = temp_adc;
+;;;467    	*/
+;;;468    	
+;;;469    }
+00043e  b013              ADD      sp,sp,#0x4c
+000440  bd30              POP      {r4,r5,pc}
+000442  0000              DCW      0x0000
+                  |L1.1092|
+                          DCD      0x23e00000
+                  |L1.1096|
+                          DCD      0x0013c4e0
+                  |L1.1100|
+                          DCD      0x400a8000
+                  |L1.1104|
+                          DCD      0x400b0000
+                  |L1.1108|
+                          DCD      0x400b8000
+                  |L1.1112|
+                          DCD      0x400c0000
+                  |L1.1116|
+                          DCD      0x400c8000
+                  |L1.1120|
+                          DCD      0x400e8000
+                  |L1.1124|
+                          DCD      0x40038000
+                  |L1.1128|
+                          DCD      0x40030000
+                  |L1.1132|
+                          DCD      0x40028000
+                  |L1.1136|
+                          DCD      0x40040000
+                  |L1.1140|
+                          DCD      0x400a0000
+                  |L1.1144|
+                          DCD      0xe000e084
                           ENDP
 
                   HW_TimersInit PROC
-;;;469    //-----------------------------------------------------------------//
-;;;470    void HW_TimersInit(void)
-0003f6  e92d43f0          PUSH     {r4-r9,lr}
-;;;471    {
-0003fa  b091              SUB      sp,sp,#0x44
-;;;472    	TIMER_CntInitTypeDef sTIM_CntInit;
-;;;473    	TIMER_ChnInitTypeDef sTIM_ChnInit;
-;;;474    	TIMER_ChnOutInitTypeDef sTIM_ChnOutInit;
-;;;475    	
-;;;476    	//======================= TIMER1 =======================//
-;;;477    	// Timer1		CH2		-> BUZ+
-;;;478    	//				CH2N	-> BUZ-
-;;;479    	// TIMER_CLK = HCLK
-;;;480    	// CLK = 1MHz
-;;;481    	// Default buzzer freq = 1 / 500us = 2kHz
-;;;482    	
-;;;483    	// Initialize timer 1 counter
-;;;484    	TIMER_CntStructInit(&sTIM_CntInit);
-0003fc  a80b              ADD      r0,sp,#0x2c
-0003fe  f7fffffe          BL       TIMER_CntStructInit
-;;;485    	sTIM_CntInit.TIMER_Prescaler                = 0x1F;		// 32MHz / (31 + 1) = 1MHz
-000402  201f              MOVS     r0,#0x1f
-000404  f8ad002e          STRH     r0,[sp,#0x2e]
-;;;486    	sTIM_CntInit.TIMER_Period                   = 499;		
-000408  f24010f3          MOV      r0,#0x1f3
-00040c  f8ad0030          STRH     r0,[sp,#0x30]
-;;;487    	TIMER_CntInit (MDR_TIMER1,&sTIM_CntInit);
-000410  4e1a              LDR      r6,|L1.1148|
-000412  a90b              ADD      r1,sp,#0x2c
-000414  4630              MOV      r0,r6
-000416  f7fffffe          BL       TIMER_CntInit
-;;;488    	
-;;;489    	// Initialize timer 1 channel 2
-;;;490    	TIMER_ChnStructInit(&sTIM_ChnInit);
-00041a  a805              ADD      r0,sp,#0x14
-00041c  f7fffffe          BL       TIMER_ChnStructInit
-;;;491    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-000420  2400              MOVS     r4,#0
-000422  f8ad4016          STRH     r4,[sp,#0x16]
-;;;492    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
-000426  f44f6840          MOV      r8,#0xc00
-00042a  f8ad801e          STRH     r8,[sp,#0x1e]
-;;;493    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
-00042e  2501              MOVS     r5,#1
-000430  f8ad5014          STRH     r5,[sp,#0x14]
-;;;494    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
-000434  f04f0908          MOV      r9,#8
-000438  f8ad9026          STRH     r9,[sp,#0x26]
-;;;495    	TIMER_ChnInit(MDR_TIMER1, &sTIM_ChnInit);
-00043c  a905              ADD      r1,sp,#0x14
-00043e  4630              MOV      r0,r6
-000440  f7fffffe          BL       TIMER_ChnInit
-;;;496    	
-;;;497    	// Initialize timer 1 channel 2 output
-;;;498    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
-000444  4668              MOV      r0,sp
-000446  f7fffffe          BL       TIMER_ChnOutStructInit
-;;;499    	sTIM_ChnOutInit.TIMER_CH_DirOut_Polarity          = TIMER_CHOPolarity_NonInverted;
-00044a  f8ad4002          STRH     r4,[sp,#2]
-;;;500    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_Only_1;
-00044e  e017              B        |L1.1152|
-                  |L1.1104|
-                          DCD      0x23e00000
-                  |L1.1108|
-                          DCD      0x0013c4e0
-                  |L1.1112|
-                          DCD      0x400a8000
-                  |L1.1116|
-                          DCD      0x400b0000
-                  |L1.1120|
-                          DCD      0x400b8000
-                  |L1.1124|
-                          DCD      0x400c0000
-                  |L1.1128|
-                          DCD      0x400c8000
-                  |L1.1132|
-                          DCD      0x400e8000
-                  |L1.1136|
-                          DCD      0x40038000
-                  |L1.1140|
-                          DCD      0x40030000
-                  |L1.1144|
-                          DCD      0x400a0000
-                  |L1.1148|
-                          DCD      0x40070000
-                  |L1.1152|
-000480  f8ad5004          STRH     r5,[sp,#4]
-;;;501    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
-000484  f8ad5006          STRH     r5,[sp,#6]
-;;;502    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_NonInverted;
-000488  f8ad4008          STRH     r4,[sp,#8]
-;;;503    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_Only_1;
-00048c  f8ad500a          STRH     r5,[sp,#0xa]
-;;;504    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
-000490  f8ad500c          STRH     r5,[sp,#0xc]
-;;;505    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL2;
-000494  f8ad5000          STRH     r5,[sp,#0]
-;;;506    	TIMER_ChnOutInit(MDR_TIMER1, &sTIM_ChnOutInit);
-000498  4669              MOV      r1,sp
+;;;479    //-----------------------------------------------------------------//
+;;;480    void HW_TimersInit(void)
+00047c  e92d43f0          PUSH     {r4-r9,lr}
+;;;481    {
+000480  b091              SUB      sp,sp,#0x44
+;;;482    	TIMER_CntInitTypeDef sTIM_CntInit;
+;;;483    	TIMER_ChnInitTypeDef sTIM_ChnInit;
+;;;484    	TIMER_ChnOutInitTypeDef sTIM_ChnOutInit;
+;;;485    	
+;;;486    	//======================= TIMER1 =======================//
+;;;487    	// Timer1		CH2		-> BUZ+
+;;;488    	//				CH2N	-> BUZ-
+;;;489    	// TIMER_CLK = HCLK
+;;;490    	// CLK = 1MHz
+;;;491    	// Default buzzer freq = 1 / 500us = 2kHz
+;;;492    	
+;;;493    	// Initialize timer 1 counter
+;;;494    	TIMER_CntStructInit(&sTIM_CntInit);
+000482  a80b              ADD      r0,sp,#0x2c
+000484  f7fffffe          BL       TIMER_CntStructInit
+;;;495    	sTIM_CntInit.TIMER_Prescaler                = 0x1F;		// 32MHz / (31 + 1) = 1MHz
+000488  201f              MOVS     r0,#0x1f
+00048a  f8ad002e          STRH     r0,[sp,#0x2e]
+;;;496    	sTIM_CntInit.TIMER_Period                   = 499;		
+00048e  f24010f3          MOV      r0,#0x1f3
+000492  f8ad0030          STRH     r0,[sp,#0x30]
+;;;497    	TIMER_CntInit (MDR_TIMER1,&sTIM_CntInit);
+000496  4eaa              LDR      r6,|L1.1856|
+000498  a90b              ADD      r1,sp,#0x2c
 00049a  4630              MOV      r0,r6
-00049c  f7fffffe          BL       TIMER_ChnOutInit
-;;;507    
-;;;508    	// Set default buzzer duty
-;;;509    	MDR_TIMER1->CCR2 = 249;	
-0004a0  20f9              MOVS     r0,#0xf9
-0004a2  6170              STR      r0,[r6,#0x14]
-;;;510      
-;;;511    	// Enable TIMER1 counter clock
-;;;512    	TIMER_BRGInit(MDR_TIMER1,TIMER_HCLKdiv1);
-0004a4  2100              MOVS     r1,#0
-0004a6  4630              MOV      r0,r6
-0004a8  f7fffffe          BL       TIMER_BRGInit
-;;;513    
-;;;514    	// Enable TIMER1
-;;;515    	TIMER_Cmd(MDR_TIMER1,ENABLE);
-0004ac  2101              MOVS     r1,#1
-0004ae  4630              MOV      r0,r6
-0004b0  f7fffffe          BL       TIMER_Cmd
-;;;516    	
-;;;517    	
-;;;518    	
-;;;519    	//======================= TIMER2 =======================//
-;;;520    	// Timer2		CH1N	-> UPWM
-;;;521    	//				CH3N	-> IPWM
-;;;522    	// 				CH2		-> HW control interrupt generation
-;;;523    	// TIMER_CLK = HCLK
-;;;524    	// CLK = 16MHz
-;;;525    	// PWM frequency = 3906.25 Hz (T = 256us)
-;;;526    	// PWM resolution = 12 bit
+00049c  f7fffffe          BL       TIMER_CntInit
+;;;498    	
+;;;499    	// Initialize timer 1 channel 2
+;;;500    	TIMER_ChnStructInit(&sTIM_ChnInit);
+0004a0  a805              ADD      r0,sp,#0x14
+0004a2  f7fffffe          BL       TIMER_ChnStructInit
+;;;501    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+0004a6  2400              MOVS     r4,#0
+0004a8  f8ad4016          STRH     r4,[sp,#0x16]
+;;;502    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+0004ac  f44f6840          MOV      r8,#0xc00
+0004b0  f8ad801e          STRH     r8,[sp,#0x1e]
+;;;503    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
+0004b4  2501              MOVS     r5,#1
+0004b6  f8ad5014          STRH     r5,[sp,#0x14]
+;;;504    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
+0004ba  f04f0908          MOV      r9,#8
+0004be  f8ad9026          STRH     r9,[sp,#0x26]
+;;;505    	TIMER_ChnInit(MDR_TIMER1, &sTIM_ChnInit);
+0004c2  a905              ADD      r1,sp,#0x14
+0004c4  4630              MOV      r0,r6
+0004c6  f7fffffe          BL       TIMER_ChnInit
+;;;506    	
+;;;507    	// Initialize timer 1 channel 2 output
+;;;508    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
+0004ca  4668              MOV      r0,sp
+0004cc  f7fffffe          BL       TIMER_ChnOutStructInit
+;;;509    	sTIM_ChnOutInit.TIMER_CH_DirOut_Polarity          = TIMER_CHOPolarity_NonInverted;
+0004d0  f8ad4002          STRH     r4,[sp,#2]
+;;;510    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_Only_1;
+0004d4  f8ad5004          STRH     r5,[sp,#4]
+;;;511    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
+0004d8  f8ad5006          STRH     r5,[sp,#6]
+;;;512    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_NonInverted;
+0004dc  f8ad4008          STRH     r4,[sp,#8]
+;;;513    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_Only_1;
+0004e0  f8ad500a          STRH     r5,[sp,#0xa]
+;;;514    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
+0004e4  f8ad500c          STRH     r5,[sp,#0xc]
+;;;515    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL2;
+0004e8  f8ad5000          STRH     r5,[sp,#0]
+;;;516    	TIMER_ChnOutInit(MDR_TIMER1, &sTIM_ChnOutInit);
+0004ec  4669              MOV      r1,sp
+0004ee  4630              MOV      r0,r6
+0004f0  f7fffffe          BL       TIMER_ChnOutInit
+;;;517    
+;;;518    	// Set default buzzer duty
+;;;519    	MDR_TIMER1->CCR2 = 249;	
+0004f4  20f9              MOVS     r0,#0xf9
+0004f6  6170              STR      r0,[r6,#0x14]
+;;;520      
+;;;521    	// Enable TIMER1 counter clock
+;;;522    	TIMER_BRGInit(MDR_TIMER1,TIMER_HCLKdiv1);
+0004f8  2100              MOVS     r1,#0
+0004fa  4630              MOV      r0,r6
+0004fc  f7fffffe          BL       TIMER_BRGInit
+;;;523    
+;;;524    	// Enable TIMER1
+;;;525    	TIMER_Cmd(MDR_TIMER1,ENABLE);
+000500  2101              MOVS     r1,#1
+000502  4630              MOV      r0,r6
+000504  f7fffffe          BL       TIMER_Cmd
+;;;526    	
 ;;;527    	
-;;;528    	// Initialize timer 2 counter
-;;;529    	TIMER_CntStructInit(&sTIM_CntInit);
-0004b4  a80b              ADD      r0,sp,#0x2c
-0004b6  f7fffffe          BL       TIMER_CntStructInit
-;;;530    	sTIM_CntInit.TIMER_Prescaler                = 0x1;		// CLK = 16MHz
-0004ba  f8ad502e          STRH     r5,[sp,#0x2e]
-;;;531    	sTIM_CntInit.TIMER_Period                   = 0xFFF;	// 16MHz / 4096 = 3906.25 Hz 
-0004be  f64070ff          MOV      r0,#0xfff
-0004c2  f8ad0030          STRH     r0,[sp,#0x30]
-;;;532    	TIMER_CntInit (MDR_TIMER2,&sTIM_CntInit);
-0004c6  4f89              LDR      r7,|L1.1772|
-0004c8  a90b              ADD      r1,sp,#0x2c
-0004ca  4638              MOV      r0,r7
-0004cc  f7fffffe          BL       TIMER_CntInit
-;;;533    
-;;;534    	// Initialize timer 2 channels 1,3
-;;;535    	TIMER_ChnStructInit(&sTIM_ChnInit);
-0004d0  a805              ADD      r0,sp,#0x14
-0004d2  f7fffffe          BL       TIMER_ChnStructInit
-;;;536    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-0004d6  f8ad4016          STRH     r4,[sp,#0x16]
-;;;537    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
-0004da  f8ad801e          STRH     r8,[sp,#0x1e]
-;;;538    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
-0004de  f8ad9026          STRH     r9,[sp,#0x26]
-;;;539    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;			// voltage
-0004e2  f8ad4014          STRH     r4,[sp,#0x14]
-;;;540    	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
-0004e6  a905              ADD      r1,sp,#0x14
-0004e8  4638              MOV      r0,r7
-0004ea  f7fffffe          BL       TIMER_ChnInit
-;;;541    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;			// curret
-0004ee  2602              MOVS     r6,#2
-0004f0  f8ad6014          STRH     r6,[sp,#0x14]
-;;;542    	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
-0004f4  a905              ADD      r1,sp,#0x14
-0004f6  4638              MOV      r0,r7
-0004f8  f7fffffe          BL       TIMER_ChnInit
-;;;543    	
-;;;544    	// Initialize timer 2 channel 2 - used for HW control interrupt generation
+;;;528    	
+;;;529    	//======================= TIMER2 =======================//
+;;;530    	// Timer2		CH1N	-> UPWM
+;;;531    	//				CH3N	-> IPWM
+;;;532    	// 				CH2		-> HW control interrupt generation
+;;;533    	// TIMER_CLK = HCLK
+;;;534    	// CLK = 16MHz
+;;;535    	// PWM frequency = 3906.25 Hz (T = 256us)
+;;;536    	// PWM resolution = 12 bit
+;;;537    	
+;;;538    	// Initialize timer 2 counter
+;;;539    	TIMER_CntStructInit(&sTIM_CntInit);
+000508  a80b              ADD      r0,sp,#0x2c
+00050a  f7fffffe          BL       TIMER_CntStructInit
+;;;540    	sTIM_CntInit.TIMER_Prescaler                = 0x1;		// CLK = 16MHz
+00050e  f8ad502e          STRH     r5,[sp,#0x2e]
+;;;541    	sTIM_CntInit.TIMER_Period                   = 0xFFF;	// 16MHz / 4096 = 3906.25 Hz 
+000512  f64070ff          MOV      r0,#0xfff
+000516  f8ad0030          STRH     r0,[sp,#0x30]
+;;;542    	TIMER_CntInit (MDR_TIMER2,&sTIM_CntInit);
+00051a  4f8a              LDR      r7,|L1.1860|
+00051c  a90b              ADD      r1,sp,#0x2c
+00051e  4638              MOV      r0,r7
+000520  f7fffffe          BL       TIMER_CntInit
+;;;543    
+;;;544    	// Initialize timer 2 channels 1,3
 ;;;545    	TIMER_ChnStructInit(&sTIM_ChnInit);
-0004fc  a805              ADD      r0,sp,#0x14
-0004fe  f7fffffe          BL       TIMER_ChnStructInit
+000524  a805              ADD      r0,sp,#0x14
+000526  f7fffffe          BL       TIMER_ChnStructInit
 ;;;546    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-000502  f8ad4016          STRH     r4,[sp,#0x16]
-;;;547    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format1;	// REF output = 1 when CNT == CCR
-000506  0268              LSLS     r0,r5,#9
-000508  f8ad001e          STRH     r0,[sp,#0x1e]
-;;;548    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
-00050c  f8ad5014          STRH     r5,[sp,#0x14]
-;;;549    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_Immediately;
-000510  f8ad4026          STRH     r4,[sp,#0x26]
+00052a  f8ad4016          STRH     r4,[sp,#0x16]
+;;;547    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+00052e  f8ad801e          STRH     r8,[sp,#0x1e]
+;;;548    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
+000532  f8ad9026          STRH     r9,[sp,#0x26]
+;;;549    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;			// voltage
+000536  f8ad4014          STRH     r4,[sp,#0x14]
 ;;;550    	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
-000514  a905              ADD      r1,sp,#0x14
-000516  4638              MOV      r0,r7
-000518  f7fffffe          BL       TIMER_ChnInit
-;;;551    	
-;;;552    	// Initialize timer 2 channels 1,3 output
-;;;553    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
-00051c  4668              MOV      r0,sp
-00051e  f7fffffe          BL       TIMER_ChnOutStructInit
-;;;554    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_Inverted;
-000522  f8ad5008          STRH     r5,[sp,#8]
-;;;555    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_REF;
-000526  f8ad600a          STRH     r6,[sp,#0xa]
-;;;556    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
-00052a  f8ad500c          STRH     r5,[sp,#0xc]
-;;;557    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
-00052e  f8ad4000          STRH     r4,[sp,#0]
-;;;558    	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
-000532  4669              MOV      r1,sp
-000534  4638              MOV      r0,r7
-000536  f7fffffe          BL       TIMER_ChnOutInit
-;;;559    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL3;
-00053a  f8ad6000          STRH     r6,[sp,#0]
-;;;560    	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
-00053e  4669              MOV      r1,sp
-000540  4638              MOV      r0,r7
-000542  f7fffffe          BL       TIMER_ChnOutInit
+00053a  a905              ADD      r1,sp,#0x14
+00053c  4638              MOV      r0,r7
+00053e  f7fffffe          BL       TIMER_ChnInit
+;;;551    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;			// curret
+000542  2602              MOVS     r6,#2
+000544  f8ad6014          STRH     r6,[sp,#0x14]
+;;;552    	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
+000548  a905              ADD      r1,sp,#0x14
+00054a  4638              MOV      r0,r7
+00054c  f7fffffe          BL       TIMER_ChnInit
+;;;553    	
+;;;554    	// Initialize timer 2 channel 2 - used for HW control interrupt generation
+;;;555    	TIMER_ChnStructInit(&sTIM_ChnInit);
+000550  a805              ADD      r0,sp,#0x14
+000552  f7fffffe          BL       TIMER_ChnStructInit
+;;;556    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+000556  f8ad4016          STRH     r4,[sp,#0x16]
+;;;557    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format1;	// REF output = 1 when CNT == CCR
+00055a  0268              LSLS     r0,r5,#9
+00055c  f8ad001e          STRH     r0,[sp,#0x1e]
+;;;558    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL2;
+000560  f8ad5014          STRH     r5,[sp,#0x14]
+;;;559    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_Immediately;
+000564  f8ad4026          STRH     r4,[sp,#0x26]
+;;;560    	TIMER_ChnInit(MDR_TIMER2, &sTIM_ChnInit);
+000568  a905              ADD      r1,sp,#0x14
+00056a  4638              MOV      r0,r7
+00056c  f7fffffe          BL       TIMER_ChnInit
 ;;;561    	
-;;;562    	// Set default voltage PWM duty cycle
-;;;563    	MDR_TIMER2->CCR1 = 0;	
-000546  613c              STR      r4,[r7,#0x10]
-;;;564    	// Set default current PWM duty cycle
-;;;565    	MDR_TIMER2->CCR3 = 0;	
-000548  61bc              STR      r4,[r7,#0x18]
-;;;566    	// Set default CCR for interrupt generation
-;;;567    	MDR_TIMER2->CCR2 = 0;
-00054a  617c              STR      r4,[r7,#0x14]
-;;;568    	
-;;;569    	// Enable interrupts
-;;;570    	TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2, ENABLE);
-00054c  2201              MOVS     r2,#1
-00054e  0291              LSLS     r1,r2,#10
-000550  4638              MOV      r0,r7
-000552  f7fffffe          BL       TIMER_ITConfig
-;;;571    	//TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CNT_ZERO, ENABLE);
-;;;572    	
-;;;573    	// Enable TIMER2 counter clock
-;;;574    	TIMER_BRGInit(MDR_TIMER2,TIMER_HCLKdiv1);
-000556  2100              MOVS     r1,#0
-000558  4638              MOV      r0,r7
-00055a  f7fffffe          BL       TIMER_BRGInit
-;;;575    
-;;;576    	// Enable TIMER2
-;;;577    	TIMER_Cmd(MDR_TIMER2,ENABLE);
-00055e  2101              MOVS     r1,#1
-000560  4638              MOV      r0,r7
-000562  f7fffffe          BL       TIMER_Cmd
+;;;562    	// Initialize timer 2 channels 1,3 output
+;;;563    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
+000570  4668              MOV      r0,sp
+000572  f7fffffe          BL       TIMER_ChnOutStructInit
+;;;564    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity          = TIMER_CHOPolarity_Inverted;
+000576  f8ad5008          STRH     r5,[sp,#8]
+;;;565    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source            = TIMER_CH_OutSrc_REF;
+00057a  f8ad600a          STRH     r6,[sp,#0xa]
+;;;566    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode              = TIMER_CH_OutMode_Output;
+00057e  f8ad500c          STRH     r5,[sp,#0xc]
+;;;567    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
+000582  f8ad4000          STRH     r4,[sp,#0]
+;;;568    	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
+000586  4669              MOV      r1,sp
+000588  4638              MOV      r0,r7
+00058a  f7fffffe          BL       TIMER_ChnOutInit
+;;;569    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL3;
+00058e  f8ad6000          STRH     r6,[sp,#0]
+;;;570    	TIMER_ChnOutInit(MDR_TIMER2, &sTIM_ChnOutInit);
+000592  4669              MOV      r1,sp
+000594  4638              MOV      r0,r7
+000596  f7fffffe          BL       TIMER_ChnOutInit
+;;;571    	
+;;;572    	// Set default voltage PWM duty cycle
+;;;573    	MDR_TIMER2->CCR1 = 0;	
+00059a  613c              STR      r4,[r7,#0x10]
+;;;574    	// Set default current PWM duty cycle
+;;;575    	MDR_TIMER2->CCR3 = 0;	
+00059c  61bc              STR      r4,[r7,#0x18]
+;;;576    	// Set default CCR for interrupt generation
+;;;577    	MDR_TIMER2->CCR2 = 0;
+00059e  617c              STR      r4,[r7,#0x14]
 ;;;578    	
-;;;579    	
-;;;580    	
-;;;581    	//======================= TIMER3 =======================//
-;;;582    	// Timer3		CH1 	-> LPWM (LCD backlight PWM) 
-;;;583    	//				CH3N	-> CPWM (System cooler PWM)
-;;;584    	// TIMER_CLK = HCLK
-;;;585    	// CLK = 2MHz
-;;;586    	// PWM frequency = 20kHz
-;;;587    	// PWM resolution = 100
+;;;579    	// Enable interrupts
+;;;580    	TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2, ENABLE);
+0005a0  2201              MOVS     r2,#1
+0005a2  0291              LSLS     r1,r2,#10
+0005a4  4638              MOV      r0,r7
+0005a6  f7fffffe          BL       TIMER_ITConfig
+;;;581    	//TIMER_ITConfig(MDR_TIMER2, TIMER_STATUS_CNT_ZERO, ENABLE);
+;;;582    	
+;;;583    	// Enable TIMER2 counter clock
+;;;584    	TIMER_BRGInit(MDR_TIMER2,TIMER_HCLKdiv1);
+0005aa  2100              MOVS     r1,#0
+0005ac  4638              MOV      r0,r7
+0005ae  f7fffffe          BL       TIMER_BRGInit
+;;;585    
+;;;586    	// Enable TIMER2
+;;;587    	TIMER_Cmd(MDR_TIMER2,ENABLE);
+0005b2  2101              MOVS     r1,#1
+0005b4  4638              MOV      r0,r7
+0005b6  f7fffffe          BL       TIMER_Cmd
 ;;;588    	
-;;;589    	// Initialize timer 3 counter
-;;;590    	TIMER_CntStructInit(&sTIM_CntInit);
-000566  a80b              ADD      r0,sp,#0x2c
-000568  f7fffffe          BL       TIMER_CntStructInit
-;;;591    	sTIM_CntInit.TIMER_Prescaler                = 0xF;		// 2MHz at 32MHz core clk
-00056c  200f              MOVS     r0,#0xf
-00056e  f8ad002e          STRH     r0,[sp,#0x2e]
-;;;592    	sTIM_CntInit.TIMER_Period                   = 99;			// 20kHz at 2MHz
-000572  2063              MOVS     r0,#0x63
-000574  f8ad0030          STRH     r0,[sp,#0x30]
-;;;593    	TIMER_CntInit (MDR_TIMER3,&sTIM_CntInit);
-000578  4f5d              LDR      r7,|L1.1776|
-00057a  a90b              ADD      r1,sp,#0x2c
-00057c  4638              MOV      r0,r7
-00057e  f7fffffe          BL       TIMER_CntInit
-;;;594    		
-;;;595    	// Initialize timer 3 channel 1
-;;;596    	TIMER_ChnStructInit(&sTIM_ChnInit);
-000582  a805              ADD      r0,sp,#0x14
-000584  f7fffffe          BL       TIMER_ChnStructInit
-;;;597    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;
-000588  f8ad4014          STRH     r4,[sp,#0x14]
-;;;598    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
-00058c  f8ad4016          STRH     r4,[sp,#0x16]
-;;;599    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
-000590  f8ad801e          STRH     r8,[sp,#0x1e]
-;;;600    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
-000594  f8ad9026          STRH     r9,[sp,#0x26]
-;;;601    	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
-000598  a905              ADD      r1,sp,#0x14
-00059a  4638              MOV      r0,r7
-00059c  f7fffffe          BL       TIMER_ChnInit
-;;;602    
-;;;603    	// Initialize timer 3 channel 1 output
-;;;604    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
-0005a0  4668              MOV      r0,sp
-0005a2  f7fffffe          BL       TIMER_ChnOutStructInit
-;;;605    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
-0005a6  f8ad4000          STRH     r4,[sp,#0]
-;;;606    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_REF;
-0005aa  f8ad6004          STRH     r6,[sp,#4]
-;;;607    	sTIM_ChnOutInit.TIMER_CH_DirOut_Polarity          = TIMER_CHOPolarity_NonInverted;
-0005ae  f8ad4002          STRH     r4,[sp,#2]
-;;;608    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
-0005b2  f8ad5006          STRH     r5,[sp,#6]
-;;;609    	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
-0005b6  4669              MOV      r1,sp
-0005b8  4638              MOV      r0,r7
-0005ba  f7fffffe          BL       TIMER_ChnOutInit
-;;;610    
-;;;611    	// Initialize timer 3 channel 3
-;;;612    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;
-0005be  f8ad6014          STRH     r6,[sp,#0x14]
-;;;613    	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
-0005c2  a905              ADD      r1,sp,#0x14
-0005c4  4638              MOV      r0,r7
-0005c6  f7fffffe          BL       TIMER_ChnInit
-;;;614    	
-;;;615    	// Initialize timer 3 channel 3 output
-;;;616    	sTIM_ChnOutInit.TIMER_CH_Number           	= TIMER_CHANNEL3;
-0005ca  f8ad6000          STRH     r6,[sp,#0]
-;;;617    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source      = TIMER_CH_OutSrc_Only_0;
-0005ce  f8ad4004          STRH     r4,[sp,#4]
-;;;618    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode        = TIMER_CH_OutMode_Input;
-0005d2  f8ad4006          STRH     r4,[sp,#6]
-;;;619    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source     	= TIMER_CH_OutSrc_REF;
-0005d6  f8ad600a          STRH     r6,[sp,#0xa]
-;;;620    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity   	= TIMER_CHOPolarity_Inverted;
-0005da  f8ad5008          STRH     r5,[sp,#8]
-;;;621    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode       	= TIMER_CH_OutMode_Output;
-0005de  f8ad500c          STRH     r5,[sp,#0xc]
-;;;622    	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
-0005e2  4669              MOV      r1,sp
-0005e4  4638              MOV      r0,r7
-0005e6  f7fffffe          BL       TIMER_ChnOutInit
-;;;623    
-;;;624    
-;;;625    	// Set default PWM duty cycle for LCD backlight PWM	
-;;;626    	MDR_TIMER3->CCR1 = 0;
-0005ea  613c              STR      r4,[r7,#0x10]
-;;;627    	
-;;;628    	// Set default PWM duty cycle for system cooler PWM
-;;;629    	MDR_TIMER3->CCR3 = 0;
-0005ec  61bc              STR      r4,[r7,#0x18]
-;;;630    
-;;;631    	// Enable TIMER3 counter clock
-;;;632    	TIMER_BRGInit(MDR_TIMER3,TIMER_HCLKdiv1);
-0005ee  2100              MOVS     r1,#0
-0005f0  4638              MOV      r0,r7
-0005f2  f7fffffe          BL       TIMER_BRGInit
+;;;589    	
+;;;590    	
+;;;591    	//======================= TIMER3 =======================//
+;;;592    	// Timer3		CH1 	-> LPWM (LCD backlight PWM) 
+;;;593    	//				CH3N	-> CPWM (System cooler PWM)
+;;;594    	// TIMER_CLK = HCLK
+;;;595    	// CLK = 2MHz
+;;;596    	// PWM frequency = 20kHz
+;;;597    	// PWM resolution = 100
+;;;598    	
+;;;599    	// Initialize timer 3 counter
+;;;600    	TIMER_CntStructInit(&sTIM_CntInit);
+0005ba  a80b              ADD      r0,sp,#0x2c
+0005bc  f7fffffe          BL       TIMER_CntStructInit
+;;;601    	sTIM_CntInit.TIMER_Prescaler                = 0xF;		// 2MHz at 32MHz core clk
+0005c0  200f              MOVS     r0,#0xf
+0005c2  f8ad002e          STRH     r0,[sp,#0x2e]
+;;;602    	sTIM_CntInit.TIMER_Period                   = 99;			// 20kHz at 2MHz
+0005c6  2063              MOVS     r0,#0x63
+0005c8  f8ad0030          STRH     r0,[sp,#0x30]
+;;;603    	TIMER_CntInit (MDR_TIMER3,&sTIM_CntInit);
+0005cc  4f5e              LDR      r7,|L1.1864|
+0005ce  a90b              ADD      r1,sp,#0x2c
+0005d0  4638              MOV      r0,r7
+0005d2  f7fffffe          BL       TIMER_CntInit
+;;;604    		
+;;;605    	// Initialize timer 3 channel 1
+;;;606    	TIMER_ChnStructInit(&sTIM_ChnInit);
+0005d6  a805              ADD      r0,sp,#0x14
+0005d8  f7fffffe          BL       TIMER_ChnStructInit
+;;;607    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL1;
+0005dc  f8ad4014          STRH     r4,[sp,#0x14]
+;;;608    	sTIM_ChnInit.TIMER_CH_Mode                = TIMER_CH_MODE_PWM;
+0005e0  f8ad4016          STRH     r4,[sp,#0x16]
+;;;609    	sTIM_ChnInit.TIMER_CH_REF_Format          = TIMER_CH_REF_Format6;
+0005e4  f8ad801e          STRH     r8,[sp,#0x1e]
+;;;610    	sTIM_ChnInit.TIMER_CH_CCR_UpdateMode      = TIMER_CH_CCR_Update_On_CNT_eq_0;
+0005e8  f8ad9026          STRH     r9,[sp,#0x26]
+;;;611    	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
+0005ec  a905              ADD      r1,sp,#0x14
+0005ee  4638              MOV      r0,r7
+0005f0  f7fffffe          BL       TIMER_ChnInit
+;;;612    
+;;;613    	// Initialize timer 3 channel 1 output
+;;;614    	TIMER_ChnOutStructInit(&sTIM_ChnOutInit);
+0005f4  4668              MOV      r0,sp
+0005f6  f7fffffe          BL       TIMER_ChnOutStructInit
+;;;615    	sTIM_ChnOutInit.TIMER_CH_Number                   = TIMER_CHANNEL1;
+0005fa  f8ad4000          STRH     r4,[sp,#0]
+;;;616    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source            = TIMER_CH_OutSrc_REF;
+0005fe  f8ad6004          STRH     r6,[sp,#4]
+;;;617    	sTIM_ChnOutInit.TIMER_CH_DirOut_Polarity          = TIMER_CHOPolarity_NonInverted;
+000602  f8ad4002          STRH     r4,[sp,#2]
+;;;618    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode              = TIMER_CH_OutMode_Output;
+000606  f8ad5006          STRH     r5,[sp,#6]
+;;;619    	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
+00060a  4669              MOV      r1,sp
+00060c  4638              MOV      r0,r7
+00060e  f7fffffe          BL       TIMER_ChnOutInit
+;;;620    
+;;;621    	// Initialize timer 3 channel 3
+;;;622    	sTIM_ChnInit.TIMER_CH_Number              = TIMER_CHANNEL3;
+000612  f8ad6014          STRH     r6,[sp,#0x14]
+;;;623    	TIMER_ChnInit(MDR_TIMER3, &sTIM_ChnInit);
+000616  a905              ADD      r1,sp,#0x14
+000618  4638              MOV      r0,r7
+00061a  f7fffffe          BL       TIMER_ChnInit
+;;;624    	
+;;;625    	// Initialize timer 3 channel 3 output
+;;;626    	sTIM_ChnOutInit.TIMER_CH_Number           	= TIMER_CHANNEL3;
+00061e  f8ad6000          STRH     r6,[sp,#0]
+;;;627    	sTIM_ChnOutInit.TIMER_CH_DirOut_Source      = TIMER_CH_OutSrc_Only_0;
+000622  f8ad4004          STRH     r4,[sp,#4]
+;;;628    	sTIM_ChnOutInit.TIMER_CH_DirOut_Mode        = TIMER_CH_OutMode_Input;
+000626  f8ad4006          STRH     r4,[sp,#6]
+;;;629    	sTIM_ChnOutInit.TIMER_CH_NegOut_Source     	= TIMER_CH_OutSrc_REF;
+00062a  f8ad600a          STRH     r6,[sp,#0xa]
+;;;630    	sTIM_ChnOutInit.TIMER_CH_NegOut_Polarity   	= TIMER_CHOPolarity_Inverted;
+00062e  f8ad5008          STRH     r5,[sp,#8]
+;;;631    	sTIM_ChnOutInit.TIMER_CH_NegOut_Mode       	= TIMER_CH_OutMode_Output;
+000632  f8ad500c          STRH     r5,[sp,#0xc]
+;;;632    	TIMER_ChnOutInit(MDR_TIMER3, &sTIM_ChnOutInit);
+000636  4669              MOV      r1,sp
+000638  4638              MOV      r0,r7
+00063a  f7fffffe          BL       TIMER_ChnOutInit
 ;;;633    
-;;;634    	// Enable TIMER3
-;;;635    	TIMER_Cmd(MDR_TIMER3,ENABLE);
-0005f6  2101              MOVS     r1,#1
-0005f8  4638              MOV      r0,r7
-0005fa  f7fffffe          BL       TIMER_Cmd
-;;;636    	
-;;;637    
-;;;638    
-;;;639    }
-0005fe  b011              ADD      sp,sp,#0x44
-000600  e8bd83f0          POP      {r4-r9,pc}
+;;;634    
+;;;635    	// Set default PWM duty cycle for LCD backlight PWM	
+;;;636    	MDR_TIMER3->CCR1 = 0;
+00063e  613c              STR      r4,[r7,#0x10]
+;;;637    	
+;;;638    	// Set default PWM duty cycle for system cooler PWM
+;;;639    	MDR_TIMER3->CCR3 = 0;
+000640  61bc              STR      r4,[r7,#0x18]
 ;;;640    
-                          ENDP
-
-                  SetVoltagePWMPeriod PROC
-;;;645    
-;;;646    void SetVoltagePWMPeriod(uint16_t new_period)
-000604  4939              LDR      r1,|L1.1772|
-;;;647    {
-;;;648    	MDR_TIMER2->CCR1 = new_period;	
-000606  6108              STR      r0,[r1,#0x10]
+;;;641    	// Enable TIMER3 counter clock
+;;;642    	TIMER_BRGInit(MDR_TIMER3,TIMER_HCLKdiv1);
+000642  2100              MOVS     r1,#0
+000644  4638              MOV      r0,r7
+000646  f7fffffe          BL       TIMER_BRGInit
+;;;643    
+;;;644    	// Enable TIMER3
+;;;645    	TIMER_Cmd(MDR_TIMER3,ENABLE);
+00064a  2101              MOVS     r1,#1
+00064c  4638              MOV      r0,r7
+00064e  f7fffffe          BL       TIMER_Cmd
+;;;646    	
+;;;647    
+;;;648    
 ;;;649    }
-000608  4770              BX       lr
+000652  b011              ADD      sp,sp,#0x44
+000654  e8bd83f0          POP      {r4-r9,pc}
 ;;;650    
                           ENDP
 
-                  SetCurrentPWMPeriod PROC
-;;;651    void SetCurrentPWMPeriod(uint16_t new_period)
-00060a  4938              LDR      r1,|L1.1772|
-;;;652    {
-;;;653    	MDR_TIMER2->CCR3 = new_period;	
-00060c  6188              STR      r0,[r1,#0x18]
-;;;654    }
-00060e  4770              BX       lr
+                  SetVoltagePWMPeriod PROC
 ;;;655    
+;;;656    void SetVoltagePWMPeriod(uint16_t new_period)
+000658  493a              LDR      r1,|L1.1860|
+;;;657    {
+;;;658    	MDR_TIMER2->CCR1 = new_period;	
+00065a  6108              STR      r0,[r1,#0x10]
+;;;659    }
+00065c  4770              BX       lr
+;;;660    
                           ENDP
 
-                  SetCoolerSpeed PROC
-;;;660    
-;;;661    void SetCoolerSpeed(uint16_t speed)
-000610  4937              LDR      r1,|L1.1776|
+                  SetCurrentPWMPeriod PROC
+;;;661    void SetCurrentPWMPeriod(uint16_t new_period)
+00065e  4939              LDR      r1,|L1.1860|
 ;;;662    {
-;;;663    	MDR_TIMER3->CCR3 = speed;
-000612  6188              STR      r0,[r1,#0x18]
+;;;663    	MDR_TIMER2->CCR3 = new_period;	
+000660  6188              STR      r0,[r1,#0x18]
 ;;;664    }
-000614  4770              BX       lr
+000662  4770              BX       lr
 ;;;665    
                           ENDP
 
+                  SetCoolerSpeed PROC
+;;;670    
+;;;671    void SetCoolerSpeed(uint16_t speed)
+000664  4938              LDR      r1,|L1.1864|
+;;;672    {
+;;;673    	MDR_TIMER3->CCR3 = speed;
+000666  6188              STR      r0,[r1,#0x18]
+;;;674    }
+000668  4770              BX       lr
+;;;675    
+                          ENDP
+
                   LcdSetBacklight PROC
-;;;673    //==============================================================//
-;;;674    void LcdSetBacklight(uint16_t value)
-000616  2864              CMP      r0,#0x64
-;;;675    {
-;;;676    	if (value>100) value = 100;
-000618  d900              BLS      |L1.1564|
-00061a  2064              MOVS     r0,#0x64
-                  |L1.1564|
-;;;677    		MDR_TIMER3->CCR1 = value;
-00061c  4934              LDR      r1,|L1.1776|
-00061e  6108              STR      r0,[r1,#0x10]
-;;;678    }
-000620  4770              BX       lr
-;;;679    
+;;;683    //==============================================================//
+;;;684    void LcdSetBacklight(uint16_t value)
+00066a  2864              CMP      r0,#0x64
+;;;685    {
+;;;686    	if (value>100) value = 100;
+00066c  d900              BLS      |L1.1648|
+00066e  2064              MOVS     r0,#0x64
+                  |L1.1648|
+;;;687    		MDR_TIMER3->CCR1 = value;
+000670  4935              LDR      r1,|L1.1864|
+000672  6108              STR      r0,[r1,#0x10]
+;;;688    }
+000674  4770              BX       lr
+;;;689    
                           ENDP
 
                   ProcessPowerOff PROC
-;;;681    
-;;;682    void ProcessPowerOff(void)
-000622  b538              PUSH     {r3-r5,lr}
-;;;683    {
-;;;684    	uint32_t time_delay;
-;;;685    	if (GetACLineStatus() == OFFLINE)
-000624  f7fffffe          BL       GetACLineStatus
-000628  2800              CMP      r0,#0
-00062a  d15e              BNE      |L1.1770|
-;;;686    	{	
-;;;687    		__disable_irq();
-00062c  b672              CPSID    i
-;;;688    
-;;;689    		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
-00062e  2000              MOVS     r0,#0
-000630  f7fffffe          BL       SetConverterState
-;;;690    
-;;;691    		//SysTickStop();
-;;;692    		//StopBeep();
-;;;693    
-;;;694    		time_delay = DWT_StartDelayUs(5000);
-000634  f2413088          MOV      r0,#0x1388
-000638  f7fffffe          BL       DWT_StartDelayUs
-00063c  4604              MOV      r4,r0
-;;;695    
-;;;696    		LcdSetBacklight(0);
-00063e  2000              MOVS     r0,#0
-000640  f7fffffe          BL       LcdSetBacklight
-;;;697    		SetCoolerSpeed(0);
-000644  2000              MOVS     r0,#0
-000646  f7fffffe          BL       SetCoolerSpeed
-;;;698    		SetVoltagePWMPeriod(0);
-00064a  2000              MOVS     r0,#0
-00064c  f7fffffe          BL       SetVoltagePWMPeriod
-;;;699    		SetCurrentPWMPeriod(0);
-000650  2000              MOVS     r0,#0
-000652  f7fffffe          BL       SetCurrentPWMPeriod
+;;;691    
+;;;692    void ProcessPowerOff(void)
+000676  b538              PUSH     {r3-r5,lr}
+;;;693    {
+;;;694    	uint32_t time_delay;
+;;;695    	if (GetACLineStatus() == OFFLINE)
+000678  f7fffffe          BL       GetACLineStatus
+00067c  2800              CMP      r0,#0
+00067e  d15e              BNE      |L1.1854|
+;;;696    	{	
+;;;697    		__disable_irq();
+000680  b672              CPSID    i
+;;;698    
+;;;699    		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
+000682  2000              MOVS     r0,#0
+000684  f7fffffe          BL       SetConverterState
 ;;;700    
-;;;701    
-;;;702    		// Put message
-;;;703    		LcdFillBuffer(lcd0_buffer,0);
-000656  2100              MOVS     r1,#0
-000658  4826              LDR      r0,|L1.1780|
-00065a  f7fffffe          BL       LcdFillBuffer
-;;;704    		LcdFillBuffer(lcd1_buffer,0);
-00065e  2100              MOVS     r1,#0
-000660  4825              LDR      r0,|L1.1784|
-000662  f7fffffe          BL       LcdFillBuffer
-;;;705    		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
-000666  4823              LDR      r0,|L1.1780|
-000668  9000              STR      r0,[sp,#0]
-00066a  4b24              LDR      r3,|L1.1788|
-00066c  a224              ADR      r2,|L1.1792|
-00066e  210a              MOVS     r1,#0xa
-000670  2000              MOVS     r0,#0
-000672  f7fffffe          BL       LcdPutNormalStr
-;;;706    		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
-000676  4820              LDR      r0,|L1.1784|
-000678  9000              STR      r0,[sp,#0]
-00067a  4b20              LDR      r3,|L1.1788|
-00067c  a220              ADR      r2,|L1.1792|
-00067e  210a              MOVS     r1,#0xa
-000680  2000              MOVS     r0,#0
-000682  f7fffffe          BL       LcdPutNormalStr
-                  |L1.1670|
-;;;707    
-;;;708    
-;;;709    
-;;;710    		while(DWT_DelayInProgress(time_delay));
-000686  4620              MOV      r0,r4
-000688  f7fffffe          BL       DWT_DelayInProgress
-00068c  2800              CMP      r0,#0
-00068e  d1fa              BNE      |L1.1670|
+;;;701    		//SysTickStop();
+;;;702    		//StopBeep();
+;;;703    
+;;;704    		time_delay = DWT_StartDelayUs(5000);
+000688  f2413088          MOV      r0,#0x1388
+00068c  f7fffffe          BL       DWT_StartDelayUs
+000690  4604              MOV      r4,r0
+;;;705    
+;;;706    		LcdSetBacklight(0);
+000692  2000              MOVS     r0,#0
+000694  f7fffffe          BL       LcdSetBacklight
+;;;707    		SetCoolerSpeed(0);
+000698  2000              MOVS     r0,#0
+00069a  f7fffffe          BL       SetCoolerSpeed
+;;;708    		SetVoltagePWMPeriod(0);
+00069e  2000              MOVS     r0,#0
+0006a0  f7fffffe          BL       SetVoltagePWMPeriod
+;;;709    		SetCurrentPWMPeriod(0);
+0006a4  2000              MOVS     r0,#0
+0006a6  f7fffffe          BL       SetCurrentPWMPeriod
+;;;710    
 ;;;711    
-;;;712    		SetFeedbackChannel(CHANNEL_12V);
-000690  f7fffffe          BL       SetFeedbackChannel
-;;;713    		SetCurrentLimit(CURRENT_LIM_HIGH); 
-000694  2001              MOVS     r0,#1
-000696  f7fffffe          BL       SetCurrentLimit
-;;;714    		SetOutputLoad(LOAD_DISABLE); 
-00069a  2001              MOVS     r0,#1
-00069c  f7fffffe          BL       SetOutputLoad
-;;;715    
-;;;716    		LcdUpdateByCore(LCD0,lcd0_buffer);
-0006a0  4914              LDR      r1,|L1.1780|
-0006a2  2001              MOVS     r0,#1
-0006a4  f7fffffe          BL       LcdUpdateByCore
-;;;717    		LcdUpdateByCore(LCD1,lcd1_buffer);
-0006a8  4913              LDR      r1,|L1.1784|
-0006aa  2002              MOVS     r0,#2
-0006ac  f7fffffe          BL       LcdUpdateByCore
+;;;712    		// Put message
+;;;713    		LcdFillBuffer(lcd0_buffer,0);
+0006aa  2100              MOVS     r1,#0
+0006ac  4827              LDR      r0,|L1.1868|
+0006ae  f7fffffe          BL       LcdFillBuffer
+;;;714    		LcdFillBuffer(lcd1_buffer,0);
+0006b2  2100              MOVS     r1,#0
+0006b4  4826              LDR      r0,|L1.1872|
+0006b6  f7fffffe          BL       LcdFillBuffer
+;;;715    		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
+0006ba  4824              LDR      r0,|L1.1868|
+0006bc  9000              STR      r0,[sp,#0]
+0006be  4b25              LDR      r3,|L1.1876|
+0006c0  a225              ADR      r2,|L1.1880|
+0006c2  210a              MOVS     r1,#0xa
+0006c4  2000              MOVS     r0,#0
+0006c6  f7fffffe          BL       LcdPutNormalStr
+;;;716    		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+0006ca  4821              LDR      r0,|L1.1872|
+0006cc  9000              STR      r0,[sp,#0]
+0006ce  4b21              LDR      r3,|L1.1876|
+0006d0  a221              ADR      r2,|L1.1880|
+0006d2  210a              MOVS     r1,#0xa
+0006d4  2000              MOVS     r0,#0
+0006d6  f7fffffe          BL       LcdPutNormalStr
+                  |L1.1754|
+;;;717    
 ;;;718    
 ;;;719    
-;;;720    
-;;;721    		time_delay = DWT_StartDelayUs(1000);
-0006b0  f44f707a          MOV      r0,#0x3e8
-0006b4  f7fffffe          BL       DWT_StartDelayUs
-0006b8  4604              MOV      r4,r0
-                  |L1.1722|
-;;;722    		while(DWT_DelayInProgress(time_delay));
-0006ba  4620              MOV      r0,r4
-0006bc  f7fffffe          BL       DWT_DelayInProgress
-0006c0  2800              CMP      r0,#0
-0006c2  d1fa              BNE      |L1.1722|
-;;;723    
-;;;724    		PORT_DeInit(MDR_PORTA);
-0006c4  4811              LDR      r0,|L1.1804|
-0006c6  f7fffffe          BL       PORT_DeInit
-;;;725    		PORT_DeInit(MDR_PORTB);
-0006ca  4811              LDR      r0,|L1.1808|
-0006cc  f7fffffe          BL       PORT_DeInit
-;;;726    		PORT_DeInit(MDR_PORTC);
-0006d0  4810              LDR      r0,|L1.1812|
-0006d2  f7fffffe          BL       PORT_DeInit
-;;;727    		PORT_DeInit(MDR_PORTD);
-0006d6  4810              LDR      r0,|L1.1816|
-0006d8  f7fffffe          BL       PORT_DeInit
-;;;728    		PORT_DeInit(MDR_PORTE);
-0006dc  480f              LDR      r0,|L1.1820|
-0006de  f7fffffe          BL       PORT_DeInit
-;;;729    		PORT_DeInit(MDR_PORTF);
-0006e2  480f              LDR      r0,|L1.1824|
-0006e4  f7fffffe          BL       PORT_DeInit
-                  |L1.1768|
+;;;720    		while(DWT_DelayInProgress(time_delay));
+0006da  4620              MOV      r0,r4
+0006dc  f7fffffe          BL       DWT_DelayInProgress
+0006e0  2800              CMP      r0,#0
+0006e2  d1fa              BNE      |L1.1754|
+;;;721    
+;;;722    		SetFeedbackChannel(CHANNEL_12V);
+0006e4  f7fffffe          BL       SetFeedbackChannel
+;;;723    		SetCurrentLimit(CURRENT_LIM_HIGH); 
+0006e8  2001              MOVS     r0,#1
+0006ea  f7fffffe          BL       SetCurrentLimit
+;;;724    		SetOutputLoad(LOAD_DISABLE); 
+0006ee  2001              MOVS     r0,#1
+0006f0  f7fffffe          BL       SetOutputLoad
+;;;725    
+;;;726    		LcdUpdateByCore(LCD0,lcd0_buffer);
+0006f4  4915              LDR      r1,|L1.1868|
+0006f6  2001              MOVS     r0,#1
+0006f8  f7fffffe          BL       LcdUpdateByCore
+;;;727    		LcdUpdateByCore(LCD1,lcd1_buffer);
+0006fc  4914              LDR      r1,|L1.1872|
+0006fe  2002              MOVS     r0,#2
+000700  f7fffffe          BL       LcdUpdateByCore
+;;;728    
+;;;729    
 ;;;730    
-;;;731    		while(1);
-0006e8  e7fe              B        |L1.1768|
-                  |L1.1770|
-;;;732    		 
-;;;733    	}
-;;;734    }
-0006ea  bd38              POP      {r3-r5,pc}
-;;;735    	
+;;;731    		time_delay = DWT_StartDelayUs(1000);
+000704  f44f707a          MOV      r0,#0x3e8
+000708  f7fffffe          BL       DWT_StartDelayUs
+00070c  4604              MOV      r4,r0
+                  |L1.1806|
+;;;732    		while(DWT_DelayInProgress(time_delay));
+00070e  4620              MOV      r0,r4
+000710  f7fffffe          BL       DWT_DelayInProgress
+000714  2800              CMP      r0,#0
+000716  d1fa              BNE      |L1.1806|
+;;;733    
+;;;734    		PORT_DeInit(MDR_PORTA);
+000718  4812              LDR      r0,|L1.1892|
+00071a  f7fffffe          BL       PORT_DeInit
+;;;735    		PORT_DeInit(MDR_PORTB);
+00071e  4812              LDR      r0,|L1.1896|
+000720  f7fffffe          BL       PORT_DeInit
+;;;736    		PORT_DeInit(MDR_PORTC);
+000724  4811              LDR      r0,|L1.1900|
+000726  f7fffffe          BL       PORT_DeInit
+;;;737    		PORT_DeInit(MDR_PORTD);
+00072a  4811              LDR      r0,|L1.1904|
+00072c  f7fffffe          BL       PORT_DeInit
+;;;738    		PORT_DeInit(MDR_PORTE);
+000730  4810              LDR      r0,|L1.1908|
+000732  f7fffffe          BL       PORT_DeInit
+;;;739    		PORT_DeInit(MDR_PORTF);
+000736  4810              LDR      r0,|L1.1912|
+000738  f7fffffe          BL       PORT_DeInit
+                  |L1.1852|
+;;;740    
+;;;741    		while(1);
+00073c  e7fe              B        |L1.1852|
+                  |L1.1854|
+;;;742    		 
+;;;743    	}
+;;;744    }
+00073e  bd38              POP      {r3-r5,pc}
+;;;745    
                           ENDP
 
-                  |L1.1772|
+                  |L1.1856|
+                          DCD      0x40070000
+                  |L1.1860|
                           DCD      0x40078000
-                  |L1.1776|
+                  |L1.1864|
                           DCD      0x40080000
-                  |L1.1780|
+                  |L1.1868|
                           DCD      lcd0_buffer
-                  |L1.1784|
+                  |L1.1872|
                           DCD      lcd1_buffer
-                  |L1.1788|
+                  |L1.1876|
                           DCD      font_8x12
-                  |L1.1792|
-000700  506f7765          DCB      "Power OFF",0
-000704  72204f46
-000708  4600    
-00070a  00                DCB      0
-00070b  00                DCB      0
-                  |L1.1804|
+                  |L1.1880|
+000758  506f7765          DCB      "Power OFF",0
+00075c  72204f46
+000760  4600    
+000762  00                DCB      0
+000763  00                DCB      0
+                  |L1.1892|
                           DCD      0x400a8000
-                  |L1.1808|
+                  |L1.1896|
                           DCD      0x400b0000
-                  |L1.1812|
+                  |L1.1900|
                           DCD      0x400b8000
-                  |L1.1816|
+                  |L1.1904|
                           DCD      0x400c0000
-                  |L1.1820|
+                  |L1.1908|
                           DCD      0x400c8000
-                  |L1.1824|
+                  |L1.1912|
                           DCD      0x400e8000
 
 ;*** Start embedded assembler ***

@@ -667,10 +667,10 @@
                   |L1.568|
                           DCD      ||.bss||
 
-                          AREA ||.bss||, DATA, NOINIT, ALIGN=9
+                          AREA ||.bss||, DATA, NOINIT, ALIGN=10
 
                   DMA_ControlTable
-                          %        512
+                          %        1024
 
 ;*** Start embedded assembler ***
 

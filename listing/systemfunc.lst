@@ -7342,7 +7342,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -10908,13 +10908,15 @@ N	UART_Cmd(MDR_UART1,ENABLE);
 X	UART_Cmd(((MDR_UART_TypeDef *) (0x40030000)),ENABLE);
 N	
 N	//------------ UART DMA features------------//
-N	//UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
-N	//UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+N	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
+X	UART_DMAConfig(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000002),((uint32_t)0x00000002));		
+N	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
+X	UART_DMAConfig(((MDR_UART_TypeDef *) (0x40038000)),((uint32_t)0x00000002),((uint32_t)0x00000002));		
 N	
 N	/* Enable UART1 DMA Rx and Tx request */
-N	//UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+N//	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 N	/* Enable UART2 DMA Rx and Tx request */
-N	//UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+N//	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 W "src\systemfunc.c" 285 17 variable "initStatus" was set but never used
 N}
 N
@@ -10927,11 +10929,29 @@ N{
 N	// Reset all DMA settings
 N	DMA_DeInit();	
 N	
-N	/*
-N		NVIC_EnableIRQ(DMA_IRQn);
+N	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
+X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	
+N	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
+X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET = 0xFFFFFFFF;	
 N	
 N	
-N	*/
+N	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
+X	RST_CLK_PCLKcmd(((uint32_t)(1 << ((((uint32_t)(0x40040000)) >> 15) & 0x1F))) ,ENABLE);
+N	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
+X	SSP_BRGInit(((MDR_SSP_TypeDef *) (0x40040000)),((uint32_t)0x00000000));		
+N	MDR_SSP1->DMACR = 0;
+X	((MDR_SSP_TypeDef *) (0x40040000))->DMACR = 0;
+N	MDR_SSP2->DMACR = 0;
+X	((MDR_SSP_TypeDef *) (0x400A0000))->DMACR = 0;
+N	
+N	NVIC->ICPR[0] = 0xFFFFFFFF;
+X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICPR[0] = 0xFFFFFFFF;
+N	NVIC->ICER[0] = 0xFFFFFFFF;
+X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICER[0] = 0xFFFFFFFF;
+N	
+N	
+N	
+N	NVIC_EnableIRQ(DMA_IRQn);
 N}
 N
 N
@@ -11435,11 +11455,5 @@ N		while(1);
 N		 
 N	}
 N}
-N	
-N	 
-N	
-N
-N
-N
 N
 N

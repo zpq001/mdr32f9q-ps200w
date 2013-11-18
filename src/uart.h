@@ -1,8 +1,24 @@
 
+typedef struct {
+	uint16_t read_index;
+	uint16_t size;
+	uint16_t *data;
+} uart_dma_rx_buffer_t;
+
+typedef struct {
+	uint16_t type;
+	char *pdata;
+} uart_transmiter_msg_t;
+
+
+
+
 //---------------------------------------------//
 // Buffer settings
-#define RX_RING_BUFFER_SIZE		200
-#define TX_RING_BUFFER_SIZE		200
+#define RX_BUFFER_SIZE			200		// Filled by DMA in cyclical way
+#define TX_BUFFER_SIZE			100
+
+#define EMPTY_DATA				0xFFFF
 
 // Parser settings
 #define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length
@@ -18,15 +34,21 @@
 
 
 
+//---------------------------------------------//
+// Task message definitions
+#define SEND_STRING					0x0001
+#define SEND_ALLOCATED_STRING		0x0002
+#define RESPONSE_OK					0x0100
+#define UNKNOWN_CMD					0x0101
+#define BAD_CMD_SET_VOLTAGE			0x0102
+#define BAD_CMD_SET_CURRENT			0x0103
+#define BAD_CMD_SET_CURRENT_LIMIT	0x0104
+#define BAD_CMD_ENCODER_DELTA		0x0105
 
 
 
-
-
-void UARTInit(void);
 void vTaskUARTReceiver(void *pvParameters);
-void processUartRX(void);
+void vTaskUARTTransmitter(void *pvParameters);
 
-void processUartTX(void);
 
 

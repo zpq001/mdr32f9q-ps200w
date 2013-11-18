@@ -12708,10 +12708,26 @@ L 19 "src\systick.c" 2
 N#include "uart.h"
 L 1 "src\uart.h" 1
 N
+Ntypedef struct {
+N	uint16_t read_index;
+N	uint16_t size;
+N	uint16_t *data;
+N} uart_dma_rx_buffer_t;
+N
+Ntypedef struct {
+N	uint16_t type;
+N	char *pdata;
+N} uart_transmiter_msg_t;
+N
+N
+N
+N
 N//---------------------------------------------//
 N// Buffer settings
-N#define RX_RING_BUFFER_SIZE		200
-N#define TX_RING_BUFFER_SIZE		200
+N#define RX_BUFFER_SIZE			200		// Filled by DMA in cyclical way
+N#define TX_BUFFER_SIZE			100
+N
+N#define EMPTY_DATA				0xFFFF
 N
 N// Parser settings
 N#define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length
@@ -12727,16 +12743,22 @@ N
 N
 N
 N
+N//---------------------------------------------//
+N// Task message definitions
+N#define SEND_STRING					0x0001
+N#define SEND_ALLOCATED_STRING		0x0002
+N#define RESPONSE_OK					0x0100
+N#define UNKNOWN_CMD					0x0101
+N#define BAD_CMD_SET_VOLTAGE			0x0102
+N#define BAD_CMD_SET_CURRENT			0x0103
+N#define BAD_CMD_SET_CURRENT_LIMIT	0x0104
+N#define BAD_CMD_ENCODER_DELTA		0x0105
 N
 N
 N
-N
-N
-Nvoid UARTInit(void);
 Nvoid vTaskUARTReceiver(void *pvParameters);
-Nvoid processUartRX(void);
+Nvoid vTaskUARTTransmitter(void *pvParameters);
 N
-Nvoid processUartTX(void);
 N
 N
 L 20 "src\systick.c" 2
@@ -12951,6 +12973,8 @@ N	// Time profiling
 N	uint32_t time_mark1 = 0;
 N	uint32_t time_mark2 = 0;
 N	uint32_t ticks_count;
+N	
+N	time_mark1 = DWT_Get();
 N/*	
 N	// Debug
 N	if (MDR_PORTA->RXTX & (1<<TXD1))
@@ -12968,13 +12992,12 @@ N		// 286
 N		Converter_HW_ADCProcess();	// Converter low-level ADC control
 N		//-------------------------------//
 N	}
-N	
+N/*	
 N	//-------------------------------//
 N	// 2369
 N	if (--hw_uart2_rx_counter == 0)
 N	{
 N		hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD;
-X		hw_uart2_rx_counter = 5;
 N		//-------------------------------//
 N		// 373
 N		processUartRX();			// UART2 receiver service
@@ -12983,7 +13006,6 @@ N	}
 N	if (--hw_uart2_tx_counter == 0)
 N	{
 N		hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD;
-X		hw_uart2_tx_counter = 5;
 N		time_mark1 = DWT_Get();
 N		//-------------------------------//
 N		// 2320
@@ -12992,7 +13014,7 @@ N		//-------------------------------//
 N		time_mark2 = DWT_Get();
 N	}
 N	//-------------------------------//
-N	
+N*/	
 N	
 N	//-------------------------------//
 N	// 608
@@ -13014,12 +13036,15 @@ N	TIMER_ClearFlag(MDR_TIMER2, TIMER_STATUS_CCR_REF_CH2);
 X	TIMER_ClearFlag(((MDR_TIMER_TypeDef *) (0x40078000)), (((uint32_t)0x1) << 10));
 N	//-------------------------------//
 N	
+N	time_mark2 = DWT_Get();
 N	
 N	
 N	// Update time
 N	ticks_count = DWT_GetDelta(time_mark1, time_mark2);
 N	if (ticks_count > time_profile.max_ticks_in_Timer2_ISR)
 N		time_profile.max_ticks_in_Timer2_ISR = ticks_count;
+W "src\systick.c" 144 18 variable "hw_uart2_rx_counter" was declared but never referenced
+W "src\systick.c" 145 18 variable "hw_uart2_tx_counter" was declared but never referenced
 N}
 N
 N

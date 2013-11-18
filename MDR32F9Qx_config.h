@@ -49,7 +49,7 @@
 
 /* DMA configuration parameters */
 /* Number of DMA channels to use */
-#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
+#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
 
 /* Alternate Control Data Structure Usage */
 /* This parameter can be a value of:

@@ -14,6 +14,7 @@
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_timer.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_i2c.h
 .\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_adc.h
+.\FLASH\systemfunc.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h
 .\FLASH\systemfunc.o: src\systemfunc.h
 .\FLASH\systemfunc.o: .\defines.h
 .\FLASH\systemfunc.o: src\systick.h

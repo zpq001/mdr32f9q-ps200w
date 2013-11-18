@@ -27,3 +27,4 @@
 .\FLASH\systick.o: src\dispatcher.h
 .\FLASH\systick.o: src\uart.h
 .\FLASH\systick.o: src\dwt_delay.h
+.\FLASH\systick.o: src\sound_driver.h

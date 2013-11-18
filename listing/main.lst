@@ -6041,7 +6041,7 @@ N#define FLASH_PROG_FREQ_MHZ                     (8.0)
 N
 N/* DMA configuration parameters */
 N/* Number of DMA channels to use */
-N#define DMA_Channels_Number   16          /* This parameter is in range 1..32 */
+N#define DMA_Channels_Number   32          /* This parameter is in range 1..32 */
 N
 N/* Alternate Control Data Structure Usage */
 N/* This parameter can be a value of:
@@ -15582,10 +15582,26 @@ L 39 "main.c" 2
 N#include "uart.h"
 L 1 ".\src\uart.h" 1
 N
+Ntypedef struct {
+N	uint16_t read_index;
+N	uint16_t size;
+N	uint16_t *data;
+N} uart_dma_rx_buffer_t;
+N
+Ntypedef struct {
+N	uint16_t type;
+N	char *pdata;
+N} uart_transmiter_msg_t;
+N
+N
+N
+N
 N//---------------------------------------------//
 N// Buffer settings
-N#define RX_RING_BUFFER_SIZE		200
-N#define TX_RING_BUFFER_SIZE		200
+N#define RX_BUFFER_SIZE			200		// Filled by DMA in cyclical way
+N#define TX_BUFFER_SIZE			100
+N
+N#define EMPTY_DATA				0xFFFF
 N
 N// Parser settings
 N#define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length
@@ -15601,16 +15617,22 @@ N
 N
 N
 N
+N//---------------------------------------------//
+N// Task message definitions
+N#define SEND_STRING					0x0001
+N#define SEND_ALLOCATED_STRING		0x0002
+N#define RESPONSE_OK					0x0100
+N#define UNKNOWN_CMD					0x0101
+N#define BAD_CMD_SET_VOLTAGE			0x0102
+N#define BAD_CMD_SET_CURRENT			0x0103
+N#define BAD_CMD_SET_CURRENT_LIMIT	0x0104
+N#define BAD_CMD_ENCODER_DELTA		0x0105
 N
 N
 N
-N
-N
-Nvoid UARTInit(void);
 Nvoid vTaskUARTReceiver(void *pvParameters);
-Nvoid processUartRX(void);
+Nvoid vTaskUARTTransmitter(void *pvParameters);
 N
-Nvoid processUartTX(void);
 N
 N
 L 40 "main.c" 2
@@ -15852,7 +15874,7 @@ N	HW_UARTInit();
 N	HW_DMAInit();
 N	LcdInit();
 N	
-N	UARTInit();
+N//	UARTInit();
 N	
 N	InitButtons();
 N	ProcessButtons();
@@ -15878,20 +15900,22 @@ N	time_profile.max_ticks_in_Systick_hook = 0;
 N	time_profile.max_ticks_in_Timer2_ISR = 0;
 N	
 N	
-N	xTaskCreate( vTaskGUI, 			( signed char * ) "GUI top", 		configMINIMAL_STACK_SIZE, NULL, 1, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskGUI, 			( signed char * ) 		"GUI top", 		configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskGUI ), ( ( signed char * ) "GUI top" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 1 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
-N	xTaskCreate( vTaskConverter, 	( signed char * ) "Converter", 		configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskConverter ), ( ( signed char * ) "Converter" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 2 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
-N	xTaskCreate( vTaskService, 		( signed char * ) "Service", 		configMINIMAL_STACK_SIZE, NULL, 0, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskService, 		( signed char * ) 		"Service", 		configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskService ), ( ( signed char * ) "Service" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 0 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
-N	xTaskCreate( vTaskDispatcher, 	( signed char * ) "Dispatcher", 	configMINIMAL_STACK_SIZE, NULL, 3, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskDispatcher, 	( signed char * ) 		"Dispatcher", 	configMINIMAL_STACK_SIZE, 	NULL, 3, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskDispatcher ), ( ( signed char * ) "Dispatcher" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 3 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
-N	xTaskCreate( vTaskADC, 			( signed char * ) "ADC", 			configMINIMAL_STACK_SIZE, NULL, 2, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskADC, 			( signed char * ) 		"ADC", 			configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskADC ), ( ( signed char * ) "ADC" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 2 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
-N	xTaskCreate( vTaskUARTReceiver, ( signed char * ) "UART2 RX", 		256, 					  NULL, 2, ( xTaskHandle * ) NULL);
-X	xTaskGenericCreate( ( vTaskUARTReceiver ), ( ( signed char * ) "UART2 RX" ), ( 256 ), ( 0 ), ( 2 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
+N	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART2 RX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
+X	xTaskGenericCreate( ( vTaskUARTReceiver ), ( ( signed char * ) "UART2 RX" ), ( 256 ), ( 0 ), ( 1 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
+N	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART2 TX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
+X	xTaskGenericCreate( ( vTaskUARTTransmitter ), ( ( signed char * ) "UART2 TX" ), ( 256 ), ( 0 ), ( 1 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
 N	
-N	xTaskCreate( vTaskSound, 		( signed char * ) "Sound driver", 	configMINIMAL_STACK_SIZE, NULL, 1, ( xTaskHandle * ) NULL);
+N	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 X	xTaskGenericCreate( ( vTaskSound ), ( ( signed char * ) "Sound driver" ), ( ( ( unsigned short ) 128 ) ), ( 0 ), ( 1 ), ( ( xTaskHandle * ) 0 ), ( 0 ), ( 0 ) );
 N	
 N	vTaskStartScheduler();

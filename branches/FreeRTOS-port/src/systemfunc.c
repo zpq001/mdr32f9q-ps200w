@@ -87,6 +87,42 @@ void Setup_CPU_Clock(void)
 }
 
 
+int32_t pr[15];
+
+void HW_NVIC_init(void)
+{
+	
+	NVIC_SetPriorityGrouping( 3 );
+	
+	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+	
+	pr[3] = NVIC_GetPriority(DMA_IRQn);
+	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+
+//	NVIC_SetPriority(SVCall_IRQn,-1);
+	NVIC_SetPriority(DMA_IRQn,6);
+	NVIC_SetPriority(Timer2_IRQn,6);
+
+	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+	
+}
+
+void HW_NVIC_check(void)
+{
+	
+	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+	
+	pr[3] = NVIC_GetPriority(DMA_IRQn);
+	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+	
+}
+
 
 //-----------------------------------------------------------------//
 // Setup IO Ports
@@ -742,5 +778,60 @@ void ProcessPowerOff(void)
 		 
 	}
 }
+
+
+struct {
+	uint32_t stacked_r0;
+	uint32_t stacked_r1;
+	uint32_t stacked_r2;
+	uint32_t stacked_r3;
+	uint32_t stacked_r12;
+	uint32_t stacked_lr;
+	uint32_t stacked_pc;
+	uint32_t stacked_psr;
+	uint32_t BFAR;
+	uint32_t CFSR;
+	uint32_t HFSR;
+	uint32_t DFSR;
+	uint32_t AFSR;
+	uint32_t SBC_SHCSR;
+} dbg_struct;
+
+
+// Hard fault handler
+// with stack frame location as input parameter
+// called from HardFault_Handler in file startup_MDR32F9x.s
+void hard_fault_handler_c (unsigned int * hardfault_args)
+{
+
+  dbg_struct.stacked_r0 = ((unsigned long) hardfault_args[0]);
+  dbg_struct.stacked_r1 = ((unsigned long) hardfault_args[1]);
+  dbg_struct.stacked_r2 = ((unsigned long) hardfault_args[2]);
+  dbg_struct.stacked_r3 = ((unsigned long) hardfault_args[3]);
+ 
+  dbg_struct.stacked_r12 = ((unsigned long) hardfault_args[4]);
+  dbg_struct.stacked_lr = ((unsigned long) hardfault_args[5]);
+  dbg_struct.stacked_pc = ((unsigned long) hardfault_args[6]);
+  dbg_struct.stacked_psr = ((unsigned long) hardfault_args[7]);
+ /*
+  printf ("\n\n[Hard fault handler - all numbers in hex]\n");
+  printf ("R0 = %x\n", stacked_r0);
+  printf ("R1 = %x\n", stacked_r1);
+  printf ("R2 = %x\n", stacked_r2);
+  printf ("R3 = %x\n", stacked_r3);
+  printf ("R12 = %x\n", stacked_r12);
+  printf ("LR [R14] = %x  subroutine call return address\n", stacked_lr);
+  printf ("PC [R15] = %x  program counter\n", stacked_pc);
+  printf ("PSR = %x\n", stacked_psr);
+  printf ("BFAR = %x\n", (*((volatile unsigned long *)(0xE000ED38))));
+  printf ("CFSR = %x\n", (*((volatile unsigned long *)(0xE000ED28))));
+  printf ("HFSR = %x\n", (*((volatile unsigned long *)(0xE000ED2C))));
+  printf ("DFSR = %x\n", (*((volatile unsigned long *)(0xE000ED30))));
+  printf ("AFSR = %x\n", (*((volatile unsigned long *)(0xE000ED3C))));
+  printf ("SCB_SHCSR = %x\n", SCB->SHCSR);
+ */
+  while (1);
+}
+
 
 

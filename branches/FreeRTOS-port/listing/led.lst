@@ -6536,6 +6536,7 @@ N
 N
 N
 Nvoid Setup_CPU_Clock(void);
+Nvoid HW_NVIC_init(void);
 Nvoid HW_PortInit(void);
 Nvoid HW_UARTInit(void);
 Nvoid HW_SSPInit(void);

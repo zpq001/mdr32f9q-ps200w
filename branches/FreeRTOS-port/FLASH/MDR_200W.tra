@@ -48,7 +48,7 @@
 ### ADS-LD Output File: '.\FLASH\MDR_200W.axf'
 ### ADS-LD Command File: '.\FLASH\MDR_200W.lnp'
 ### Checking for dirty Components...
-### Creating CmdFile '.\FLASH\MDR_200W.lnp', Handle=0x00006A3C
+### Creating CmdFile '.\FLASH\MDR_200W.lnp', Handle=0x00001738
 ### Writing '.lnp' file
 ### ADS-LD Command file '.\FLASH\MDR_200W.lnp' is ready.
 ### ADS-LD: About to start ADS-LD Thread.

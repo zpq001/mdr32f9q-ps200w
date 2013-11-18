@@ -20,6 +20,7 @@
 
 
 void Setup_CPU_Clock(void);
+void HW_NVIC_init(void);
 void HW_PortInit(void);
 void HW_UARTInit(void);
 void HW_SSPInit(void);

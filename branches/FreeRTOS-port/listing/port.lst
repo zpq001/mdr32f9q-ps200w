@@ -453,8 +453,8 @@ N(lowest) to 0 (1?) (highest). */
 N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N
+N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -3741,7 +3741,7 @@ S	#define configKERNEL_INTERRUPT_PRIORITY 255
 N#endif
 N
 N#if configMAX_SYSCALL_INTERRUPT_PRIORITY == 0
-X#if 191 == 0
+X#if 0x20 == 0
 S	#error configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to 0.  See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html
 N#endif
 N
@@ -4086,7 +4086,7 @@ N	str r0, [r2]				/* Save the new top of stack into the first member of the TCB.
 N
 N	stmdb sp!, {r3, r14}
 N	mov r0, #configMAX_SYSCALL_INTERRUPT_PRIORITY
-X	mov r0, #191
+X	mov r0, #0x20
 N	msr basepri, r0
 N	bl vTaskSwitchContext
 N	mov r0, #0
@@ -4315,7 +4315,7 @@ N	PRESERVE8
 N
 N	mrs r0, basepri
 N	mov r1, #configMAX_SYSCALL_INTERRUPT_PRIORITY
-X	mov r1, #191
+X	mov r1, #0x20
 N	msr basepri, r1
 N	bx r14
 N}

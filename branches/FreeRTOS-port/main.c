@@ -125,6 +125,7 @@ int main(void)
 	// system initialization
 	//=============================================//
 	Setup_CPU_Clock();
+	HW_NVIC_init();
 	DWT_Init();
 	HW_SSPInit();
 	HW_I2CInit();
@@ -163,6 +164,8 @@ int main(void)
 	xTaskCreate( vTaskService, 		( signed char * ) 		"Service", 		configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskDispatcher, 	( signed char * ) 		"Dispatcher", 	configMINIMAL_STACK_SIZE, 	NULL, 3, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskADC, 			( signed char * ) 		"ADC", 			configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
+	
+	// Transmitter task priority should be > receiver's due to unknown error which invokes hard fault handler with INVPC error
 	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART2 RX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART2 TX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
 	

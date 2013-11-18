@@ -160,10 +160,12 @@ void vTaskUARTReceiver(void *pvParameters)
 	UART_init_RX_DMA(MDR_UART1, uart1_rx_data_buff, RX_BUFFER_SIZE);
 	
 	
+	HW_NVIC_check();
+	
 	while(1)
 	{
 		/////////////////////////
-		while(1)
+	/*	while(1)
 		{
 			vTaskDelayUntil(&lastExecutionTime, 5);
 			
@@ -174,7 +176,7 @@ void vTaskUARTReceiver(void *pvParameters)
 			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
 			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
 		}
-		
+		*/
 		/////////////////////////
 		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
 
@@ -391,7 +393,7 @@ void vTaskUARTTransmitter(void *pvParameters)
 	uart_transmiter_msg_t income_msg;
 	uint32_t src_address;
 	uint32_t n;
-	
+
 	
 	DMA_ChannelInitTypeDef DMA_InitStr;
 	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
@@ -472,10 +474,8 @@ void vTaskUARTTransmitter(void *pvParameters)
 		DMA_Cmd(DMA_Channel_UART1_TX, ENABLE);
 		// Enable UART1 DMA Tx request
 		UART_DMACmd(MDR_UART1,UART_DMA_TXE, ENABLE);
-
 			
 		// Wait for DMA
-		//while((DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_CHNL_ENA)));
 		xSemaphoreTake(xSemaphoreUART1TX, portMAX_DELAY);
 	
 		// Free memory

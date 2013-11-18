@@ -352,7 +352,7 @@
  str r0, [r2]  
 
  stmdb sp!, {r3, r14}
- mov r0, #191
+ mov r0, #0x20
  msr basepri, r0
  bl vTaskSwitchContext
  mov r0, #0
@@ -376,7 +376,7 @@
  PRESERVE8
 
  mrs r0, basepri
- mov r1, #191
+ mov r1, #0x20
  msr basepri, r1
  bx r14
 	ENDP

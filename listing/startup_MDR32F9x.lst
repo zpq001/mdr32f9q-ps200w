@@ -165,9 +165,9 @@ ARM Macro Assembler    Page 3
   116 00000000                 EXPORT           Reset_Handler             [WEAK]
   117 00000000                 IMPORT           SystemInit
   118 00000000                 IMPORT           __main
-  119 00000000 4809            LDR              R0, =SystemInit
+  119 00000000 480D            LDR              R0, =SystemInit
   120 00000002 4780            BLX              R0
-  121 00000004 4809            LDR              R0, =__main
+  121 00000004 480D            LDR              R0, =__main
   122 00000006 4700            BX               R0
   123 00000008                 ENDP
   124 00000008         
@@ -184,15 +184,15 @@ ARM Macro Assembler    Page 3
                                PROC
   133 0000000A                 EXPORT           HardFault_Handler          [WEAK
 ]
-  134 0000000A E7FE            B                .
-  135 0000000C                 ENDP
-  137 0000000C         MemManage_Handler
-                               PROC
-  138 0000000C                 EXPORT           MemManage_Handler          [WEAK
-]
-  139 0000000C E7FE            B                .
-  140 0000000E                 ENDP
-  142 0000000E         BusFault_Handler
+  134 0000000A                 IMPORT           hard_fault_handler_c
+  135 0000000A F01E 0F04       TST              LR, #4
+  136 0000000E BF0C            ITE              EQ
+  137 00000010 F3EF 8008       MRSEQ            R0, MSP
+  138 00000014 F3EF 8009       MRSNE            R0, PSP
+  139 00000018 F7FF BFFE       B                hard_fault_handler_c
+  140 0000001C         ;                B       .
+  141 0000001C                 ENDP
+  143 0000001C         MemManage_Handler
 
 
 
@@ -200,64 +200,64 @@ ARM Macro Assembler    Page 4
 
 
                                PROC
-  143 0000000E                 EXPORT           BusFault_Handler           [WEAK
+  144 0000001C                 EXPORT           MemManage_Handler          [WEAK
 ]
-  144 0000000E E7FE            B                .
-  145 00000010                 ENDP
-  147 00000010         UsageFault_Handler
+  145 0000001C E7FE            B                .
+  146 0000001E                 ENDP
+  148 0000001E         BusFault_Handler
                                PROC
-  148 00000010                 EXPORT           UsageFault_Handler         [WEAK
+  149 0000001E                 EXPORT           BusFault_Handler           [WEAK
 ]
-  149 00000010 E7FE            B                .
-  150 00000012                 ENDP
-  151 00000012         SVC_Handler
+  150 0000001E E7FE            B                .
+  151 00000020                 ENDP
+  153 00000020         UsageFault_Handler
                                PROC
-  152 00000012                 EXPORT           SVC_Handler                [WEAK
+  154 00000020                 EXPORT           UsageFault_Handler         [WEAK
 ]
-  153 00000012 E7FE            B                .
-  154 00000014                 ENDP
-  156 00000014         DebugMon_Handler
+  155 00000020 E7FE            B                .
+  156 00000022                 ENDP
+  157 00000022         SVC_Handler
                                PROC
-  157 00000014                 EXPORT           DebugMon_Handler           [WEAK
+  158 00000022                 EXPORT           SVC_Handler                [WEAK
 ]
-  158 00000014 E7FE            B                .
-  159 00000016                 ENDP
-  160 00000016         PendSV_Handler
+  159 00000022 E7FE            B                .
+  160 00000024                 ENDP
+  162 00000024         DebugMon_Handler
                                PROC
-  161 00000016                 EXPORT           PendSV_Handler             [WEAK
+  163 00000024                 EXPORT           DebugMon_Handler           [WEAK
 ]
-  162 00000016 E7FE            B                .
-  163 00000018                 ENDP
-  164 00000018         SysTick_Handler
+  164 00000024 E7FE            B                .
+  165 00000026                 ENDP
+  166 00000026         PendSV_Handler
                                PROC
-  165 00000018                 EXPORT           SysTick_Handler            [WEAK
+  167 00000026                 EXPORT           PendSV_Handler             [WEAK
 ]
-  166 00000018 E7FE            B                .
-  167 0000001A                 ENDP
-  168 0000001A         
-  169 0000001A         Default_Handler
+  168 00000026 E7FE            B                .
+  169 00000028                 ENDP
+  170 00000028         SysTick_Handler
                                PROC
-  170 0000001A         
-  171 0000001A         
-  172 0000001A                 EXPORT           CAN1_IRQHandler            [WEAK
+  171 00000028                 EXPORT           SysTick_Handler            [WEAK
 ]
-  173 0000001A                 EXPORT           CAN2_IRQHandler            [WEAK
+  172 00000028 E7FE            B                .
+  173 0000002A                 ENDP
+  174 0000002A         
+  175 0000002A         Default_Handler
+                               PROC
+  176 0000002A         
+  177 0000002A         
+  178 0000002A                 EXPORT           CAN1_IRQHandler            [WEAK
 ]
-  174 0000001A                 EXPORT           USB_IRQHandler             [WEAK
+  179 0000002A                 EXPORT           CAN2_IRQHandler            [WEAK
 ]
-  175 0000001A                 EXPORT           DMA_IRQHandler             [WEAK
+  180 0000002A                 EXPORT           USB_IRQHandler             [WEAK
 ]
-  176 0000001A                 EXPORT           UART1_IRQHandler           [WEAK
+  181 0000002A                 EXPORT           DMA_IRQHandler             [WEAK
 ]
-  177 0000001A                 EXPORT           UART2_IRQHandler           [WEAK
+  182 0000002A                 EXPORT           UART1_IRQHandler           [WEAK
 ]
-  178 0000001A                 EXPORT           SSP1_IRQHandler            [WEAK
+  183 0000002A                 EXPORT           UART2_IRQHandler           [WEAK
 ]
-  179 0000001A                 EXPORT           I2C_IRQHandler             [WEAK
-]
-  180 0000001A                 EXPORT           POWER_IRQHandler           [WEAK
-]
-  181 0000001A                 EXPORT           WWDG_IRQHandler            [WEAK
+  184 0000002A                 EXPORT           SSP1_IRQHandler            [WEAK
 
 
 
@@ -265,86 +265,93 @@ ARM Macro Assembler    Page 5
 
 
 ]
-  182 0000001A                 EXPORT           Timer1_IRQHandler          [WEAK
+  185 0000002A                 EXPORT           I2C_IRQHandler             [WEAK
 ]
-  183 0000001A                 EXPORT           Timer2_IRQHandler          [WEAK
+  186 0000002A                 EXPORT           POWER_IRQHandler           [WEAK
 ]
-  184 0000001A                 EXPORT           Timer3_IRQHandler          [WEAK
+  187 0000002A                 EXPORT           WWDG_IRQHandler            [WEAK
 ]
-  185 0000001A                 EXPORT           ADC_IRQHandler             [WEAK
+  188 0000002A                 EXPORT           Timer1_IRQHandler          [WEAK
 ]
-  186 0000001A                 EXPORT           COMPARATOR_IRQHandler      [WEAK
+  189 0000002A                 EXPORT           Timer2_IRQHandler          [WEAK
 ]
-  187 0000001A                 EXPORT           SSP2_IRQHandler            [WEAK
+  190 0000002A                 EXPORT           Timer3_IRQHandler          [WEAK
 ]
-  188 0000001A                 EXPORT           BACKUP_IRQHandler          [WEAK
+  191 0000002A                 EXPORT           ADC_IRQHandler             [WEAK
 ]
-  189 0000001A                 EXPORT           EXT_INT1_IRQHandler        [WEAK
+  192 0000002A                 EXPORT           COMPARATOR_IRQHandler      [WEAK
 ]
-  190 0000001A                 EXPORT           EXT_INT2_IRQHandler        [WEAK
+  193 0000002A                 EXPORT           SSP2_IRQHandler            [WEAK
 ]
-  191 0000001A                 EXPORT           EXT_INT3_IRQHandler        [WEAK
+  194 0000002A                 EXPORT           BACKUP_IRQHandler          [WEAK
 ]
-  192 0000001A                 EXPORT           EXT_INT4_IRQHandler        [WEAK
+  195 0000002A                 EXPORT           EXT_INT1_IRQHandler        [WEAK
 ]
-  193 0000001A         
-  194 0000001A         CAN1_IRQHandler
-  195 0000001A         CAN2_IRQHandler
-  196 0000001A         USB_IRQHandler
-  197 0000001A         DMA_IRQHandler
-  198 0000001A         UART1_IRQHandler
-  199 0000001A         UART2_IRQHandler
-  200 0000001A         SSP1_IRQHandler
-  201 0000001A         I2C_IRQHandler
-  202 0000001A         POWER_IRQHandler
-  203 0000001A         WWDG_IRQHandler
-  204 0000001A         Timer1_IRQHandler
-  205 0000001A         Timer2_IRQHandler
-  206 0000001A         Timer3_IRQHandler
-  207 0000001A         ADC_IRQHandler
-  208 0000001A         COMPARATOR_IRQHandler
-  209 0000001A         SSP2_IRQHandler
-  210 0000001A         BACKUP_IRQHandler
-  211 0000001A         EXT_INT1_IRQHandler
-  212 0000001A         EXT_INT2_IRQHandler
-  213 0000001A         EXT_INT3_IRQHandler
-  214 0000001A         EXT_INT4_IRQHandler
-  215 0000001A         
-  216 0000001A E7FE            B                .
-  217 0000001C         
-  218 0000001C                 ENDP
-  219 0000001C         
-  220 0000001C                 ALIGN
-  221 0000001C         
-  222 0000001C         ;********************************************************
-                       ***********************
-  223 0000001C         ; User Stack and Heap initialization
-  224 0000001C         ;********************************************************
-                       ***********************
-  225 0000001C                 IF               :DEF:__MICROLIB
-  232 0000001C         
+  196 0000002A                 EXPORT           EXT_INT2_IRQHandler        [WEAK
+]
+  197 0000002A                 EXPORT           EXT_INT3_IRQHandler        [WEAK
+]
+  198 0000002A                 EXPORT           EXT_INT4_IRQHandler        [WEAK
+]
+  199 0000002A         
+  200 0000002A         CAN1_IRQHandler
+  201 0000002A         CAN2_IRQHandler
+  202 0000002A         USB_IRQHandler
+  203 0000002A         DMA_IRQHandler
+  204 0000002A         UART1_IRQHandler
+  205 0000002A         UART2_IRQHandler
+  206 0000002A         SSP1_IRQHandler
+  207 0000002A         I2C_IRQHandler
+  208 0000002A         POWER_IRQHandler
+  209 0000002A         WWDG_IRQHandler
+  210 0000002A         Timer1_IRQHandler
+  211 0000002A         Timer2_IRQHandler
+  212 0000002A         Timer3_IRQHandler
+  213 0000002A         ADC_IRQHandler
+  214 0000002A         COMPARATOR_IRQHandler
+  215 0000002A         SSP2_IRQHandler
+  216 0000002A         BACKUP_IRQHandler
+  217 0000002A         EXT_INT1_IRQHandler
+  218 0000002A         EXT_INT2_IRQHandler
+  219 0000002A         EXT_INT3_IRQHandler
+  220 0000002A         EXT_INT4_IRQHandler
+  221 0000002A         
+  222 0000002A E7FE            B                .
+  223 0000002C         
+  224 0000002C                 ENDP
+  225 0000002C         
+  226 0000002C         
+  227 0000002C                 ALIGN
+  228 0000002C         
 
 
 
 ARM Macro Assembler    Page 6 
 
 
-  233 0000001C                 IMPORT           __use_two_region_memory
-  234 0000001C                 EXPORT           __user_initial_stackheap
-  235 0000001C         
-  236 0000001C         __user_initial_stackheap
-  237 0000001C         
-  238 0000001C 4804            LDR              R0, =  Heap_Mem
-  239 0000001E 4905            LDR              R1, =(Stack_Mem + Stack_Size)
-  240 00000020 4A05            LDR              R2, = (Heap_Mem +  Heap_Size)
-  241 00000022 4B06            LDR              R3, = Stack_Mem
-  242 00000024 4770            BX               LR
-  243 00000026         
-  244 00000026 00 00           ALIGN
-  245 00000028         
-  246 00000028                 ENDIF
-  247 00000028         
-  248 00000028                 END
+  229 0000002C         ;********************************************************
+                       ***********************
+  230 0000002C         ; User Stack and Heap initialization
+  231 0000002C         ;********************************************************
+                       ***********************
+  232 0000002C                 IF               :DEF:__MICROLIB
+  239 0000002C         
+  240 0000002C                 IMPORT           __use_two_region_memory
+  241 0000002C                 EXPORT           __user_initial_stackheap
+  242 0000002C         
+  243 0000002C         __user_initial_stackheap
+  244 0000002C         
+  245 0000002C 4804            LDR              R0, =  Heap_Mem
+  246 0000002E 4905            LDR              R1, =(Stack_Mem + Stack_Size)
+  247 00000030 4A05            LDR              R2, = (Heap_Mem +  Heap_Size)
+  248 00000032 4B06            LDR              R3, = Stack_Mem
+  249 00000034 4770            BX               LR
+  250 00000036         
+  251 00000036 00 00           ALIGN
+  252 00000038         
+  253 00000038                 ENDIF
+  254 00000038         
+  255 00000038                 END
               00000000 
               00000000 
               00000000 
@@ -375,8 +382,8 @@ Symbol: Stack_Mem
    Definitions
       At line 33 in file startup_MDR32F9x.s
    Uses
-      At line 239 in file startup_MDR32F9x.s
-      At line 241 in file startup_MDR32F9x.s
+      At line 246 in file startup_MDR32F9x.s
+      At line 248 in file startup_MDR32F9x.s
 
 __initial_sp 00000400
 
@@ -407,8 +414,8 @@ Symbol: Heap_Mem
    Definitions
       At line 45 in file startup_MDR32F9x.s
    Uses
-      At line 238 in file startup_MDR32F9x.s
-      At line 240 in file startup_MDR32F9x.s
+      At line 245 in file startup_MDR32F9x.s
+      At line 247 in file startup_MDR32F9x.s
 
 __heap_base 00000000
 
@@ -474,56 +481,56 @@ Symbol: .text
    Uses
       None
 Comment: .text unused
-ADC_IRQHandler 0000001A
+ADC_IRQHandler 0000002A
 
 Symbol: ADC_IRQHandler
    Definitions
-      At line 207 in file startup_MDR32F9x.s
+      At line 213 in file startup_MDR32F9x.s
    Uses
       At line 93 in file startup_MDR32F9x.s
-      At line 185 in file startup_MDR32F9x.s
+      At line 191 in file startup_MDR32F9x.s
 
-BACKUP_IRQHandler 0000001A
+BACKUP_IRQHandler 0000002A
 
 Symbol: BACKUP_IRQHandler
    Definitions
-      At line 210 in file startup_MDR32F9x.s
+      At line 216 in file startup_MDR32F9x.s
    Uses
       At line 103 in file startup_MDR32F9x.s
-      At line 188 in file startup_MDR32F9x.s
+      At line 194 in file startup_MDR32F9x.s
 
-BusFault_Handler 0000000E
+BusFault_Handler 0000001E
 
 Symbol: BusFault_Handler
    Definitions
-      At line 142 in file startup_MDR32F9x.s
+      At line 148 in file startup_MDR32F9x.s
    Uses
       At line 63 in file startup_MDR32F9x.s
-      At line 143 in file startup_MDR32F9x.s
+      At line 149 in file startup_MDR32F9x.s
 
-CAN1_IRQHandler 0000001A
+CAN1_IRQHandler 0000002A
 
 Symbol: CAN1_IRQHandler
    Definitions
-      At line 194 in file startup_MDR32F9x.s
+      At line 200 in file startup_MDR32F9x.s
    Uses
       At line 76 in file startup_MDR32F9x.s
-      At line 172 in file startup_MDR32F9x.s
+      At line 178 in file startup_MDR32F9x.s
 
-CAN2_IRQHandler 0000001A
+CAN2_IRQHandler 0000002A
 
 Symbol: CAN2_IRQHandler
    Definitions
-      At line 195 in file startup_MDR32F9x.s
+      At line 201 in file startup_MDR32F9x.s
    Uses
       At line 77 in file startup_MDR32F9x.s
-      At line 173 in file startup_MDR32F9x.s
+      At line 179 in file startup_MDR32F9x.s
 
-COMPARATOR_IRQHandler 0000001A
+COMPARATOR_IRQHandler 0000002A
 
 Symbol: COMPARATOR_IRQHandler
    Definitions
-      At line 208 in file startup_MDR32F9x.s
+      At line 214 in file startup_MDR32F9x.s
    Uses
 
 
@@ -532,62 +539,62 @@ ARM Macro Assembler    Page 2 Alphabetic symbol ordering
 Relocatable symbols
 
       At line 95 in file startup_MDR32F9x.s
-      At line 186 in file startup_MDR32F9x.s
+      At line 192 in file startup_MDR32F9x.s
 
-DMA_IRQHandler 0000001A
+DMA_IRQHandler 0000002A
 
 Symbol: DMA_IRQHandler
    Definitions
-      At line 197 in file startup_MDR32F9x.s
+      At line 203 in file startup_MDR32F9x.s
    Uses
       At line 81 in file startup_MDR32F9x.s
-      At line 175 in file startup_MDR32F9x.s
+      At line 181 in file startup_MDR32F9x.s
 
-DebugMon_Handler 00000014
+DebugMon_Handler 00000024
 
 Symbol: DebugMon_Handler
    Definitions
-      At line 156 in file startup_MDR32F9x.s
+      At line 162 in file startup_MDR32F9x.s
    Uses
       At line 70 in file startup_MDR32F9x.s
-      At line 157 in file startup_MDR32F9x.s
+      At line 163 in file startup_MDR32F9x.s
 
-Default_Handler 0000001A
+Default_Handler 0000002A
 
 Symbol: Default_Handler
    Definitions
-      At line 169 in file startup_MDR32F9x.s
+      At line 175 in file startup_MDR32F9x.s
    Uses
       None
 Comment: Default_Handler unused
-EXT_INT1_IRQHandler 0000001A
+EXT_INT1_IRQHandler 0000002A
 
 Symbol: EXT_INT1_IRQHandler
    Definitions
-      At line 211 in file startup_MDR32F9x.s
+      At line 217 in file startup_MDR32F9x.s
    Uses
       At line 104 in file startup_MDR32F9x.s
-      At line 189 in file startup_MDR32F9x.s
+      At line 195 in file startup_MDR32F9x.s
 
-EXT_INT2_IRQHandler 0000001A
+EXT_INT2_IRQHandler 0000002A
 
 Symbol: EXT_INT2_IRQHandler
    Definitions
-      At line 212 in file startup_MDR32F9x.s
+      At line 218 in file startup_MDR32F9x.s
    Uses
       At line 105 in file startup_MDR32F9x.s
-      At line 190 in file startup_MDR32F9x.s
+      At line 196 in file startup_MDR32F9x.s
 
-EXT_INT3_IRQHandler 0000001A
+EXT_INT3_IRQHandler 0000002A
 
 Symbol: EXT_INT3_IRQHandler
    Definitions
-      At line 213 in file startup_MDR32F9x.s
+      At line 219 in file startup_MDR32F9x.s
    Uses
       At line 106 in file startup_MDR32F9x.s
-      At line 191 in file startup_MDR32F9x.s
+      At line 197 in file startup_MDR32F9x.s
 
-EXT_INT4_IRQHandler 0000001A
+EXT_INT4_IRQHandler 0000002A
 
 Symbol: EXT_INT4_IRQHandler
 
@@ -597,10 +604,10 @@ ARM Macro Assembler    Page 3 Alphabetic symbol ordering
 Relocatable symbols
 
    Definitions
-      At line 214 in file startup_MDR32F9x.s
+      At line 220 in file startup_MDR32F9x.s
    Uses
       At line 107 in file startup_MDR32F9x.s
-      At line 192 in file startup_MDR32F9x.s
+      At line 198 in file startup_MDR32F9x.s
 
 HardFault_Handler 0000000A
 
@@ -611,23 +618,23 @@ Symbol: HardFault_Handler
       At line 61 in file startup_MDR32F9x.s
       At line 133 in file startup_MDR32F9x.s
 
-I2C_IRQHandler 0000001A
+I2C_IRQHandler 0000002A
 
 Symbol: I2C_IRQHandler
    Definitions
-      At line 201 in file startup_MDR32F9x.s
+      At line 207 in file startup_MDR32F9x.s
    Uses
       At line 86 in file startup_MDR32F9x.s
-      At line 179 in file startup_MDR32F9x.s
+      At line 185 in file startup_MDR32F9x.s
 
-MemManage_Handler 0000000C
+MemManage_Handler 0000001C
 
 Symbol: MemManage_Handler
    Definitions
-      At line 137 in file startup_MDR32F9x.s
+      At line 143 in file startup_MDR32F9x.s
    Uses
       At line 62 in file startup_MDR32F9x.s
-      At line 138 in file startup_MDR32F9x.s
+      At line 144 in file startup_MDR32F9x.s
 
 NMI_Handler 00000008
 
@@ -638,23 +645,23 @@ Symbol: NMI_Handler
       At line 60 in file startup_MDR32F9x.s
       At line 128 in file startup_MDR32F9x.s
 
-POWER_IRQHandler 0000001A
+POWER_IRQHandler 0000002A
 
 Symbol: POWER_IRQHandler
    Definitions
-      At line 202 in file startup_MDR32F9x.s
+      At line 208 in file startup_MDR32F9x.s
    Uses
       At line 87 in file startup_MDR32F9x.s
-      At line 180 in file startup_MDR32F9x.s
+      At line 186 in file startup_MDR32F9x.s
 
-PendSV_Handler 00000016
+PendSV_Handler 00000026
 
 Symbol: PendSV_Handler
    Definitions
-      At line 160 in file startup_MDR32F9x.s
+      At line 166 in file startup_MDR32F9x.s
    Uses
       At line 72 in file startup_MDR32F9x.s
-      At line 161 in file startup_MDR32F9x.s
+      At line 167 in file startup_MDR32F9x.s
 
 
 
@@ -671,52 +678,52 @@ Symbol: Reset_Handler
       At line 59 in file startup_MDR32F9x.s
       At line 116 in file startup_MDR32F9x.s
 
-SSP1_IRQHandler 0000001A
+SSP1_IRQHandler 0000002A
 
 Symbol: SSP1_IRQHandler
    Definitions
-      At line 200 in file startup_MDR32F9x.s
+      At line 206 in file startup_MDR32F9x.s
    Uses
       At line 84 in file startup_MDR32F9x.s
-      At line 178 in file startup_MDR32F9x.s
+      At line 184 in file startup_MDR32F9x.s
 
-SSP2_IRQHandler 0000001A
+SSP2_IRQHandler 0000002A
 
 Symbol: SSP2_IRQHandler
    Definitions
-      At line 209 in file startup_MDR32F9x.s
+      At line 215 in file startup_MDR32F9x.s
    Uses
       At line 96 in file startup_MDR32F9x.s
-      At line 187 in file startup_MDR32F9x.s
+      At line 193 in file startup_MDR32F9x.s
 
-SVC_Handler 00000012
+SVC_Handler 00000022
 
 Symbol: SVC_Handler
    Definitions
-      At line 151 in file startup_MDR32F9x.s
+      At line 157 in file startup_MDR32F9x.s
    Uses
       At line 69 in file startup_MDR32F9x.s
-      At line 152 in file startup_MDR32F9x.s
+      At line 158 in file startup_MDR32F9x.s
 
-SysTick_Handler 00000018
+SysTick_Handler 00000028
 
 Symbol: SysTick_Handler
    Definitions
-      At line 164 in file startup_MDR32F9x.s
+      At line 170 in file startup_MDR32F9x.s
    Uses
       At line 73 in file startup_MDR32F9x.s
-      At line 165 in file startup_MDR32F9x.s
+      At line 171 in file startup_MDR32F9x.s
 
-Timer1_IRQHandler 0000001A
+Timer1_IRQHandler 0000002A
 
 Symbol: Timer1_IRQHandler
    Definitions
-      At line 204 in file startup_MDR32F9x.s
+      At line 210 in file startup_MDR32F9x.s
    Uses
       At line 90 in file startup_MDR32F9x.s
-      At line 182 in file startup_MDR32F9x.s
+      At line 188 in file startup_MDR32F9x.s
 
-Timer2_IRQHandler 0000001A
+Timer2_IRQHandler 0000002A
 
 Symbol: Timer2_IRQHandler
    Definitions
@@ -726,64 +733,64 @@ Symbol: Timer2_IRQHandler
 ARM Macro Assembler    Page 5 Alphabetic symbol ordering
 Relocatable symbols
 
-      At line 205 in file startup_MDR32F9x.s
+      At line 211 in file startup_MDR32F9x.s
    Uses
       At line 91 in file startup_MDR32F9x.s
-      At line 183 in file startup_MDR32F9x.s
+      At line 189 in file startup_MDR32F9x.s
 
-Timer3_IRQHandler 0000001A
+Timer3_IRQHandler 0000002A
 
 Symbol: Timer3_IRQHandler
    Definitions
-      At line 206 in file startup_MDR32F9x.s
+      At line 212 in file startup_MDR32F9x.s
    Uses
       At line 92 in file startup_MDR32F9x.s
-      At line 184 in file startup_MDR32F9x.s
+      At line 190 in file startup_MDR32F9x.s
 
-UART1_IRQHandler 0000001A
+UART1_IRQHandler 0000002A
 
 Symbol: UART1_IRQHandler
    Definitions
-      At line 198 in file startup_MDR32F9x.s
+      At line 204 in file startup_MDR32F9x.s
    Uses
       At line 82 in file startup_MDR32F9x.s
-      At line 176 in file startup_MDR32F9x.s
+      At line 182 in file startup_MDR32F9x.s
 
-UART2_IRQHandler 0000001A
+UART2_IRQHandler 0000002A
 
 Symbol: UART2_IRQHandler
    Definitions
-      At line 199 in file startup_MDR32F9x.s
+      At line 205 in file startup_MDR32F9x.s
    Uses
       At line 83 in file startup_MDR32F9x.s
-      At line 177 in file startup_MDR32F9x.s
+      At line 183 in file startup_MDR32F9x.s
 
-USB_IRQHandler 0000001A
+USB_IRQHandler 0000002A
 
 Symbol: USB_IRQHandler
    Definitions
-      At line 196 in file startup_MDR32F9x.s
+      At line 202 in file startup_MDR32F9x.s
    Uses
       At line 78 in file startup_MDR32F9x.s
-      At line 174 in file startup_MDR32F9x.s
+      At line 180 in file startup_MDR32F9x.s
 
-UsageFault_Handler 00000010
+UsageFault_Handler 00000020
 
 Symbol: UsageFault_Handler
    Definitions
-      At line 147 in file startup_MDR32F9x.s
+      At line 153 in file startup_MDR32F9x.s
    Uses
       At line 64 in file startup_MDR32F9x.s
-      At line 148 in file startup_MDR32F9x.s
+      At line 154 in file startup_MDR32F9x.s
 
-WWDG_IRQHandler 0000001A
+WWDG_IRQHandler 0000002A
 
 Symbol: WWDG_IRQHandler
    Definitions
-      At line 203 in file startup_MDR32F9x.s
+      At line 209 in file startup_MDR32F9x.s
    Uses
       At line 88 in file startup_MDR32F9x.s
-      At line 181 in file startup_MDR32F9x.s
+      At line 187 in file startup_MDR32F9x.s
 
 
 
@@ -791,13 +798,13 @@ Symbol: WWDG_IRQHandler
 ARM Macro Assembler    Page 6 Alphabetic symbol ordering
 Relocatable symbols
 
-__user_initial_stackheap 0000001C
+__user_initial_stackheap 0000002C
 
 Symbol: __user_initial_stackheap
    Definitions
-      At line 236 in file startup_MDR32F9x.s
+      At line 243 in file startup_MDR32F9x.s
    Uses
-      At line 234 in file startup_MDR32F9x.s
+      At line 241 in file startup_MDR32F9x.s
 Comment: __user_initial_stackheap used once
 34 symbols
 
@@ -813,7 +820,7 @@ Symbol: Heap_Size
       At line 41 in file startup_MDR32F9x.s
    Uses
       At line 45 in file startup_MDR32F9x.s
-      At line 240 in file startup_MDR32F9x.s
+      At line 247 in file startup_MDR32F9x.s
 
 Stack_Size 00000400
 
@@ -822,7 +829,7 @@ Symbol: Stack_Size
       At line 30 in file startup_MDR32F9x.s
    Uses
       At line 33 in file startup_MDR32F9x.s
-      At line 239 in file startup_MDR32F9x.s
+      At line 246 in file startup_MDR32F9x.s
 
 __Vectors_Size 000000C0
 
@@ -859,9 +866,17 @@ __use_two_region_memory 00000000
 
 Symbol: __use_two_region_memory
    Definitions
-      At line 233 in file startup_MDR32F9x.s
+      At line 240 in file startup_MDR32F9x.s
    Uses
       None
 Comment: __use_two_region_memory unused
-3 symbols
-384 symbols in table
+hard_fault_handler_c 00000000
+
+Symbol: hard_fault_handler_c
+   Definitions
+      At line 134 in file startup_MDR32F9x.s
+   Uses
+      At line 139 in file startup_MDR32F9x.s
+Comment: hard_fault_handler_c used once
+4 symbols
+385 symbols in table

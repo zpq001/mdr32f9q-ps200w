@@ -9772,8 +9772,8 @@ N(lowest) to 0 (1?) (highest). */
 N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N
+N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -16054,29 +16054,25 @@ N	UART_init_RX_DMA(MDR_UART1, uart1_rx_data_buff, RX_BUFFER_SIZE);
 X	UART_init_RX_DMA(((MDR_UART_TypeDef *) (0x40030000)), uart1_rx_data_buff, 200);
 N	
 N	
+W "src\uart.c" 163 2 function "HW_NVIC_check" declared implicitly
+N	HW_NVIC_check();
+N	
 N	while(1)
 N	{
 N		/////////////////////////
-N		while(1)
+N	/*	while(1)
 N		{
 N			vTaskDelayUntil(&lastExecutionTime, 5);
 N			
 N			transmitter_msg.type = UNKNOWN_CMD;
-X			transmitter_msg.type = 0x0101;
 N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
-X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
-X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
-X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
-X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0); 
-X			xQueueGenericSend( ( xQueueUART1TX ), ( &transmitter_msg ), ( 0 ), ( ( long ) 0 ) ); 
 N		}
-N		
+N		*/
 N		/////////////////////////
-W "src\uart.c" 179 3 statement is unreachable
 N		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
 N
 N		// Read full message from buffer
@@ -16331,7 +16327,7 @@ N{
 N	uart_transmiter_msg_t income_msg;
 N	uint32_t src_address;
 N	uint32_t n;
-N	
+N
 N	
 N	DMA_ChannelInitTypeDef DMA_InitStr;
 N	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
@@ -16436,10 +16432,8 @@ X		DMA_Cmd(((uint8_t)(0)), ENABLE);
 N		// Enable UART1 DMA Tx request
 N		UART_DMACmd(MDR_UART1,UART_DMA_TXE, ENABLE);
 X		UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000002), ENABLE);
-N
 N			
 N		// Wait for DMA
-N		//while((DMA_GetFlagStatus(DMA_Channel_UART_TX, DMA_FLAG_CHNL_ENA)));
 N		xSemaphoreTake(xSemaphoreUART1TX, portMAX_DELAY);
 X		xQueueGenericReceive( ( xQueueHandle ) ( xSemaphoreUART1TX ), 0, ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
 N	
@@ -16518,4 +16512,4 @@ N
 N
 N
 N
-W "src\uart.c" 365 13 function "UART_sendStr" was declared but never referenced
+W "src\uart.c" 367 13 function "UART_sendStr" was declared but never referenced

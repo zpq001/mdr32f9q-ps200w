@@ -9986,6 +9986,7 @@ N
 N
 N
 Nvoid Setup_CPU_Clock(void);
+Nvoid HW_NVIC_init(void);
 Nvoid HW_PortInit(void);
 Nvoid HW_UARTInit(void);
 Nvoid HW_SSPInit(void);
@@ -10615,6 +10616,42 @@ X	RST_CLK_PCLKcmd(( ((uint32_t)(1 << ((((uint32_t)(0x400A0000)) >> 15) & 0x1F)))
 N}
 N
 N
+Nint32_t pr[15];
+N
+Nvoid HW_NVIC_init(void)
+N{
+N	
+N	NVIC_SetPriorityGrouping( 3 );
+N	
+N	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+N	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+N	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+N	
+N	pr[3] = NVIC_GetPriority(DMA_IRQn);
+N	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+N
+N//	NVIC_SetPriority(SVCall_IRQn,-1);
+N	NVIC_SetPriority(DMA_IRQn,6);
+N	NVIC_SetPriority(Timer2_IRQn,6);
+N
+N	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+N	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+N	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+N	
+N}
+N
+Nvoid HW_NVIC_check(void)
+N{
+N	
+N	pr[0] = NVIC_GetPriority(SVCall_IRQn);
+N	pr[1] = NVIC_GetPriority(PendSV_IRQn);
+N	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+N	
+N	pr[3] = NVIC_GetPriority(DMA_IRQn);
+N	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+N	
+N}
+N
 N
 N//-----------------------------------------------------------------//
 N// Setup IO Ports
@@ -10917,7 +10954,7 @@ N	/* Enable UART1 DMA Rx and Tx request */
 N//	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 N	/* Enable UART2 DMA Rx and Tx request */
 N//	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
-W "src\systemfunc.c" 285 17 variable "initStatus" was set but never used
+W "src\systemfunc.c" 321 17 variable "initStatus" was set but never used
 N}
 N
 N//-----------------------------------------------------------------//
@@ -11455,5 +11492,60 @@ N		while(1);
 N		 
 N	}
 N}
+N
+N
+Nstruct {
+N	uint32_t stacked_r0;
+N	uint32_t stacked_r1;
+N	uint32_t stacked_r2;
+N	uint32_t stacked_r3;
+N	uint32_t stacked_r12;
+N	uint32_t stacked_lr;
+N	uint32_t stacked_pc;
+N	uint32_t stacked_psr;
+N	uint32_t BFAR;
+N	uint32_t CFSR;
+N	uint32_t HFSR;
+N	uint32_t DFSR;
+N	uint32_t AFSR;
+N	uint32_t SBC_SHCSR;
+N} dbg_struct;
+N
+N
+N// Hard fault handler
+N// with stack frame location as input parameter
+N// called from HardFault_Handler in file startup_MDR32F9x.s
+Nvoid hard_fault_handler_c (unsigned int * hardfault_args)
+N{
+N
+N  dbg_struct.stacked_r0 = ((unsigned long) hardfault_args[0]);
+N  dbg_struct.stacked_r1 = ((unsigned long) hardfault_args[1]);
+N  dbg_struct.stacked_r2 = ((unsigned long) hardfault_args[2]);
+N  dbg_struct.stacked_r3 = ((unsigned long) hardfault_args[3]);
+N 
+N  dbg_struct.stacked_r12 = ((unsigned long) hardfault_args[4]);
+N  dbg_struct.stacked_lr = ((unsigned long) hardfault_args[5]);
+N  dbg_struct.stacked_pc = ((unsigned long) hardfault_args[6]);
+N  dbg_struct.stacked_psr = ((unsigned long) hardfault_args[7]);
+N /*
+N  printf ("\n\n[Hard fault handler - all numbers in hex]\n");
+N  printf ("R0 = %x\n", stacked_r0);
+N  printf ("R1 = %x\n", stacked_r1);
+N  printf ("R2 = %x\n", stacked_r2);
+N  printf ("R3 = %x\n", stacked_r3);
+N  printf ("R12 = %x\n", stacked_r12);
+N  printf ("LR [R14] = %x  subroutine call return address\n", stacked_lr);
+N  printf ("PC [R15] = %x  program counter\n", stacked_pc);
+N  printf ("PSR = %x\n", stacked_psr);
+N  printf ("BFAR = %x\n", (*((volatile unsigned long *)(0xE000ED38))));
+N  printf ("CFSR = %x\n", (*((volatile unsigned long *)(0xE000ED28))));
+N  printf ("HFSR = %x\n", (*((volatile unsigned long *)(0xE000ED2C))));
+N  printf ("DFSR = %x\n", (*((volatile unsigned long *)(0xE000ED30))));
+N  printf ("AFSR = %x\n", (*((volatile unsigned long *)(0xE000ED3C))));
+N  printf ("SCB_SHCSR = %x\n", SCB->SHCSR);
+N */
+N  while (1);
+N}
+N
 N
 N

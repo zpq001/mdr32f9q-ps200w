@@ -131,7 +131,13 @@ NMI_Handler     PROC
 HardFault_Handler\
                 PROC
                 EXPORT  HardFault_Handler          [WEAK]
-                B       .
+				IMPORT 	hard_fault_handler_c
+  TST LR, #4
+  ITE EQ
+  MRSEQ R0, MSP
+  MRSNE R0, PSP
+  B hard_fault_handler_c
+;                B       .
                 ENDP
 MemManage_Handler\
                 PROC
@@ -214,8 +220,9 @@ EXT_INT3_IRQHandler
 EXT_INT4_IRQHandler
 
                 B       .
-
+				
                 ENDP
+
 
                 ALIGN
 

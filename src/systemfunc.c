@@ -31,6 +31,7 @@
 
 
 extern DMA_CtrlDataTypeDef DMA_ControlTable[];
+void DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr);
 
 
 
@@ -41,8 +42,8 @@ void my_DMA_GlobalInit(void)
 	// MDR_DMA->ALT_CTRL_BASE_PTR is automatically updated by DMA itself and is accessible for read only
 	MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
 	/* DMA configuration register */
-	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || 0 /*DMA_InitStruct->DMA_ProtCtrl*/;		// CHECKME
-	//MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_AHB_Privileged;
+	//MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || 0 /*DMA_InitStruct->DMA_ProtCtrl*/;		// CHECKME
+	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_AHB_Privileged;
 }
 
 // Operates similar to SPL function DMA_Init(), but:
@@ -50,7 +51,7 @@ void my_DMA_GlobalInit(void)
 //	- Does NOT start the channel
 //  - Does not modify general DMA controller registers
 //	- DMA_ChannelInitStruct.ProtCtrl is unused
-void my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct)
+void my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct)
 {
 	// Make sure channel is disabled
 	MDR_DMA->CHNL_ENABLE_CLR = (1 << DMA_Channel);
@@ -164,6 +165,7 @@ int32_t pr[15];
 
 void HW_NVIC_init(void)
 {
+	
 	// There are 3 bits of priority implemented in MDR32F9Qx device
 	// Setting all bits to pre-emption, see link below
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0552a/BABHGEAJ.html
@@ -172,7 +174,6 @@ void HW_NVIC_init(void)
 	pr[0] = NVIC_GetPriority(SVCall_IRQn);
 	pr[1] = NVIC_GetPriority(PendSV_IRQn);
 	pr[2] = NVIC_GetPriority(SysTick_IRQn);
-	
 	pr[3] = NVIC_GetPriority(DMA_IRQn);
 	pr[4] = NVIC_GetPriority(Timer2_IRQn);
 
@@ -182,6 +183,9 @@ void HW_NVIC_init(void)
 	pr[0] = NVIC_GetPriority(SVCall_IRQn);
 	pr[1] = NVIC_GetPriority(PendSV_IRQn);
 	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+	pr[3] = NVIC_GetPriority(DMA_IRQn);
+	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+	
 	
 }
 
@@ -442,18 +446,22 @@ void HW_DMAInit(void)
 {
 	// Reset all DMA settings
 	DMA_DeInit();	
-									// TODO - move this code to my_DMA_DeInit()
+	
+	// Vital for proper DMA IRQ function
+	// Single requests from ADC?
 	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
 	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
 	
-	// This must be executed next to clock setup in NVIC_Init() - TODO
+	// MDR32F9Qx false DMA requests workaround
+	// This must be executed next to clock setup
 	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
-	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
-	MDR_SSP1->DMACR = 0;
+	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		
+	MDR_SSP1->DMACR = 0;					// Reset false requests
 	MDR_SSP2->DMACR = 0;
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,DISABLE);
 	
-	NVIC->ICPR[0] = 0xFFFFFFFF;		// TODO - move this code to NVIC_Init()
-	NVIC->ICER[0] = 0xFFFFFFFF;
+	NVIC->ICPR[0] = 0xFFFFFFFF;		// Reset all pending interrupts
+	NVIC->ICER[0] = 0xFFFFFFFF;		// Disable all interrupts
 	
 	my_DMA_GlobalInit();
 	

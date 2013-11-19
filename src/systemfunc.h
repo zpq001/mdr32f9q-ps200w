@@ -1,4 +1,6 @@
 
+#include "MDR32F9Qx_dma.h"
+
 // All ports
 #define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
                        RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
@@ -12,12 +14,8 @@
 
 
 
-//#define TSTATE_START_EXTERNAL	0x01		// ADC FSM states
-//#define TSTATE_GET_EXTERNAL		0x02
-//#define	TSTATE_DONE_EXTERNAL	0x03
-
-
-
+void my_DMA_GlobalInit(void);
+void my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
 
 void Setup_CPU_Clock(void);
 void HW_NVIC_init(void);

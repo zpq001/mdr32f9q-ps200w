@@ -9773,7 +9773,10 @@ N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
+N
+N// Only bits [7:5] are implemented in MDR32F9Qx, so set highest priority 1
+N// All other IRQs must be set to priorities >= 1 (and <= 7)
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20	
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -15866,6 +15869,61 @@ N
 N
 N
 L 19 "src\uart.c" 2
+N#include "systemfunc.h"
+L 1 "src\systemfunc.h" 1
+N
+N#include "MDR32F9Qx_dma.h"
+N
+N// All ports
+N#define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
+N                       RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
+N                       RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF)
+X#define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB |                        RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD |                        RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF)
+N											
+N// Peripheral blocks, used in design											
+N#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | \
+N									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | \
+N									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
+X#define PERIPHERALS_CLK 		(	RST_CLK_PCLK_SSP2 | RST_CLK_PCLK_TIMER1 | 									RST_CLK_PCLK_TIMER2 | RST_CLK_PCLK_TIMER3 | 									RST_CLK_PCLK_I2C | RST_CLK_PCLK_ADC | RST_CLK_PCLK_UART1 | RST_CLK_PCLK_UART2 | RST_CLK_PCLK_DMA)
+N
+N
+N
+N
+Nvoid my_DMA_GlobalInit(void);
+Nvoid my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
+N
+Nvoid Setup_CPU_Clock(void);
+Nvoid HW_NVIC_init(void);
+Nvoid HW_PortInit(void);
+Nvoid HW_UARTInit(void);
+Nvoid HW_SSPInit(void);
+Nvoid HW_I2CInit(void);
+Nvoid HW_ADCInit(void);
+Nvoid HW_TimersInit(void);
+Nvoid HW_DMAInit(void);
+N
+Nvoid LcdSetBacklight(uint16_t value);
+N
+Nvoid SetVoltagePWMPeriod(uint16_t new_period);
+Nvoid SetCurrentPWMPeriod(uint16_t new_period);
+N
+Nvoid SetCoolerSpeed(uint16_t speed);
+N
+N
+Nvoid DelayUs(uint16_t delay);
+N
+Nvoid SetBuzzerFreq(uint16_t freq);
+N
+N
+N
+N
+Nvoid ProcessOverload(void);
+Nvoid ProcessPowerOff(void);
+N
+N
+N//void ProcessTemperature(void);
+N//void ProcessCooler(void);
+L 20 "src\uart.c" 2
 N
 N#include "dwt_delay.h"
 L 1 "src\dwt_delay.h" 1
@@ -15889,7 +15947,7 @@ N
 N
 N
 N
-L 21 "src\uart.c" 2
+L 22 "src\uart.c" 2
 N
 Nextern DMA_CtrlDataTypeDef DMA_ControlTable[];
 N
@@ -15964,20 +16022,18 @@ N	return 0;
 N}
 N
 N
-N
-Nstatic void UART_init_RX_DMA(MDR_UART_TypeDef *MDR_UARTx, uint16_t *rx_buffer, uint32_t buffer_size)
+N// DMA channel UARTx RX configuration 
+Nstatic void UART_init_RX_DMA(MDR_UART_TypeDef *MDR_UARTx, uart_dma_rx_buffer_t *rx_buffer, uint32_t *saved_tcb)
 N{
-N	uint32_t *tcb_ptr;
 N	DMA_ChannelInitTypeDef DMA_InitStr;
 N	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
-N	DMA_StructInit(&DMA_InitStr);
+N	uint32_t *tcb_ptr;
+N	uint32_t DMA_Channel_UARTn_RX = (MDR_UARTx == MDR_UART1) ? DMA_Channel_UART1_RX : DMA_Channel_UART2_RX;
+X	uint32_t DMA_Channel_UARTn_RX = (MDR_UARTx == ((MDR_UART_TypeDef *) (0x40030000))) ? ((uint8_t)(1)) : ((uint8_t)(3));
 N	
-N	// DMA channel UARTx RX configuration 
-N	// Using Ping-pong mode
-N	
-N	// Set Primary Control Data 
+N	// Setup Primary Control Data 
 N	DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)(&(MDR_UARTx->DR));
-N	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)rx_buffer;					// dest (buffer of 16-bit shorts)
+N	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)rx_buffer->data;			// dest (buffer of 16-bit shorts)
 N	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncNo;
 X	DMA_PriCtrlStr.DMA_SourceIncSize = ((uint32_t)(3 << 26));
 N	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncHalfword ;
@@ -15986,40 +16042,76 @@ N	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
 X	DMA_PriCtrlStr.DMA_MemoryDataSize = ((uint32_t)(0x11 << 24));
 N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;								// 
 X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x1);								
-N	DMA_PriCtrlStr.DMA_CycleSize = buffer_size;								// count of 16-bit shorts
+N	DMA_PriCtrlStr.DMA_CycleSize = rx_buffer->size;							// count of 16-bit shorts
 N	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
 X	DMA_PriCtrlStr.DMA_NumContinuous = ((uint32_t)(0x00 << 14));
 N	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
 X	DMA_PriCtrlStr.DMA_SourceProtCtrl = ((uint32_t)(0x01 << 18));				
 N	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
 X	DMA_PriCtrlStr.DMA_DestProtCtrl = ((uint32_t)(0x01 << 21));					
-N					
 N	
-N	// Set Channel Structure
+N	// Setup Channel Structure
 N	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+N	DMA_InitStr.DMA_AltCtrlData = 0;										// Not used
+N	DMA_InitStr.DMA_ProtCtrl = 0;											// Not used
 N	DMA_InitStr.DMA_Priority = DMA_Priority_High ;
 X	DMA_InitStr.DMA_Priority = ((uint8_t)0x01) ;
-N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
+N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// Enable single words trasfer
 X	DMA_InitStr.DMA_UseBurst = ((uint8_t)0x00);								
 N	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
 X	DMA_InitStr.DMA_SelectDataStructure = ((uint8_t)0x00);
 N	
 N	// Init DMA channel
-N	DMA_Init(DMA_Channel_UART1_RX, &DMA_InitStr);
-X	DMA_Init(((uint8_t)(1)), &DMA_InitStr);
+N	my_DMA_ChannelInit(DMA_Channel_UARTn_RX, &DMA_InitStr);
 N	
-N	// Save created RX UART DMA control block for use in DMA ISR
-N	tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UART1_RX];
-X	tcb_ptr = (uint32_t*)&DMA_ControlTable[((uint8_t)(1))];
-N	UART1_RX_saved_TCB[0] = *tcb_ptr++;
-N	UART1_RX_saved_TCB[1] = *tcb_ptr++;
-N	UART1_RX_saved_TCB[2] = *tcb_ptr;
+N	// Save created RX UART DMA control block for reinit in DMA ISR
+N	tcb_ptr = (uint32_t*)&DMA_ControlTable[DMA_Channel_UARTn_RX];
+N	saved_tcb[0] = *tcb_ptr++;
+N	saved_tcb[1] = *tcb_ptr++;
+N	saved_tcb[2] = *tcb_ptr;
+N}
+N
+N
+N
+N// DMA channel UARTx TX configuration 
+Nstatic void UART_init_TX_DMA(MDR_UART_TypeDef *MDR_UARTx, DMA_CtrlDataInitTypeDef *DMA_PriCtrlStr_p)
+N{
+N	uint32_t DMA_Channel_UARTn_TX = (MDR_UARTx == MDR_UART1) ? DMA_Channel_UART1_TX : DMA_Channel_UART2_TX;
+X	uint32_t DMA_Channel_UARTn_TX = (MDR_UARTx == ((MDR_UART_TypeDef *) (0x40030000))) ? ((uint8_t)(0)) : ((uint8_t)(2));
+N	DMA_ChannelInitTypeDef DMA_InitStr;
 N	
-N	// Enable UART1 DMA Rx request
-N	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
-X	UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000001), ENABLE);
-N	// Enable UART2 DMA Rx request
-N	//UART_DMACmd(MDR_UART2,UART_DMA_RXE, ENABLE);
+N	// Setup Primary Control Data 
+N	DMA_PriCtrlStr_p->DMA_SourceBaseAddr = 0;									// Will be set before channel start
+N	DMA_PriCtrlStr_p->DMA_DestBaseAddr = (uint32_t)(&(MDR_UARTx->DR));			
+N	DMA_PriCtrlStr_p->DMA_SourceIncSize = DMA_SourceIncByte;
+X	DMA_PriCtrlStr_p->DMA_SourceIncSize = ((uint32_t)(0 << 26));
+N	DMA_PriCtrlStr_p->DMA_DestIncSize = DMA_DestIncNo;
+X	DMA_PriCtrlStr_p->DMA_DestIncSize = ((uint32_t)(0x3UL << 30));
+N	DMA_PriCtrlStr_p->DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+X	DMA_PriCtrlStr_p->DMA_MemoryDataSize = ((uint32_t)(0x00 << 24));
+N	DMA_PriCtrlStr_p->DMA_Mode = DMA_Mode_Basic; 
+X	DMA_PriCtrlStr_p->DMA_Mode = ((uint32_t)0x1); 
+N	DMA_PriCtrlStr_p->DMA_CycleSize = 0;										// Will be set before channel start
+N	DMA_PriCtrlStr_p->DMA_NumContinuous = DMA_Transfers_1;
+X	DMA_PriCtrlStr_p->DMA_NumContinuous = ((uint32_t)(0x00 << 14));
+N	DMA_PriCtrlStr_p->DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
+X	DMA_PriCtrlStr_p->DMA_SourceProtCtrl = ((uint32_t)(0x01 << 18));				
+N	DMA_PriCtrlStr_p->DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
+X	DMA_PriCtrlStr_p->DMA_DestProtCtrl = ((uint32_t)(0x01 << 21));					
+N	
+N	// Setup Channel Structure
+N	DMA_InitStr.DMA_PriCtrlData = 0;										// Will be set before channel start
+N	DMA_InitStr.DMA_AltCtrlData = 0;										// Not used
+N	DMA_InitStr.DMA_ProtCtrl = 0;											// Not used
+N	DMA_InitStr.DMA_Priority = DMA_Priority_High;
+X	DMA_InitStr.DMA_Priority = ((uint8_t)0x01);
+N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// Enable single words trasfer
+X	DMA_InitStr.DMA_UseBurst = ((uint8_t)0x00);								
+N	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+X	DMA_InitStr.DMA_SelectDataStructure = ((uint8_t)0x00);
+N	
+N	// Init DMA channel
+N	my_DMA_ChannelInit(DMA_Channel_UARTn_TX, &DMA_InitStr);
 N}
 N
 N
@@ -16035,7 +16127,6 @@ N	uint16_t argc = 0;						// Count of words in message
 N	char temp_char;
 N	uint16_t uart_rx_word;
 N	uint16_t search_for_word = 1;
-N	uint8_t cmd_ok;
 N	
 N	
 N	// Debug
@@ -16048,14 +16139,24 @@ N	portTickType lastExecutionTime = xTaskGetTickCount();
 N	dispatch_incoming_msg_t dispatcher_msg;
 N	uart_transmiter_msg_t transmitter_msg;
 N	
+N	// Setup and init receiver buffer
 N	UART_Init_RX_buffer(&uart1_rx_dma_buffer, uart1_rx_data_buff, RX_BUFFER_SIZE);
 X	UART_Init_RX_buffer(&uart1_rx_dma_buffer, uart1_rx_data_buff, 200);
-N	UART_init_RX_DMA(MDR_UART1, uart1_rx_data_buff, RX_BUFFER_SIZE);
-X	UART_init_RX_DMA(((MDR_UART_TypeDef *) (0x40030000)), uart1_rx_data_buff, 200);
+N	
+N	// Setup DMA channel
+N	UART_init_RX_DMA(MDR_UART1, &uart1_rx_dma_buffer, UART1_RX_saved_TCB);
+X	UART_init_RX_DMA(((MDR_UART_TypeDef *) (0x40030000)), &uart1_rx_dma_buffer, UART1_RX_saved_TCB);
+N	// Enable DMA channel
+N	DMA_Cmd(DMA_Channel_UART1_RX, ENABLE);
+X	DMA_Cmd(((uint8_t)(1)), ENABLE);
+N	// Enable UARTn DMA Rx request
+N	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
+X	UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000001), ENABLE);
 N	
 N	
-W "src\uart.c" 163 2 function "HW_NVIC_check" declared implicitly
-N	HW_NVIC_check();
+W "src\uart.c" 195 2 function "HW_NVIC_check" declared implicitly
+N	HW_NVIC_check();		// FIXME - debug
+N	
 N	
 N	while(1)
 N	{
@@ -16278,9 +16379,8 @@ N			}
 N		}  // \UART_Get_from_RX_buffer()
 N		
 N	}
-W "src\uart.c" 146 10 variable "cmd_ok" was declared but never referenced
-W "src\uart.c" 150 11 variable "i" was declared but never referenced
-W "src\uart.c" 151 11 variable "temp32u" was declared but never referenced
+W "src\uart.c" 175 11 variable "i" was declared but never referenced
+W "src\uart.c" 176 11 variable "temp32u" was declared but never referenced
 N}
 N
 N
@@ -16325,53 +16425,17 @@ N
 Nvoid vTaskUARTTransmitter(void *pvParameters) 
 N{
 N	uart_transmiter_msg_t income_msg;
-N	uint32_t src_address;
+N	//uint32_t src_address;
+N	char *string_to_send;
 N	uint32_t n;
-N
 N	
-N	DMA_ChannelInitTypeDef DMA_InitStr;
 N	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
-N	DMA_StructInit(&DMA_InitStr);
 N	
-N	// DMA channel UARTx RX configuration 
-N	// Using normal mode
+N	// Setup DMA channel
+N	UART_init_TX_DMA(MDR_UART1, &DMA_PriCtrlStr);
+X	UART_init_TX_DMA(((MDR_UART_TypeDef *) (0x40030000)), &DMA_PriCtrlStr);
 N	
-N	// Set Primary Control Data 
-N	//DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)tx_buffer;
-N	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)(&(MDR_UART1->DR));			
-X	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)(&(((MDR_UART_TypeDef *) (0x40030000))->DR));			
-N	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncByte;
-X	DMA_PriCtrlStr.DMA_SourceIncSize = ((uint32_t)(0 << 26));
-N	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncNo;
-X	DMA_PriCtrlStr.DMA_DestIncSize = ((uint32_t)(0x3UL << 30));
-N	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-X	DMA_PriCtrlStr.DMA_MemoryDataSize = ((uint32_t)(0x00 << 24));
-N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Stop; 
-X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x0); 
-N	//DMA_PriCtrlStr.DMA_CycleSize = buffer_size;							
-N	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
-X	DMA_PriCtrlStr.DMA_NumContinuous = ((uint32_t)(0x00 << 14));
-N	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;				// ?
-X	DMA_PriCtrlStr.DMA_SourceProtCtrl = ((uint32_t)(0x01 << 18));				
-N	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;					// ?
-X	DMA_PriCtrlStr.DMA_DestProtCtrl = ((uint32_t)(0x01 << 21));					
-N	
-N	// Set Channel Structure
-N	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
-N	DMA_InitStr.DMA_Priority = DMA_Priority_High;
-X	DMA_InitStr.DMA_Priority = ((uint8_t)0x01);
-N	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;								// enable single words trasfer
-X	DMA_InitStr.DMA_UseBurst = ((uint8_t)0x00);								
-N	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
-X	DMA_InitStr.DMA_SelectDataStructure = ((uint8_t)0x00);
-N	
-N	// Init DMA channel
-N	DMA_Init(DMA_Channel_UART1_TX, &DMA_InitStr);
-X	DMA_Init(((uint8_t)(0)), &DMA_InitStr);
-N	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_Basic;
-X	DMA_PriCtrlStr.DMA_Mode = ((uint32_t)0x1);
-N	
-N	// Initialize
+N	// Initialize OS items
 N	xQueueUART1TX = xQueueCreate( 10, sizeof( uart_transmiter_msg_t ) );
 X	xQueueUART1TX = xQueueGenericCreate( 10, sizeof( uart_transmiter_msg_t ), ( ( unsigned char ) 0U ) );
 N	if( xQueueUART1TX == 0 )
@@ -16397,32 +16461,35 @@ X		xQueueGenericReceive( ( xQueueUART1TX ), ( &income_msg ), ( ( portTickType ) 
 N		if ( (income_msg.type == SEND_STRING) || (income_msg.type == SEND_ALLOCATED_STRING) )
 X		if ( (income_msg.type == 0x0001) || (income_msg.type == 0x0002) )
 N		{
-N			src_address = (uint32_t)income_msg.pdata;
+N			string_to_send = income_msg.pdata;
 N		}
 N		else if (income_msg.type == RESPONSE_OK)
 X		else if (income_msg.type == 0x0100)
 N		{
-N			src_address = (uint32_t)(&(_resp_OK));
+N			string_to_send = (char *)_resp_OK;
 N		}
 N		else //if (income_msg.type == UNKNOWN_CMD)
 N		{
-N			src_address = (uint32_t)(&(_resp_UNKN_CMD));
+N			string_to_send = (char *)_resp_UNKN_CMD;
 N		}
 N		
 N		// Get number of chars to transmit
-N		n = strlen((char*)src_address);
+N		n = strlen(string_to_send);
 N		// DMA cannot read from program memory, copy data to temporary buffer
-N		if (src_address < 0x20000000UL)
+N		if ((uint32_t)string_to_send < 0x20000000UL)
 N		{
 N			if (n > TX_BUFFER_SIZE)
 X			if (n > 100)
 N				n = TX_BUFFER_SIZE;
 X				n = 100;
-N			strncpy(uart1_tx_data_buff, (char*)src_address, n);
-N			src_address = (uint32_t)&uart1_tx_data_buff;
+N			strncpy(uart1_tx_data_buff, string_to_send, n);
+N			DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)&uart1_tx_data_buff;
 N		}
-N		// Program DMA control block
-N		DMA_PriCtrlStr.DMA_SourceBaseAddr = src_address;
+N		else
+N		{
+N			DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)string_to_send;
+N		}
+N		// Setup DMA control block
 N		DMA_PriCtrlStr.DMA_CycleSize = n;
 N		// Start DMA
 N		DMA_CtrlInit (DMA_Channel_UART1_TX, DMA_CTRL_DATA_PRIMARY, &DMA_PriCtrlStr);
@@ -16437,7 +16504,7 @@ N		// Wait for DMA
 N		xSemaphoreTake(xSemaphoreUART1TX, portMAX_DELAY);
 X		xQueueGenericReceive( ( xQueueHandle ) ( xSemaphoreUART1TX ), 0, ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
 N	
-N		// Free memory
+N		// Free memory if required
 N		if (income_msg.type == SEND_ALLOCATED_STRING)
 X		if (income_msg.type == 0x0002)
 N		{
@@ -16451,8 +16518,6 @@ N
 N
 N
 N
-N// Possibly will be enough to analyze and reset UART request enable ?
-N// instead of extra variable
 Nvoid DMA_IRQHandler(void)
 N{
 N	uint32_t *tcb_ptr;
@@ -16512,4 +16577,4 @@ N
 N
 N
 N
-W "src\uart.c" 367 13 function "UART_sendStr" was declared but never referenced
+W "src\uart.c" 400 13 function "UART_sendStr" was declared but never referenced

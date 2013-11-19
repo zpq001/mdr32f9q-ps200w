@@ -30,6 +30,79 @@
 #include "fonts.h"
 
 
+extern DMA_CtrlDataTypeDef DMA_ControlTable[];
+
+
+
+// Globally initializes DMA controller
+void my_DMA_GlobalInit(void)
+{
+	/* Check the CTRL_BASE_PTR initialisation */
+	// MDR_DMA->ALT_CTRL_BASE_PTR is automatically updated by DMA itself and is accessible for read only
+	MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+	/* DMA configuration register */
+	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || 0 /*DMA_InitStruct->DMA_ProtCtrl*/;		// CHECKME
+	//MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_AHB_Privileged;
+}
+
+// Operates similar to SPL function DMA_Init(), but:
+//	- Disables channel before init
+//	- Does NOT start the channel
+//  - Does not modify general DMA controller registers
+//	- DMA_ChannelInitStruct.ProtCtrl is unused
+void my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct)
+{
+	// Make sure channel is disabled
+	MDR_DMA->CHNL_ENABLE_CLR = (1 << DMA_Channel);
+
+	/* Primary Control Data Init */
+	if (DMA_InitStruct->DMA_PriCtrlData)
+	{
+		DMA_CtrlDataInit(DMA_InitStruct->DMA_PriCtrlData, &DMA_ControlTable[DMA_Channel]);
+	}
+
+#if (DMA_AlternateData == 1)
+	/* Alternate Control Data Init */
+	if (DMA_InitStruct->DMA_AltCtrlData)
+	{
+		uint32_t ptr = (MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+		DMA_CtrlDataInit(DMA_InitStruct->DMA_AltCtrlData, (DMA_CtrlDataTypeDef *)ptr);
+	}
+#endif
+
+	/* Burst mode */
+	if (DMA_InitStruct->DMA_UseBurst == DMA_BurstSet)
+	{
+		MDR_DMA->CHNL_USEBURST_SET = (1 << DMA_Channel);
+	}
+	else
+	{
+		MDR_DMA->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+	}
+
+	/* Channel mask clear - enable requests to channel */
+	MDR_DMA->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+  
+	/* Primary - Alternate control data structure selection */
+	if (DMA_InitStruct->DMA_SelectDataStructure == DMA_CTRL_DATA_PRIMARY)
+	{
+		MDR_DMA->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);       /* Use Primary */
+	}
+	else
+	{
+		MDR_DMA->CHNL_PRI_ALT_SET = (1 << DMA_Channel);       /* Use Alternate */
+	}
+
+	/* Channel priority set */
+	if (DMA_InitStruct->DMA_Priority == DMA_Priority_High)
+	{
+		MDR_DMA->CHNL_PRIORITY_SET = (1 << DMA_Channel);      /* High priority */
+	}
+	else
+	{
+		MDR_DMA->CHNL_PRIORITY_CLR = (1 << DMA_Channel);      /* Default priority */
+	}
+}
 
 
 
@@ -91,7 +164,9 @@ int32_t pr[15];
 
 void HW_NVIC_init(void)
 {
-	
+	// There are 3 bits of priority implemented in MDR32F9Qx device
+	// Setting all bits to pre-emption, see link below
+	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0552a/BABHGEAJ.html
 	NVIC_SetPriorityGrouping( 3 );
 	
 	pr[0] = NVIC_GetPriority(SVCall_IRQn);
@@ -101,7 +176,6 @@ void HW_NVIC_init(void)
 	pr[3] = NVIC_GetPriority(DMA_IRQn);
 	pr[4] = NVIC_GetPriority(Timer2_IRQn);
 
-//	NVIC_SetPriority(SVCall_IRQn,-1);
 	NVIC_SetPriority(DMA_IRQn,6);
 	NVIC_SetPriority(Timer2_IRQn,6);
 
@@ -368,20 +442,20 @@ void HW_DMAInit(void)
 {
 	// Reset all DMA settings
 	DMA_DeInit();	
-	
+									// TODO - move this code to my_DMA_DeInit()
 	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
 	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
 	
-	
+	// This must be executed next to clock setup in NVIC_Init() - TODO
 	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
 	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
 	MDR_SSP1->DMACR = 0;
 	MDR_SSP2->DMACR = 0;
 	
-	NVIC->ICPR[0] = 0xFFFFFFFF;
+	NVIC->ICPR[0] = 0xFFFFFFFF;		// TODO - move this code to NVIC_Init()
 	NVIC->ICER[0] = 0xFFFFFFFF;
 	
-	
+	my_DMA_GlobalInit();
 	
 	NVIC_EnableIRQ(DMA_IRQn);
 }

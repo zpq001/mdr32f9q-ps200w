@@ -18,9 +18,10 @@
 .\FLASH\systick.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h
 .\FLASH\systick.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\list.h
 .\FLASH\systick.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h
-.\FLASH\systick.o: src\gui_top.h
+.\FLASH\systick.o: src\guiTop.h
 .\FLASH\systick.o: src\encoder.h
 .\FLASH\systick.o: src\systemfunc.h
+.\FLASH\systick.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h
 .\FLASH\systick.o: src\control.h
 .\FLASH\systick.o: src\converter.h
 .\FLASH\systick.o: src\adc.h

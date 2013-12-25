@@ -499,19 +499,9 @@
               <FilePath>.\src\control.c</FilePath>
             </File>
             <File>
-              <FileName>lcd_func.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\lcd_func.c</FilePath>
-            </File>
-            <File>
               <FileName>converter.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\converter.c</FilePath>
-            </File>
-            <File>
-              <FileName>gui_top.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\gui_top.c</FilePath>
             </File>
             <File>
               <FileName>service.c</FileName>
@@ -542,51 +532,6 @@
               <FileName>sound_samples.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\sound_samples.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>fonts</GroupName>
-          <Files>
-            <File>
-              <FileName>fonts.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\fonts.h</FilePath>
-            </File>
-            <File>
-              <FileName>font_defs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\font_defs.h</FilePath>
-            </File>
-            <File>
-              <FileName>font_8x12.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_8x12.c</FilePath>
-            </File>
-            <File>
-              <FileName>font_32x19.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_32x19.c</FilePath>
-            </File>
-            <File>
-              <FileName>font_16x10.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_16x10.c</FilePath>
-            </File>
-            <File>
-              <FileName>image_defs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\image_defs.h</FilePath>
-            </File>
-            <File>
-              <FileName>images.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\images.h</FilePath>
-            </File>
-            <File>
-              <FileName>images.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\images.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -640,6 +585,211 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>GUI</GroupName>
+          <Files>
+            <File>
+              <FileName>guiMainForm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiMainForm.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiMasterPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiMasterPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiSetupPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiSetupPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiMainForm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiMainForm.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiMasterPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiMasterPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiSetupPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiSetupPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiTop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\guiTop.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTop.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\guiTop.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiCore</GroupName>
+          <Files>
+            <File>
+              <FileName>guiCore.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiCore\guiCore.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiCore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiCore\guiCore.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiEvents.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiCore\guiEvents.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiWidgets</GroupName>
+          <Files>
+            <File>
+              <FileName>guiPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiSpinBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiSpinBox.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiSpinBox.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiSpinBox.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextLabel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiTextLabel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextLabel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiTextLabel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiWidgets.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiWidgets.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiGraphics</GroupName>
+          <Files>
+            <File>
+              <FileName>font_6x8_mono.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_6x8_mono.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h10.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h10.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h10_bold.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h10_bold.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h11.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h16.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h32.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiFonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiFonts.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphHAL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphHAL.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphHAL.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphHAL.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphPrimitives.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphPrimitives.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphPrimitives.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphPrimitives.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphWidgets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphWidgets.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphWidgets.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphWidgets.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiImages.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiImages.h</FilePath>
+            </File>
+            <File>
+              <FileName>widget_images.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\widget_images.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>utils</GroupName>
+          <Files>
+            <File>
+              <FileName>utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\utils\utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\utils\utils.h</FilePath>
+            </File>
+          </Files>
+        </Group>
       </Groups>
     </Target>
     <Target>
@@ -684,7 +834,7 @@
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
-          <DebugInformation>1</DebugInformation>
+          <DebugInformation>0</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\listing\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
@@ -984,7 +1134,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\src\fonts;.\;.\src;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include</IncludePath>
+              <IncludePath>.\src\fonts;.\;.\src;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc;..\Library\Libraries\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm;..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\RVDS\ARM_CM3\;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source;..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include;.\src\gui;.\src\gui\guiCore;.\src\gui\guiWidgets;.\src\gui\guiGraphics;.\src\gui\utils</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1135,19 +1285,9 @@
               <FilePath>.\src\control.c</FilePath>
             </File>
             <File>
-              <FileName>lcd_func.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\lcd_func.c</FilePath>
-            </File>
-            <File>
               <FileName>converter.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\converter.c</FilePath>
-            </File>
-            <File>
-              <FileName>gui_top.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\gui_top.c</FilePath>
             </File>
             <File>
               <FileName>service.c</FileName>
@@ -1178,51 +1318,6 @@
               <FileName>sound_samples.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\sound_samples.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>fonts</GroupName>
-          <Files>
-            <File>
-              <FileName>fonts.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\fonts.h</FilePath>
-            </File>
-            <File>
-              <FileName>font_defs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\font_defs.h</FilePath>
-            </File>
-            <File>
-              <FileName>font_8x12.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_8x12.c</FilePath>
-            </File>
-            <File>
-              <FileName>font_32x19.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_32x19.c</FilePath>
-            </File>
-            <File>
-              <FileName>font_16x10.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\font_16x10.c</FilePath>
-            </File>
-            <File>
-              <FileName>image_defs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\image_defs.h</FilePath>
-            </File>
-            <File>
-              <FileName>images.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\fonts\images.h</FilePath>
-            </File>
-            <File>
-              <FileName>images.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\fonts\images.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1273,6 +1368,211 @@
               <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>GUI</GroupName>
+          <Files>
+            <File>
+              <FileName>guiMainForm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiMainForm.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiMasterPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiMasterPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiSetupPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiSetupPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiMainForm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiMainForm.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiMasterPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiMasterPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiSetupPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiSetupPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiTop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\guiTop.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTop.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\guiTop.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiCore</GroupName>
+          <Files>
+            <File>
+              <FileName>guiCore.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiCore\guiCore.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiCore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiCore\guiCore.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiEvents.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiCore\guiEvents.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiWidgets</GroupName>
+          <Files>
+            <File>
+              <FileName>guiPanel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiPanel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiPanel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiPanel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiSpinBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiSpinBox.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiSpinBox.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiSpinBox.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextLabel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiTextLabel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextLabel.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiTextLabel.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiWidgets.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiWidgets.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>guiGraphics</GroupName>
+          <Files>
+            <File>
+              <FileName>font_6x8_mono.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_6x8_mono.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h10.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h10.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h10_bold.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h10_bold.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h11.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h16.c</FilePath>
+            </File>
+            <File>
+              <FileName>font_h32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\font_h32.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiFonts.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiFonts.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphHAL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphHAL.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphHAL.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphHAL.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphPrimitives.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphPrimitives.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphPrimitives.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphPrimitives.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphWidgets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphWidgets.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiGraphWidgets.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiGraphWidgets.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiImages.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiGraphics\guiImages.h</FilePath>
+            </File>
+            <File>
+              <FileName>widget_images.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\widget_images.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>utils</GroupName>
+          <Files>
+            <File>
+              <FileName>utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\utils\utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\utils\utils.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -358,10 +358,10 @@ ARM Macro Assembler    Page 6
               00000400 
               00000200 
               00000000 
-Command Line: --debug --xref --width=80 --cpu=Cortex-M3 --apcs=interwork --depen
-d=.\FLASH\startup_MDR32F9x.d -o.\FLASH\startup_MDR32F9x.o -IC:\Keil\ARM\RV31\Inc
- -IC:\Keil\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --list=.\listing
-\startup_MDR32F9x.lst startup_MDR32F9x.s
+Command Line: --xref --width=80 --cpu=Cortex-M3 --apcs=interwork --depend=.\FLAS
+H\startup_MDR32F9x.d -o.\FLASH\startup_MDR32F9x.o -IC:\Keil\ARM\RV31\Inc -IC:\Ke
+il\ARM\CMSIS\Include -IC:\Keil\ARM\Inc\Milandr\MDR32F9x --list=.\listing\startup
+_MDR32F9x.lst startup_MDR32F9x.s
 
 
 

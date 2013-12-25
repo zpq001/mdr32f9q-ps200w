@@ -20,7 +20,6 @@
 #include "systemfunc.h"
 #include "systick.h"
 #include "lcd_1202.h"
-#include "lcd_func.h"
 
 
 
@@ -41,8 +40,6 @@
 
 #include "sound_driver.h"
 
-#include "fonts.h"
-#include "images.h"
 
 
 

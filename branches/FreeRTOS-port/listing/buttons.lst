@@ -6171,6 +6171,9 @@ N#define BTN_ON			0x40
 N#define BTN_OFF			0x80
 N#define SW_EXTERNAL		0x0100
 N
+N#define BTN_JTAG_MASK	(BTN_ESC | BTN_LEFT | BTN_RIGHT | BTN_OK)
+N#define NOT_USE_JTAG_BUTTONS
+N
 N
 N//=============================================//
 N// Button processing setup
@@ -6434,6 +6437,10 @@ N
 N	UpdateRawButtonState();
 N	raw_current = raw_button_state ^ RAW_BUTTON_INVERSE_MASK;
 X	raw_current = raw_button_state ^ 0x00;
+N	#ifdef NOT_USE_JTAG_BUTTONS
+N	raw_current &= ~BTN_JTAG_MASK;
+X	raw_current &= ~(0x01 | 0x02 | 0x04 | 0x08);
+N	#endif
 N	ResetButtonEvents();
 N	
 N	// Loop through all buttons

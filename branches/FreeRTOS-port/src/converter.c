@@ -26,6 +26,8 @@
 #include "converter.h"
 #include "sound_driver.h"
 
+#include "guiTop.h"
+
 
 // Globals used for communicating with converter control task called from ISR
 volatile uint8_t state_HWProcess = STATE_HW_OFF;	

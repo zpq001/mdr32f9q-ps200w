@@ -1,8 +1,6 @@
-L 1 "src\fonts\images.c"
-N#include "image_defs.h"
-L 1 "src\fonts\image_defs.h" 1
+L 1 "src\gui\utils\utils.c"
 N
-N#include "stdint.h"	// std typedefs
+N#include <stdint.h>
 L 1 "C:\Keil\ARM\RV31\Inc\stdint.h" 1
 N/* Copyright (C) ARM Ltd., 1999 */
 N/* All rights reserved */
@@ -272,64 +270,91 @@ N
 N/* end of stdint.h */
 N
 N
-L 3 "src\fonts\image_defs.h" 2
+L 3 "src\gui\utils\utils.c" 2
+N#include "utils.h"
+L 1 "src\gui\utils\utils.h" 1
+N#ifndef __UTILS_H_
+N#define __UTILS_H_
 N
-N#ifndef __image_defs_h
-N#define __image_defs_h
+N#define NO_TERMINATING_ZERO	0x80
+N
+Nuint8_t i32toa_align_right(int32_t val, char *buffer, uint8_t len, uint8_t min_digits_required);
 N
 N
 N
 N
-N//----- Image struct typedefs -----//
+N#endif
+L 4 "src\gui\utils\utils.c" 2
 N
-Ntypedef struct 
+N//-------------------------------------------------------//
+N//	Converts 32-bit integer to a right - aligned string
+N//	input:
+N//		val - 32-bit value to convert, signed
+N//		*buffer - pointer to store result data
+N//		len[6:0] - output string length, including \0 symbol
+N//				If result length < len[6:0], result will be cut to fit buffer
+N//				If result length > len[6:0], buffer will be filled with spaces
+N//		len[7] - if set, result string will be null-terminated
+N//  output:
+N//      returns number of usefull chars (those not spaces or '-' sign)
+N//-------------------------------------------------------//
+Nuint8_t i32toa_align_right(int32_t val, char *buffer, uint8_t len, uint8_t min_digits_required)
 N{
-N	uint8_t width;
-N	uint8_t height;
-N	const uint8_t *data;
-N} tImage;
+N    uint8_t is_negative = 0;
+N    uint8_t chars_count = 0;
+N    if (!len)	return 0;
+N
+N    if (val < 0)
+N    {
+N        val = -val;
+N        is_negative = 1;
+N    }
+N
+N    if (len & NO_TERMINATING_ZERO)
+X    if (len & 0x80)
+N    {
+N        len = len & ~NO_TERMINATING_ZERO;
+X        len = len & ~0x80;
+N        buffer += len;
+N    }
+N    else
+N    {
+N        buffer += len;
+N        *buffer = 0;
+N        chars_count++;
+N        min_digits_required++;
+N    }
+N
+N    do
+N    {
+N        *--buffer = val % 10 + '0';
+N        val /= 10;
+N        len--;
+N        chars_count++;
+N    }
+N    while ((val != 0) && len);
+N
+N    // Pad with 0
+N    while ((chars_count < min_digits_required) && (len))
+N    {
+N        chars_count++;
+N        *--buffer = '0';
+N        len--;
+N    }
+N
+N    // Minus sign
+N    if ( (len) && (is_negative) )
+N    {
+N        *--buffer = '-';
+N        len--;
+N    }
+N
+N    // Padding with spaces
+N    while(len--)
+N        *--buffer = ' ';
+N
+N    return chars_count;
+N}
 N
 N
-N//----------------------------------//
 N
-N
-N
-N
-N
-N
-N#endif	// __image_defs_h
-N
-N
-N
-N
-N
-L 2 "src\fonts\images.c" 2
-N
-Nconst uint8_t image_Select0_data[] =
-N{
-N	0x60,0xF0,0xF8,0xFC,0xFE,0x00,0x00,0x00,
-N	0x01,0x03,0x07,0x00
-N};
-N
-Nconst tImage imgSelect0 =
-N{
-N	6,                        // Width
-N  12,                       // Height
-N  image_Select0_data   
-N};
-N
-N
-N
-N
-Nconst uint8_t image_Underline0_data[] =
-N{
-N	0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,
-N  0x03,0x03
-N};
-N
-Nconst tImage imgUnderline0 =
-N{
-N	10,                      // Width
-N  2,                       // Height
-N  image_Underline0_data   
-N};

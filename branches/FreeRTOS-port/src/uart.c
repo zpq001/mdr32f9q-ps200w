@@ -192,7 +192,7 @@ void vTaskUARTReceiver(void *pvParameters)
 	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
 	
 	
-	HW_NVIC_check();		// FIXME - debug
+	//HW_NVIC_check();		// FIXME - debug
 	
 	
 	while(1)

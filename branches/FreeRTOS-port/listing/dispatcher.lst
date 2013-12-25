@@ -6387,7 +6387,10 @@ N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
+N
+N// Only bits [7:5] are implemented in MDR32F9Qx, so set highest priority 1
+N// All other IRQs must be set to priorities >= 1 (and <= 7)
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20	
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -11414,6 +11417,9 @@ N#define BTN_ON			0x40
 N#define BTN_OFF			0x80
 N#define SW_EXTERNAL		0x0100
 N
+N#define BTN_JTAG_MASK	(BTN_ESC | BTN_LEFT | BTN_RIGHT | BTN_OK)
+N#define NOT_USE_JTAG_BUTTONS
+N
 N
 N//=============================================//
 N// Button processing setup
@@ -11827,25 +11833,43 @@ Nvoid SetCurrentLimit(uint8_t newLimit);
 Nvoid SetOutputLoad(uint8_t newLoad);
 N
 L 25 "src\dispatcher.c" 2
-N#include "gui_top.h"
-L 1 "src\gui_top.h" 1
-N
+N//#include "gui_top.h"
+N#include "guiTop.h"
+L 1 "src\guiTop.h" 1
 N#include "FreeRTOS.h"
 N#include "task.h"
 N#include "queue.h"
 N
 N
-N#define GUI_UPDATE_ALL	0
-N#define GUI_PROCESS_BUTTONS	1
+N#define GUI_TASK_REDRAW				0		// draw
+N#define GUI_TASK_PROCESS_BUTTONS	1		// buttons/encoder
+N
+N#define GUI_TASK_UPDATE_VOLTAGE_CURRENT			0x10	// Refreshes voltage and current indicators
+N#define GUI_TASK_UPDATE_VOLTAGE_SETTING			0x14	// Refreshes voltage setting
+N#define GUI_TASK_UPDATE_CURRENT_SETTING			0x15	// Refreshes current setting
+N
+N#define GUI_TASK_UPDATE_CURRENT_LIMIT			0x13	// Refreshes current limit
+N#define GUI_TASK_UPDATE_FEEDBACK_CHANNEL		0x11	// Refreshes feedback channel
+N#define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
+N
+N
+N
+N// SelectedChannel
+N#define	GUI_CHANNEL_5V			0x1
+N#define	GUI_CHANNEL_12V			0x0
+N// CurrentLimit
+N#define	GUI_CURRENT_LIM_HIGH	0x1
+N#define	GUI_CURRENT_LIM_LOW	 	0x0
 N
 N
 N
 Nextern xQueueHandle xQueueGUI;
 Nvoid vTaskGUI(void *pvParameters);
 N
-N
-N
-L 26 "src\dispatcher.c" 2
+Nvoid applyGuiVoltageSetting(uint16_t new_set_voltage);
+Nvoid applyGuiCurrentSetting(uint16_t new_set_current);
+Nvoid applyGuiCurrentLimit(uint8_t new_current_limit);
+L 27 "src\dispatcher.c" 2
 N#include "dispatcher.h"
 L 1 "src\dispatcher.h" 1
 N
@@ -11877,7 +11901,7 @@ Nvoid vTaskDispatcher(void *pvParameters);
 N
 N
 N
-L 27 "src\dispatcher.c" 2
+L 28 "src\dispatcher.c" 2
 N
 N
 N
@@ -11969,7 +11993,7 @@ N				//---------------------------//
 N				//---------------------------//
 N
 N				// Make GUI process buttons and encoder
-N				gui_msg = GUI_PROCESS_BUTTONS;
+N				gui_msg = GUI_TASK_PROCESS_BUTTONS;
 X				gui_msg = 1;
 N				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 X				xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 0 ) );

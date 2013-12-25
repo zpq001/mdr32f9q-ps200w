@@ -7110,7 +7110,10 @@ N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
+N
+N// Only bits [7:5] are implemented in MDR32F9Qx, so set highest priority 1
+N// All other IRQs must be set to priorities >= 1 (and <= 7)
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20	
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -13329,6 +13332,43 @@ N
 N
 L 14 "src\adc.c" 2
 N
+N#include "guiTop.h"
+L 1 "src\guiTop.h" 1
+N#include "FreeRTOS.h"
+N#include "task.h"
+N#include "queue.h"
+N
+N
+N#define GUI_TASK_REDRAW				0		// draw
+N#define GUI_TASK_PROCESS_BUTTONS	1		// buttons/encoder
+N
+N#define GUI_TASK_UPDATE_VOLTAGE_CURRENT			0x10	// Refreshes voltage and current indicators
+N#define GUI_TASK_UPDATE_VOLTAGE_SETTING			0x14	// Refreshes voltage setting
+N#define GUI_TASK_UPDATE_CURRENT_SETTING			0x15	// Refreshes current setting
+N
+N#define GUI_TASK_UPDATE_CURRENT_LIMIT			0x13	// Refreshes current limit
+N#define GUI_TASK_UPDATE_FEEDBACK_CHANNEL		0x11	// Refreshes feedback channel
+N#define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
+N
+N
+N
+N// SelectedChannel
+N#define	GUI_CHANNEL_5V			0x1
+N#define	GUI_CHANNEL_12V			0x0
+N// CurrentLimit
+N#define	GUI_CURRENT_LIM_HIGH	0x1
+N#define	GUI_CURRENT_LIM_LOW	 	0x0
+N
+N
+N
+Nextern xQueueHandle xQueueGUI;
+Nvoid vTaskGUI(void *pvParameters);
+N
+Nvoid applyGuiVoltageSetting(uint16_t new_set_voltage);
+Nvoid applyGuiCurrentSetting(uint16_t new_set_current);
+Nvoid applyGuiCurrentLimit(uint8_t new_current_limit);
+L 16 "src\adc.c" 2
+N
 Nuint16_t voltage_adc;		// [mV]
 Nuint16_t current_adc;		// [mA]
 Nuint32_t power_adc;			// [mW]
@@ -13337,6 +13377,8 @@ Nstatic uint16_t adc_voltage_counts;	// [ADC counts]
 Nstatic uint16_t adc_current_counts;	// [ADC counts]
 N
 Nstatic volatile uint8_t ctrl_ADCProcess = 0;
+N
+Nstatic uint32_t gui_msg;
 N
 NxQueueHandle xQueueADC;
 NxSemaphoreHandle xSemaphoreADC;
@@ -13390,6 +13432,12 @@ N				else
 N					current_adc *= 5;
 N				
 N				power_adc = voltage_adc * current_adc / 1000;
+N				
+N				// Send notification to GUI
+N				gui_msg = GUI_TASK_UPDATE_VOLTAGE_CURRENT;
+X				gui_msg = 0x10;
+N				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+X				xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 0 ) );
 N			
 N				break;
 N			

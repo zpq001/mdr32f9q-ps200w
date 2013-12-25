@@ -21,13 +21,16 @@
 #include "defines.h"
 #include "systick.h"
 #include "lcd_1202.h"
-#include "lcd_func.h"
+#include "guiGraphHAL.h"
+#include "guiFonts.h"
+#include "guiGraphPrimitives.h"
+
 #include "dwt_delay.h"
 
 #include "control.h"
 #include "led.h"
 
-#include "fonts.h"
+//#include "fonts.h"
 
 
 extern DMA_CtrlDataTypeDef DMA_ControlTable[];
@@ -828,10 +831,15 @@ void ProcessPowerOff(void)
 
 
 		// Put message
-		LcdFillBuffer(lcd0_buffer,0);
-		LcdFillBuffer(lcd1_buffer,0);
-		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
-		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+		//LcdFillBuffer(lcd0_buffer,0);
+		//LcdFillBuffer(lcd1_buffer,0);
+		LCD_FillWholeBuffer(0);
+		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
+		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+		LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+		LCD_SetFont(&font_h11);
+		LCD_PrintString("Power OFF", 0, 10, IMAGE_MODE_NORMAL);
+		LCD_PrintString("Power OFF", 96+0, 10, IMAGE_MODE_NORMAL);
 
 
 
@@ -841,8 +849,9 @@ void ProcessPowerOff(void)
 		SetCurrentLimit(CURRENT_LIM_HIGH); 
 		SetOutputLoad(LOAD_DISABLE); 
 
-		LcdUpdateByCore(LCD0,lcd0_buffer);
-		LcdUpdateByCore(LCD1,lcd1_buffer);
+//		LcdUpdateByCore(LCD0,lcd0_buffer);
+//		LcdUpdateByCore(LCD1,lcd1_buffer);
+		LcdUpdateBothByCore(lcdBuffer);
 
 
 

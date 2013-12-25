@@ -18,6 +18,9 @@
 #define BTN_OFF			0x80
 #define SW_EXTERNAL		0x0100
 
+#define BTN_JTAG_MASK	(BTN_ESC | BTN_LEFT | BTN_RIGHT | BTN_OK)
+#define NOT_USE_JTAG_BUTTONS
+
 
 //=============================================//
 // Button processing setup

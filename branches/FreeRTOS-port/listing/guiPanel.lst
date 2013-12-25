@@ -1,0 +1,2017 @@
+L 1 "src\gui\guiWidgets\guiPanel.c"
+N/**********************************************************
+N    Module guiPanel
+N
+N
+N
+N
+N**********************************************************/
+N
+N#include <stdint.h>         // using integer types
+L 1 "C:\Keil\ARM\RV31\Inc\stdint.h" 1
+N/* Copyright (C) ARM Ltd., 1999 */
+N/* All rights reserved */
+N
+N/*
+N * RCS $Revision: 137748 $
+N * Checkin $Date: 2008-09-11 17:34:24 +0100 (Thu, 11 Sep 2008) $
+N * Revising $Author: agrant $
+N */
+N
+N#ifndef __stdint_h
+N#define __stdint_h
+N
+N  #ifndef __STDINT_DECLS
+N  #define __STDINT_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S      namespace std {
+S          #define __CLIBNS std::
+S          extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N
+N/*
+N * 'signed' is redundant below, except for 'signed char' and if
+N * the typedef is used to declare a bitfield.
+N * '__int64' is used instead of 'long long' so that this header
+N * can be used in --strict mode.
+N */
+N
+N    /* 7.18.1.1 */
+N
+N    /* exact-width signed integer types */
+Ntypedef   signed          char int8_t;
+Ntypedef   signed short     int int16_t;
+Ntypedef   signed           int int32_t;
+Ntypedef   signed       __int64 int64_t;
+N
+N    /* exact-width unsigned integer types */
+Ntypedef unsigned          char uint8_t;
+Ntypedef unsigned short     int uint16_t;
+Ntypedef unsigned           int uint32_t;
+Ntypedef unsigned       __int64 uint64_t;
+N
+N    /* 7.18.1.2 */
+N
+N    /* smallest type of at least n bits */
+N    /* minimum-width signed integer types */
+Ntypedef   signed          char int_least8_t;
+Ntypedef   signed short     int int_least16_t;
+Ntypedef   signed           int int_least32_t;
+Ntypedef   signed       __int64 int_least64_t;
+N
+N    /* minimum-width unsigned integer types */
+Ntypedef unsigned          char uint_least8_t;
+Ntypedef unsigned short     int uint_least16_t;
+Ntypedef unsigned           int uint_least32_t;
+Ntypedef unsigned       __int64 uint_least64_t;
+N
+N    /* 7.18.1.3 */
+N
+N    /* fastest minimum-width signed integer types */
+Ntypedef   signed           int int_fast8_t;
+Ntypedef   signed           int int_fast16_t;
+Ntypedef   signed           int int_fast32_t;
+Ntypedef   signed       __int64 int_fast64_t;
+N
+N    /* fastest minimum-width unsigned integer types */
+Ntypedef unsigned           int uint_fast8_t;
+Ntypedef unsigned           int uint_fast16_t;
+Ntypedef unsigned           int uint_fast32_t;
+Ntypedef unsigned       __int64 uint_fast64_t;
+N
+N    /* 7.18.1.4 integer types capable of holding object pointers */
+Ntypedef   signed           int intptr_t;
+Ntypedef unsigned           int uintptr_t;
+N
+N    /* 7.18.1.5 greatest-width integer types */
+Ntypedef   signed       __int64 intmax_t;
+Ntypedef unsigned       __int64 uintmax_t;
+N
+N
+N#if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.2.1 */
+N
+N    /* minimum values of exact-width signed integer types */
+N#define INT8_MIN                   -128
+N#define INT16_MIN                -32768
+N#define INT32_MIN          (~0x7fffffff)   /* -2147483648 is unsigned */
+N#define INT64_MIN  __ESCAPE__(~0x7fffffffffffffffll) /* -9223372036854775808 is unsigned */
+N
+N    /* maximum values of exact-width signed integer types */
+N#define INT8_MAX                    127
+N#define INT16_MAX                 32767
+N#define INT32_MAX            2147483647
+N#define INT64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of exact-width unsigned integer types */
+N#define UINT8_MAX                   255
+N#define UINT16_MAX                65535
+N#define UINT32_MAX           4294967295u
+N#define UINT64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.2 */
+N
+N    /* minimum values of minimum-width signed integer types */
+N#define INT_LEAST8_MIN                   -128
+N#define INT_LEAST16_MIN                -32768
+N#define INT_LEAST32_MIN          (~0x7fffffff)
+N#define INT_LEAST64_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum values of minimum-width signed integer types */
+N#define INT_LEAST8_MAX                    127
+N#define INT_LEAST16_MAX                 32767
+N#define INT_LEAST32_MAX            2147483647
+N#define INT_LEAST64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of minimum-width unsigned integer types */
+N#define UINT_LEAST8_MAX                   255
+N#define UINT_LEAST16_MAX                65535
+N#define UINT_LEAST32_MAX           4294967295u
+N#define UINT_LEAST64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.3 */
+N
+N    /* minimum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MIN           (~0x7fffffff)
+N#define INT_FAST16_MIN          (~0x7fffffff)
+N#define INT_FAST32_MIN          (~0x7fffffff)
+N#define INT_FAST64_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MAX             2147483647
+N#define INT_FAST16_MAX            2147483647
+N#define INT_FAST32_MAX            2147483647
+N#define INT_FAST64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of fastest minimum-width unsigned integer types */
+N#define UINT_FAST8_MAX            4294967295u
+N#define UINT_FAST16_MAX           4294967295u
+N#define UINT_FAST32_MAX           4294967295u
+N#define UINT_FAST64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.4 */
+N
+N    /* minimum value of pointer-holding signed integer type */
+N#define INTPTR_MIN (~0x7fffffff)
+N
+N    /* maximum value of pointer-holding signed integer type */
+N#define INTPTR_MAX   2147483647
+N
+N    /* maximum value of pointer-holding unsigned integer type */
+N#define UINTPTR_MAX  4294967295u
+N
+N    /* 7.18.2.5 */
+N
+N    /* minimum value of greatest-width signed integer type */
+N#define INTMAX_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum value of greatest-width signed integer type */
+N#define INTMAX_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum value of greatest-width unsigned integer type */
+N#define UINTMAX_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.3 */
+N
+N    /* limits of ptrdiff_t */
+N#define PTRDIFF_MIN (~0x7fffffff)
+N#define PTRDIFF_MAX   2147483647
+N
+N    /* limits of sig_atomic_t */
+N#define SIG_ATOMIC_MIN (~0x7fffffff)
+N#define SIG_ATOMIC_MAX   2147483647
+N
+N    /* limit of size_t */
+N#define SIZE_MAX 4294967295u
+N
+N    /* limits of wchar_t */
+N    /* NB we have to undef and redef because they're defined in both
+N     * stdint.h and wchar.h */
+N#undef WCHAR_MIN
+N#undef WCHAR_MAX
+N
+N#if defined(__WCHAR32)
+X#if 0L
+S  #define WCHAR_MIN   0
+S  #define WCHAR_MAX   0xffffffffU
+N#else
+N  #define WCHAR_MIN   0
+N  #define WCHAR_MAX   65535
+N#endif
+N
+N    /* limits of wint_t */
+N#define WINT_MIN (~0x7fffffff)
+N#define WINT_MAX 2147483647
+N
+N#endif /* __STDC_LIMIT_MACROS */
+N
+N#if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.4.1 macros for minimum-width integer constants */
+N#define INT8_C(x)   (x)
+N#define INT16_C(x)  (x)
+N#define INT32_C(x)  (x)
+N#define INT64_C(x)  __ESCAPE__(x ## ll)
+N
+N#define UINT8_C(x)  (x ## u)
+N#define UINT16_C(x) (x ## u)
+N#define UINT32_C(x) (x ## u)
+N#define UINT64_C(x) __ESCAPE__(x ## ull)
+N
+N    /* 7.18.4.2 macros for greatest-width integer constants */
+N#define INTMAX_C(x)  __ESCAPE__(x ## ll)
+N#define UINTMAX_C(x) __ESCAPE__(x ## ull)
+N
+N#endif /* __STDC_CONSTANT_MACROS */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STDINT_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STDINT_NO_EXPORTS
+S      using ::std::int8_t;
+S      using ::std::int16_t;
+S      using ::std::int32_t;
+S      using ::std::int64_t;
+S      using ::std::uint8_t;
+S      using ::std::uint16_t;
+S      using ::std::uint32_t;
+S      using ::std::uint64_t;
+S      using ::std::int_least8_t;
+S      using ::std::int_least16_t;
+S      using ::std::int_least32_t;
+S      using ::std::int_least64_t;
+S      using ::std::uint_least8_t;
+S      using ::std::uint_least16_t;
+S      using ::std::uint_least32_t;
+S      using ::std::uint_least64_t;
+S      using ::std::int_fast8_t;
+S      using ::std::int_fast16_t;
+S      using ::std::int_fast32_t;
+S      using ::std::int_fast64_t;
+S      using ::std::uint_fast8_t;
+S      using ::std::uint_fast16_t;
+S      using ::std::uint_fast32_t;
+S      using ::std::uint_fast64_t;
+S      using ::std::intptr_t;
+S      using ::std::uintptr_t;
+S      using ::std::intmax_t;
+S      using ::std::uintmax_t;
+S    #endif 
+N  #endif /* __cplusplus */
+N
+N#endif /* __stdint_h */
+N
+N/* end of stdint.h */
+N
+N
+L 10 "src\gui\guiWidgets\guiPanel.c" 2
+N#include <string.h>         // using memset
+L 1 "C:\Keil\ARM\RV31\Inc\string.h" 1
+N/* string.h: ANSI 'C' (X3J11 Oct 88) library header, section 4.11 */
+N/* Copyright (C) Codemist Ltd., 1988-1993.                        */
+N/* Copyright 1991-1993 ARM Limited. All rights reserved.          */
+N/* version 0.04 */
+N
+N/*
+N * RCS $Revision: 137748 $
+N * Checkin $Date: 2008-09-11 17:34:24 +0100 (Thu, 11 Sep 2008) $
+N */
+N
+N/*
+N * string.h declares one type and several functions, and defines one macro
+N * useful for manipulating character arrays and other objects treated as
+N * character arrays. Various methods are used for determining the lengths of
+N * the arrays, but in all cases a char * or void * argument points to the
+N * initial (lowest addresses) character of the array. If an array is written
+N * beyond the end of an object, the behaviour is undefined.
+N */
+N
+N#ifndef __string_h
+N#define __string_h
+N
+N#define _ARMABI __declspec(__nothrow)
+N
+N  #ifndef __STRING_DECLS
+N  #define __STRING_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S        namespace std {
+S        #define __CLIBNS std::
+S        extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N#if defined(__cplusplus) || !defined(__STRICT_ANSI__)
+X#if 0L || !0L
+N /* unconditional in C++ and non-strict C for consistency of debug info */
+N  typedef unsigned int size_t;
+N#elif !defined(__size_t)
+S  #define __size_t 1
+S  typedef unsigned int size_t;   /* see <stddef.h> */
+N#endif
+N
+N#undef NULL
+N#define NULL 0                   /* see <stddef.h> */
+N
+Nextern _ARMABI void *memcpy(void * __restrict /*s1*/,
+Xextern __declspec(__nothrow) void *memcpy(void * __restrict  ,
+N                    const void * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies n characters from the object pointed to by s2 into the object
+N    * pointed to by s1. If copying takes place between objects that overlap,
+N    * the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI void *memmove(void * /*s1*/,
+Xextern __declspec(__nothrow) void *memmove(void *  ,
+N                    const void * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies n characters from the object pointed to by s2 into the object
+N    * pointed to by s1. Copying takes place as if the n characters from the
+N    * object pointed to by s2 are first copied into a temporary array of n
+N    * characters that does not overlap the objects pointed to by s1 and s2,
+N    * and then the n characters from the temporary array are copied into the
+N    * object pointed to by s1.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strcpy(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strcpy(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies the string pointed to by s2 (including the terminating nul
+N    * character) into the array pointed to by s1. If copying takes place
+N    * between objects that overlap, the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strncpy(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strncpy(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies not more than n characters (characters that follow a null
+N    * character are not copied) from the array pointed to by s2 into the array
+N    * pointed to by s1. If copying takes place between objects that overlap,
+N    * the behaviour is undefined.
+N    * Returns: the value of s1.
+N    */
+N
+Nextern _ARMABI char *strcat(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strcat(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * appends a copy of the string pointed to by s2 (including the terminating
+N    * null character) to the end of the string pointed to by s1. The initial
+N    * character of s2 overwrites the null character at the end of s1.
+N    * Returns: the value of s1.
+N    */
+Nextern _ARMABI char *strncat(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strncat(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * appends not more than n characters (a null character and characters that
+N    * follow it are not appended) from the array pointed to by s2 to the end of
+N    * the string pointed to by s1. The initial character of s2 overwrites the
+N    * null character at the end of s1. A terminating null character is always
+N    * appended to the result.
+N    * Returns: the value of s1.
+N    */
+N
+N/*
+N * The sign of a nonzero value returned by the comparison functions is
+N * determined by the sign of the difference between the values of the first
+N * pair of characters (both interpreted as unsigned char) that differ in the
+N * objects being compared.
+N */
+N
+Nextern _ARMABI int memcmp(const void * /*s1*/, const void * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int memcmp(const void *  , const void *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the first n characters of the object pointed to by s1 to the
+N    * first n characters of the object pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the object pointed to by s1 is greater than, equal to, or
+N    *          less than the object pointed to by s2.
+N    */
+Nextern _ARMABI int strcmp(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcmp(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strncmp(const char * /*s1*/, const char * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strncmp(const char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares not more than n characters (characters that follow a null
+N    * character are not compared) from the array pointed to by s1 to the array
+N    * pointed to by s2.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strcasecmp(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcasecmp(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2,
+N    * case-insensitively as defined by the current locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strncasecmp(const char * /*s1*/, const char * /*s2*/, size_t /*n*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strncasecmp(const char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares not more than n characters (characters that follow a null
+N    * character are not compared) from the array pointed to by s1 to the array
+N    * pointed to by s2, case-insensitively as defined by the current locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2.
+N    */
+Nextern _ARMABI int strcoll(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) int strcoll(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * compares the string pointed to by s1 to the string pointed to by s2, both
+N    * interpreted as appropriate to the LC_COLLATE category of the current
+N    * locale.
+N    * Returns: an integer greater than, equal to, or less than zero, according
+N    *          as the string pointed to by s1 is greater than, equal to, or
+N    *          less than the string pointed to by s2 when both are interpreted
+N    *          as appropriate to the current locale.
+N    */
+N
+Nextern _ARMABI size_t strxfrm(char * __restrict /*s1*/, const char * __restrict /*s2*/, size_t /*n*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) size_t strxfrm(char * __restrict  , const char * __restrict  , size_t  ) __attribute__((__nonnull__(2)));
+N   /*
+N    * transforms the string pointed to by s2 and places the resulting string
+N    * into the array pointed to by s1. The transformation function is such that
+N    * if the strcmp function is applied to two transformed strings, it returns
+N    * a value greater than, equal to or less than zero, corresponding to the
+N    * result of the strcoll function applied to the same two original strings.
+N    * No more than n characters are placed into the resulting array pointed to
+N    * by s1, including the terminating null character. If n is zero, s1 is
+N    * permitted to be a null pointer. If copying takes place between objects
+N    * that overlap, the behaviour is undefined.
+N    * Returns: The length of the transformed string is returned (not including
+N    *          the terminating null character). If the value returned is n or
+N    *          more, the contents of the array pointed to by s1 are
+N    *          indeterminate.
+N    */
+N
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const void *memchr(const void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Sextern "C++" void *memchr(void * __s, int __c, size_t __n) __attribute__((__nonnull__(1)));
+Sextern "C++" inline void *memchr(void * __s, int __c, size_t __n)
+S    { return const_cast<void *>(memchr(const_cast<const void *>(__s), __c, __n)); }
+N#else
+Nextern _ARMABI void *memchr(const void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void *memchr(const void *  , int  , size_t  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the first occurence of c (converted to an unsigned char) in the
+N    * initial n characters (each interpreted as unsigned char) of the object
+N    * pointed to by s.
+N    * Returns: a pointer to the located character, or a null pointer if the
+N    *          character does not occur in the object.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Sextern "C++" char *strchr(char * __s, int __c) __attribute__((__nonnull__(1)));
+Sextern "C++" inline char *strchr(char * __s, int __c)
+S    { return const_cast<char *>(strchr(const_cast<const char *>(__s), __c)); }
+N#else
+Nextern _ARMABI char *strchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) char *strchr(const char *  , int  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the first occurence of c (converted to an char) in the string
+N    * pointed to by s (including the terminating null character).
+N    * Returns: a pointer to the located character, or a null pointer if the
+N    *          character does not occur in the string.
+N    */
+N
+Nextern _ARMABI size_t strcspn(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strcspn(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * computes the length of the initial segment of the string pointed to by s1
+N    * which consists entirely of characters not from the string pointed to by
+N    * s2. The terminating null character is not considered part of s2.
+N    * Returns: the length of the segment.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strpbrk(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Sextern "C++" char *strpbrk(char * __s1, const char * __s2) __attribute__((__nonnull__(1,2)));
+Sextern "C++" inline char *strpbrk(char * __s1, const char * __s2)
+S    { return const_cast<char *>(strpbrk(const_cast<const char *>(__s1), __s2)); }
+N#else
+Nextern _ARMABI char *strpbrk(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strpbrk(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N#endif
+N   /*
+N    * locates the first occurence in the string pointed to by s1 of any
+N    * character from the string pointed to by s2.
+N    * Returns: returns a pointer to the character, or a null pointer if no
+N    *          character form s2 occurs in s1.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strrchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Sextern "C++" char *strrchr(char * __s, int __c) __attribute__((__nonnull__(1)));
+Sextern "C++" inline char *strrchr(char * __s, int __c)
+S    { return const_cast<char *>(strrchr(const_cast<const char *>(__s), __c)); }
+N#else
+Nextern _ARMABI char *strrchr(const char * /*s*/, int /*c*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) char *strrchr(const char *  , int  ) __attribute__((__nonnull__(1)));
+N#endif
+N   /*
+N    * locates the last occurence of c (converted to a char) in the string
+N    * pointed to by s. The terminating null character is considered part of
+N    * the string.
+N    * Returns: returns a pointer to the character, or a null pointer if c does
+N    *          not occur in the string.
+N    */
+N
+Nextern _ARMABI size_t strspn(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strspn(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * computes the length of the initial segment of the string pointed to by s1
+N    * which consists entirely of characters from the string pointed to by S2
+N    * Returns: the length of the segment.
+N    */
+N
+N#ifdef __cplusplus
+Sextern _ARMABI const char *strstr(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Sextern "C++" char *strstr(char * __s1, const char * __s2) __attribute__((__nonnull__(1,2)));
+Sextern "C++" inline char *strstr(char * __s1, const char * __s2)
+S    { return const_cast<char *>(strstr(const_cast<const char *>(__s1), __s2)); }
+N#else
+Nextern _ARMABI char *strstr(const char * /*s1*/, const char * /*s2*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) char *strstr(const char *  , const char *  ) __attribute__((__nonnull__(1,2)));
+N#endif
+N   /*
+N    * locates the first occurence in the string pointed to by s1 of the
+N    * sequence of characters (excluding the terminating null character) in the
+N    * string pointed to by s2.
+N    * Returns: a pointer to the located string, or a null pointer if the string
+N    *          is not found.
+N    */
+N
+Nextern _ARMABI char *strtok(char * __restrict /*s1*/, const char * __restrict /*s2*/) __attribute__((__nonnull__(2)));
+Xextern __declspec(__nothrow) char *strtok(char * __restrict  , const char * __restrict  ) __attribute__((__nonnull__(2)));
+Nextern _ARMABI char *_strtok_r(char * /*s1*/, const char * /*s2*/, char ** /*ptr*/) __attribute__((__nonnull__(2,3)));
+Xextern __declspec(__nothrow) char *_strtok_r(char *  , const char *  , char **  ) __attribute__((__nonnull__(2,3)));
+N#ifndef __STRICT_ANSI__
+Nextern _ARMABI char *strtok_r(char * /*s1*/, const char * /*s2*/, char ** /*ptr*/) __attribute__((__nonnull__(2,3)));
+Xextern __declspec(__nothrow) char *strtok_r(char *  , const char *  , char **  ) __attribute__((__nonnull__(2,3)));
+N#endif
+N   /*
+N    * A sequence of calls to the strtok function breaks the string pointed to
+N    * by s1 into a sequence of tokens, each of which is delimited by a
+N    * character from the string pointed to by s2. The first call in the
+N    * sequence has s1 as its first argument, and is followed by calls with a
+N    * null pointer as their first argument. The separator string pointed to by
+N    * s2 may be different from call to call.
+N    * The first call in the sequence searches for the first character that is
+N    * not contained in the current separator string s2. If no such character
+N    * is found, then there are no tokens in s1 and the strtok function returns
+N    * a null pointer. If such a character is found, it is the start of the
+N    * first token.
+N    * The strtok function then searches from there for a character that is
+N    * contained in the current separator string. If no such character is found,
+N    * the current token extends to the end of the string pointed to by s1, and
+N    * subsequent searches for a token will fail. If such a character is found,
+N    * it is overwritten by a null character, which terminates the current
+N    * token. The strtok function saves a pointer to the following character,
+N    * from which the next search for a token will start.
+N    * Each subsequent call, with a null pointer as the value for the first
+N    * argument, starts searching from the saved pointer and behaves as
+N    * described above.
+N    * Returns: pointer to the first character of a token, or a null pointer if
+N    *          there is no token.
+N    *
+N    * strtok_r() is a common extension which works exactly like
+N    * strtok(), but instead of storing its state in a hidden
+N    * library variable, requires the user to pass in a pointer to a
+N    * char * variable which will be used instead. Any sequence of
+N    * calls to strtok_r() passing the same char ** pointer should
+N    * behave exactly like the corresponding sequence of calls to
+N    * strtok(). This means that strtok_r() can safely be used in
+N    * multi-threaded programs, and also that you can tokenise two
+N    * strings in parallel.
+N    */
+N
+Nextern _ARMABI void *memset(void * /*s*/, int /*c*/, size_t /*n*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) void *memset(void *  , int  , size_t  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * copies the value of c (converted to an unsigned char) into each of the
+N    * first n charactes of the object pointed to by s.
+N    * Returns: the value of s.
+N    */
+Nextern _ARMABI char *strerror(int /*errnum*/);
+Xextern __declspec(__nothrow) char *strerror(int  );
+N   /*
+N    * maps the error number in errnum to an error message string.
+N    * Returns: a pointer to the string, the contents of which are
+N    *          implementation-defined. The array pointed to shall not be
+N    *          modified by the program, but may be overwritten by a
+N    *          subsequent call to the strerror function.
+N    */
+Nextern _ARMABI size_t strlen(const char * /*s*/) __attribute__((__nonnull__(1)));
+Xextern __declspec(__nothrow) size_t strlen(const char *  ) __attribute__((__nonnull__(1)));
+N   /*
+N    * computes the length of the string pointed to by s.
+N    * Returns: the number of characters that precede the terminating null
+N    *          character.
+N    */
+N
+Nextern _ARMABI size_t strlcpy(char * /*dst*/, const char * /*src*/, size_t /*len*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strlcpy(char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * copies the string src into the string dst, using no more than
+N    * len bytes of dst. Always null-terminates dst _within the
+N    * length len (i.e. will copy at most len-1 bytes of string plus
+N    * a NUL), unless len is actually zero.
+N    * 
+N    * Return value is the length of the string that _would_ have
+N    * been written, i.e. the length of src. Thus, the operation
+N    * succeeded without truncation if and only if ret < len;
+N    * otherwise, the value in ret tells you how big to make dst if
+N    * you decide to reallocate it. (That value does _not_ include
+N    * the NUL.)
+N    * 
+N    * This is a BSD-derived library extension, which we are
+N    * permitted to declare in a standard header because ISO defines
+N    * function names beginning with 'str' as reserved for future
+N    * expansion of <string.h>.
+N    */
+N
+Nextern _ARMABI size_t strlcat(char * /*dst*/, const char * /*src*/, size_t /*len*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) size_t strlcat(char *  , const char *  , size_t  ) __attribute__((__nonnull__(1,2)));
+N   /*
+N    * concatenates the string src to the string dst, using no more
+N    * than len bytes of dst. Always null-terminates dst _within the
+N    * length len (i.e. will copy at most len-1 bytes of string plus
+N    * a NUL), unless len is actually zero.
+N    * 
+N    * Return value is the length of the string that _would_ have
+N    * been written, i.e. the length of src plus the original length
+N    * of dst. Thus, the operation succeeded without truncation if
+N    * and only if ret < len; otherwise, the value in ret tells you
+N    * how big to make dst if you decide to reallocate it. (That
+N    * value does _not_ include the NUL.)
+N    * 
+N    * If no NUL is encountered within the first len bytes of dst,
+N    * then the length of dst is considered to have been equal to
+N    * len for the purposes of the return value (as if there were a
+N    * NUL at dst[len]). Thus, the return value in this case is len
+N    * + strlen(src).
+N    * 
+N    * This is a BSD-derived library extension, which we are
+N    * permitted to declare in a standard header because ISO defines
+N    * function names beginning with 'str' as reserved for future
+N    * expansion of <string.h>.
+N    */
+N
+Nextern _ARMABI void _membitcpybl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpybl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpybb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpybb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpyhl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpyhl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpyhb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpyhb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpywl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpywl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitcpywb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitcpywb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovebl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovebl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovebb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovebb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovehl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovehl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovehb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovehb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovewl(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovewl(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+Nextern _ARMABI void _membitmovewb(void * /*dest*/, const void * /*src*/, int /*destoffset*/, int /*srcoffset*/, size_t /*nbits*/) __attribute__((__nonnull__(1,2)));
+Xextern __declspec(__nothrow) void _membitmovewb(void *  , const void *  , int  , int  , size_t  ) __attribute__((__nonnull__(1,2)));
+N    /*
+N     * Copies or moves a piece of memory from one place to another,
+N     * with one-bit granularity. So you can start or finish a copy
+N     * part way through a byte, and you can copy between regions
+N     * with different alignment within a byte.
+N     * 
+N     * All these functions have the same prototype: two void *
+N     * pointers for destination and source, then two integers
+N     * giving the bit offset from those pointers, and finally the
+N     * number of bits to copy.
+N     * 
+N     * Just like memcpy and memmove, the "cpy" functions copy as
+N     * fast as they can in the assumption that the memory regions
+N     * do not overlap, while the "move" functions cope correctly
+N     * with overlap.
+N     *
+N     * Treating memory as a stream of individual bits requires
+N     * defining a convention about what order those bits are
+N     * considered to be arranged in. The above functions support
+N     * multiple conventions:
+N     * 
+N     *  - the "bl" functions consider the unit of memory to be the
+N     *    byte, and consider the bits within each byte to be
+N     *    arranged in little-endian fashion, so that the LSB comes
+N     *    first. (For example, membitcpybl(a,b,0,7,1) would copy
+N     *    the MSB of the byte at b to the LSB of the byte at a.)
+N     * 
+N     *  - the "bb" functions consider the unit of memory to be the
+N     *    byte, and consider the bits within each byte to be
+N     *    arranged in big-endian fashion, so that the MSB comes
+N     *    first.
+N     * 
+N     *  - the "hl" functions consider the unit of memory to be the
+N     *    16-bit halfword, and consider the bits within each word
+N     *    to be arranged in little-endian fashion.
+N     * 
+N     *  - the "hb" functions consider the unit of memory to be the
+N     *    16-bit halfword, and consider the bits within each word
+N     *    to be arranged in big-endian fashion.
+N     * 
+N     *  - the "wl" functions consider the unit of memory to be the
+N     *    32-bit word, and consider the bits within each word to be
+N     *    arranged in little-endian fashion.
+N     * 
+N     *  - the "wb" functions consider the unit of memory to be the
+N     *    32-bit word, and consider the bits within each word to be
+N     *    arranged in big-endian fashion.
+N     */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STRING_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STRING_NO_EXPORTS
+S      using ::std::size_t;
+S      using ::std::memcpy;
+S      using ::std::memmove;
+S      using ::std::strcpy;
+S      using ::std::strncpy;
+S      using ::std::strcat;
+S      using ::std::strncat;
+S      using ::std::memcmp;
+S      using ::std::strcmp;
+S      using ::std::strncmp;
+S      using ::std::strcasecmp;
+S      using ::std::strncasecmp;
+S      using ::std::strcoll;
+S      using ::std::strxfrm;
+S      using ::std::memchr;
+S      using ::std::strchr;
+S      using ::std::strcspn;
+S      using ::std::strpbrk;
+S      using ::std::strrchr;
+S      using ::std::strspn;
+S      using ::std::strstr;
+S      using ::std::strtok;
+S#ifndef __STRICT_ANSI__
+S      using ::std::strtok_r;
+S#endif
+S      using ::std::_strtok_r;
+S      using ::std::memset;
+S      using ::std::strerror;
+S      using ::std::strlen;
+S      using ::std::strlcpy;
+S      using ::std::strlcat;
+S      using ::std::_membitcpybl;
+S      using ::std::_membitcpybb;
+S      using ::std::_membitcpyhl;
+S      using ::std::_membitcpyhb;
+S      using ::std::_membitcpywl;
+S      using ::std::_membitcpywb;
+S      using ::std::_membitmovebl;
+S      using ::std::_membitmovebb;
+S      using ::std::_membitmovehl;
+S      using ::std::_membitmovehb;
+S      using ::std::_membitmovewl;
+S      using ::std::_membitmovewb;
+S    #endif /* __STRING_NO_EXPORTS */
+N  #endif /* __cplusplus */
+N
+N#endif
+N
+N/* end of string.h */
+L 11 "src\gui\guiWidgets\guiPanel.c" 2
+N#include "guiConfig.h"
+L 1 ".\src\gui\guiConfig.h" 1
+N#ifndef __GUI_CONFIG_H_
+N#define __GUI_CONFIG_H_
+N
+N
+N#define GUI_CORE_QUEUE_SIZE 20
+N
+N#define GUI_CFG_USE_TIMERS
+N#define GUI_TIMER_COUNT 1
+N#define TMR_TIME_UPDATE 0   // timer's name
+N
+N#define CFG_USE_UPDATE
+N
+N#define USE_Z_ORDER_REDRAW
+N
+N//#define ALWAYS_PASS_TOUCH_TO_FOCUSED
+N
+N//#define USE_TOUCH_SUPPORT
+N
+N
+N
+N#endif
+L 12 "src\gui\guiWidgets\guiPanel.c" 2
+N#include "guiEvents.h"
+L 1 ".\src\gui\guiCore\guiEvents.h" 1
+N#ifndef __GUI_EVENTS_H_
+N#define __GUI_EVENTS_H_
+N
+N#include <stdint.h>
+N
+N
+N// Event types for widgets
+N#define GUI_EVENT_DRAW          0x01
+N#define GUI_EVENT_INIT          0x02
+N#define GUI_EVENT_UPDATE        0x04
+N#define GUI_EVENT_HIDE          0x06
+N#define GUI_EVENT_SHOW          0x07
+N#define GUI_EVENT_UNFOCUS       0x08
+N#define GUI_EVENT_FOCUS         0x09
+N#define GUI_EVENT_TOUCH         0x0A
+N#define GUI_EVENT_KEY           0x0B
+N#define GUI_EVENT_ENCODER       0x0C
+N#define GUI_EVENT_TIMER         0x0D
+N
+N// Event types for callbacks (common widget event handlers)
+N#define GUI_ON_FOCUS_CHANGED    0x80
+N#define GUI_ON_VISIBLE_CHANGED  0x82
+N#define GUI_ON_TOUCH_EVENT      0x83
+N
+N// Event types, specific for widgets start with 0xC0 and can overlap for different widgets.
+N// Those types are declared in widget's header files.
+N
+N
+N// Event struct, common for all GUI elements
+Ntypedef struct {
+N    uint8_t type;
+N    uint8_t spec;
+N    uint16_t lparam;
+N    uint16_t hparam;
+N} guiEvent_t;
+N
+N
+N
+N
+N// Events are found in guiCore.c
+Nextern const guiEvent_t guiEvent_DRAW;
+Nextern const guiEvent_t guiEvent_DRAW_ALL;
+Nextern const guiEvent_t guiEvent_SELECT;
+Nextern const guiEvent_t guiEvent_DESELECT;
+Nextern const guiEvent_t guiEvent_UPDATE;
+Nextern const guiEvent_t guiEvent_HIDE;
+Nextern const guiEvent_t guiEvent_SHOW;
+N
+N
+N
+N#endif
+L 13 "src\gui\guiWidgets\guiPanel.c" 2
+N#include "guiCore.h"
+L 1 ".\src\gui\guiCore\guiCore.h" 1
+N#ifndef __GUI_CORE_H_
+N#define __GUI_CORE_H_
+N
+N#include <stdint.h>
+N#include "guiConfig.h"
+N#include "guiEvents.h"
+N#include "guiWidgets.h"
+L 1 ".\src\gui\guiWidgets\guiWidgets.h" 1
+N/**********************************************************
+N    Module guiWidgets contains widget typedefs and
+N  common data
+N
+N
+N
+N**********************************************************/
+N
+N#ifndef __GUI_WIDGETS_H_
+N#define __GUI_WIDGETS_H_
+N
+N#include <stdint.h>
+N#include "guiEvents.h"
+N#include "guiFonts.h"
+L 1 ".\src\gui\guiGraphics\guiFonts.h" 1
+N#ifndef __GUI_FONTS_H_
+N#define __GUI_FONTS_H_
+N
+N#include <stdint.h>
+N
+N/*
+N    A font may have all chars present, or only some subset of chars.
+N    If a font has contiguous set of chars, starting with some char code,
+N    it is indicated by setting charTable to 0 and defining firstCharCode value.
+N    Field charCount tells how many chars the font has.
+N    Accessing some char with char code c in this case is trivial and looks like this:
+N        c -= font.firstCharCode;
+N        char_data = font.data[c * font.bytesPerChar];
+N    If a font has non-contiguous set of chars, their char codes are specified in codeTable,
+N    and offset relative to font.data is specified in offsetTable.
+N
+N    A font may be monospaced or variable-spaced.
+N    If a font is monospaced, widthTable must be set to 0. All chars will have the same width = font.width.
+N    If font is variable-spaced, widthTable is used - it contains width for every char.
+N
+N    If font has non-contiguous set of chars, or font is variable-spaced, font processing routines need to know,
+N    where particular char image is located. This information provides offsetTable.
+N
+N    So, a font can be one of the following:
+N        - monospaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     -
+N            offsetTable:    -
+N        - monospaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     -
+N            offsetTable:    present
+N        - variable-spaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     present
+N            offsetTable:    present
+N        - variable-spaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     present
+N            offsetTable:    present
+N
+N        Font MUST have valid offsetTable when codeTable or widthTable are used.
+N*/
+N
+N
+N//---------------------------------------------//
+N// Fonts typedefs
+N
+Ntypedef struct 
+N{
+N    uint8_t height;                     // font chars height
+N    uint8_t width;                      // actual for monospaced, ignored for variable-width fonts
+N    uint8_t charCount;                  // Total number of chars in the font
+N    uint8_t spacing;                    // Additional space between chars
+N    uint8_t bytesPerChar;               // Actual for monospaced, ignored for variable-length fonts
+N    uint8_t firstCharCode;              // Used if there is no charTable - specifies first avaliable char code in the font.
+N    const uint8_t *codeTable;           // Used if not all symbols are prensent in the font. Otherwise must be 0.
+N    const uint8_t *widthTable;          // Used if font is not monospaced. Otherwise must be 0.
+N    const uint16_t *offsetTable;        // Used with codeTable or widthTable
+N    const uint8_t *data;                // Font data - contiguous byte array
+N} tFont;
+N
+N
+Nextern const tFont font_h11;
+Nextern const tFont font_h32;
+Nextern const tFont font_h10;
+Nextern const tFont font_h10_bold;
+Nextern const tFont font_6x8_mono;
+Nextern const tFont font_h16;
+N
+N
+N#endif
+L 15 ".\src\gui\guiWidgets\guiWidgets.h" 2
+N
+N
+N// Widget types
+N#define WT_PANEL       0x01
+N#define WT_BUTTON      0x02
+N#define WT_CHECKBOX    0x03
+N#define WT_RADIOBUTTON 0x04
+N#define WT_TEXTLABEL   0x05
+N#define WT_SPINBOX     0x06
+N
+N
+N
+N
+N// Event handler record
+Ntypedef struct {
+N    uint8_t eventType;                                         // Event type
+N    uint8_t (*handler)(void *sender, guiEvent_t *event);       // Related callback function pointer
+N} guiWidgetHandler_t;
+N
+N// Event handlers table
+Ntypedef struct {
+N    uint8_t count;                      // Count of handler records
+N    guiWidgetHandler_t *elements;       // Pointer to array of handler records
+N} guiHandlerTable_t;
+N
+N// Widget collection type - used by containers
+Ntypedef struct {
+N    uint8_t count;
+N    uint8_t focusedIndex;
+N    uint8_t traverseIndex;              // Required by core for tree traverse
+N    void **elements;
+N} guiWidgetCollection_t;
+N
+N
+N
+N// Basic widget type - all widget types MUST have all fields in their typedef beginning
+Ntypedef struct guiGenericWidget_t {
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;     // If set, widget will be sent UPDATE event.
+N                                    //   Update mechanism can be used for widget's
+N                                    //   internal state processing - cursor blink, etc
+N    uint8_t redrawRequired : 1;     // If this flag is set, widget will be sent DRAW event.
+N                                    //   Widget should set this flag itself.
+N    uint8_t redrawForced : 1;       // This flag is set by GUI core when widget must be redrawn
+N                                    //   redrawRequired is set along with redrawForced.
+N    uint8_t redrawFocus : 1;        // Flag is set when widget focus must be redrawn.
+N                                    //   redrawRequired is set along with redrawFocus.
+N    uint8_t showFocus : 1;          // If set, widget will display focus
+N    uint8_t keepTouch : 1;          // Flags is set if widget requires all touch events
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N} guiGenericWidget_t;
+N
+N
+N// Basic container type - extends guiGenericWidget_t
+Ntypedef struct guiGenericContainer_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    guiWidgetCollection_t widgets;
+N
+N} guiGenericContainer_t;
+N
+N
+N
+Ntypedef struct guiPanel_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    guiWidgetCollection_t widgets;
+N    uint8_t focusFallsThrough : 1;
+N    uint8_t frame : 3;
+N    // uint8_t focusIsKeptOnChilds : 1;      // doesn't let unfocus child widgets when focusFallsThrough is set. CHECKME
+N
+N} guiPanel_t;
+N
+N
+N
+Ntypedef struct guiTextLabel_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    char *text;
+N    const tFont *font;
+N    uint8_t textAlignment;
+N    uint8_t hasFrame : 1;
+N    uint8_t redrawText : 1;
+N
+N} guiTextLabel_t;
+N
+N
+Ntypedef struct guiCheckBox_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    char *text;
+N    const tFont *font;
+N    uint8_t textAlignment;
+N    uint8_t hasFrame : 1;
+N    uint8_t isChecked : 1;
+N    uint8_t redrawCheckedState : 1;
+N
+N} guiCheckBox_t;
+N
+N
+Ntypedef struct guiButton_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    char *text;
+N    const tFont *font;
+N    uint8_t textAlignment;
+N    uint8_t redrawPressedState : 1;
+N    uint8_t isPressed : 1;
+N    uint8_t isToggle : 1;
+N    uint8_t isPressOnly : 1;
+N
+N} guiButton_t;
+N
+N
+N
+Ntypedef struct guiRadioButton_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    char *text;
+N    const tFont *font;
+N    uint8_t textAlignment;
+N    uint8_t redrawCheckedState : 1;
+N    uint8_t radioIndex;
+N    uint8_t isChecked : 1;
+N
+N
+N} guiRadioButton_t;
+N
+N#define SPINBOX_STRING_LENGTH  12  // long enough to hold INT32_MAX and INT32_MIN + \0
+Ntypedef struct guiSpinBox_t {
+N    //----- Inherited from generic widget -----//
+N    // Widget type (starting with WT_)
+N    uint8_t type;
+N    // Pointer to parent widget
+N    struct guiGenericWidget_t *parent;
+N    // Bit properties:
+N    uint8_t acceptFocusByTab : 1;
+N    uint8_t acceptTouch : 1;
+N    uint8_t isContainer : 1;
+N    // Bit state flags:
+N    uint8_t isFocused : 1;
+N    uint8_t isVisible : 1;
+N    uint8_t updateRequired : 1;
+N    uint8_t redrawRequired : 1;
+N    uint8_t redrawForced : 1;
+N    uint8_t redrawFocus : 1;
+N    uint8_t showFocus : 1;
+N    uint8_t keepTouch : 1;
+N    // Properties
+N    uint8_t tag;
+N    uint8_t tabIndex;
+N    int16_t x;
+N    int16_t y;
+N    uint16_t width;
+N    uint16_t height;
+N    // Event processing function
+N    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+N    // Handler table
+N    guiHandlerTable_t handlers;
+N    //-----------------------------------------//
+N
+N    //char text[SPINBOX_STRING_LENGTH];
+N    const tFont *font;
+N    //uint8_t textAlignment;
+N    uint8_t hasFrame : 1;
+N    uint8_t redrawValue : 1;
+N    uint8_t redrawDigitSelection : 1;
+N    uint8_t isActive : 1;
+N    uint8_t restoreValueOnEscape : 1;
+N    uint8_t newValueAccepted : 1;
+N    uint8_t minDigitsToDisplay;
+N    uint8_t activeDigit;
+N    int8_t dotPosition;
+N    int32_t value;
+N    int32_t savedValue;
+N    int32_t maxValue;
+N    int32_t minValue;
+N    char text[SPINBOX_STRING_LENGTH];
+X    char text[12];
+N    uint8_t digitsToDisplay;
+N    int8_t textRightOffset;
+N    int8_t textTopOffset;
+N
+N
+N
+N} guiSpinBox_t;
+N
+N
+N
+N
+N
+N#endif
+L 8 ".\src\gui\guiCore\guiCore.h" 2
+N
+N
+Ntypedef struct {
+N    guiGenericWidget_t *target;
+N    guiEvent_t event;
+N} guiMsg_t;
+N
+Ntypedef struct {
+N    uint8_t head;
+N    uint8_t tail;
+N    uint8_t count;
+N    guiMsg_t queue[GUI_CORE_QUEUE_SIZE];
+X    guiMsg_t queue[20];
+N} guiMsgQueue_t;
+N
+N
+Ntypedef struct {
+N    int16_t x1;
+N    int16_t y1;
+N    int16_t x2;
+N    int16_t y2;
+N} rect16_t;
+N
+N
+N// Event process function result
+N#define GUI_EVENT_DECLINE       0x00
+N#define GUI_EVENT_ACCEPTED      0x01
+N
+N// Set visible by tag mode
+N#define ITEMS_IN_RANGE_ARE_VISIBLE          0x01
+N#define ITEMS_IN_RANGE_ARE_INVISIBLE        0x02
+N#define ITEMS_OUT_OF_RANGE_ARE_VISIBLE      0x04
+N#define ITEMS_OUT_OF_RANGE_ARE_INVISIBLE    0x08
+N
+N// Check tabIndex result
+N#define TABINDEX_IS_MAX     2
+N#define TABINDEX_IS_MIN     1
+N#define TABINDEX_IS_NORM    0
+N
+N
+N
+N//-----------------------------------//
+N// Keyboard support
+N
+N// Keyboard codes are design-specific and should be defined in
+N// one of top-level modules
+N
+N// Key event specifications
+N#define GUI_KEY_EVENT_DOWN   0x01        // A key has been pressed
+N#define GUI_KEY_EVENT_UP     0x02        // A key has been released
+N
+N// Button codes
+N#define GUI_KEY_ESC     0x01
+N#define GUI_KEY_OK      0x02
+N#define GUI_KEY_LEFT    0x03
+N#define GUI_KEY_RIGHT   0x04
+N#define GUI_KEY_UP      0x05
+N#define GUI_KEY_DOWN    0x06
+N#define GUI_KEY_ENCODER 0x07
+N
+N
+N//-----------------------------------//
+N// Touch support
+N
+N// Touch states
+N#define TOUCH_PRESS     (1<<0)
+N#define TOUCH_RELEASE   (1<<1)
+N#define TOUCH_MOVE      (1<<2)
+N
+N// Decoded touch arguments for a widget
+Ntypedef struct {
+N    int16_t x;                  // X - coordinate, relative to widget
+N    int16_t y;                  // Y - coordinate, relative to widget
+N    uint8_t state;              // Touch state
+N    uint8_t isInsideWidget;     // Set if touch point lies inside widget
+N} widgetTouchState_t;
+N
+N// Decoded touch arguments for a container
+Ntypedef struct {
+N    int16_t x;                          // X - coordinate, relative to widget
+N    int16_t y;                          // Y - coordinate, relative to widget
+N    uint8_t state;                      // Touch state
+N    guiGenericWidget_t *widgetAtXY;     // Widget under touch point
+N} containerTouchState_t;
+N
+N
+N//-----------------------------------//
+N// Timers
+N
+Ntypedef struct {
+N    uint16_t top;
+N    uint16_t counter;
+N    uint8_t runOnce : 1;
+N    uint8_t isEnabled : 1;
+N    guiGenericWidget_t *targetWidget;
+N    void (*handler)(uint8_t id);
+N} guiTimer_t;
+N
+N
+N// Modifying these pointers should be done with care!
+Nextern guiGenericWidget_t *rootWidget;         // Root widget must be present
+Nextern guiGenericWidget_t *focusedWidget;      // Focused widget gets events from keys/encoder/touch
+N
+N//===================================================================//
+N//                 GUI core message queue functions
+N//===================================================================//
+Nuint8_t guiCore_AddMessageToQueue(const guiGenericWidget_t *target, const guiEvent_t *event);
+Nuint8_t guiCore_GetMessageFromQueue(guiGenericWidget_t **target, guiEvent_t *event);
+Nvoid guiCore_ProcessMessageQueue(void);
+Nvoid guiCore_PostEventToFocused(guiEvent_t event);
+N
+N//===================================================================//
+N//                      GUI core timers functions
+N//===================================================================//
+Nvoid guiCore_TimerInit(uint8_t timerID, uint16_t period, uint8_t runOnce, guiGenericWidget_t *target, void (*handler)(uint8_t));
+Nvoid guiCore_TimerStart(uint8_t timerID, uint8_t doReset);
+Nvoid guiCore_TimerStop(uint8_t timerID, uint8_t doReset);
+Nvoid guiCore_TimerProcess(uint8_t timerID);
+N
+N//===================================================================//
+N//                      Top GUI core functions
+N//===================================================================//
+Nvoid guiCore_Init(guiGenericWidget_t *guiRootWidget);
+Nvoid guiCore_RedrawAll(void);
+Nvoid guiCore_ProcessTouchEvent(int16_t x, int16_t y, uint8_t touchState);
+Nvoid guiCore_ProcessKeyEvent(uint16_t code, uint8_t spec);
+Nvoid guiCore_ProcessEncoderEvent(int16_t increment);
+Nvoid guiCore_ProcessTimers(void);
+Nvoid guiCore_BroadcastEvent(guiEvent_t event, uint8_t(*validator)(guiGenericWidget_t *widget));
+Nvoid guiCore_UpdateAll(void);
+Nuint8_t guiCore_UpdateValidator(guiGenericWidget_t *widget);
+N
+N
+N//===================================================================//
+N//                    Drawing and touch support                      //
+N//                       geometry functions                          //
+N//===================================================================//
+Nvoid guiCore_InvalidateRect(guiGenericWidget_t *widget, int16_t x1, int16_t y1, uint16_t x2, uint16_t y2);
+Nuint8_t guiCore_CheckWidgetOvelap(guiGenericWidget_t *widget, rect16_t *rect);
+Nvoid guiCore_ConvertToAbsoluteXY(guiGenericWidget_t *widget, int16_t *x, int16_t *y);
+Nvoid guiCore_ConvertToRelativeXY(guiGenericWidget_t *widget, int16_t *x, int16_t *y);
+NguiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int16_t x, int16_t y);
+N
+N//===================================================================//
+N//                   Widget collections management                   //
+N//===================================================================//
+Nvoid guiCore_RequestFocusChange(guiGenericWidget_t *newFocusedWidget);
+Nvoid guiCore_AcceptFocus(guiGenericWidget_t *widget);
+Nvoid guiCore_RequestFocusNextWidget(guiGenericContainer_t *container, int8_t tabDir);
+Nuint8_t guiCore_GetWidgetIndex(guiGenericWidget_t *widget);
+Nuint8_t guiCore_CheckWidgetTabIndex(guiGenericWidget_t *widget);
+N
+N//===================================================================//
+N//                   General widget API fucntions                    //
+N//===================================================================//
+Nuint8_t guiCore_SetVisible(guiGenericWidget_t *widget, uint8_t newVisibleState);
+Nuint8_t guiCore_SetFocused(guiGenericWidget_t *widget, uint8_t newFocusedState);
+Nvoid guiCore_SetVisibleByTag(guiWidgetCollection_t *collection, uint8_t minTag, uint8_t maxTag, uint8_t mode);
+Nuint8_t guiCore_CallEventHandler(guiGenericWidget_t *widget, guiEvent_t *event);
+Nvoid guiCore_DecodeWidgetTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, widgetTouchState_t *decodedTouchState);
+Nvoid guiCore_DecodeContainerTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, containerTouchState_t *decodedTouchState);
+N
+N
+N
+N#endif
+L 14 "src\gui\guiWidgets\guiPanel.c" 2
+N#include "guiWidgets.h"
+N#include "guiGraphWidgets.h"
+L 1 ".\src\gui\guiGraphics\guiGraphWidgets.h" 1
+N#ifndef __GUI_GRAPH_WIDGETS_
+N#define __GUI_GRAPH_WIDGETS_
+N
+N#include <stdint.h>
+N#include "guiGraphPrimitives.h"
+L 1 ".\src\gui\guiGraphics\guiGraphPrimitives.h" 1
+N#ifndef __GUI_GRAPH_PRIMITIVES_H_
+N#define __GUI_GRAPH_PRIMITIVES_H_
+N
+N#include <stdint.h>
+N#include "guiGraphHAL.h"
+L 1 ".\src\gui\guiGraphics\guiGraphHAL.h" 1
+N#ifndef __GUI_GRAPH_HAL_
+N#define __GUI_GRAPH_HAL_
+N
+N#include <stdint.h>
+N
+N
+N// Size definitions in points for Nokia 1202 LCD
+N#define LCD_XSIZE (2*96)
+N#define LCD_YSIZE 68
+N
+N// Buffer size in bytes
+N#define LCD_BUFFER_SIZE (2*96*9)
+N
+N/*
+N// Size definitions in points
+N#define LCD_XSIZE (2*128)
+N#define LCD_YSIZE 128
+N
+N// Buffer size in bytes
+N#define LCD_BUFFER_SIZE (LCD_XSIZE * 16)
+N*/
+N
+N// LCD functions settings
+N//#define SOFT_HORIZ_REVERSED
+N
+N// counter increments from 0 to LCD_xxx_PERIOD-1
+N// if counter < LCD_xxx_COMPARE, pixel is put unchaged
+N// if counter >= LCD_xxx_COMPARE, pixel is put inversed
+N#define LCD_DOT_PERIOD      4
+N#define LCD_DOT_COMPARE     2
+N#define LCD_DASH_PERIOD     7
+N#define LCD_DASH_COMPARE    5
+N
+N
+N
+N
+N// Pixel output modes
+N#define PIXEL_MODE_REWRITE  0x00
+N#define PIXEL_MODE_AND      0x01
+N#define PIXEL_MODE_OR       0x02
+N#define PIXEL_MODE_XOR      0x03
+N
+N// Image output modes
+N#define IMAGE_MODE_NORMAL    0x01
+N#define IMAGE_MODE_INVERSE   0x00
+N// Aliases for fill rect
+N#define FILL_WITH_BLACK      0x01
+N#define FILL_WITH_WHITE      0x00
+N
+N#define LCD_FillRect(x_pos, y_pos, width, height, mode) \
+N    LCD_DrawImage(0, x_pos, y_pos, width, height, mode)
+X#define LCD_FillRect(x_pos, y_pos, width, height, mode)     LCD_DrawImage(0, x_pos, y_pos, width, height, mode)
+N
+N
+N// Line drawing mode (not for all functions)
+N#define LINE_STYLE_SOLID      0x10
+N#define LINE_STYLE_DASHED     0x20
+N#define LINE_STYLE_DOTTED     0x30
+N
+N
+N
+N
+N
+Nextern uint8_t lcdBuffer[LCD_BUFFER_SIZE];
+Xextern uint8_t lcdBuffer[(2*96*9)];
+Nextern uint8_t LCD_lineStyle;
+N
+Nvoid LCD_SetPixelOutputMode(uint8_t newMode);
+Nvoid LCD_SetLineStyle(uint8_t newStyle);
+N
+Nvoid LCD_FillWholeBuffer(uint8_t pixelValue);
+Nvoid LCD_PutPixel (uint8_t x_pos, uint8_t y_pos, uint8_t pixelValue);
+Nvoid LCD_DrawHorLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t pixelValue);
+Nvoid LCD_DrawVertLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t pixelValue);
+N
+Nvoid LCD_DrawImage(const uint8_t* img, uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, uint8_t mode);
+N
+N
+N#endif
+L 6 ".\src\gui\guiGraphics\guiGraphPrimitives.h" 2
+N#include "guiFonts.h"
+N
+N// Align modes - required alignment mode is selected by
+N// combining these flags
+N#define ALIGN_CENTER    0x00
+N#define ALIGN_LEFT      0x01
+N#define ALIGN_RIGHT     0x02
+N#define ALIGN_TOP       0x04
+N#define ALIGN_BOTTOM    0x08
+N// Aliases
+N#define ALIGN_TOP_LEFT      (ALIGN_TOP | ALIGN_LEFT)
+N#define ALIGN_BOTTOM_LEFT   (ALIGN_BOTTOM | ALIGN_LEFT)
+N#define ALIGN_TOP_RIGHT     (ALIGN_TOP | ALIGN_RIGHT)
+N#define ALIGN_BOTTOM_RIGHT   (ALIGN_BOTTOM | ALIGN_RIGHT)
+N
+N
+Ntypedef struct {
+N    uint8_t x1;
+N    uint8_t y1;
+N    uint8_t x2;
+N    uint8_t y2;
+N} rect_t;
+N
+N
+Nextern const tFont* LCD_currentFont;
+N
+Nvoid LCD_SetFont(const tFont *newFont);
+N
+Nvoid LCD_DrawRect(uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, uint8_t pixelValue);
+Nuint8_t LCD_GetFontItem(const tFont *font, uint8_t code, uint8_t *width, uint16_t *offset);
+Nvoid LCD_PrintString(char *str, uint8_t x, uint8_t y, uint8_t mode);
+Nvoid LCD_PrintStringAligned(char *str, rect_t *rect, uint8_t alignment, uint8_t mode);
+Nvoid LCD_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t mode);
+N
+N
+N#endif
+L 6 ".\src\gui\guiGraphics\guiGraphWidgets.h" 2
+N#include "guiWidgets.h"
+N
+N
+N
+N#define FRAME_NONE                      0x00
+N#define FRAME3D_RAISED                  0x01
+N#define FRAME3D_SUNKEN                  0x02
+N#define FRAME_SINGLE                    0x03
+N
+N
+N// Widget Appearance
+N
+N//---------------------------------------------//
+N// Checkbox
+N#define CHECKBOX_GRAPH_XSIZE  10
+N#define CHECKBOX_GRAPH_YSIZE  10
+N#define CHECKBOX_TEXT_MARGIN  6
+N#define CHECKBOX_IMG_CHECKED  checkbox_10x10_checked
+N#define CHECKBOX_IMG_EMPTY  checkbox_10x10_empty
+N
+N
+N//---------------------------------------------//
+N// Textlabel
+N#define TEXT_LABEL_TEXT_MARGIN  0
+N
+N
+N//---------------------------------------------//
+N// SpinBox
+N#define SPINBOX_ACTIVE_UNDERLINE_MARGIN 1
+N#define SPINBOX_ACTIVE_UNDERLINE_WIDTH 2
+N
+N
+N
+N
+Nextern int16_t wx;
+Nextern int16_t wy;
+N
+Nvoid guiGraph_SetBaseXY(int16_t x, int16_t y);
+Nvoid guiGraph_OffsetBaseXY(int16_t dx, int16_t dy);
+N
+N
+Nvoid guiGraph_DrawPanel(guiPanel_t *panel);
+Nvoid guiGraph_DrawTextLabel(guiTextLabel_t *textLabel);
+Nvoid guiGraph_DrawCheckBox(guiCheckBox_t * checkBox);
+Nvoid guiGraph_DrawSpinBox(guiSpinBox_t * spinBox);
+N
+N
+N
+N#endif
+L 16 "src\gui\guiWidgets\guiPanel.c" 2
+N#include "guiPanel.h"
+L 1 "src\gui\guiWidgets\guiPanel.h" 1
+N#ifndef __GUI_PANEL_H_
+N#define __GUI_PANEL_H_
+N
+N#include <stdint.h>
+N#include "guiWidgets.h"
+N
+N
+N
+N// Widget-specific virtual keys
+N#define PANEL_KEY_SELECT    0x01
+N#define PANEL_KEY_ESC       0x02
+N#define PANEL_KEY_PREV      0x03
+N#define PANEL_KEY_NEXT      0x04
+N
+N
+N// Widget-specific state checks
+N#define PANEL_ACCEPTS_FOCUS_EVENT(panel)  ( (panel->isVisible) && (1) )    // TODO - add isEnabled
+N#define PANEL_ACCEPTS_KEY_EVENT(panel)    ( (panel->isVisible) )           // TODO - add isEnabled
+N#define PANEL_ACCEPTS_ENCODER_EVENT(panel) ( (panel->isVisible) )           // TODO - add isEnabled
+N#define PANEL_ACCEPTS_TOUCH_EVENT(panel)  ( (panel->isVisible) )           // TODO - add isEnabled
+N
+N
+Nvoid guiPanel_Initialize(guiPanel_t *panel, guiGenericWidget_t *parent);
+Nuint8_t guiPanel_ProcessKey(guiPanel_t *panel, uint8_t key);
+Nuint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
+N
+N
+N
+N
+N#endif
+L 17 "src\gui\guiWidgets\guiPanel.c" 2
+N
+N
+N//-------------------------------------------------------//
+N// Panel key handler
+N//
+N// Returns GUI_EVENT_ACCEPTED if key is processed,
+N//         GUI_EVENT_DECLINE otherwise
+N//-------------------------------------------------------//
+Nuint8_t guiPanel_ProcessKey(guiPanel_t *panel, uint8_t key)
+N{
+N    guiGenericWidget_t *w;
+N    if (panel->isFocused)
+N    {
+N        if (key == PANEL_KEY_SELECT)
+X        if (key == 0x01)
+N            guiCore_RequestFocusNextWidget((guiGenericContainer_t *)panel,1);
+N        else
+N            return GUI_EVENT_DECLINE;
+X            return 0x00;
+N    }
+N    else
+N    {
+N        // Key event came from child elements
+N        w = panel->widgets.elements[ panel->widgets.focusedIndex ];
+N        if (key == PANEL_KEY_PREV)
+X        if (key == 0x03)
+N        {
+N            // Check if event should be passed to parent
+N            if ((panel->focusFallsThrough) && (guiCore_CheckWidgetTabIndex(w) == TABINDEX_IS_MIN))
+X            if ((panel->focusFallsThrough) && (guiCore_CheckWidgetTabIndex(w) == 1))
+N                return GUI_EVENT_DECLINE;
+X                return 0x00;
+N            guiCore_RequestFocusNextWidget((guiGenericContainer_t *)panel,-1);
+N        }
+N        else if (key == PANEL_KEY_NEXT)
+X        else if (key == 0x04)
+N        {
+N            // Check if event should be passed to parent
+N            if ((panel->focusFallsThrough) && (guiCore_CheckWidgetTabIndex(w) == TABINDEX_IS_MAX))
+X            if ((panel->focusFallsThrough) && (guiCore_CheckWidgetTabIndex(w) == 2))
+N                return GUI_EVENT_DECLINE;
+X                return 0x00;
+N            guiCore_RequestFocusNextWidget((guiGenericContainer_t *)panel,1);
+N        }
+N        else if (key == PANEL_KEY_ESC)
+X        else if (key == 0x02)
+N        {
+N            if (panel->focusFallsThrough)
+N                return GUI_EVENT_DECLINE;
+X                return 0x00;
+N            //guiPanel_SetFocused(panel, 1);
+N            guiCore_SetFocused((guiGenericWidget_t *)panel,1);
+N        }
+N        else
+N        {
+N            return GUI_EVENT_DECLINE;   // unknown key
+X            return 0x00;   
+N        }
+N    }
+N    return GUI_EVENT_ACCEPTED;
+X    return 0x01;
+N}
+N
+N
+N
+N
+N//-------------------------------------------------------//
+N// Panel event handler
+N//
+N// Returns GUI_EVENT_ACCEPTED if event is processed,
+N//         GUI_EVENT_DECLINE otherwise
+N//-------------------------------------------------------//
+Nuint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
+N{
+N    uint8_t processResult = GUI_EVENT_ACCEPTED;
+X    uint8_t processResult = 0x01;
+N    guiPanel_t *panel = (guiPanel_t *)widget;
+N    uint8_t key;
+N#ifdef USE_TOUCH_SUPPORT
+S    containerTouchState_t touch;
+N#endif
+N
+N    // Process GUI messages - focus, draw, etc
+N    switch(event.type)
+N    {
+N        case GUI_EVENT_DRAW:
+X        case 0x01:
+N            guiGraph_DrawPanel(panel);
+N            // Call handler
+N            guiCore_CallEventHandler((guiGenericWidget_t *)panel, &event);
+N            // Reset flags - redrawForced will be reset by core
+N            panel->redrawFocus = 0;
+N            panel->redrawRequired = 0;
+N            break;
+N        case GUI_EVENT_FOCUS:
+X        case 0x09:
+N            if (PANEL_ACCEPTS_FOCUS_EVENT(panel))
+X            if (( (panel->isVisible) && (1) ))
+N            {
+N                guiCore_SetFocused((guiGenericWidget_t *)panel,1);
+N                if (panel->focusFallsThrough)
+N                {
+N                    guiCore_RequestFocusNextWidget((guiGenericContainer_t *)panel,1);
+N                    //guiCore_RequestFocusChange(panel->widgets.elements[ panel->widgets.focusedIndex ]);
+N                }
+N            }
+N            else
+N            {
+N                processResult = GUI_EVENT_DECLINE;      // Cannot accept focus
+X                processResult = 0x00;      
+N            }
+N            break;
+N        case GUI_EVENT_UNFOCUS:
+X        case 0x08:
+N            guiCore_SetFocused((guiGenericWidget_t *)panel, 0);
+N            panel->keepTouch = 0;
+N            break;
+N        case GUI_EVENT_SHOW:
+X        case 0x07:
+N            guiCore_SetVisible((guiGenericWidget_t *)panel, 1);
+N            break;
+N        case GUI_EVENT_HIDE:
+X        case 0x06:
+N            guiCore_SetVisible((guiGenericWidget_t *)panel, 0);
+N            break;
+N        case GUI_EVENT_ENCODER:
+X        case 0x0C:
+N            processResult = GUI_EVENT_DECLINE;
+X            processResult = 0x00;
+N            if (PANEL_ACCEPTS_ENCODER_EVENT(panel))
+X            if (( (panel->isVisible) ))
+N            {
+N                key = (int16_t)event.lparam < 0 ? PANEL_KEY_PREV :
+X                key = (int16_t)event.lparam < 0 ? 0x03 :
+N                      ((int16_t)event.lparam > 0 ? PANEL_KEY_NEXT : 0);
+X                      ((int16_t)event.lparam > 0 ? 0x04 : 0);
+N                if (key != 0)
+N                    processResult = guiPanel_ProcessKey(panel,key);
+N                // Call ENCODER event handler
+N                processResult |= guiCore_CallEventHandler(widget, &event);
+N            }
+N            break;
+N        case GUI_EVENT_KEY:
+X        case 0x0B:
+N            processResult = GUI_EVENT_DECLINE;
+X            processResult = 0x00;
+N            if (PANEL_ACCEPTS_KEY_EVENT(panel))
+X            if (( (panel->isVisible) ))
+N            {
+N                if (event.spec == GUI_KEY_EVENT_DOWN)
+X                if (event.spec == 0x01)
+N                {
+N                    if (event.lparam == GUI_KEY_OK)
+X                    if (event.lparam == 0x02)
+N                        key = PANEL_KEY_SELECT;
+X                        key = 0x01;
+N                    else if (event.lparam == GUI_KEY_ESC)
+X                    else if (event.lparam == 0x01)
+N                        key = PANEL_KEY_ESC;
+X                        key = 0x02;
+N                    else if ((event.lparam == GUI_KEY_LEFT) || (event.lparam == GUI_KEY_UP))
+X                    else if ((event.lparam == 0x03) || (event.lparam == 0x05))
+N                        key = PANEL_KEY_PREV;
+X                        key = 0x03;
+N                    else if ((event.lparam == GUI_KEY_RIGHT) || (event.lparam == GUI_KEY_DOWN))
+X                    else if ((event.lparam == 0x04) || (event.lparam == 0x06))
+N                        key = PANEL_KEY_NEXT;
+X                        key = 0x04;
+N                    else
+N                        key = 0;
+N                    if (key != 0)
+N                        processResult = guiPanel_ProcessKey(panel,key);
+N                }
+N                // Call KEY event handler
+N                processResult |= guiCore_CallEventHandler(widget, &event);
+N            }
+N            break;
+N#ifdef USE_TOUCH_SUPPORT
+S        case GUI_EVENT_TOUCH:
+S            if (PANEL_ACCEPTS_TOUCH_EVENT(panel))
+S            {
+S                // Convert touch event
+S                guiCore_DecodeContainerTouchEvent((guiGenericWidget_t *)panel, &event, &touch);
+S                // Check if widget holds the touch
+S                if (panel->keepTouch)
+S                {
+S                    if (touch.state == TOUCH_RELEASE)
+S                        panel->keepTouch = 0;
+S                }
+S                else if (touch.state != TOUCH_RELEASE)
+S                {
+S                    // Determine if touch point lies inside one of child widgets
+S                    if (touch.widgetAtXY == 0)
+S                    {
+S                        // Touch point does not lie inside panel - skip that.
+S                        processResult = GUI_EVENT_DECLINE;
+S                        break;
+S                    }
+S                    else if (touch.widgetAtXY != (guiGenericWidget_t *)panel)
+S                    {
+S                        // Point belogs to one of child widgets - pass touch event to it.
+S                        guiCore_AddMessageToQueue(touch.widgetAtXY, &event);
+S                    }
+S                    else
+S                    {
+S                        // Point belogs to panel itself
+S                        guiCore_SetFocused((guiGenericWidget_t *)panel,1);
+S                        panel->keepTouch = 1;
+S                    }
+S                }
+S                // Call touch handler - return value is ignored
+S                event.type = GUI_ON_TOUCH_EVENT;
+S                event.spec = touch.state;
+S                event.lparam = (uint16_t)touch.x;
+S                event.hparam = (uint16_t)touch.y;
+S                guiCore_CallEventHandler(widget, &event);
+S            }
+S            else
+S            {
+S                processResult = GUI_EVENT_DECLINE;      // Cannot process touch event
+S            }
+S            break;
+N#endif
+N        default:
+N            // Widget cannot process incoming event. Try to find a handler.
+N            processResult = guiCore_CallEventHandler(widget, &event);
+N    }
+N    return processResult;
+N}
+N
+N
+N
+N//-------------------------------------------------------//
+N// Default initialization
+N//
+N//-------------------------------------------------------//
+Nvoid guiPanel_Initialize(guiPanel_t *panel, guiGenericWidget_t *parent)
+N{
+N    memset(panel, 0, sizeof(*panel));
+N    panel->type = WT_PANEL;
+X    panel->type = 0x01;
+N    panel->parent = parent;
+N    panel->isContainer = 1;
+N    panel->acceptTouch = 1;
+N    panel->acceptFocusByTab = 1;
+N    panel->focusFallsThrough = 1;
+N    panel->processEvent = guiPanel_ProcessEvent;
+N    panel->frame = FRAME_NONE;
+X    panel->frame = 0x00;
+N}
+N
+N
+N

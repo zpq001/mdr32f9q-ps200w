@@ -199,24 +199,32 @@ void LcdUpdateBothByCore(uint8_t* lcd_buffer)
 	LcdSelect(LCD0);
 	LcdSetRow(0);
 	LcdSetCol(0);
-	lcd_buf_index = 0;
+	//lcd_buf_index = 0;
+	lcd_buf_index = LCD_PHY_XSIZE;
     for (j=0; j<num_pages; j++)
     {
         for (i=0; i<LCD_PHY_XSIZE; i++)
-			LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
-		lcd_buf_index += LCD_PHY_XSIZE;
+			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+		//lcd_buf_index += LCD_PHY_XSIZE;
+		lcd_buf_index += 3*LCD_PHY_XSIZE;
     }
+	// wait until all words are sent
+	while (!LCD_TX_DONE);	
 	
 	// Update LCD1
 	LcdSelect(LCD1);
 	LcdSetRow(0);
 	LcdSetCol(0);
-	lcd_buf_index = LCD_PHY_XSIZE;
+	//lcd_buf_index = LCD_PHY_XSIZE;
+	lcd_buf_index = 2*LCD_PHY_XSIZE;
     for (j=0; j<num_pages; j++)
     {
         for (i=0; i<LCD_PHY_XSIZE; i++)
-			LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
-		lcd_buf_index += LCD_PHY_XSIZE;
+			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+		//lcd_buf_index += LCD_PHY_XSIZE;
+		lcd_buf_index += 3*LCD_PHY_XSIZE;
     }
 	
 	// wait until all words are sent

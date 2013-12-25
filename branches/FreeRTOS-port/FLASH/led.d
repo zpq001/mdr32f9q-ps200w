@@ -10,4 +10,5 @@
 .\FLASH\led.o: .\MDR32F9Qx_config.h
 .\FLASH\led.o: src\led.h
 .\FLASH\led.o: src\systemfunc.h
+.\FLASH\led.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h
 .\FLASH\led.o: .\defines.h

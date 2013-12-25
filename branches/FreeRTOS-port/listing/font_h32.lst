@@ -1,0 +1,574 @@
+L 1 "src\gui\guiGraphics\font_h32.c"
+N/*****************************************************
+N    Font generation template
+N*****************************************************/
+N
+N#include <stdint.h>
+L 1 "C:\Keil\ARM\RV31\Inc\stdint.h" 1
+N/* Copyright (C) ARM Ltd., 1999 */
+N/* All rights reserved */
+N
+N/*
+N * RCS $Revision: 137748 $
+N * Checkin $Date: 2008-09-11 17:34:24 +0100 (Thu, 11 Sep 2008) $
+N * Revising $Author: agrant $
+N */
+N
+N#ifndef __stdint_h
+N#define __stdint_h
+N
+N  #ifndef __STDINT_DECLS
+N  #define __STDINT_DECLS
+N
+N    #undef __CLIBNS
+N
+N    #ifdef __cplusplus
+S      namespace std {
+S          #define __CLIBNS std::
+S          extern "C" {
+N    #else
+N      #define __CLIBNS
+N    #endif  /* __cplusplus */
+N
+N
+N/*
+N * 'signed' is redundant below, except for 'signed char' and if
+N * the typedef is used to declare a bitfield.
+N * '__int64' is used instead of 'long long' so that this header
+N * can be used in --strict mode.
+N */
+N
+N    /* 7.18.1.1 */
+N
+N    /* exact-width signed integer types */
+Ntypedef   signed          char int8_t;
+Ntypedef   signed short     int int16_t;
+Ntypedef   signed           int int32_t;
+Ntypedef   signed       __int64 int64_t;
+N
+N    /* exact-width unsigned integer types */
+Ntypedef unsigned          char uint8_t;
+Ntypedef unsigned short     int uint16_t;
+Ntypedef unsigned           int uint32_t;
+Ntypedef unsigned       __int64 uint64_t;
+N
+N    /* 7.18.1.2 */
+N
+N    /* smallest type of at least n bits */
+N    /* minimum-width signed integer types */
+Ntypedef   signed          char int_least8_t;
+Ntypedef   signed short     int int_least16_t;
+Ntypedef   signed           int int_least32_t;
+Ntypedef   signed       __int64 int_least64_t;
+N
+N    /* minimum-width unsigned integer types */
+Ntypedef unsigned          char uint_least8_t;
+Ntypedef unsigned short     int uint_least16_t;
+Ntypedef unsigned           int uint_least32_t;
+Ntypedef unsigned       __int64 uint_least64_t;
+N
+N    /* 7.18.1.3 */
+N
+N    /* fastest minimum-width signed integer types */
+Ntypedef   signed           int int_fast8_t;
+Ntypedef   signed           int int_fast16_t;
+Ntypedef   signed           int int_fast32_t;
+Ntypedef   signed       __int64 int_fast64_t;
+N
+N    /* fastest minimum-width unsigned integer types */
+Ntypedef unsigned           int uint_fast8_t;
+Ntypedef unsigned           int uint_fast16_t;
+Ntypedef unsigned           int uint_fast32_t;
+Ntypedef unsigned       __int64 uint_fast64_t;
+N
+N    /* 7.18.1.4 integer types capable of holding object pointers */
+Ntypedef   signed           int intptr_t;
+Ntypedef unsigned           int uintptr_t;
+N
+N    /* 7.18.1.5 greatest-width integer types */
+Ntypedef   signed       __int64 intmax_t;
+Ntypedef unsigned       __int64 uintmax_t;
+N
+N
+N#if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.2.1 */
+N
+N    /* minimum values of exact-width signed integer types */
+N#define INT8_MIN                   -128
+N#define INT16_MIN                -32768
+N#define INT32_MIN          (~0x7fffffff)   /* -2147483648 is unsigned */
+N#define INT64_MIN  __ESCAPE__(~0x7fffffffffffffffll) /* -9223372036854775808 is unsigned */
+N
+N    /* maximum values of exact-width signed integer types */
+N#define INT8_MAX                    127
+N#define INT16_MAX                 32767
+N#define INT32_MAX            2147483647
+N#define INT64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of exact-width unsigned integer types */
+N#define UINT8_MAX                   255
+N#define UINT16_MAX                65535
+N#define UINT32_MAX           4294967295u
+N#define UINT64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.2 */
+N
+N    /* minimum values of minimum-width signed integer types */
+N#define INT_LEAST8_MIN                   -128
+N#define INT_LEAST16_MIN                -32768
+N#define INT_LEAST32_MIN          (~0x7fffffff)
+N#define INT_LEAST64_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum values of minimum-width signed integer types */
+N#define INT_LEAST8_MAX                    127
+N#define INT_LEAST16_MAX                 32767
+N#define INT_LEAST32_MAX            2147483647
+N#define INT_LEAST64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of minimum-width unsigned integer types */
+N#define UINT_LEAST8_MAX                   255
+N#define UINT_LEAST16_MAX                65535
+N#define UINT_LEAST32_MAX           4294967295u
+N#define UINT_LEAST64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.3 */
+N
+N    /* minimum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MIN           (~0x7fffffff)
+N#define INT_FAST16_MIN          (~0x7fffffff)
+N#define INT_FAST32_MIN          (~0x7fffffff)
+N#define INT_FAST64_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum values of fastest minimum-width signed integer types */
+N#define INT_FAST8_MAX             2147483647
+N#define INT_FAST16_MAX            2147483647
+N#define INT_FAST32_MAX            2147483647
+N#define INT_FAST64_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum values of fastest minimum-width unsigned integer types */
+N#define UINT_FAST8_MAX            4294967295u
+N#define UINT_FAST16_MAX           4294967295u
+N#define UINT_FAST32_MAX           4294967295u
+N#define UINT_FAST64_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.2.4 */
+N
+N    /* minimum value of pointer-holding signed integer type */
+N#define INTPTR_MIN (~0x7fffffff)
+N
+N    /* maximum value of pointer-holding signed integer type */
+N#define INTPTR_MAX   2147483647
+N
+N    /* maximum value of pointer-holding unsigned integer type */
+N#define UINTPTR_MAX  4294967295u
+N
+N    /* 7.18.2.5 */
+N
+N    /* minimum value of greatest-width signed integer type */
+N#define INTMAX_MIN  __ESCAPE__(~0x7fffffffffffffffll)
+N
+N    /* maximum value of greatest-width signed integer type */
+N#define INTMAX_MAX  __ESCAPE__(9223372036854775807ll)
+N
+N    /* maximum value of greatest-width unsigned integer type */
+N#define UINTMAX_MAX __ESCAPE__(18446744073709551615ull)
+N
+N    /* 7.18.3 */
+N
+N    /* limits of ptrdiff_t */
+N#define PTRDIFF_MIN (~0x7fffffff)
+N#define PTRDIFF_MAX   2147483647
+N
+N    /* limits of sig_atomic_t */
+N#define SIG_ATOMIC_MIN (~0x7fffffff)
+N#define SIG_ATOMIC_MAX   2147483647
+N
+N    /* limit of size_t */
+N#define SIZE_MAX 4294967295u
+N
+N    /* limits of wchar_t */
+N    /* NB we have to undef and redef because they're defined in both
+N     * stdint.h and wchar.h */
+N#undef WCHAR_MIN
+N#undef WCHAR_MAX
+N
+N#if defined(__WCHAR32)
+X#if 0L
+S  #define WCHAR_MIN   0
+S  #define WCHAR_MAX   0xffffffffU
+N#else
+N  #define WCHAR_MIN   0
+N  #define WCHAR_MAX   65535
+N#endif
+N
+N    /* limits of wint_t */
+N#define WINT_MIN (~0x7fffffff)
+N#define WINT_MAX 2147483647
+N
+N#endif /* __STDC_LIMIT_MACROS */
+N
+N#if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
+X#if !0L || 0L
+N
+N    /* 7.18.4.1 macros for minimum-width integer constants */
+N#define INT8_C(x)   (x)
+N#define INT16_C(x)  (x)
+N#define INT32_C(x)  (x)
+N#define INT64_C(x)  __ESCAPE__(x ## ll)
+N
+N#define UINT8_C(x)  (x ## u)
+N#define UINT16_C(x) (x ## u)
+N#define UINT32_C(x) (x ## u)
+N#define UINT64_C(x) __ESCAPE__(x ## ull)
+N
+N    /* 7.18.4.2 macros for greatest-width integer constants */
+N#define INTMAX_C(x)  __ESCAPE__(x ## ll)
+N#define UINTMAX_C(x) __ESCAPE__(x ## ull)
+N
+N#endif /* __STDC_CONSTANT_MACROS */
+N
+N    #ifdef __cplusplus
+S         }  /* extern "C" */
+S      }  /* namespace std */
+N    #endif /* __cplusplus */
+N  #endif /* __STDINT_DECLS */
+N
+N  #ifdef __cplusplus
+S    #ifndef __STDINT_NO_EXPORTS
+S      using ::std::int8_t;
+S      using ::std::int16_t;
+S      using ::std::int32_t;
+S      using ::std::int64_t;
+S      using ::std::uint8_t;
+S      using ::std::uint16_t;
+S      using ::std::uint32_t;
+S      using ::std::uint64_t;
+S      using ::std::int_least8_t;
+S      using ::std::int_least16_t;
+S      using ::std::int_least32_t;
+S      using ::std::int_least64_t;
+S      using ::std::uint_least8_t;
+S      using ::std::uint_least16_t;
+S      using ::std::uint_least32_t;
+S      using ::std::uint_least64_t;
+S      using ::std::int_fast8_t;
+S      using ::std::int_fast16_t;
+S      using ::std::int_fast32_t;
+S      using ::std::int_fast64_t;
+S      using ::std::uint_fast8_t;
+S      using ::std::uint_fast16_t;
+S      using ::std::uint_fast32_t;
+S      using ::std::uint_fast64_t;
+S      using ::std::intptr_t;
+S      using ::std::uintptr_t;
+S      using ::std::intmax_t;
+S      using ::std::uintmax_t;
+S    #endif 
+N  #endif /* __cplusplus */
+N
+N#endif /* __stdint_h */
+N
+N/* end of stdint.h */
+N
+N
+L 6 "src\gui\guiGraphics\font_h32.c" 2
+N#include "guiFonts.h"
+L 1 "src\gui\guiGraphics\guiFonts.h" 1
+N#ifndef __GUI_FONTS_H_
+N#define __GUI_FONTS_H_
+N
+N#include <stdint.h>
+N
+N/*
+N    A font may have all chars present, or only some subset of chars.
+N    If a font has contiguous set of chars, starting with some char code,
+N    it is indicated by setting charTable to 0 and defining firstCharCode value.
+N    Field charCount tells how many chars the font has.
+N    Accessing some char with char code c in this case is trivial and looks like this:
+N        c -= font.firstCharCode;
+N        char_data = font.data[c * font.bytesPerChar];
+N    If a font has non-contiguous set of chars, their char codes are specified in codeTable,
+N    and offset relative to font.data is specified in offsetTable.
+N
+N    A font may be monospaced or variable-spaced.
+N    If a font is monospaced, widthTable must be set to 0. All chars will have the same width = font.width.
+N    If font is variable-spaced, widthTable is used - it contains width for every char.
+N
+N    If font has non-contiguous set of chars, or font is variable-spaced, font processing routines need to know,
+N    where particular char image is located. This information provides offsetTable.
+N
+N    So, a font can be one of the following:
+N        - monospaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     -
+N            offsetTable:    -
+N        - monospaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     -
+N            offsetTable:    present
+N        - variable-spaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     present
+N            offsetTable:    present
+N        - variable-spaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     present
+N            offsetTable:    present
+N
+N        Font MUST have valid offsetTable when codeTable or widthTable are used.
+N*/
+N
+N
+N//---------------------------------------------//
+N// Fonts typedefs
+N
+Ntypedef struct 
+N{
+N    uint8_t height;                     // font chars height
+N    uint8_t width;                      // actual for monospaced, ignored for variable-width fonts
+N    uint8_t charCount;                  // Total number of chars in the font
+N    uint8_t spacing;                    // Additional space between chars
+N    uint8_t bytesPerChar;               // Actual for monospaced, ignored for variable-length fonts
+N    uint8_t firstCharCode;              // Used if there is no charTable - specifies first avaliable char code in the font.
+N    const uint8_t *codeTable;           // Used if not all symbols are prensent in the font. Otherwise must be 0.
+N    const uint8_t *widthTable;          // Used if font is not monospaced. Otherwise must be 0.
+N    const uint16_t *offsetTable;        // Used with codeTable or widthTable
+N    const uint8_t *data;                // Font data - contiguous byte array
+N} tFont;
+N
+N
+Nextern const tFont font_h11;
+Nextern const tFont font_h32;
+Nextern const tFont font_h10;
+Nextern const tFont font_h10_bold;
+Nextern const tFont font_6x8_mono;
+Nextern const tFont font_h16;
+N
+N
+N#endif
+L 7 "src\gui\guiGraphics\font_h32.c" 2
+N
+Nstatic const uint8_t font_h32_data [] =
+N{
+N    // symbol 0x20
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N
+N    // symbol 0x2E
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x78, 0x78, 0x78, 0x00,
+N
+N    // symbol 0x30
+N    0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0xFF, 0x7F, 0x3F, 0x1F, 0x0F,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00, 0xFF, 0xFF,
+N    0xFE, 0xFC, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0xF8, 0xFC, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x3F, 0x5F, 0x6F, 0x77, 0x7B, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x31
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xF0, 0xF8,
+N    0xFC, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0xF8, 0xFC, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x07,
+N    0x0F, 0x1F, 0x3F, 0x00,
+N
+N    // symbol 0x32
+N    0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xE0,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xEF, 0xDF, 0xBF, 0x7F, 0x3F, 0x00, 0xFE, 0xFF,
+N    0xFE, 0xFD, 0xFB, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0x03, 0x01, 0x00, 0x00, 0x00,
+N    0x00, 0x3F, 0x5F, 0x6F, 0x77, 0x7B, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x78, 0x70,
+N    0x60, 0x40, 0x00, 0x00,
+N
+N    // symbol 0x33
+N    0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xE0,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xEF, 0xDF, 0xBF, 0x7F, 0xFF, 0x00, 0x00, 0x00,
+N    0x00, 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x00, 0x40, 0x60, 0x70, 0x78, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x34
+N    0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xF0, 0xF8,
+N    0xFC, 0xFE, 0x00, 0x3F, 0x7F, 0xBF, 0xDF, 0xEF,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xEF, 0xDF, 0xBF, 0x7F, 0xFF, 0x00, 0x00, 0x00,
+N    0x00, 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x07,
+N    0x0F, 0x1F, 0x3F, 0x00,
+N
+N    // symbol 0x35
+N    0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x07, 0x03,
+N    0x01, 0x00, 0x00, 0x3F, 0x7F, 0xBF, 0xDF, 0xEF,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xE0, 0xC0, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFE,
+N    0x00, 0x00, 0x40, 0x60, 0x70, 0x78, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x36
+N    0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x0F, 0x07, 0x03,
+N    0x01, 0x00, 0x00, 0xFF, 0x7F, 0xBF, 0xDF, 0xEF,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xE0, 0xC0, 0x80, 0x00, 0x00, 0x00, 0xFF, 0xFF,
+N    0xFE, 0xFD, 0xFB, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFE,
+N    0x00, 0x3F, 0x5F, 0x6F, 0x77, 0x7B, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x37
+N    0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0xF8, 0xFC, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x07,
+N    0x0F, 0x1F, 0x3F, 0x00,
+N
+N    // symbol 0x38
+N    0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0xFF, 0x7F, 0xBF, 0xDF, 0xEF,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xEF, 0xDF, 0xBF, 0x7F, 0xFF, 0x00, 0xFF, 0xFF,
+N    0xFE, 0xFD, 0xFB, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x3F, 0x5F, 0x6F, 0x77, 0x7B, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x39
+N    0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0x1F, 0x1F, 0x1F,
+N    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0xEF, 0xF7, 0xFB,
+N    0xFD, 0xFE, 0x00, 0x3F, 0x7F, 0xBF, 0xDF, 0xEF,
+N    0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0,
+N    0xEF, 0xDF, 0xBF, 0x7F, 0xFF, 0x00, 0x00, 0x00,
+N    0x00, 0x01, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+N    0x03, 0x03, 0x03, 0xFB, 0xFD, 0xFE, 0xFF, 0xFF,
+N    0x00, 0x00, 0x40, 0x60, 0x70, 0x78, 0x7C, 0x7C,
+N    0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7B, 0x77,
+N    0x6F, 0x5F, 0x3F, 0x00,
+N
+N    // symbol 0x61
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x80, 0xE0, 0xE0, 0xE0, 0x80, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0xE0, 0xFC, 0xFF, 0x3F,
+N    0x07, 0x3F, 0xFF, 0xFC, 0xE0, 0x00, 0x00, 0x78,
+N    0x7F, 0x7F, 0x0F, 0x0F, 0x0E, 0x0E, 0x0E, 0x0F,
+N    0x0F, 0x7F, 0x7F, 0x78,
+N
+N    // symbol 0x76
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xE0, 0xE0,
+N    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0,
+N    0xE0, 0xE0, 0x01, 0x0F, 0x7F, 0xFF, 0xF8, 0xC0,
+N    0x00, 0xC0, 0xF8, 0xFF, 0x7F, 0x0F, 0x01, 0x00,
+N    0x00, 0x00, 0x03, 0x1F, 0x7F, 0x7E, 0x7F, 0x1F,
+N    0x03, 0x00, 0x00, 0x00,
+N
+N};
+N
+N
+N
+Nstatic const uint8_t font_h32_code_table[14] =
+N{
+N    0x20,
+N    0x2E,
+N    0x30,
+N    0x31,
+N    0x32,
+N    0x33,
+N    0x34,
+N    0x35,
+N    0x36,
+N    0x37,
+N    0x38,
+N    0x39,
+N    0x61,
+N    0x76,
+N};
+N
+Nstatic const uint8_t font_h32_width_table[14] =
+N{
+N    8,
+N    4,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    19,
+N    13,
+N    13,
+N};
+N
+Nstatic const uint16_t font_h32_offset_table[14] =
+N{
+N    0,
+N    32,
+N    48,
+N    124,
+N    200,
+N    276,
+N    352,
+N    428,
+N    504,
+N    580,
+N    656,
+N    732,
+N    808,
+N    860,
+N};
+N
+Nconst tFont font_h32 =
+N{
+N    32,          // font height
+N    0,                      // font width - not used with variable width
+N    14,          // total chars count
+N    0,                      // spacing
+N    0,                      // bytesPerChar - not used with variable width
+N    0,                      // firstCharCode - not used with char table
+N    font_h32_code_table,    // character code table
+N    font_h32_width_table,	// character width table
+N    font_h32_offset_table,	// offset table
+N    font_h32_data           // font data
+N};
+N

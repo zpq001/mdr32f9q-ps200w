@@ -22,7 +22,8 @@
 #include "encoder.h"
 #include "converter.h"
 #include "control.h"
-#include "gui_top.h"
+//#include "gui_top.h"
+#include "guiTop.h"
 #include "dispatcher.h"
 
 
@@ -103,7 +104,7 @@ void vTaskDispatcher(void *pvParameters)
 				//---------------------------//
 
 				// Make GUI process buttons and encoder
-				gui_msg = GUI_PROCESS_BUTTONS;
+				gui_msg = GUI_TASK_PROCESS_BUTTONS;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 			
 				break;

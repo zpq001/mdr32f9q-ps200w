@@ -11,7 +11,8 @@
 // из всех возможностей используем пока только переключение задач
 #include "task.h"
 
-#include "gui_top.h"
+//#include "gui_top.h"
+#include "guiTop.h"
 
 #include "stdio.h"
 

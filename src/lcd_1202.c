@@ -125,8 +125,8 @@ void LcdSingleInit(void)
 	
 	// clear LCD
 	LcdSetRow(0);
-  LcdSetCol(0);
-	for(i=0; i<LCD_BUFFER_SIZE-1; i++)
+    LcdSetCol(0);
+	for(i=0; i<LCD_PHY_BUFFER_SIZE-1; i++)
   	LcdWrite(0,DATA);
   
 	// Display ON
@@ -174,8 +174,51 @@ void LcdUpdateByCore(uint8_t display, uint16_t* lcd_buffer)
 	LcdSelect(display);
 	LcdSetRow(0);
 	LcdSetCol(0);
-	for (i=0; i<LCD_BUFFER_SIZE; i++)
+	for (i=0; i<LCD_PHY_BUFFER_SIZE; i++)
 		LcdWrite(lcd_buffer[i],DATA);
+	// wait until all words are sent
+	while (!LCD_TX_DONE);	
+}
+
+
+//==============================================================//
+// Update both LCDs from buffer
+// 	Parameters:
+//		uint8_t* lcd_buffer - buffer, width = 2xLCD_PHY_XSIZE,
+//									  height = LCD_PHY_YSIZE
+//==============================================================//
+void LcdUpdateBothByCore(uint8_t* lcd_buffer)
+{
+	uint16_t i;
+	uint8_t j;
+	uint16_t lcd_buf_index;
+	uint8_t num_pages = LCD_PHY_YSIZE / 8;
+	if (LCD_PHY_YSIZE % 8) num_pages++;
+	
+	// Update LCD0
+	LcdSelect(LCD0);
+	LcdSetRow(0);
+	LcdSetCol(0);
+	lcd_buf_index = 0;
+    for (j=0; j<num_pages; j++)
+    {
+        for (i=0; i<LCD_PHY_XSIZE; i++)
+			LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+		lcd_buf_index += LCD_PHY_XSIZE;
+    }
+	
+	// Update LCD1
+	LcdSelect(LCD1);
+	LcdSetRow(0);
+	LcdSetCol(0);
+	lcd_buf_index = LCD_PHY_XSIZE;
+    for (j=0; j<num_pages; j++)
+    {
+        for (i=0; i<LCD_PHY_XSIZE; i++)
+			LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+		lcd_buf_index += LCD_PHY_XSIZE;
+    }
+	
 	// wait until all words are sent
 	while (!LCD_TX_DONE);	
 }

@@ -8,7 +8,8 @@
 #include "task.h"
 #include "queue.h"
 
-#include "gui_top.h"
+//#include "gui_top.h"
+#include "guiTop.h"
 
 #include "encoder.h"
 #include "systemfunc.h"
@@ -51,7 +52,7 @@ void vApplicationTickHook( void )
 	
 	if (--tmr_gui_update == 0)
 	{
-		msg = GUI_UPDATE_ALL;
+		msg = GUI_TASK_REDRAW;
 		xQueueSendToBackFromISR(xQueueGUI, &msg, &xHigherPriorityTaskWokenByPost);
 		tmr_gui_update = GUI_UPDATE_INTERVAL;
 	}

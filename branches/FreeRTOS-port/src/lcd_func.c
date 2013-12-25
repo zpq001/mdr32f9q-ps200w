@@ -21,8 +21,8 @@
 
 
 // Lcd buffers
-uint16_t lcd0_buffer[LCD_BUFFER_SIZE];
-uint16_t lcd1_buffer[LCD_BUFFER_SIZE];
+uint16_t lcd0_buffer[LCD_PHY_BUFFER_SIZE];
+uint16_t lcd1_buffer[LCD_PHY_BUFFER_SIZE];
 
 
 
@@ -88,7 +88,7 @@ void LcdPutVertLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t mode, 
 void LcdFillBuffer(uint16_t* lcd_buffer, uint8_t value)
 {
 	uint16_t i;
-	for (i=0;i<LCD_BUFFER_SIZE;i++)
+	for (i=0;i<LCD_PHY_BUFFER_SIZE;i++)
 	{
 		lcd_buffer[i] = value;
 	}

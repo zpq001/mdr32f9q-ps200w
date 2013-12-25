@@ -1,10 +1,10 @@
 
 // Size definitions in points
-#define LCD_XSIZE 96
-#define LCD_YSIZE 68
+#define LCD_PHY_XSIZE 96
+#define LCD_PHY_YSIZE 68
 
 // Size definitions in bytes
-#define LCD_BUFFER_SIZE 864 //96*9
+#define LCD_PHY_BUFFER_SIZE 864 //96*9
 
 
 #define LCD0 1
@@ -40,7 +40,7 @@
 void LcdInit(void);
 // Copy buffer data into specified LCD memory by core
 void LcdUpdateByCore(uint8_t display, uint16_t* lcd_buffer);
-
+void LcdUpdateBothByCore(uint8_t* lcd_buffer);
 
 //------------------------------------//
 // Internal functions

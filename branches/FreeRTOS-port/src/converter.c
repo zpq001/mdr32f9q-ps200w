@@ -34,6 +34,8 @@ volatile uint8_t ctrl_HWProcess = 0;
 volatile uint8_t cmd_ADC_to_HWProcess = 0;
 
 
+static uint32_t gui_msg;
+
 
 converter_regulation_t channel_5v_setting;
 converter_regulation_t channel_12v_setting;
@@ -364,12 +366,19 @@ void vTaskConverter(void *pvParameters)
 	while(1)
 	{
 		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-		
+	
+		// CHECKME - Possibly need to add a mechanism to protect against illegal messages ?
+		// For example, GUI sends message to set new voltage, but converter has switched channel by comand from UART.
+		// In this case, command from GUI is old and bad and should be ignored somehow.
 
 		switch (msg.type)
 		{
 			case CONVERTER_SET_VOLTAGE:
 				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+				//----- Send notification to GUI -----//
+				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
+				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+				//------------------------------------//
 				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MIN))
@@ -381,6 +390,10 @@ void vTaskConverter(void *pvParameters)
 				break;
 			case CONVERTER_SET_CURRENT:
 				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+				//----- Send notification to GUI -----//
+				gui_msg = GUI_TASK_UPDATE_CURRENT_SETTING;
+				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+				//------------------------------------//
 				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
@@ -401,6 +414,10 @@ void vTaskConverter(void *pvParameters)
 				{
 					regulation_setting_p = &channel_5v_setting;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}
@@ -408,6 +425,10 @@ void vTaskConverter(void *pvParameters)
 				{
 					regulation_setting_p = &channel_12v_setting;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}
@@ -415,6 +436,10 @@ void vTaskConverter(void *pvParameters)
 				{
 					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}
@@ -422,6 +447,10 @@ void vTaskConverter(void *pvParameters)
 				{
 					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}
@@ -456,6 +485,10 @@ void vTaskConverter(void *pvParameters)
 					vTaskDelay(4);
 					regulation_setting_p = &channel_5v_setting;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}
@@ -465,6 +498,10 @@ void vTaskConverter(void *pvParameters)
 					vTaskDelay(4);
 					regulation_setting_p = &channel_5v_setting;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+					//----- Send notification to GUI -----//
+					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+					//------------------------------------//
 					while(ctrl_HWProcess);
 					break;
 				}

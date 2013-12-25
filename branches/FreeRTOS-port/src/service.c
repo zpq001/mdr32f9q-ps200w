@@ -10,9 +10,11 @@
 #include "systemfunc.h"
 #include "service.h"
 
+#include "guiTop.h"
+
 int16_t converter_temp_celsius = 0;
 
-
+static uint32_t gui_msg;
 
 void vTaskService(void *pvParameters) 
 {
@@ -41,6 +43,10 @@ void vTaskService(void *pvParameters)
 		// Update cooler speed
 		cooler_speed = (converter_temp_celsius < 25) ? 50 : converter_temp_celsius * 2;
 		SetCoolerSpeed(cooler_speed);
+		
+		// Send notification to GUI
+		gui_msg = GUI_TASK_UPDATE_TEMPERATURE_INDICATOR;
+		xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	}
 	
 }

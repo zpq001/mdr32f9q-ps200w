@@ -12,6 +12,8 @@
 #include "control.h"
 #include "adc.h"
 
+#include "guiTop.h"
+
 uint16_t voltage_adc;		// [mV]
 uint16_t current_adc;		// [mA]
 uint32_t power_adc;			// [mW]
@@ -20,6 +22,8 @@ static uint16_t adc_voltage_counts;	// [ADC counts]
 static uint16_t adc_current_counts;	// [ADC counts]
 
 static volatile uint8_t ctrl_ADCProcess = 0;
+
+static uint32_t gui_msg;
 
 xQueueHandle xQueueADC;
 xSemaphoreHandle xSemaphoreADC;
@@ -66,6 +70,10 @@ void vTaskADC(void *pvParameters)
 					current_adc *= 5;
 				
 				power_adc = voltage_adc * current_adc / 1000;
+				
+				// Send notification to GUI
+				gui_msg = GUI_TASK_UPDATE_VOLTAGE_CURRENT;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 			
 				break;
 			

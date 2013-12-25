@@ -41,7 +41,6 @@ static conveter_message_t converter_msg;	// to save stack
 void vTaskGUI(void *pvParameters) 
 {
 	uint32_t msg;
-	uint8_t i;
 	uint8_t button_spec;
 	
 	// Initialize
@@ -56,6 +55,11 @@ void vTaskGUI(void *pvParameters)
 	guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
 	// TODO - add restoring values from EEPROM
+	
+	//setVoltageSetting(regulation_setting_p->set_voltage);
+	//setCurrentSetting(regulation_setting_p->set_current);
+	//setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+	//setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
 	
 	while(1)
 	{
@@ -83,7 +87,7 @@ void vTaskGUI(void *pvParameters)
 					guiCore_ProcessKeyEvent(GUI_KEY_ENCODER, button_spec);
 				// Encoder
 				if (encoder_delta)
-					guiCore_ProcessEncoderEvent(delta);
+					guiCore_ProcessEncoderEvent(encoder_delta);
 				break;
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
 				setVoltageIndicator(voltage_adc);

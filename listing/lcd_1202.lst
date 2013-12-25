@@ -7024,11 +7024,11 @@ N#include "lcd_1202.h"
 L 1 "src\lcd_1202.h" 1
 N
 N// Size definitions in points
-N#define LCD_XSIZE 96
-N#define LCD_YSIZE 68
+N#define LCD_PHY_XSIZE 96
+N#define LCD_PHY_YSIZE 68
 N
 N// Size definitions in bytes
-N#define LCD_BUFFER_SIZE 864 //96*9
+N#define LCD_PHY_BUFFER_SIZE 864 //96*9
 N
 N
 N#define LCD0 1
@@ -7064,7 +7064,7 @@ N// Initializes both LCDs and flushes memory
 Nvoid LcdInit(void);
 N// Copy buffer data into specified LCD memory by core
 Nvoid LcdUpdateByCore(uint8_t display, uint16_t* lcd_buffer);
-N
+Nvoid LcdUpdateBothByCore(uint8_t* lcd_buffer);
 N
 N//------------------------------------//
 N// Internal functions
@@ -7374,9 +7374,9 @@ N
 N	// clear LCD
 N	LcdSetRow(0);
 X	LcdWrite(0xB0 | ((0) & 0x0F), 0);
-N  LcdSetCol(0);
-X  LcdWrite(0x10 | ((0)>>4), 0); LcdWrite(0x00 | ((0) & 0x0F), 0);;
-N	for(i=0; i<LCD_BUFFER_SIZE-1; i++)
+N    LcdSetCol(0);
+X    LcdWrite(0x10 | ((0)>>4), 0); LcdWrite(0x00 | ((0) & 0x0F), 0);;
+N	for(i=0; i<LCD_PHY_BUFFER_SIZE-1; i++)
 X	for(i=0; i<864-1; i++)
 N  	LcdWrite(0,DATA);
 X  	LcdWrite(0,1);
@@ -7435,10 +7435,79 @@ N	LcdSetRow(0);
 X	LcdWrite(0xB0 | ((0) & 0x0F), 0);
 N	LcdSetCol(0);
 X	LcdWrite(0x10 | ((0)>>4), 0); LcdWrite(0x00 | ((0) & 0x0F), 0);;
-N	for (i=0; i<LCD_BUFFER_SIZE; i++)
+N	for (i=0; i<LCD_PHY_BUFFER_SIZE; i++)
 X	for (i=0; i<864; i++)
 N		LcdWrite(lcd_buffer[i],DATA);
 X		LcdWrite(lcd_buffer[i],1);
+N	// wait until all words are sent
+N	while (!LCD_TX_DONE);	
+X	while (!(SSP_GetFlagStatus(((MDR_SSP_TypeDef *) (0x400A0000)),((uint16_t)0x0010))==RESET));	
+N}
+N
+N
+N//==============================================================//
+N// Update both LCDs from buffer
+N// 	Parameters:
+N//		uint8_t* lcd_buffer - buffer, width = 2xLCD_PHY_XSIZE,
+N//									  height = LCD_PHY_YSIZE
+N//==============================================================//
+Nvoid LcdUpdateBothByCore(uint8_t* lcd_buffer)
+N{
+N	uint16_t i;
+N	uint8_t j;
+N	uint16_t lcd_buf_index;
+N	uint8_t num_pages = LCD_PHY_YSIZE / 8;
+X	uint8_t num_pages = 68 / 8;
+N	if (LCD_PHY_YSIZE % 8) num_pages++;
+X	if (68 % 8) num_pages++;
+N	
+N	// Update LCD0
+N	LcdSelect(LCD0);
+X	LcdSelect(1);
+N	LcdSetRow(0);
+X	LcdWrite(0xB0 | ((0) & 0x0F), 0);
+N	LcdSetCol(0);
+X	LcdWrite(0x10 | ((0)>>4), 0); LcdWrite(0x00 | ((0) & 0x0F), 0);;
+N	//lcd_buf_index = 0;
+N	lcd_buf_index = LCD_PHY_XSIZE;
+X	lcd_buf_index = 96;
+N    for (j=0; j<num_pages; j++)
+N    {
+N        for (i=0; i<LCD_PHY_XSIZE; i++)
+X        for (i=0; i<96; i++)
+N			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+N			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+X			LcdWrite(lcd_buffer[lcd_buf_index--],1);
+N		//lcd_buf_index += LCD_PHY_XSIZE;
+N		lcd_buf_index += 3*LCD_PHY_XSIZE;
+X		lcd_buf_index += 3*96;
+N    }
+N	// wait until all words are sent
+N	while (!LCD_TX_DONE);	
+X	while (!(SSP_GetFlagStatus(((MDR_SSP_TypeDef *) (0x400A0000)),((uint16_t)0x0010))==RESET));	
+N	
+N	// Update LCD1
+N	LcdSelect(LCD1);
+X	LcdSelect(2);
+N	LcdSetRow(0);
+X	LcdWrite(0xB0 | ((0) & 0x0F), 0);
+N	LcdSetCol(0);
+X	LcdWrite(0x10 | ((0)>>4), 0); LcdWrite(0x00 | ((0) & 0x0F), 0);;
+N	//lcd_buf_index = LCD_PHY_XSIZE;
+N	lcd_buf_index = 2*LCD_PHY_XSIZE;
+X	lcd_buf_index = 2*96;
+N    for (j=0; j<num_pages; j++)
+N    {
+N        for (i=0; i<LCD_PHY_XSIZE; i++)
+X        for (i=0; i<96; i++)
+N			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
+N			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+X			LcdWrite(lcd_buffer[lcd_buf_index--],1);
+N		//lcd_buf_index += LCD_PHY_XSIZE;
+N		lcd_buf_index += 3*LCD_PHY_XSIZE;
+X		lcd_buf_index += 3*96;
+N    }
+N	
 N	// wait until all words are sent
 N	while (!LCD_TX_DONE);	
 X	while (!(SSP_GetFlagStatus(((MDR_SSP_TypeDef *) (0x400A0000)),((uint16_t)0x0010))==RESET));	

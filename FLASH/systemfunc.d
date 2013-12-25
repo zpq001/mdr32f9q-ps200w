@@ -19,10 +19,9 @@
 .\FLASH\systemfunc.o: .\defines.h
 .\FLASH\systemfunc.o: src\systick.h
 .\FLASH\systemfunc.o: src\lcd_1202.h
-.\FLASH\systemfunc.o: src\lcd_func.h
-.\FLASH\systemfunc.o: .\src\fonts\font_defs.h
+.\FLASH\systemfunc.o: .\src\gui\guiGraphics\guiGraphHAL.h
+.\FLASH\systemfunc.o: .\src\gui\guiGraphics\guiFonts.h
+.\FLASH\systemfunc.o: .\src\gui\guiGraphics\guiGraphPrimitives.h
 .\FLASH\systemfunc.o: src\dwt_delay.h
 .\FLASH\systemfunc.o: src\control.h
 .\FLASH\systemfunc.o: src\led.h
-.\FLASH\systemfunc.o: .\src\fonts\fonts.h
-.\FLASH\systemfunc.o: .\src\fonts\font_defs.h

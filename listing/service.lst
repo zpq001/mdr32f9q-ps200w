@@ -7111,7 +7111,10 @@ N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
+N
+N// Only bits [7:5] are implemented in MDR32F9Qx, so set highest priority 1
+N// All other IRQs must be set to priorities >= 1 (and <= 7)
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20	
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -10527,6 +10530,484 @@ L 10 "src\service.c" 2
 N#include "systemfunc.h"
 L 1 "src\systemfunc.h" 1
 N
+N#include "MDR32F9Qx_dma.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_dma.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.0
+N  * @date    11/06/2010
+N  * @brief   This file contains all the functions prototypes for the DMA
+N  *          firmware library.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_dma.h
+N  */
+N
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9Qx_DMA_H
+N#define __MDR32F9Qx_DMA_H
+N
+N/* Includes ------------------------------------------------------------------*/
+N#include "MDR32Fx.h"
+N
+N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
+N  * @{
+N  */
+N
+N/** @addtogroup DMA
+N  * @{
+N  */
+N
+N/** @defgroup DMA_Exported_Types DMA Exported Types
+N  * @{
+N  */
+N
+N/**
+N  * @brief  DMA Channel Primary / Alternate Control Data initialization structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceBaseAddr;                 /*!< Specifies the source base address for DMA Channelx. */
+N
+N  uint32_t DMA_DestBaseAddr;                  /*!< Specifies the destination base address for DMA Channelx. */
+N
+N  uint32_t DMA_SourceIncSize;                 /*!< Specifies the source address register increment value.
+N                                                 This parameter can be a value of @ref DMA_source_incremented_mode */
+N
+N  uint32_t DMA_DestIncSize;                   /*!< Specifies the destination address register increment value.
+N                                                 This parameter can be a value of @ref DMA_dest_incremented_mode */
+N
+N  uint32_t DMA_MemoryDataSize;                /*!< Specifies the Memory data width.
+N                                                 This parameter can be a value of @ref DMA_memory_data_size */
+N
+N  uint32_t DMA_Mode;                          /*!< Specifies the operation mode of the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_operating_mode. */
+N
+N  uint32_t DMA_CycleSize;                     /*!< Specifies the  total number of DMA transfers that the DMA cycle contains.
+N                                                 This parameter can be a value of @ref DMA_cycle_size. */
+N
+N  uint32_t DMA_NumContinuous;                 /*!< Specifies how many DMA transfers can occur before the DMA controller rearbitrates.
+N                                                 This parameter can be a value of @ref DMA_number_continuous_transfers. */
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N} DMA_CtrlDataInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Control Data structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceEndAddr;                 /*!< Specifies the DMA channel source end address */
+N
+N  uint32_t DMA_DestEndAddr;                   /*!< Specifies the DMA channel destination end address. */
+N
+N  uint32_t DMA_Control;                       /*!< Specifies the DMA channel control data configuration. */
+N
+N  uint32_t DMA_Unused;                        /*!< Specifies the DMA channel unused memory. */
+N
+N}DMA_CtrlDataTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataInitTypeDef *DMA_PriCtrlData;   /*!< Specifies the pointer to the primary control data structure.
+N                                                 This parameter should be NULL if primary data structure is not used */
+N
+N  DMA_CtrlDataInitTypeDef *DMA_AltCtrlData;   /*!< Specifies the pointer to the alternate control data structure.
+N                                                 This parameter should be NULL if alternate data structure is not used */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N  uint8_t DMA_SelectDataStructure;            /*!< Specifies the primary /alternate data structure to use by the DMA channel.
+N                                                 This parameter can be a value of @ref DMA_data_structure_selection. */
+N
+N} DMA_ChannelInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Scatter-Gather Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataTypeDef *DMA_SG_TaskArray;      /*!< Specifies the pointer to the Scatter-Gather task structures array. The size
+N                                                 of the array should be equal to DMA_SG_TaskNumber.
+N                                                 Every structure of the array should contain the copy of the alternate control
+N                                                 data for the related task. It will be used by DMA to configure
+N                                                 the alternate control data while operating in the
+N                                                 scatter-gather mode */
+N
+N  uint32_t DMA_SG_TaskNumber;                 /*!< Specifies the number of scatter-gather tasks to be executed by DMA */
+N
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the Primary Control Data DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the Primary Control Data DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N} DMA_Channel_SG_InitTypeDef;
+N
+N
+N/** @} */ /* End of group DMA_Exported_Types */
+N
+N/** @defgroup DMA_Exported_Constants DMA Exported Constants
+N  * @{
+N  */
+N
+N/** @defgroup DMA_channels_number DMA channels number
+N  * @{
+N  */
+N
+N#define IS_DMA_CHANNELS(NUMBER) ((NUMBER >= 1) && (NUMBER <= 32))
+N
+N/** @} */ /* End of group DMA_channels_number */
+N
+N/** @defgroup DMA_alternate_data_usage DMA alternate data usage
+N  * @{
+N  */
+N
+N#define DMA_ALternateDataDisabled           ((uint16_t)(0x00))
+N#define DMA_ALternateDataEnabled            ((uint16_t)(0x01))
+N
+N#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) || \
+N                                            ((STATE)  == DMA_ALternateDataEnabled))
+X#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) ||                                             ((STATE)  == DMA_ALternateDataEnabled))
+N
+N/** @} */ /* End of group DMA_alternate_data_usage */
+N
+N/** @defgroup DMA_valid_channels DMA valid channels
+N  * @{
+N  */
+N#define DMA_Channel_UART1_TX    ((uint8_t)(0))
+N#define DMA_Channel_UART1_RX    ((uint8_t)(1))
+N#define DMA_Channel_UART2_TX    ((uint8_t)(2))
+N#define DMA_Channel_UART2_RX    ((uint8_t)(3))
+N#define DMA_Channel_SSP1_TX     ((uint8_t)(4))
+N#define DMA_Channel_SSP1_RX     ((uint8_t)(5))
+N#define DMA_Channel_SSP2_TX     ((uint8_t)(6))
+N#define DMA_Channel_SSP2_RX     ((uint8_t)(7))
+N#define DMA_Channel_ADC1        ((uint8_t)(8))
+N#define DMA_Channel_ADC2        ((uint8_t)(9))
+N#define DMA_Channel_TIM1        ((uint8_t)(10))
+N#define DMA_Channel_TIM2        ((uint8_t)(11))
+N#define DMA_Channel_TIM3        ((uint8_t)(12))
+N#define DMA_Channel_SW1         ((uint8_t)(13))
+N#define DMA_Channel_SW2         ((uint8_t)(14))
+N#define DMA_Channel_SW3         ((uint8_t)(15))
+N#define DMA_Channel_SW4         ((uint8_t)(16))
+N#define DMA_Channel_SW5         ((uint8_t)(17))
+N#define DMA_Channel_SW6         ((uint8_t)(18))
+N#define DMA_Channel_SW7         ((uint8_t)(19))
+N#define DMA_Channel_SW8         ((uint8_t)(20))
+N#define DMA_Channel_SW9         ((uint8_t)(21))
+N#define DMA_Channel_SW10        ((uint8_t)(22))
+N#define DMA_Channel_SW11        ((uint8_t)(23))
+N#define DMA_Channel_SW12        ((uint8_t)(24))
+N#define DMA_Channel_SW13        ((uint8_t)(25))
+N#define DMA_Channel_SW14        ((uint8_t)(26))
+N#define DMA_Channel_SW15        ((uint8_t)(27))
+N#define DMA_Channel_SW16        ((uint8_t)(28))
+N#define DMA_Channel_SW17        ((uint8_t)(29))
+N#define DMA_Channel_SW18        ((uint8_t)(30))
+N#define DMA_Channel_SW19        ((uint8_t)(31))
+N#define IS_DMA_CHANNEL(CHANNEL) (CHANNEL <= (DMA_Channels_Number - 1))
+N
+N/** @} */ /* End of group DMA_valid_channels */
+N
+N/** @defgroup DMA_source_incremented_mode DMA source incremented mode
+N  * @{
+N  */
+N
+N#define DMA_SourceIncByte                   ((uint32_t)(0 << 26))
+N#define DMA_SourceIncHalfword               ((uint32_t)(1 << 26))
+N#define DMA_SourceIncWord                   ((uint32_t)(2 << 26))
+N#define DMA_SourceIncNo                     ((uint32_t)(3 << 26))
+N#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     || \
+N                                            ((STATE)  == DMA_SourceIncHalfword) || \
+N                                            ((STATE)  == DMA_SourceIncWord)     || \
+N                                            ((STATE)  == DMA_SourceIncNo))
+X#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     ||                                             ((STATE)  == DMA_SourceIncHalfword) ||                                             ((STATE)  == DMA_SourceIncWord)     ||                                             ((STATE)  == DMA_SourceIncNo))
+N
+N/** @} */ /* End of group DMA_source_incremented_mode */
+N
+N/** @defgroup DMA_dest_incremented_mode DMA dest incremented mode
+N  * @{
+N  */
+N
+N#define DMA_DestIncByte                 ((uint32_t)(0x0UL << 30))
+N#define DMA_DestIncHalfword             ((uint32_t)(0x1UL << 30))
+N#define DMA_DestIncWord                 ((uint32_t)(0x2UL << 30))
+N#define DMA_DestIncNo                   ((uint32_t)(0x3UL << 30))
+N#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       || \
+N                                        ((STATE)  == DMA_DestIncHalfword)   || \
+N                                        ((STATE)  == DMA_DestIncWord)       || \
+N                                        ((STATE)  == DMA_DestIncNo))
+X#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       ||                                         ((STATE)  == DMA_DestIncHalfword)   ||                                         ((STATE)  == DMA_DestIncWord)       ||                                         ((STATE)  == DMA_DestIncNo))
+N
+N/** @} */ /* End of group DMA_dest_incremented_mode */
+N
+N/** @defgroup DMA_memory_data_size DMA memory data size
+N  * @{
+N  */
+N
+N#define DMA_MemoryDataSize_Byte        ((uint32_t)(0x00 << 24))
+N#define DMA_MemoryDataSize_HalfWord    ((uint32_t)(0x11 << 24))
+N#define DMA_MemoryDataSize_Word        ((uint32_t)(0x22 << 24))
+N#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      || \
+N                                       ((SIZE) == DMA_MemoryDataSize_HalfWord)  || \
+N                                       ((SIZE) == DMA_MemoryDataSize_Word))
+X#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      ||                                        ((SIZE) == DMA_MemoryDataSize_HalfWord)  ||                                        ((SIZE) == DMA_MemoryDataSize_Word))
+N
+N/** @} */ /* End of group DMA_memory_data_size */
+N
+N/** @defgroup DMA_operating_mode DMA operating mode
+N  * @{
+N  */
+N
+N#define DMA_Mode_Stop                       ((uint32_t)0x0)
+N#define DMA_Mode_Basic                      ((uint32_t)0x1)
+N#define DMA_Mode_AutoRequest                ((uint32_t)0x2)
+N#define DMA_Mode_PingPong                   ((uint32_t)0x3)
+N#define DMA_Mode_MemScatterPri              ((uint32_t)0x4)
+N#define DMA_Mode_MemScatterAlt              ((uint32_t)0x5)
+N#define DMA_Mode_PerScatterPri              ((uint32_t)0x6)
+N#define DMA_Mode_PerScatterAlt              ((uint32_t)0x7)
+N#define DMA_Mode_PerScatterAltBurst         ((uint32_t)0xF)
+N
+N#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           || \
+N                                    ((MODE) == DMA_Mode_Basic)          || \
+N                                    ((MODE) == DMA_Mode_AutoRequest)    || \
+N                                    ((MODE) == DMA_Mode_PingPong)       || \
+N                                    ((MODE) == DMA_Mode_MemScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_MemScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAltBurst))
+X#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           ||                                     ((MODE) == DMA_Mode_Basic)          ||                                     ((MODE) == DMA_Mode_AutoRequest)    ||                                     ((MODE) == DMA_Mode_PingPong)       ||                                     ((MODE) == DMA_Mode_MemScatterPri)  ||                                     ((MODE) == DMA_Mode_MemScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterPri)  ||                                     ((MODE) == DMA_Mode_PerScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterAltBurst))
+N
+N/** @} */ /* End of group DMA_operating_mode */
+N
+N/** @defgroup DMA_cycle_size DMA cycle size
+N  * @{
+N  */
+N
+N#define IS_DMA_CYCLE_SIZE(SIZE)   ((SIZE >= 1) && (SIZE <= 1024))
+N
+N/** @} */ /* End of group DMA_cycle_size */
+N
+N/** @defgroup DMA_priority_level DMA priority level
+N  * @{
+N  */
+N
+N#define DMA_Priority_Default                ((uint8_t)0x00)
+N#define DMA_Priority_High                   ((uint8_t)0x01)
+N#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) || \
+N                                            ((PRIORITY)  == DMA_Priority_High))
+X#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) ||                                             ((PRIORITY)  == DMA_Priority_High))
+N
+N/** @} */ /* End of group DMA_priority_level */
+N
+N/** @defgroup DMA_burst_mode DMA burst mode
+N  * @{
+N  */
+N
+N#define DMA_BurstClear                      ((uint8_t)0x00)
+N#define DMA_BurstSet                        ((uint8_t)0x01)
+N#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) || \
+N                                            ((STATE)  == DMA_BurstSet))
+X#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) ||                                             ((STATE)  == DMA_BurstSet))
+N
+N/** @} */ /* End of group DMA_burst_mode */
+N
+N
+N/** @defgroup DMA_source_protection_control DMA source protection control
+N  * @{
+N  */
+N
+N#define DMA_SourceCacheable                 ((uint32_t)(0x01 << 20))
+N#define DMA_SourceBufferable                ((uint32_t)(0x01 << 19))
+N#define DMA_SourcePrivileged                ((uint32_t)(0x01 << 18))
+N
+N#define IS_DMA_SOURCE_PROT(STATE)           ((STATE & (~(0x7 << 18))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_dest_protection_control DMA dest protection control
+N  * @{
+N  */
+N
+N#define DMA_DestCacheable                   ((uint32_t)(0x01 << 23))
+N#define DMA_DestBufferable                  ((uint32_t)(0x01 << 22))
+N#define DMA_DestPrivileged                  ((uint32_t)(0x01 << 21))
+N
+N#define IS_DMA_DEST_PROT(STATE)             ((STATE & (~(0x7 << 21))) == 0)
+N
+N/** @} */ /* End of group DMA_dest_protection_control */
+N
+N/** @defgroup DMA_AHB_protection_control DMA AHB-Lite protection control
+N  * @{
+N  */
+N
+N#define DMA_AHB_Cacheable                 ((uint32_t)(0x01 << 7))
+N#define DMA_AHB_Bufferable                ((uint32_t)(0x01 << 6))
+N#define DMA_AHB_Privileged                ((uint32_t)(0x01 << 5))
+N
+N#define IS_DMA_AHB_PROT(STATE)            ((STATE & (~(0x7 << 5))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_number_continuous_transfers DMA number continuous transfers
+N  * @{
+N  */
+N
+N#define DMA_Transfers_1                     ((uint32_t)(0x00 << 14))
+N#define DMA_Transfers_2                     ((uint32_t)(0x01 << 14))
+N#define DMA_Transfers_4                     ((uint32_t)(0x02 << 14))
+N#define DMA_Transfers_8                     ((uint32_t)(0x03 << 14))
+N#define DMA_Transfers_16                    ((uint32_t)(0x04 << 14))
+N#define DMA_Transfers_32                    ((uint32_t)(0x05 << 14))
+N#define DMA_Transfers_64                    ((uint32_t)(0x06 << 14))
+N#define DMA_Transfers_128                   ((uint32_t)(0x07 << 14))
+N#define DMA_Transfers_256                   ((uint32_t)(0x08 << 14))
+N#define DMA_Transfers_512                   ((uint32_t)(0x09 << 14))
+N#define DMA_Transfers_1024                  ((uint32_t)(0x0A << 14))
+N
+N#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      || \
+N                                            ((NUMBER)  == DMA_Transfers_2)      || \
+N                                            ((NUMBER)  == DMA_Transfers_4)      || \
+N                                            ((NUMBER)  == DMA_Transfers_8)      || \
+N                                            ((NUMBER)  == DMA_Transfers_16)     || \
+N                                            ((NUMBER)  == DMA_Transfers_32)     || \
+N                                            ((NUMBER)  == DMA_Transfers_64)     || \
+N                                            ((NUMBER)  == DMA_Transfers_128)    || \
+N                                            ((NUMBER)  == DMA_Transfers_256)    || \
+N                                            ((NUMBER)  == DMA_Transfers_512)    || \
+N                                            ((NUMBER)  == DMA_Transfers_1024))
+X#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      ||                                             ((NUMBER)  == DMA_Transfers_2)      ||                                             ((NUMBER)  == DMA_Transfers_4)      ||                                             ((NUMBER)  == DMA_Transfers_8)      ||                                             ((NUMBER)  == DMA_Transfers_16)     ||                                             ((NUMBER)  == DMA_Transfers_32)     ||                                             ((NUMBER)  == DMA_Transfers_64)     ||                                             ((NUMBER)  == DMA_Transfers_128)    ||                                             ((NUMBER)  == DMA_Transfers_256)    ||                                             ((NUMBER)  == DMA_Transfers_512)    ||                                             ((NUMBER)  == DMA_Transfers_1024))
+N
+N/** @} */ /* End of group DMA_number_continuous_transfers */
+N
+N/** @defgroup DMA_data_structure_selection DMA data structure selection
+N  * @{
+N  */
+N
+N#define DMA_CTRL_DATA_PRIMARY   ((uint8_t)0x00)
+N
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N
+N  #define DMA_CTRL_DATA_ALTERNATE ((uint8_t)0x01)
+N
+N  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      || \
+N                                              ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+X  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      ||                                               ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+N#else
+S  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY))
+N#endif
+N
+N/** @} */ /* End of group DMA_data_structure_selection */
+N
+N/** @defgroup DMA_flags_definition DMA flags definition
+N  * @{
+N  */
+N
+N#define DMA_FLAG_DMA_ENA        ((uint8_t)0x01)
+N#define DMA_FLAG_DMA_ERR        ((uint8_t)0x02)
+N#define DMA_FLAG_CHNL_ENA       ((uint8_t)0x03)
+N#define DMA_FLAG_CHNL_MASK      ((uint8_t)0x04)
+N#define DMA_FLAG_CHNL_WAIT      ((uint8_t)0x05)
+N#define DMA_FLAG_CHNL_BURST     ((uint8_t)0x06)
+N#define DMA_FLAG_CHNL_ALT       ((uint8_t)0x07)
+N#define DMA_FLAG_CHNL_PRIORITY  ((uint8_t)0x08)
+N
+N#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      || \
+N                                 ((FLAG)  == DMA_FLAG_DMA_ERR)      || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ENA)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_MASK)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_WAIT)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_BURST)   || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ALT)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+X#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      ||                                  ((FLAG)  == DMA_FLAG_DMA_ERR)      ||                                  ((FLAG)  == DMA_FLAG_CHNL_ENA)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_MASK)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_WAIT)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_BURST)   ||                                  ((FLAG)  == DMA_FLAG_CHNL_ALT)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+N
+N/** @} */ /* End of group DMA_flags_definition */
+N
+N/** @} */ /* End of group DMA_Exported_Constants */
+N
+N/** @defgroup DMA_Exported_Macros DMA Exported Macros
+N  * @{
+N  */
+N
+N/** @} */ /* End of group DMA_Exported_Macros */
+N
+N/** @defgroup DMA_Exported_Functions DMA Exported Functions
+N  * @{
+N  */
+N
+Nvoid DMA_DeInit(void);
+Nvoid DMA_Init(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_Init( uint8_t DMA_Channel, DMA_Channel_SG_InitTypeDef *DMA_SG_InitStruct);
+Nvoid DMA_StructInit(DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_StructInit(DMA_Channel_SG_InitTypeDef* DMA_InitStruct);
+Nvoid DMA_CtrlInit(uint8_t DMA_Channel, uint8_t DMA_CtrlDataType,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_SG_CtrlInit(uint32_t DMA_Task, DMA_CtrlDataTypeDef *DMA_SG_TaskArray,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_Cmd(uint8_t DMA_Channel, FunctionalState NewState);
+Nvoid DMA_Request(uint8_t DMA_Channel);
+Nvoid DMA_ClearError(void);
+Nuint32_t DMA_GetCurrTransferCounter(uint8_t DMA_Channel, uint8_t DMA_CtrlData);
+NFlagStatus DMA_GetFlagStatus(uint8_t DMA_Channel, uint8_t DMA_Flag);
+N
+N/** @} */ /* End of group DMA_Exported_Functions */
+N
+N/** @} */ /* End of group DMA */
+N
+N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
+N
+N#endif /* __MDR32F9Qx_DMA_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_dma.h */
+N
+L 3 "src\systemfunc.h" 2
+N
 N// All ports
 N#define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
 N                       RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
@@ -10542,12 +11023,8 @@ N
 N
 N
 N
-N//#define TSTATE_START_EXTERNAL	0x01		// ADC FSM states
-N//#define TSTATE_GET_EXTERNAL		0x02
-N//#define	TSTATE_DONE_EXTERNAL	0x03
-N
-N
-N
+Nvoid my_DMA_GlobalInit(void);
+Nvoid my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
 N
 Nvoid Setup_CPU_Clock(void);
 Nvoid HW_NVIC_init(void);
@@ -10594,9 +11071,1768 @@ N
 N
 L 12 "src\service.c" 2
 N
+N#include "guiTop.h"
+L 1 "src\guiTop.h" 1
+N#include "FreeRTOS.h"
+N#include "task.h"
+N#include "queue.h"
+L 1 "..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h" 1
+N/*
+N    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+N    All rights reserved
+N
+N    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+N
+N    ***************************************************************************
+N     *                                                                       *
+N     *    FreeRTOS provides completely free yet professionally developed,    *
+N     *    robust, strictly quality controlled, supported, and cross          *
+N     *    platform software that has become a de facto standard.             *
+N     *                                                                       *
+N     *    Help yourself get started quickly and support the FreeRTOS         *
+N     *    project by purchasing a FreeRTOS tutorial book, reference          *
+N     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
+N     *                                                                       *
+N     *    Thank you!                                                         *
+N     *                                                                       *
+N    ***************************************************************************
+N
+N    This file is part of the FreeRTOS distribution.
+N
+N    FreeRTOS is free software; you can redistribute it and/or modify it under
+N    the terms of the GNU General Public License (version 2) as published by the
+N    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+N
+N    >>! NOTE: The modification to the GPL is included to allow you to distribute
+N    >>! a combined work that includes FreeRTOS without being obliged to provide
+N    >>! the source code for proprietary components outside of the FreeRTOS
+N    >>! kernel.
+N
+N    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+N    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+N    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+N    link: http://www.freertos.org/a00114.html
+N
+N    1 tab == 4 spaces!
+N
+N    ***************************************************************************
+N     *                                                                       *
+N     *    Having a problem?  Start by reading the FAQ "My application does   *
+N     *    not run, what could be wrong?"                                     *
+N     *                                                                       *
+N     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+N     *                                                                       *
+N    ***************************************************************************
+N
+N    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+N    license and Real Time Engineers Ltd. contact details.
+N
+N    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+N    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+N    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+N
+N    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+N    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+N    licenses offer ticketed support, indemnification and middleware.
+N
+N    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+N    engineered and independently SIL3 certified version for use in safety and
+N    mission critical applications that require provable dependability.
+N
+N    1 tab == 4 spaces!
+N*/
+N
+N
+N#ifndef QUEUE_H
+N#define QUEUE_H
+N
+N#ifndef INC_FREERTOS_H
+S	#error "include FreeRTOS.h" must appear in source files before "include queue.h"
+N#endif
+N
+N#ifdef __cplusplus
+Sextern "C" {
+N#endif
+N
+N
+N/**
+N * Type by which queues are referenced.  For example, a call to xQueueCreate()
+N * returns an xQueueHandle variable that can then be used as a parameter to
+N * xQueueSend(), xQueueReceive(), etc.
+N */
+Ntypedef void * xQueueHandle;
+N
+N/**
+N * Type by which queue sets are referenced.  For example, a call to
+N * xQueueCreateSet() returns an xQueueSet variable that can then be used as a
+N * parameter to xQueueSelectFromSet(), xQueueAddToSet(), etc.
+N */
+Ntypedef void * xQueueSetHandle;
+N
+N/**
+N * Queue sets can contain both queues and semaphores, so the
+N * xQueueSetMemberHandle is defined as a type to be used where a parameter or
+N * return value can be either an xQueueHandle or an xSemaphoreHandle.
+N */
+Ntypedef void * xQueueSetMemberHandle;
+N
+N/* For internal use only. */
+N#define	queueSEND_TO_BACK		( ( portBASE_TYPE ) 0 )
+N#define	queueSEND_TO_FRONT		( ( portBASE_TYPE ) 1 )
+N#define queueOVERWRITE			( ( portBASE_TYPE ) 2 )
+N
+N/* For internal use only.  These definitions *must* match those in queue.c. */
+N#define queueQUEUE_TYPE_BASE				( ( unsigned char ) 0U )
+N#define queueQUEUE_TYPE_SET					( ( unsigned char ) 0U )
+N#define queueQUEUE_TYPE_MUTEX 				( ( unsigned char ) 1U )
+N#define queueQUEUE_TYPE_COUNTING_SEMAPHORE	( ( unsigned char ) 2U )
+N#define queueQUEUE_TYPE_BINARY_SEMAPHORE	( ( unsigned char ) 3U )
+N#define queueQUEUE_TYPE_RECURSIVE_MUTEX		( ( unsigned char ) 4U )
+N
+N/**
+N * queue. h
+N * <pre>
+N xQueueHandle xQueueCreate(
+N							  unsigned portBASE_TYPE uxQueueLength,
+N							  unsigned portBASE_TYPE uxItemSize
+N						  );
+N * </pre>
+N *
+N * Creates a new queue instance.  This allocates the storage required by the
+N * new queue and returns a handle for the queue.
+N *
+N * @param uxQueueLength The maximum number of items that the queue can contain.
+N *
+N * @param uxItemSize The number of bytes each item in the queue will require.
+N * Items are queued by copy, not by reference, so this is the number of bytes
+N * that will be copied for each posted item.  Each item on the queue must be
+N * the same size.
+N *
+N * @return If the queue is successfully create then a handle to the newly
+N * created queue is returned.  If the queue cannot be created then 0 is
+N * returned.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N };
+N
+N void vATask( void *pvParameters )
+N {
+N xQueueHandle xQueue1, xQueue2;
+N
+N	// Create a queue capable of containing 10 unsigned long values.
+N	xQueue1 = xQueueCreate( 10, sizeof( unsigned long ) );
+N	if( xQueue1 == 0 )
+N	{
+N		// Queue was not created and must not be used.
+N	}
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue2 = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N	if( xQueue2 == 0 )
+N	{
+N		// Queue was not created and must not be used.
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueCreate xQueueCreate
+N * \ingroup QueueManagement
+N */
+N#define xQueueCreate( uxQueueLength, uxItemSize ) xQueueGenericCreate( uxQueueLength, uxItemSize, queueQUEUE_TYPE_BASE )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSendToToFront(
+N								   xQueueHandle	xQueue,
+N								   const void	*	pvItemToQueue,
+N								   portTickType	xTicksToWait
+N							   );
+N * </pre>
+N *
+N * This is a macro that calls xQueueGenericSend().
+N *
+N * Post an item to the front of a queue.  The item is queued by copy, not by
+N * reference.  This function must not be called from an interrupt service
+N * routine.  See xQueueSendFromISR () for an alternative which may be used
+N * in an ISR.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for space to become available on the queue, should it already
+N * be full.  The call will return immediately if this is set to 0 and the
+N * queue is full.  The time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N *
+N * @return pdTRUE if the item was successfully posted, otherwise errQUEUE_FULL.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N unsigned long ulVar = 10UL;
+N
+N void vATask( void *pvParameters )
+N {
+N xQueueHandle xQueue1, xQueue2;
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 unsigned long values.
+N	xQueue1 = xQueueCreate( 10, sizeof( unsigned long ) );
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue2 = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N
+N	// ...
+N
+N	if( xQueue1 != 0 )
+N	{
+N		// Send an unsigned long.  Wait for 10 ticks for space to become
+N		// available if necessary.
+N		if( xQueueSendToFront( xQueue1, ( void * ) &ulVar, ( portTickType ) 10 ) != pdPASS )
+N		{
+N			// Failed to post the message, even after 10 ticks.
+N		}
+N	}
+N
+N	if( xQueue2 != 0 )
+N	{
+N		// Send a pointer to a struct AMessage object.  Don't block if the
+N		// queue is already full.
+N		pxMessage = & xMessage;
+N		xQueueSendToFront( xQueue2, ( void * ) &pxMessage, ( portTickType ) 0 );
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueSend xQueueSend
+N * \ingroup QueueManagement
+N */
+N#define xQueueSendToFront( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_FRONT )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSendToBack(
+N								   xQueueHandle	xQueue,
+N								   const	void	*	pvItemToQueue,
+N								   portTickType	xTicksToWait
+N							   );
+N * </pre>
+N *
+N * This is a macro that calls xQueueGenericSend().
+N *
+N * Post an item to the back of a queue.  The item is queued by copy, not by
+N * reference.  This function must not be called from an interrupt service
+N * routine.  See xQueueSendFromISR () for an alternative which may be used
+N * in an ISR.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for space to become available on the queue, should it already
+N * be full.  The call will return immediately if this is set to 0 and the queue
+N * is full.  The  time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N *
+N * @return pdTRUE if the item was successfully posted, otherwise errQUEUE_FULL.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N unsigned long ulVar = 10UL;
+N
+N void vATask( void *pvParameters )
+N {
+N xQueueHandle xQueue1, xQueue2;
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 unsigned long values.
+N	xQueue1 = xQueueCreate( 10, sizeof( unsigned long ) );
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue2 = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N
+N	// ...
+N
+N	if( xQueue1 != 0 )
+N	{
+N		// Send an unsigned long.  Wait for 10 ticks for space to become
+N		// available if necessary.
+N		if( xQueueSendToBack( xQueue1, ( void * ) &ulVar, ( portTickType ) 10 ) != pdPASS )
+N		{
+N			// Failed to post the message, even after 10 ticks.
+N		}
+N	}
+N
+N	if( xQueue2 != 0 )
+N	{
+N		// Send a pointer to a struct AMessage object.  Don't block if the
+N		// queue is already full.
+N		pxMessage = & xMessage;
+N		xQueueSendToBack( xQueue2, ( void * ) &pxMessage, ( portTickType ) 0 );
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueSend xQueueSend
+N * \ingroup QueueManagement
+N */
+N#define xQueueSendToBack( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSend(
+N							  xQueueHandle xQueue,
+N							  const void * pvItemToQueue,
+N							  portTickType xTicksToWait
+N						 );
+N * </pre>
+N *
+N * This is a macro that calls xQueueGenericSend().  It is included for
+N * backward compatibility with versions of FreeRTOS.org that did not
+N * include the xQueueSendToFront() and xQueueSendToBack() macros.  It is
+N * equivalent to xQueueSendToBack().
+N *
+N * Post an item on a queue.  The item is queued by copy, not by reference.
+N * This function must not be called from an interrupt service routine.
+N * See xQueueSendFromISR () for an alternative which may be used in an ISR.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for space to become available on the queue, should it already
+N * be full.  The call will return immediately if this is set to 0 and the
+N * queue is full.  The time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N *
+N * @return pdTRUE if the item was successfully posted, otherwise errQUEUE_FULL.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N unsigned long ulVar = 10UL;
+N
+N void vATask( void *pvParameters )
+N {
+N xQueueHandle xQueue1, xQueue2;
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 unsigned long values.
+N	xQueue1 = xQueueCreate( 10, sizeof( unsigned long ) );
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue2 = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N
+N	// ...
+N
+N	if( xQueue1 != 0 )
+N	{
+N		// Send an unsigned long.  Wait for 10 ticks for space to become
+N		// available if necessary.
+N		if( xQueueSend( xQueue1, ( void * ) &ulVar, ( portTickType ) 10 ) != pdPASS )
+N		{
+N			// Failed to post the message, even after 10 ticks.
+N		}
+N	}
+N
+N	if( xQueue2 != 0 )
+N	{
+N		// Send a pointer to a struct AMessage object.  Don't block if the
+N		// queue is already full.
+N		pxMessage = & xMessage;
+N		xQueueSend( xQueue2, ( void * ) &pxMessage, ( portTickType ) 0 );
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueSend xQueueSend
+N * \ingroup QueueManagement
+N */
+N#define xQueueSend( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueOverwrite(
+N							  xQueueHandle xQueue,
+N							  const void * pvItemToQueue
+N						 );
+N * </pre>
+N *
+N * Only for use with queues that have a length of one - so the queue is either
+N * empty or full.
+N *
+N * Post an item on a queue.  If the queue is already full then overwrite the
+N * value held in the queue.  The item is queued by copy, not by reference.
+N *
+N * This function must not be called from an interrupt service routine.
+N * See xQueueOverwriteFromISR () for an alternative which may be used in an ISR.
+N *
+N * @param xQueue The handle of the queue to which the data is being sent.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @return xQueueOverwrite() is a macro that calls xQueueGenericSend(), and
+N * therefore has the same return values as xQueueSendToFront().  However, pdPASS
+N * is the only value that can be returned because xQueueOverwrite() will write
+N * to the queue even when the queue is already full.
+N *
+N * Example usage:
+N   <pre>
+N
+N void vFunction( void *pvParameters )
+N {
+N xQueueHandle xQueue;
+N unsigned long ulVarToSend, ulValReceived;
+N
+N	// Create a queue to hold one unsigned long value.  It is strongly
+N	// recommended *not* to use xQueueOverwrite() on queues that can
+N	// contain more than one value, and doing so will trigger an assertion
+N	// if configASSERT() is defined.
+N	xQueue = xQueueCreate( 1, sizeof( unsigned long ) );
+N
+N	// Write the value 10 to the queue using xQueueOverwrite().
+N	ulVarToSend = 10;
+N	xQueueOverwrite( xQueue, &ulVarToSend );
+N
+N	// Peeking the queue should now return 10, but leave the value 10 in
+N	// the queue.  A block time of zero is used as it is known that the
+N	// queue holds a value.
+N	ulValReceived = 0;
+N	xQueuePeek( xQueue, &ulValReceived, 0 );
+N
+N	if( ulValReceived != 10 )
+N	{
+N		// Error unless the item was removed by a different task.
+N	}
+N
+N	// The queue is still full.  Use xQueueOverwrite() to overwrite the
+N	// value held in the queue with 100.
+N	ulVarToSend = 100;
+N	xQueueOverwrite( xQueue, &ulVarToSend );
+N
+N	// This time read from the queue, leaving the queue empty once more.
+N	// A block time of 0 is used again.
+N	xQueueReceive( xQueue, &ulValReceived, 0 );
+N
+N	// The value read should be the last value written, even though the
+N	// queue was already full when the value was written.
+N	if( ulValReceived != 100 )
+N	{
+N		// Error!
+N	}
+N
+N	// ...
+N}
+N </pre>
+N * \defgroup xQueueOverwrite xQueueOverwrite
+N * \ingroup QueueManagement
+N */
+N#define xQueueOverwrite( xQueue, pvItemToQueue ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), 0, queueOVERWRITE )
+N
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueGenericSend(
+N									xQueueHandle xQueue,
+N									const void * pvItemToQueue,
+N									portTickType xTicksToWait
+N									portBASE_TYPE xCopyPosition
+N								);
+N * </pre>
+N *
+N * It is preferred that the macros xQueueSend(), xQueueSendToFront() and
+N * xQueueSendToBack() are used in place of calling this function directly.
+N *
+N * Post an item on a queue.  The item is queued by copy, not by reference.
+N * This function must not be called from an interrupt service routine.
+N * See xQueueSendFromISR () for an alternative which may be used in an ISR.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for space to become available on the queue, should it already
+N * be full.  The call will return immediately if this is set to 0 and the
+N * queue is full.  The time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N *
+N * @param xCopyPosition Can take the value queueSEND_TO_BACK to place the
+N * item at the back of the queue, or queueSEND_TO_FRONT to place the item
+N * at the front of the queue (for high priority messages).
+N *
+N * @return pdTRUE if the item was successfully posted, otherwise errQUEUE_FULL.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N unsigned long ulVar = 10UL;
+N
+N void vATask( void *pvParameters )
+N {
+N xQueueHandle xQueue1, xQueue2;
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 unsigned long values.
+N	xQueue1 = xQueueCreate( 10, sizeof( unsigned long ) );
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue2 = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N
+N	// ...
+N
+N	if( xQueue1 != 0 )
+N	{
+N		// Send an unsigned long.  Wait for 10 ticks for space to become
+N		// available if necessary.
+N		if( xQueueGenericSend( xQueue1, ( void * ) &ulVar, ( portTickType ) 10, queueSEND_TO_BACK ) != pdPASS )
+N		{
+N			// Failed to post the message, even after 10 ticks.
+N		}
+N	}
+N
+N	if( xQueue2 != 0 )
+N	{
+N		// Send a pointer to a struct AMessage object.  Don't block if the
+N		// queue is already full.
+N		pxMessage = & xMessage;
+N		xQueueGenericSend( xQueue2, ( void * ) &pxMessage, ( portTickType ) 0, queueSEND_TO_BACK );
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueSend xQueueSend
+N * \ingroup QueueManagement
+N */
+Nsigned portBASE_TYPE xQueueGenericSend( xQueueHandle xQueue, const void * const pvItemToQueue, portTickType xTicksToWait, portBASE_TYPE xCopyPosition ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueGenericSend( xQueueHandle xQueue, const void * const pvItemToQueue, portTickType xTicksToWait, long xCopyPosition ) ;
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueuePeek(
+N							 xQueueHandle xQueue,
+N							 void *pvBuffer,
+N							 portTickType xTicksToWait
+N						 );</pre>
+N *
+N * This is a macro that calls the xQueueGenericReceive() function.
+N *
+N * Receive an item from a queue without removing the item from the queue.
+N * The item is received by copy so a buffer of adequate size must be
+N * provided.  The number of bytes copied into the buffer was defined when
+N * the queue was created.
+N *
+N * Successfully received items remain on the queue so will be returned again
+N * by the next call, or a call to xQueueReceive().
+N *
+N * This macro must not be used in an interrupt service routine.  See
+N * xQueuePeekFromISR() for an alternative that can be called from an interrupt
+N * service routine.
+N *
+N * @param xQueue The handle to the queue from which the item is to be
+N * received.
+N *
+N * @param pvBuffer Pointer to the buffer into which the received item will
+N * be copied.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for an item to receive should the queue be empty at the time
+N * of the call.	 The time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N * xQueuePeek() will return immediately if xTicksToWait is 0 and the queue
+N * is empty.
+N *
+N * @return pdTRUE if an item was successfully received from the queue,
+N * otherwise pdFALSE.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N xQueueHandle xQueue;
+N
+N // Task to create a queue and post a value.
+N void vATask( void *pvParameters )
+N {
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N	if( xQueue == 0 )
+N	{
+N		// Failed to create the queue.
+N	}
+N
+N	// ...
+N
+N	// Send a pointer to a struct AMessage object.  Don't block if the
+N	// queue is already full.
+N	pxMessage = & xMessage;
+N	xQueueSend( xQueue, ( void * ) &pxMessage, ( portTickType ) 0 );
+N
+N	// ... Rest of task code.
+N }
+N
+N // Task to peek the data from the queue.
+N void vADifferentTask( void *pvParameters )
+N {
+N struct AMessage *pxRxedMessage;
+N
+N	if( xQueue != 0 )
+N	{
+N		// Peek a message on the created queue.  Block for 10 ticks if a
+N		// message is not immediately available.
+N		if( xQueuePeek( xQueue, &( pxRxedMessage ), ( portTickType ) 10 ) )
+N		{
+N			// pcRxedMessage now points to the struct AMessage variable posted
+N			// by vATask, but the item still remains on the queue.
+N		}
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueReceive xQueueReceive
+N * \ingroup QueueManagement
+N */
+N#define xQueuePeek( xQueue, pvBuffer, xTicksToWait ) xQueueGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdTRUE )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueuePeekFromISR(
+N									xQueueHandle xQueue,
+N									void *pvBuffer,
+N								);</pre>
+N *
+N * A version of xQueuePeek() that can be called from an interrupt service
+N * routine (ISR).
+N *
+N * Receive an item from a queue without removing the item from the queue.
+N * The item is received by copy so a buffer of adequate size must be
+N * provided.  The number of bytes copied into the buffer was defined when
+N * the queue was created.
+N *
+N * Successfully received items remain on the queue so will be returned again
+N * by the next call, or a call to xQueueReceive().
+N *
+N * @param xQueue The handle to the queue from which the item is to be
+N * received.
+N *
+N * @param pvBuffer Pointer to the buffer into which the received item will
+N * be copied.
+N *
+N * @return pdTRUE if an item was successfully received from the queue,
+N * otherwise pdFALSE.
+N *
+N * \defgroup xQueuePeekFromISR xQueuePeekFromISR
+N * \ingroup QueueManagement
+N */
+Nsigned portBASE_TYPE xQueuePeekFromISR( xQueueHandle xQueue, const void * const pvBuffer ) PRIVILEGED_FUNCTION;
+Xsigned long xQueuePeekFromISR( xQueueHandle xQueue, const void * const pvBuffer ) ;
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueReceive(
+N								 xQueueHandle xQueue,
+N								 void *pvBuffer,
+N								 portTickType xTicksToWait
+N							);</pre>
+N *
+N * This is a macro that calls the xQueueGenericReceive() function.
+N *
+N * Receive an item from a queue.  The item is received by copy so a buffer of
+N * adequate size must be provided.  The number of bytes copied into the buffer
+N * was defined when the queue was created.
+N *
+N * Successfully received items are removed from the queue.
+N *
+N * This function must not be used in an interrupt service routine.  See
+N * xQueueReceiveFromISR for an alternative that can.
+N *
+N * @param xQueue The handle to the queue from which the item is to be
+N * received.
+N *
+N * @param pvBuffer Pointer to the buffer into which the received item will
+N * be copied.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for an item to receive should the queue be empty at the time
+N * of the call.	 xQueueReceive() will return immediately if xTicksToWait
+N * is zero and the queue is empty.  The time is defined in tick periods so the
+N * constant portTICK_RATE_MS should be used to convert to real time if this is
+N * required.
+N *
+N * @return pdTRUE if an item was successfully received from the queue,
+N * otherwise pdFALSE.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N xQueueHandle xQueue;
+N
+N // Task to create a queue and post a value.
+N void vATask( void *pvParameters )
+N {
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N	if( xQueue == 0 )
+N	{
+N		// Failed to create the queue.
+N	}
+N
+N	// ...
+N
+N	// Send a pointer to a struct AMessage object.  Don't block if the
+N	// queue is already full.
+N	pxMessage = & xMessage;
+N	xQueueSend( xQueue, ( void * ) &pxMessage, ( portTickType ) 0 );
+N
+N	// ... Rest of task code.
+N }
+N
+N // Task to receive from the queue.
+N void vADifferentTask( void *pvParameters )
+N {
+N struct AMessage *pxRxedMessage;
+N
+N	if( xQueue != 0 )
+N	{
+N		// Receive a message on the created queue.  Block for 10 ticks if a
+N		// message is not immediately available.
+N		if( xQueueReceive( xQueue, &( pxRxedMessage ), ( portTickType ) 10 ) )
+N		{
+N			// pcRxedMessage now points to the struct AMessage variable posted
+N			// by vATask.
+N		}
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueReceive xQueueReceive
+N * \ingroup QueueManagement
+N */
+N#define xQueueReceive( xQueue, pvBuffer, xTicksToWait ) xQueueGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdFALSE )
+N
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueGenericReceive(
+N									   xQueueHandle	xQueue,
+N									   void	*pvBuffer,
+N									   portTickType	xTicksToWait
+N									   portBASE_TYPE	xJustPeek
+N									);</pre>
+N *
+N * It is preferred that the macro xQueueReceive() be used rather than calling
+N * this function directly.
+N *
+N * Receive an item from a queue.  The item is received by copy so a buffer of
+N * adequate size must be provided.  The number of bytes copied into the buffer
+N * was defined when the queue was created.
+N *
+N * This function must not be used in an interrupt service routine.  See
+N * xQueueReceiveFromISR for an alternative that can.
+N *
+N * @param xQueue The handle to the queue from which the item is to be
+N * received.
+N *
+N * @param pvBuffer Pointer to the buffer into which the received item will
+N * be copied.
+N *
+N * @param xTicksToWait The maximum amount of time the task should block
+N * waiting for an item to receive should the queue be empty at the time
+N * of the call.	 The time is defined in tick periods so the constant
+N * portTICK_RATE_MS should be used to convert to real time if this is required.
+N * xQueueGenericReceive() will return immediately if the queue is empty and
+N * xTicksToWait is 0.
+N *
+N * @param xJustPeek When set to true, the item received from the queue is not
+N * actually removed from the queue - meaning a subsequent call to
+N * xQueueReceive() will return the same item.  When set to false, the item
+N * being received from the queue is also removed from the queue.
+N *
+N * @return pdTRUE if an item was successfully received from the queue,
+N * otherwise pdFALSE.
+N *
+N * Example usage:
+N   <pre>
+N struct AMessage
+N {
+N	char ucMessageID;
+N	char ucData[ 20 ];
+N } xMessage;
+N
+N xQueueHandle xQueue;
+N
+N // Task to create a queue and post a value.
+N void vATask( void *pvParameters )
+N {
+N struct AMessage *pxMessage;
+N
+N	// Create a queue capable of containing 10 pointers to AMessage structures.
+N	// These should be passed by pointer as they contain a lot of data.
+N	xQueue = xQueueCreate( 10, sizeof( struct AMessage * ) );
+N	if( xQueue == 0 )
+N	{
+N		// Failed to create the queue.
+N	}
+N
+N	// ...
+N
+N	// Send a pointer to a struct AMessage object.  Don't block if the
+N	// queue is already full.
+N	pxMessage = & xMessage;
+N	xQueueSend( xQueue, ( void * ) &pxMessage, ( portTickType ) 0 );
+N
+N	// ... Rest of task code.
+N }
+N
+N // Task to receive from the queue.
+N void vADifferentTask( void *pvParameters )
+N {
+N struct AMessage *pxRxedMessage;
+N
+N	if( xQueue != 0 )
+N	{
+N		// Receive a message on the created queue.  Block for 10 ticks if a
+N		// message is not immediately available.
+N		if( xQueueGenericReceive( xQueue, &( pxRxedMessage ), ( portTickType ) 10 ) )
+N		{
+N			// pcRxedMessage now points to the struct AMessage variable posted
+N			// by vATask.
+N		}
+N	}
+N
+N	// ... Rest of task code.
+N }
+N </pre>
+N * \defgroup xQueueReceive xQueueReceive
+N * \ingroup QueueManagement
+N */
+Nsigned portBASE_TYPE xQueueGenericReceive( xQueueHandle xQueue, const void * const pvBuffer, portTickType xTicksToWait, portBASE_TYPE xJustPeek ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueGenericReceive( xQueueHandle xQueue, const void * const pvBuffer, portTickType xTicksToWait, long xJustPeek ) ;
+N
+N/**
+N * queue. h
+N * <pre>unsigned portBASE_TYPE uxQueueMessagesWaiting( const xQueueHandle xQueue );</pre>
+N *
+N * Return the number of messages stored in a queue.
+N *
+N * @param xQueue A handle to the queue being queried.
+N *
+N * @return The number of messages available in the queue.
+N *
+N * \defgroup uxQueueMessagesWaiting uxQueueMessagesWaiting
+N * \ingroup QueueManagement
+N */
+Nunsigned portBASE_TYPE uxQueueMessagesWaiting( const xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xunsigned long uxQueueMessagesWaiting( const xQueueHandle xQueue ) ;
+N
+N/**
+N * queue. h
+N * <pre>unsigned portBASE_TYPE uxQueueSpacesAvailable( const xQueueHandle xQueue );</pre>
+N *
+N * Return the number of free spaces available in a queue.  This is equal to the
+N * number of items that can be sent to the queue before the queue becomes full
+N * if no items are removed.
+N *
+N * @param xQueue A handle to the queue being queried.
+N *
+N * @return The number of spaces available in the queue.
+N *
+N * \defgroup uxQueueMessagesWaiting uxQueueMessagesWaiting
+N * \ingroup QueueManagement
+N */
+Nunsigned portBASE_TYPE uxQueueSpacesAvailable( const xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xunsigned long uxQueueSpacesAvailable( const xQueueHandle xQueue ) ;
+N
+N/**
+N * queue. h
+N * <pre>void vQueueDelete( xQueueHandle xQueue );</pre>
+N *
+N * Delete a queue - freeing all the memory allocated for storing of items
+N * placed on the queue.
+N *
+N * @param xQueue A handle to the queue to be deleted.
+N *
+N * \defgroup vQueueDelete vQueueDelete
+N * \ingroup QueueManagement
+N */
+Nvoid vQueueDelete( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xvoid vQueueDelete( xQueueHandle xQueue ) ;
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSendToFrontFromISR(
+N										 xQueueHandle xQueue,
+N										 const void *pvItemToQueue,
+N										 portBASE_TYPE *pxHigherPriorityTaskWoken
+N									  );
+N </pre>
+N *
+N * This is a macro that calls xQueueGenericSendFromISR().
+N *
+N * Post an item to the front of a queue.  It is safe to use this macro from
+N * within an interrupt service routine.
+N *
+N * Items are queued by copy not reference so it is preferable to only
+N * queue small items, especially when called from an ISR.  In most cases
+N * it would be preferable to store a pointer to the item being queued.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param pxHigherPriorityTaskWoken xQueueSendToFrontFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if sending to the queue caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xQueueSendToFromFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return pdTRUE if the data was successfully sent to the queue, otherwise
+N * errQUEUE_FULL.
+N *
+N * Example usage for buffered IO (where the ISR can obtain more than one value
+N * per call):
+N   <pre>
+N void vBufferISR( void )
+N {
+N char cIn;
+N portBASE_TYPE xHigherPrioritTaskWoken;
+N
+N	// We have not woken a task at the start of the ISR.
+N	xHigherPriorityTaskWoken = pdFALSE;
+N
+N	// Loop until the buffer is empty.
+N	do
+N	{
+N		// Obtain a byte from the buffer.
+N		cIn = portINPUT_BYTE( RX_REGISTER_ADDRESS );
+N
+N		// Post the byte.
+N		xQueueSendToFrontFromISR( xRxQueue, &cIn, &xHigherPriorityTaskWoken );
+N
+N	} while( portINPUT_BYTE( BUFFER_COUNT ) );
+N
+N	// Now the buffer is empty we can switch context if necessary.
+N	if( xHigherPriorityTaskWoken )
+N	{
+N		taskYIELD ();
+N	}
+N }
+N </pre>
+N *
+N * \defgroup xQueueSendFromISR xQueueSendFromISR
+N * \ingroup QueueManagement
+N */
+N#define xQueueSendToFrontFromISR( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken ) xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueSEND_TO_FRONT )
+N
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSendToBackFromISR(
+N										 xQueueHandle xQueue,
+N										 const void *pvItemToQueue,
+N										 portBASE_TYPE *pxHigherPriorityTaskWoken
+N									  );
+N </pre>
+N *
+N * This is a macro that calls xQueueGenericSendFromISR().
+N *
+N * Post an item to the back of a queue.  It is safe to use this macro from
+N * within an interrupt service routine.
+N *
+N * Items are queued by copy not reference so it is preferable to only
+N * queue small items, especially when called from an ISR.  In most cases
+N * it would be preferable to store a pointer to the item being queued.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param pxHigherPriorityTaskWoken xQueueSendToBackFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if sending to the queue caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xQueueSendToBackFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return pdTRUE if the data was successfully sent to the queue, otherwise
+N * errQUEUE_FULL.
+N *
+N * Example usage for buffered IO (where the ISR can obtain more than one value
+N * per call):
+N   <pre>
+N void vBufferISR( void )
+N {
+N char cIn;
+N portBASE_TYPE xHigherPriorityTaskWoken;
+N
+N	// We have not woken a task at the start of the ISR.
+N	xHigherPriorityTaskWoken = pdFALSE;
+N
+N	// Loop until the buffer is empty.
+N	do
+N	{
+N		// Obtain a byte from the buffer.
+N		cIn = portINPUT_BYTE( RX_REGISTER_ADDRESS );
+N
+N		// Post the byte.
+N		xQueueSendToBackFromISR( xRxQueue, &cIn, &xHigherPriorityTaskWoken );
+N
+N	} while( portINPUT_BYTE( BUFFER_COUNT ) );
+N
+N	// Now the buffer is empty we can switch context if necessary.
+N	if( xHigherPriorityTaskWoken )
+N	{
+N		taskYIELD ();
+N	}
+N }
+N </pre>
+N *
+N * \defgroup xQueueSendFromISR xQueueSendFromISR
+N * \ingroup QueueManagement
+N */
+N#define xQueueSendToBackFromISR( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken ) xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueSEND_TO_BACK )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueOverwriteFromISR(
+N							  xQueueHandle xQueue,
+N							  const void * pvItemToQueue,
+N							  portBASE_TYPE *pxHigherPriorityTaskWoken
+N						 );
+N * </pre>
+N *
+N * A version of xQueueOverwrite() that can be used in an interrupt service
+N * routine (ISR).
+N *
+N * Only for use with queues that can hold a single item - so the queue is either
+N * empty or full.
+N *
+N * Post an item on a queue.  If the queue is already full then overwrite the
+N * value held in the queue.  The item is queued by copy, not by reference.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param pxHigherPriorityTaskWoken xQueueOverwriteFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if sending to the queue caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xQueueOverwriteFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return xQueueOverwriteFromISR() is a macro that calls
+N * xQueueGenericSendFromISR(), and therefore has the same return values as
+N * xQueueSendToFrontFromISR().  However, pdPASS is the only value that can be
+N * returned because xQueueOverwriteFromISR() will write to the queue even when
+N * the queue is already full.
+N *
+N * Example usage:
+N   <pre>
+N
+N xQueueHandle xQueue;
+N 
+N void vFunction( void *pvParameters )
+N {
+N 	// Create a queue to hold one unsigned long value.  It is strongly
+N	// recommended *not* to use xQueueOverwriteFromISR() on queues that can
+N	// contain more than one value, and doing so will trigger an assertion
+N	// if configASSERT() is defined.
+N	xQueue = xQueueCreate( 1, sizeof( unsigned long ) );
+N}
+N
+Nvoid vAnInterruptHandler( void )
+N{
+N// xHigherPriorityTaskWoken must be set to pdFALSE before it is used.
+NportBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+Nunsigned long ulVarToSend, ulValReceived;
+N
+N	// Write the value 10 to the queue using xQueueOverwriteFromISR().
+N	ulVarToSend = 10;
+N	xQueueOverwriteFromISR( xQueue, &ulVarToSend, &xHigherPriorityTaskWoken );
+N
+N	// The queue is full, but calling xQueueOverwriteFromISR() again will still
+N	// pass because the value held in the queue will be overwritten with the
+N	// new value.
+N	ulVarToSend = 100;
+N	xQueueOverwriteFromISR( xQueue, &ulVarToSend, &xHigherPriorityTaskWoken );
+N
+N	// Reading from the queue will now return 100.
+N
+N	// ...
+N	
+N	if( xHigherPrioritytaskWoken == pdTRUE )
+N	{
+N		// Writing to the queue caused a task to unblock and the unblocked task
+N		// has a priority higher than or equal to the priority of the currently
+N		// executing task (the task this interrupt interrupted).  Perform a context
+N		// switch so this interrupt returns directly to the unblocked task.
+N		portYIELD_FROM_ISR(); // or portEND_SWITCHING_ISR() depending on the port.
+N	}
+N}
+N </pre>
+N * \defgroup xQueueOverwriteFromISR xQueueOverwriteFromISR
+N * \ingroup QueueManagement
+N */
+N#define xQueueOverwriteFromISR( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken ) xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueOVERWRITE )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueSendFromISR(
+N									 xQueueHandle xQueue,
+N									 const void *pvItemToQueue,
+N									 portBASE_TYPE *pxHigherPriorityTaskWoken
+N								);
+N </pre>
+N *
+N * This is a macro that calls xQueueGenericSendFromISR().  It is included
+N * for backward compatibility with versions of FreeRTOS.org that did not
+N * include the xQueueSendToBackFromISR() and xQueueSendToFrontFromISR()
+N * macros.
+N *
+N * Post an item to the back of a queue.  It is safe to use this function from
+N * within an interrupt service routine.
+N *
+N * Items are queued by copy not reference so it is preferable to only
+N * queue small items, especially when called from an ISR.  In most cases
+N * it would be preferable to store a pointer to the item being queued.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param pxHigherPriorityTaskWoken xQueueSendFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if sending to the queue caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xQueueSendFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @return pdTRUE if the data was successfully sent to the queue, otherwise
+N * errQUEUE_FULL.
+N *
+N * Example usage for buffered IO (where the ISR can obtain more than one value
+N * per call):
+N   <pre>
+N void vBufferISR( void )
+N {
+N char cIn;
+N portBASE_TYPE xHigherPriorityTaskWoken;
+N
+N	// We have not woken a task at the start of the ISR.
+N	xHigherPriorityTaskWoken = pdFALSE;
+N
+N	// Loop until the buffer is empty.
+N	do
+N	{
+N		// Obtain a byte from the buffer.
+N		cIn = portINPUT_BYTE( RX_REGISTER_ADDRESS );
+N
+N		// Post the byte.
+N		xQueueSendFromISR( xRxQueue, &cIn, &xHigherPriorityTaskWoken );
+N
+N	} while( portINPUT_BYTE( BUFFER_COUNT ) );
+N
+N	// Now the buffer is empty we can switch context if necessary.
+N	if( xHigherPriorityTaskWoken )
+N	{
+N		// Actual macro used here is port specific.
+N		taskYIELD_FROM_ISR ();
+N	}
+N }
+N </pre>
+N *
+N * \defgroup xQueueSendFromISR xQueueSendFromISR
+N * \ingroup QueueManagement
+N */
+N#define xQueueSendFromISR( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken ) xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueSEND_TO_BACK )
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueGenericSendFromISR(
+N										   xQueueHandle		xQueue,
+N										   const	void	*pvItemToQueue,
+N										   portBASE_TYPE	*pxHigherPriorityTaskWoken,
+N										   portBASE_TYPE	xCopyPosition
+N									   );
+N </pre>
+N *
+N * It is preferred that the macros xQueueSendFromISR(),
+N * xQueueSendToFrontFromISR() and xQueueSendToBackFromISR() be used in place
+N * of calling this function directly.
+N *
+N * Post an item on a queue.  It is safe to use this function from within an
+N * interrupt service routine.
+N *
+N * Items are queued by copy not reference so it is preferable to only
+N * queue small items, especially when called from an ISR.  In most cases
+N * it would be preferable to store a pointer to the item being queued.
+N *
+N * @param xQueue The handle to the queue on which the item is to be posted.
+N *
+N * @param pvItemToQueue A pointer to the item that is to be placed on the
+N * queue.  The size of the items the queue will hold was defined when the
+N * queue was created, so this many bytes will be copied from pvItemToQueue
+N * into the queue storage area.
+N *
+N * @param pxHigherPriorityTaskWoken xQueueGenericSendFromISR() will set
+N * *pxHigherPriorityTaskWoken to pdTRUE if sending to the queue caused a task
+N * to unblock, and the unblocked task has a priority higher than the currently
+N * running task.  If xQueueGenericSendFromISR() sets this value to pdTRUE then
+N * a context switch should be requested before the interrupt is exited.
+N *
+N * @param xCopyPosition Can take the value queueSEND_TO_BACK to place the
+N * item at the back of the queue, or queueSEND_TO_FRONT to place the item
+N * at the front of the queue (for high priority messages).
+N *
+N * @return pdTRUE if the data was successfully sent to the queue, otherwise
+N * errQUEUE_FULL.
+N *
+N * Example usage for buffered IO (where the ISR can obtain more than one value
+N * per call):
+N   <pre>
+N void vBufferISR( void )
+N {
+N char cIn;
+N portBASE_TYPE xHigherPriorityTaskWokenByPost;
+N
+N	// We have not woken a task at the start of the ISR.
+N	xHigherPriorityTaskWokenByPost = pdFALSE;
+N
+N	// Loop until the buffer is empty.
+N	do
+N	{
+N		// Obtain a byte from the buffer.
+N		cIn = portINPUT_BYTE( RX_REGISTER_ADDRESS );
+N
+N		// Post each byte.
+N		xQueueGenericSendFromISR( xRxQueue, &cIn, &xHigherPriorityTaskWokenByPost, queueSEND_TO_BACK );
+N
+N	} while( portINPUT_BYTE( BUFFER_COUNT ) );
+N
+N	// Now the buffer is empty we can switch context if necessary.  Note that the
+N	// name of the yield function required is port specific.
+N	if( xHigherPriorityTaskWokenByPost )
+N	{
+N		taskYIELD_YIELD_FROM_ISR();
+N	}
+N }
+N </pre>
+N *
+N * \defgroup xQueueSendFromISR xQueueSendFromISR
+N * \ingroup QueueManagement
+N */
+Nsigned portBASE_TYPE xQueueGenericSendFromISR( xQueueHandle xQueue, const void * const pvItemToQueue, signed portBASE_TYPE *pxHigherPriorityTaskWoken, portBASE_TYPE xCopyPosition ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueGenericSendFromISR( xQueueHandle xQueue, const void * const pvItemToQueue, signed long *pxHigherPriorityTaskWoken, long xCopyPosition ) ;
+N
+N/**
+N * queue. h
+N * <pre>
+N portBASE_TYPE xQueueReceiveFromISR(
+N									   xQueueHandle	xQueue,
+N									   void	*pvBuffer,
+N									   portBASE_TYPE *pxTaskWoken
+N								   );
+N * </pre>
+N *
+N * Receive an item from a queue.  It is safe to use this function from within an
+N * interrupt service routine.
+N *
+N * @param xQueue The handle to the queue from which the item is to be
+N * received.
+N *
+N * @param pvBuffer Pointer to the buffer into which the received item will
+N * be copied.
+N *
+N * @param pxTaskWoken A task may be blocked waiting for space to become
+N * available on the queue.  If xQueueReceiveFromISR causes such a task to
+N * unblock *pxTaskWoken will get set to pdTRUE, otherwise *pxTaskWoken will
+N * remain unchanged.
+N *
+N * @return pdTRUE if an item was successfully received from the queue,
+N * otherwise pdFALSE.
+N *
+N * Example usage:
+N   <pre>
+N
+N xQueueHandle xQueue;
+N
+N // Function to create a queue and post some values.
+N void vAFunction( void *pvParameters )
+N {
+N char cValueToPost;
+N const portTickType xBlockTime = ( portTickType )0xff;
+N
+N	// Create a queue capable of containing 10 characters.
+N	xQueue = xQueueCreate( 10, sizeof( char ) );
+N	if( xQueue == 0 )
+N	{
+N		// Failed to create the queue.
+N	}
+N
+N	// ...
+N
+N	// Post some characters that will be used within an ISR.  If the queue
+N	// is full then this task will block for xBlockTime ticks.
+N	cValueToPost = 'a';
+N	xQueueSend( xQueue, ( void * ) &cValueToPost, xBlockTime );
+N	cValueToPost = 'b';
+N	xQueueSend( xQueue, ( void * ) &cValueToPost, xBlockTime );
+N
+N	// ... keep posting characters ... this task may block when the queue
+N	// becomes full.
+N
+N	cValueToPost = 'c';
+N	xQueueSend( xQueue, ( void * ) &cValueToPost, xBlockTime );
+N }
+N
+N // ISR that outputs all the characters received on the queue.
+N void vISR_Routine( void )
+N {
+N portBASE_TYPE xTaskWokenByReceive = pdFALSE;
+N char cRxedChar;
+N
+N	while( xQueueReceiveFromISR( xQueue, ( void * ) &cRxedChar, &xTaskWokenByReceive) )
+N	{
+N		// A character was received.  Output the character now.
+N		vOutputCharacter( cRxedChar );
+N
+N		// If removing the character from the queue woke the task that was
+N		// posting onto the queue cTaskWokenByReceive will have been set to
+N		// pdTRUE.  No matter how many times this loop iterates only one
+N		// task will be woken.
+N	}
+N
+N	if( cTaskWokenByPost != ( char ) pdFALSE;
+N	{
+N		taskYIELD ();
+N	}
+N }
+N </pre>
+N * \defgroup xQueueReceiveFromISR xQueueReceiveFromISR
+N * \ingroup QueueManagement
+N */
+Nsigned portBASE_TYPE xQueueReceiveFromISR( xQueueHandle xQueue, const void * const pvBuffer, signed portBASE_TYPE *pxHigherPriorityTaskWoken ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueReceiveFromISR( xQueueHandle xQueue, const void * const pvBuffer, signed long *pxHigherPriorityTaskWoken ) ;
+N
+N/*
+N * Utilities to query queues that are safe to use from an ISR.  These utilities
+N * should be used only from witin an ISR, or within a critical section.
+N */
+Nsigned portBASE_TYPE xQueueIsQueueEmptyFromISR( const xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueIsQueueEmptyFromISR( const xQueueHandle xQueue ) ;
+Nsigned portBASE_TYPE xQueueIsQueueFullFromISR( const xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xsigned long xQueueIsQueueFullFromISR( const xQueueHandle xQueue ) ;
+Nunsigned portBASE_TYPE uxQueueMessagesWaitingFromISR( const xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xunsigned long uxQueueMessagesWaitingFromISR( const xQueueHandle xQueue ) ;
+N
+N
+N/*
+N * xQueueAltGenericSend() is an alternative version of xQueueGenericSend().
+N * Likewise xQueueAltGenericReceive() is an alternative version of
+N * xQueueGenericReceive().
+N *
+N * The source code that implements the alternative (Alt) API is much
+N * simpler	because it executes everything from within a critical section.
+N * This is	the approach taken by many other RTOSes, but FreeRTOS.org has the
+N * preferred fully featured API too.  The fully featured API has more
+N * complex	code that takes longer to execute, but makes much less use of
+N * critical sections.  Therefore the alternative API sacrifices interrupt
+N * responsiveness to gain execution speed, whereas the fully featured API
+N * sacrifices execution speed to ensure better interrupt responsiveness.
+N */
+Nsigned portBASE_TYPE xQueueAltGenericSend( xQueueHandle xQueue, const void * const pvItemToQueue, portTickType xTicksToWait, portBASE_TYPE xCopyPosition );
+Xsigned long xQueueAltGenericSend( xQueueHandle xQueue, const void * const pvItemToQueue, portTickType xTicksToWait, long xCopyPosition );
+Nsigned portBASE_TYPE xQueueAltGenericReceive( xQueueHandle xQueue, void * const pvBuffer, portTickType xTicksToWait, portBASE_TYPE xJustPeeking );
+Xsigned long xQueueAltGenericReceive( xQueueHandle xQueue, void * const pvBuffer, portTickType xTicksToWait, long xJustPeeking );
+N#define xQueueAltSendToFront( xQueue, pvItemToQueue, xTicksToWait ) xQueueAltGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_FRONT )
+N#define xQueueAltSendToBack( xQueue, pvItemToQueue, xTicksToWait ) xQueueAltGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+N#define xQueueAltReceive( xQueue, pvBuffer, xTicksToWait ) xQueueAltGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdFALSE )
+N#define xQueueAltPeek( xQueue, pvBuffer, xTicksToWait ) xQueueAltGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdTRUE )
+N
+N/*
+N * The functions defined above are for passing data to and from tasks.  The
+N * functions below are the equivalents for passing data to and from
+N * co-routines.
+N *
+N * These functions are called from the co-routine macro implementation and
+N * should not be called directly from application code.  Instead use the macro
+N * wrappers defined within croutine.h.
+N */
+Nsigned portBASE_TYPE xQueueCRSendFromISR( xQueueHandle xQueue, const void *pvItemToQueue, signed portBASE_TYPE xCoRoutinePreviouslyWoken );
+Xsigned long xQueueCRSendFromISR( xQueueHandle xQueue, const void *pvItemToQueue, signed long xCoRoutinePreviouslyWoken );
+Nsigned portBASE_TYPE xQueueCRReceiveFromISR( xQueueHandle xQueue, void *pvBuffer, signed portBASE_TYPE *pxTaskWoken );
+Xsigned long xQueueCRReceiveFromISR( xQueueHandle xQueue, void *pvBuffer, signed long *pxTaskWoken );
+Nsigned portBASE_TYPE xQueueCRSend( xQueueHandle xQueue, const void *pvItemToQueue, portTickType xTicksToWait );
+Xsigned long xQueueCRSend( xQueueHandle xQueue, const void *pvItemToQueue, portTickType xTicksToWait );
+Nsigned portBASE_TYPE xQueueCRReceive( xQueueHandle xQueue, void *pvBuffer, portTickType xTicksToWait );
+Xsigned long xQueueCRReceive( xQueueHandle xQueue, void *pvBuffer, portTickType xTicksToWait );
+N
+N/*
+N * For internal use only.  Use xSemaphoreCreateMutex(),
+N * xSemaphoreCreateCounting() or xSemaphoreGetMutexHolder() instead of calling
+N * these functions directly.
+N */
+NxQueueHandle xQueueCreateMutex( unsigned char ucQueueType ) PRIVILEGED_FUNCTION;
+XxQueueHandle xQueueCreateMutex( unsigned char ucQueueType ) ;
+NxQueueHandle xQueueCreateCountingSemaphore( unsigned portBASE_TYPE uxCountValue, unsigned portBASE_TYPE uxInitialCount ) PRIVILEGED_FUNCTION;
+XxQueueHandle xQueueCreateCountingSemaphore( unsigned long uxCountValue, unsigned long uxInitialCount ) ;
+Nvoid* xQueueGetMutexHolder( xQueueHandle xSemaphore ) PRIVILEGED_FUNCTION;
+Xvoid* xQueueGetMutexHolder( xQueueHandle xSemaphore ) ;
+N
+N/*
+N * For internal use only.  Use xSemaphoreTakeMutexRecursive() or
+N * xSemaphoreGiveMutexRecursive() instead of calling these functions directly.
+N */
+NportBASE_TYPE xQueueTakeMutexRecursive( xQueueHandle xMutex, portTickType xBlockTime ) PRIVILEGED_FUNCTION;
+Xlong xQueueTakeMutexRecursive( xQueueHandle xMutex, portTickType xBlockTime ) ;
+NportBASE_TYPE xQueueGiveMutexRecursive( xQueueHandle pxMutex ) PRIVILEGED_FUNCTION;
+Xlong xQueueGiveMutexRecursive( xQueueHandle pxMutex ) ;
+N
+N/*
+N * Reset a queue back to its original empty state.  pdPASS is returned if the
+N * queue is successfully reset.  pdFAIL is returned if the queue could not be
+N * reset because there are tasks blocked on the queue waiting to either
+N * receive from the queue or send to the queue.
+N */
+N#define xQueueReset( xQueue ) xQueueGenericReset( xQueue, pdFALSE )
+N
+N/*
+N * The registry is provided as a means for kernel aware debuggers to
+N * locate queues, semaphores and mutexes.  Call vQueueAddToRegistry() add
+N * a queue, semaphore or mutex handle to the registry if you want the handle
+N * to be available to a kernel aware debugger.  If you are not using a kernel
+N * aware debugger then this function can be ignored.
+N *
+N * configQUEUE_REGISTRY_SIZE defines the maximum number of handles the
+N * registry can hold.  configQUEUE_REGISTRY_SIZE must be greater than 0
+N * within FreeRTOSConfig.h for the registry to be available.  Its value
+N * does not effect the number of queues, semaphores and mutexes that can be
+N * created - just the number that the registry can hold.
+N *
+N * @param xQueue The handle of the queue being added to the registry.  This
+N * is the handle returned by a call to xQueueCreate().  Semaphore and mutex
+N * handles can also be passed in here.
+N *
+N * @param pcName The name to be associated with the handle.  This is the
+N * name that the kernel aware debugger will display.
+N */
+N#if configQUEUE_REGISTRY_SIZE > 0
+X#if 0U > 0
+S	void vQueueAddToRegistry( xQueueHandle xQueue, signed char *pcName ) PRIVILEGED_FUNCTION;
+N#endif
+N
+N/*
+N * The registry is provided as a means for kernel aware debuggers to
+N * locate queues, semaphores and mutexes.  Call vQueueAddToRegistry() add
+N * a queue, semaphore or mutex handle to the registry if you want the handle
+N * to be available to a kernel aware debugger, and vQueueUnregisterQueue() to
+N * remove the queue, semaphore or mutex from the register.  If you are not using
+N * a kernel aware debugger then this function can be ignored.
+N *
+N * @param xQueue The handle of the queue being removed from the registry.
+N */
+N#if configQUEUE_REGISTRY_SIZE > 0
+X#if 0U > 0
+S	void vQueueUnregisterQueue( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+N#endif
+N
+N/*
+N * Generic version of the queue creation function, which is in turn called by
+N * any queue, semaphore or mutex creation function or macro.
+N */
+NxQueueHandle xQueueGenericCreate( unsigned portBASE_TYPE uxQueueLength, unsigned portBASE_TYPE uxItemSize, unsigned char ucQueueType ) PRIVILEGED_FUNCTION;
+XxQueueHandle xQueueGenericCreate( unsigned long uxQueueLength, unsigned long uxItemSize, unsigned char ucQueueType ) ;
+N
+N/*
+N * Queue sets provide a mechanism to allow a task to block (pend) on a read
+N * operation from multiple queues or semaphores simultaneously.
+N *
+N * See FreeRTOS/Source/Demo/Common/Minimal/QueueSet.c for an example using this
+N * function.
+N *
+N * A queue set must be explicitly created using a call to xQueueCreateSet()
+N * before it can be used.  Once created, standard FreeRTOS queues and semaphores
+N * can be added to the set using calls to xQueueAddToSet().
+N * xQueueSelectFromSet() is then used to determine which, if any, of the queues
+N * or semaphores contained in the set is in a state where a queue read or
+N * semaphore take operation would be successful.
+N *
+N * Note 1:  See the documentation on http://wwwFreeRTOS.org/RTOS-queue-sets.html
+N * for reasons why queue sets are very rarely needed in practice as there are
+N * simpler methods of blocking on multiple objects.
+N *
+N * Note 2:  Blocking on a queue set that contains a mutex will not cause the
+N * mutex holder to inherit the priority of the blocked task.
+N *
+N * Note 3:  An additional 4 bytes of RAM is required for each space in a every
+N * queue added to a queue set.  Therefore counting semaphores that have a high
+N * maximum count value should not be added to a queue set.
+N *
+N * Note 4:  A receive (in the case of a queue) or take (in the case of a
+N * semaphore) operation must not be performed on a member of a queue set unless
+N * a call to xQueueSelectFromSet() has first returned a handle to that set member.
+N *
+N * @param uxEventQueueLength Queue sets store events that occur on
+N * the queues and semaphores contained in the set.  uxEventQueueLength specifies
+N * the maximum number of events that can be queued at once.  To be absolutely
+N * certain that events are not lost uxEventQueueLength should be set to the
+N * total sum of the length of the queues added to the set, where binary
+N * semaphores and mutexes have a length of 1, and counting semaphores have a
+N * length set by their maximum count value.  Examples:
+N *  + If a queue set is to hold a queue of length 5, another queue of length 12,
+N *    and a binary semaphore, then uxEventQueueLength should be set to
+N *    (5 + 12 + 1), or 18.
+N *  + If a queue set is to hold three binary semaphores then uxEventQueueLength
+N *    should be set to (1 + 1 + 1 ), or 3.
+N *  + If a queue set is to hold a counting semaphore that has a maximum count of
+N *    5, and a counting semaphore that has a maximum count of 3, then
+N *    uxEventQueueLength should be set to (5 + 3), or 8.
+N *
+N * @return If the queue set is created successfully then a handle to the created
+N * queue set is returned.  Otherwise NULL is returned.
+N */
+NxQueueSetHandle xQueueCreateSet( unsigned portBASE_TYPE uxEventQueueLength ) PRIVILEGED_FUNCTION;
+XxQueueSetHandle xQueueCreateSet( unsigned long uxEventQueueLength ) ;
+N
+N/*
+N * Adds a queue or semaphore to a queue set that was previously created by a
+N * call to xQueueCreateSet().
+N *
+N * See FreeRTOS/Source/Demo/Common/Minimal/QueueSet.c for an example using this
+N * function.
+N *
+N * Note 1:  A receive (in the case of a queue) or take (in the case of a
+N * semaphore) operation must not be performed on a member of a queue set unless
+N * a call to xQueueSelectFromSet() has first returned a handle to that set member.
+N *
+N * @param xQueueOrSemaphore The handle of the queue or semaphore being added to
+N * the queue set (cast to an xQueueSetMemberHandle type).
+N *
+N * @param xQueueSet The handle of the queue set to which the queue or semaphore
+N * is being added.
+N *
+N * @return If the queue or semaphore was successfully added to the queue set
+N * then pdPASS is returned.  If the queue could not be successfully added to the
+N * queue set because it is already a member of a different queue set then pdFAIL
+N * is returned.
+N */
+NportBASE_TYPE xQueueAddToSet( xQueueSetMemberHandle xQueueOrSemaphore, xQueueSetHandle xQueueSet ) PRIVILEGED_FUNCTION;
+Xlong xQueueAddToSet( xQueueSetMemberHandle xQueueOrSemaphore, xQueueSetHandle xQueueSet ) ;
+N
+N/*
+N * Removes a queue or semaphore from a queue set.  A queue or semaphore can only
+N * be removed from a set if the queue or semaphore is empty.
+N *
+N * See FreeRTOS/Source/Demo/Common/Minimal/QueueSet.c for an example using this
+N * function.
+N *
+N * @param xQueueOrSemaphore The handle of the queue or semaphore being removed
+N * from the queue set (cast to an xQueueSetMemberHandle type).
+N *
+N * @param xQueueSet The handle of the queue set in which the queue or semaphore
+N * is included.
+N *
+N * @return If the queue or semaphore was successfully removed from the queue set
+N * then pdPASS is returned.  If the queue was not in the queue set, or the
+N * queue (or semaphore) was not empty, then pdFAIL is returned.
+N */
+NportBASE_TYPE xQueueRemoveFromSet( xQueueSetMemberHandle xQueueOrSemaphore, xQueueSetHandle xQueueSet ) PRIVILEGED_FUNCTION;
+Xlong xQueueRemoveFromSet( xQueueSetMemberHandle xQueueOrSemaphore, xQueueSetHandle xQueueSet ) ;
+N
+N/*
+N * xQueueSelectFromSet() selects from the members of a queue set a queue or
+N * semaphore that either contains data (in the case of a queue) or is available
+N * to take (in the case of a semaphore).  xQueueSelectFromSet() effectively
+N * allows a task to block (pend) on a read operation on all the queues and
+N * semaphores in a queue set simultaneously.
+N *
+N * See FreeRTOS/Source/Demo/Common/Minimal/QueueSet.c for an example using this
+N * function.
+N *
+N * Note 1:  See the documentation on http://wwwFreeRTOS.org/RTOS-queue-sets.html
+N * for reasons why queue sets are very rarely needed in practice as there are
+N * simpler methods of blocking on multiple objects.
+N *
+N * Note 2:  Blocking on a queue set that contains a mutex will not cause the
+N * mutex holder to inherit the priority of the blocked task.
+N *
+N * Note 3:  A receive (in the case of a queue) or take (in the case of a
+N * semaphore) operation must not be performed on a member of a queue set unless
+N * a call to xQueueSelectFromSet() has first returned a handle to that set member.
+N *
+N * @param xQueueSet The queue set on which the task will (potentially) block.
+N *
+N * @param xBlockTimeTicks The maximum time, in ticks, that the calling task will
+N * remain in the Blocked state (with other tasks executing) to wait for a member
+N * of the queue set to be ready for a successful queue read or semaphore take
+N * operation.
+N *
+N * @return xQueueSelectFromSet() will return the handle of a queue (cast to
+N * a xQueueSetMemberHandle type) contained in the queue set that contains data,
+N * or the handle of a semaphore (cast to a xQueueSetMemberHandle type) contained
+N * in the queue set that is available, or NULL if no such queue or semaphore
+N * exists before before the specified block time expires.
+N */
+NxQueueSetMemberHandle xQueueSelectFromSet( xQueueSetHandle xQueueSet, portTickType xBlockTimeTicks ) PRIVILEGED_FUNCTION;
+XxQueueSetMemberHandle xQueueSelectFromSet( xQueueSetHandle xQueueSet, portTickType xBlockTimeTicks ) ;
+N
+N/*
+N * A version of xQueueSelectFromSet() that can be used from an ISR.
+N */
+NxQueueSetMemberHandle xQueueSelectFromSetFromISR( xQueueSetHandle xQueueSet ) PRIVILEGED_FUNCTION;
+XxQueueSetMemberHandle xQueueSelectFromSetFromISR( xQueueSetHandle xQueueSet ) ;
+N
+N/* Not public API functions. */
+Nvoid vQueueWaitForMessageRestricted( xQueueHandle xQueue, portTickType xTicksToWait ) PRIVILEGED_FUNCTION;
+Xvoid vQueueWaitForMessageRestricted( xQueueHandle xQueue, portTickType xTicksToWait ) ;
+NportBASE_TYPE xQueueGenericReset( xQueueHandle xQueue, portBASE_TYPE xNewQueue ) PRIVILEGED_FUNCTION;
+Xlong xQueueGenericReset( xQueueHandle xQueue, long xNewQueue ) ;
+Nvoid vQueueSetQueueNumber( xQueueHandle xQueue, unsigned char ucQueueNumber ) PRIVILEGED_FUNCTION;
+Xvoid vQueueSetQueueNumber( xQueueHandle xQueue, unsigned char ucQueueNumber ) ;
+Nunsigned char ucQueueGetQueueNumber( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xunsigned char ucQueueGetQueueNumber( xQueueHandle xQueue ) ;
+Nunsigned char ucQueueGetQueueType( xQueueHandle xQueue ) PRIVILEGED_FUNCTION;
+Xunsigned char ucQueueGetQueueType( xQueueHandle xQueue ) ;
+N
+N
+N#ifdef __cplusplus
+S}
+N#endif
+N
+N#endif /* QUEUE_H */
+N
+L 4 "src\guiTop.h" 2
+N
+N
+N#define GUI_TASK_REDRAW				0		// draw
+N#define GUI_TASK_PROCESS_BUTTONS	1		// buttons/encoder
+N
+N#define GUI_TASK_UPDATE_VOLTAGE_CURRENT			0x10	// Refreshes voltage and current indicators
+N#define GUI_TASK_UPDATE_VOLTAGE_SETTING			0x14	// Refreshes voltage setting
+N#define GUI_TASK_UPDATE_CURRENT_SETTING			0x15	// Refreshes current setting
+N
+N#define GUI_TASK_UPDATE_CURRENT_LIMIT			0x13	// Refreshes current limit
+N#define GUI_TASK_UPDATE_FEEDBACK_CHANNEL		0x11	// Refreshes feedback channel
+N#define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
+N
+N
+N
+N// SelectedChannel
+N#define	GUI_CHANNEL_5V			0x1
+N#define	GUI_CHANNEL_12V			0x0
+N// CurrentLimit
+N#define	GUI_CURRENT_LIM_HIGH	0x1
+N#define	GUI_CURRENT_LIM_LOW	 	0x0
+N
+N
+N
+Nextern xQueueHandle xQueueGUI;
+Nvoid vTaskGUI(void *pvParameters);
+N
+Nvoid applyGuiVoltageSetting(uint16_t new_set_voltage);
+Nvoid applyGuiCurrentSetting(uint16_t new_set_current);
+Nvoid applyGuiCurrentLimit(uint8_t new_current_limit);
+L 14 "src\service.c" 2
+N
 Nint16_t converter_temp_celsius = 0;
 N
-N
+Nstatic uint32_t gui_msg;
 N
 Nvoid vTaskService(void *pvParameters) 
 N{
@@ -10627,6 +12863,12 @@ N
 N		// Update cooler speed
 N		cooler_speed = (converter_temp_celsius < 25) ? 50 : converter_temp_celsius * 2;
 N		SetCoolerSpeed(cooler_speed);
+N		
+N		// Send notification to GUI
+N		gui_msg = GUI_TASK_UPDATE_TEMPERATURE_INDICATOR;
+X		gui_msg = 0x12;
+N		xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+X		xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 0 ) );
 N	}
 N	
 N}

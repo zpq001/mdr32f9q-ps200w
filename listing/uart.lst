@@ -15744,6 +15744,9 @@ N#define BTN_ON			0x40
 N#define BTN_OFF			0x80
 N#define SW_EXTERNAL		0x0100
 N
+N#define BTN_JTAG_MASK	(BTN_ESC | BTN_LEFT | BTN_RIGHT | BTN_OK)
+N#define NOT_USE_JTAG_BUTTONS
+N
 N
 N//=============================================//
 N// Button processing setup
@@ -16154,8 +16157,7 @@ N	UART_DMACmd(MDR_UART1,UART_DMA_RXE, ENABLE);
 X	UART_DMACmd(((MDR_UART_TypeDef *) (0x40030000)),((uint32_t)0x00000001), ENABLE);
 N	
 N	
-W "src\uart.c" 195 2 function "HW_NVIC_check" declared implicitly
-N	HW_NVIC_check();		// FIXME - debug
+N	//HW_NVIC_check();		// FIXME - debug
 N	
 N	
 N	while(1)

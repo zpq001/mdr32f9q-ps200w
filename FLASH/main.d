@@ -20,15 +20,14 @@
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\mpu_wrappers.h
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\task.h
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\list.h
-.\FLASH\main.o: .\src\gui_top.h
+.\FLASH\main.o: .\src\guiTop.h
 .\FLASH\main.o: ..\Library\FreeRTOSV7.5.3\FreeRTOS\Source\include\queue.h
 .\FLASH\main.o: C:\Keil\ARM\RV31\Inc\stdio.h
 .\FLASH\main.o: defines.h
 .\FLASH\main.o: .\src\systemfunc.h
+.\FLASH\main.o: ..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h
 .\FLASH\main.o: .\src\systick.h
 .\FLASH\main.o: .\src\lcd_1202.h
-.\FLASH\main.o: .\src\lcd_func.h
-.\FLASH\main.o: .\src\fonts\font_defs.h
 .\FLASH\main.o: .\src\buttons.h
 .\FLASH\main.o: .\src\led.h
 .\FLASH\main.o: .\src\encoder.h
@@ -41,7 +40,3 @@
 .\FLASH\main.o: .\src\adc.h
 .\FLASH\main.o: .\src\uart.h
 .\FLASH\main.o: .\src\sound_driver.h
-.\FLASH\main.o: .\src\fonts\fonts.h
-.\FLASH\main.o: .\src\fonts\font_defs.h
-.\FLASH\main.o: .\src\fonts\images.h
-.\FLASH\main.o: .\src\fonts\image_defs.h

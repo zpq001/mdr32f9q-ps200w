@@ -6888,7 +6888,10 @@ N#define configKERNEL_INTERRUPT_PRIORITY 		255
 N/* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 NSee http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 N//#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	191 /* equivalent to 0xb0, or priority 11. */
-N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20
+N
+N// Only bits [7:5] are implemented in MDR32F9Qx, so set highest priority 1
+N// All other IRQs must be set to priorities >= 1 (and <= 7)
+N#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	0x20	
 N
 N/* This is the value being used as per the ST library which permits 16
 Npriority values, 0 to 15.  This must correspond to the
@@ -11896,6 +11899,484 @@ N
 N#include "systemfunc.h"
 L 1 "src\systemfunc.h" 1
 N
+N#include "MDR32F9Qx_dma.h"
+L 1 "..\Library\Libraries\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h" 1
+N/**
+N  ******************************************************************************
+N  * @file    MDR32F9Qx_dma.h
+N  * @author  Phyton Application Team
+N  * @version V1.0.0
+N  * @date    11/06/2010
+N  * @brief   This file contains all the functions prototypes for the DMA
+N  *          firmware library.
+N  ******************************************************************************
+N  * <br><br>
+N  *
+N  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+N  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+N  * TIME. AS A RESULT, PHYTON SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
+N  * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+N  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+N  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+N  *
+N  * <h2><center>&copy; COPYRIGHT 2010 Phyton</center></h2>
+N  ******************************************************************************
+N  * FILE MDR32F9Qx_dma.h
+N  */
+N
+N/* Define to prevent recursive inclusion -------------------------------------*/
+N#ifndef __MDR32F9Qx_DMA_H
+N#define __MDR32F9Qx_DMA_H
+N
+N/* Includes ------------------------------------------------------------------*/
+N#include "MDR32Fx.h"
+N
+N/** @addtogroup __MDR32F9Qx_StdPeriph_Driver MDR32F9Qx Standard Peripherial Driver
+N  * @{
+N  */
+N
+N/** @addtogroup DMA
+N  * @{
+N  */
+N
+N/** @defgroup DMA_Exported_Types DMA Exported Types
+N  * @{
+N  */
+N
+N/**
+N  * @brief  DMA Channel Primary / Alternate Control Data initialization structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceBaseAddr;                 /*!< Specifies the source base address for DMA Channelx. */
+N
+N  uint32_t DMA_DestBaseAddr;                  /*!< Specifies the destination base address for DMA Channelx. */
+N
+N  uint32_t DMA_SourceIncSize;                 /*!< Specifies the source address register increment value.
+N                                                 This parameter can be a value of @ref DMA_source_incremented_mode */
+N
+N  uint32_t DMA_DestIncSize;                   /*!< Specifies the destination address register increment value.
+N                                                 This parameter can be a value of @ref DMA_dest_incremented_mode */
+N
+N  uint32_t DMA_MemoryDataSize;                /*!< Specifies the Memory data width.
+N                                                 This parameter can be a value of @ref DMA_memory_data_size */
+N
+N  uint32_t DMA_Mode;                          /*!< Specifies the operation mode of the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_operating_mode. */
+N
+N  uint32_t DMA_CycleSize;                     /*!< Specifies the  total number of DMA transfers that the DMA cycle contains.
+N                                                 This parameter can be a value of @ref DMA_cycle_size. */
+N
+N  uint32_t DMA_NumContinuous;                 /*!< Specifies how many DMA transfers can occur before the DMA controller rearbitrates.
+N                                                 This parameter can be a value of @ref DMA_number_continuous_transfers. */
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N} DMA_CtrlDataInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Control Data structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  uint32_t DMA_SourceEndAddr;                 /*!< Specifies the DMA channel source end address */
+N
+N  uint32_t DMA_DestEndAddr;                   /*!< Specifies the DMA channel destination end address. */
+N
+N  uint32_t DMA_Control;                       /*!< Specifies the DMA channel control data configuration. */
+N
+N  uint32_t DMA_Unused;                        /*!< Specifies the DMA channel unused memory. */
+N
+N}DMA_CtrlDataTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataInitTypeDef *DMA_PriCtrlData;   /*!< Specifies the pointer to the primary control data structure.
+N                                                 This parameter should be NULL if primary data structure is not used */
+N
+N  DMA_CtrlDataInitTypeDef *DMA_AltCtrlData;   /*!< Specifies the pointer to the alternate control data structure.
+N                                                 This parameter should be NULL if alternate data structure is not used */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N  uint8_t DMA_SelectDataStructure;            /*!< Specifies the primary /alternate data structure to use by the DMA channel.
+N                                                 This parameter can be a value of @ref DMA_data_structure_selection. */
+N
+N} DMA_ChannelInitTypeDef;
+N
+N/**
+N  * @brief  DMA Channel Scatter-Gather Init structure definition
+N  */
+N
+Ntypedef struct
+N{
+N  DMA_CtrlDataTypeDef *DMA_SG_TaskArray;      /*!< Specifies the pointer to the Scatter-Gather task structures array. The size
+N                                                 of the array should be equal to DMA_SG_TaskNumber.
+N                                                 Every structure of the array should contain the copy of the alternate control
+N                                                 data for the related task. It will be used by DMA to configure
+N                                                 the alternate control data while operating in the
+N                                                 scatter-gather mode */
+N
+N  uint32_t DMA_SG_TaskNumber;                 /*!< Specifies the number of scatter-gather tasks to be executed by DMA */
+N
+N
+N  uint32_t DMA_SourceProtCtrl;                /*!< Specifies the Primary Control Data DMA Source protection control.
+N                                                 This parameter can be a value of @ref DMA_source_protection_control. */
+N
+N  uint32_t DMA_DestProtCtrl;                  /*!< Specifies the Primary Control Data DMA Destination protection control.
+N                                                 This parameter can be a value of @ref DMA_dest_protection_control. */
+N
+N  uint32_t DMA_ProtCtrl;                      /*!< Specifies the AHB-Lite protection control.
+N                                                 This parameter can be a value of @ref DMA_AHB_protection_control. */
+N
+N  uint8_t DMA_Priority;                       /*!< Specifies the software priority for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_priority_level */
+N
+N  uint8_t DMA_UseBurst;                       /*!< Disables single request to generate DMA requests for the DMA Channelx.
+N                                                 This parameter can be a value of @ref DMA_burst_mode */
+N
+N} DMA_Channel_SG_InitTypeDef;
+N
+N
+N/** @} */ /* End of group DMA_Exported_Types */
+N
+N/** @defgroup DMA_Exported_Constants DMA Exported Constants
+N  * @{
+N  */
+N
+N/** @defgroup DMA_channels_number DMA channels number
+N  * @{
+N  */
+N
+N#define IS_DMA_CHANNELS(NUMBER) ((NUMBER >= 1) && (NUMBER <= 32))
+N
+N/** @} */ /* End of group DMA_channels_number */
+N
+N/** @defgroup DMA_alternate_data_usage DMA alternate data usage
+N  * @{
+N  */
+N
+N#define DMA_ALternateDataDisabled           ((uint16_t)(0x00))
+N#define DMA_ALternateDataEnabled            ((uint16_t)(0x01))
+N
+N#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) || \
+N                                            ((STATE)  == DMA_ALternateDataEnabled))
+X#define IS_DMA_ALTERNATE_DATA(STATE)        (((STATE) == DMA_ALternateDataDisabled) ||                                             ((STATE)  == DMA_ALternateDataEnabled))
+N
+N/** @} */ /* End of group DMA_alternate_data_usage */
+N
+N/** @defgroup DMA_valid_channels DMA valid channels
+N  * @{
+N  */
+N#define DMA_Channel_UART1_TX    ((uint8_t)(0))
+N#define DMA_Channel_UART1_RX    ((uint8_t)(1))
+N#define DMA_Channel_UART2_TX    ((uint8_t)(2))
+N#define DMA_Channel_UART2_RX    ((uint8_t)(3))
+N#define DMA_Channel_SSP1_TX     ((uint8_t)(4))
+N#define DMA_Channel_SSP1_RX     ((uint8_t)(5))
+N#define DMA_Channel_SSP2_TX     ((uint8_t)(6))
+N#define DMA_Channel_SSP2_RX     ((uint8_t)(7))
+N#define DMA_Channel_ADC1        ((uint8_t)(8))
+N#define DMA_Channel_ADC2        ((uint8_t)(9))
+N#define DMA_Channel_TIM1        ((uint8_t)(10))
+N#define DMA_Channel_TIM2        ((uint8_t)(11))
+N#define DMA_Channel_TIM3        ((uint8_t)(12))
+N#define DMA_Channel_SW1         ((uint8_t)(13))
+N#define DMA_Channel_SW2         ((uint8_t)(14))
+N#define DMA_Channel_SW3         ((uint8_t)(15))
+N#define DMA_Channel_SW4         ((uint8_t)(16))
+N#define DMA_Channel_SW5         ((uint8_t)(17))
+N#define DMA_Channel_SW6         ((uint8_t)(18))
+N#define DMA_Channel_SW7         ((uint8_t)(19))
+N#define DMA_Channel_SW8         ((uint8_t)(20))
+N#define DMA_Channel_SW9         ((uint8_t)(21))
+N#define DMA_Channel_SW10        ((uint8_t)(22))
+N#define DMA_Channel_SW11        ((uint8_t)(23))
+N#define DMA_Channel_SW12        ((uint8_t)(24))
+N#define DMA_Channel_SW13        ((uint8_t)(25))
+N#define DMA_Channel_SW14        ((uint8_t)(26))
+N#define DMA_Channel_SW15        ((uint8_t)(27))
+N#define DMA_Channel_SW16        ((uint8_t)(28))
+N#define DMA_Channel_SW17        ((uint8_t)(29))
+N#define DMA_Channel_SW18        ((uint8_t)(30))
+N#define DMA_Channel_SW19        ((uint8_t)(31))
+N#define IS_DMA_CHANNEL(CHANNEL) (CHANNEL <= (DMA_Channels_Number - 1))
+N
+N/** @} */ /* End of group DMA_valid_channels */
+N
+N/** @defgroup DMA_source_incremented_mode DMA source incremented mode
+N  * @{
+N  */
+N
+N#define DMA_SourceIncByte                   ((uint32_t)(0 << 26))
+N#define DMA_SourceIncHalfword               ((uint32_t)(1 << 26))
+N#define DMA_SourceIncWord                   ((uint32_t)(2 << 26))
+N#define DMA_SourceIncNo                     ((uint32_t)(3 << 26))
+N#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     || \
+N                                            ((STATE)  == DMA_SourceIncHalfword) || \
+N                                            ((STATE)  == DMA_SourceIncWord)     || \
+N                                            ((STATE)  == DMA_SourceIncNo))
+X#define IS_DMA_SOURCE_INC_STATE(STATE)      (((STATE) == DMA_SourceIncByte)     ||                                             ((STATE)  == DMA_SourceIncHalfword) ||                                             ((STATE)  == DMA_SourceIncWord)     ||                                             ((STATE)  == DMA_SourceIncNo))
+N
+N/** @} */ /* End of group DMA_source_incremented_mode */
+N
+N/** @defgroup DMA_dest_incremented_mode DMA dest incremented mode
+N  * @{
+N  */
+N
+N#define DMA_DestIncByte                 ((uint32_t)(0x0UL << 30))
+N#define DMA_DestIncHalfword             ((uint32_t)(0x1UL << 30))
+N#define DMA_DestIncWord                 ((uint32_t)(0x2UL << 30))
+N#define DMA_DestIncNo                   ((uint32_t)(0x3UL << 30))
+N#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       || \
+N                                        ((STATE)  == DMA_DestIncHalfword)   || \
+N                                        ((STATE)  == DMA_DestIncWord)       || \
+N                                        ((STATE)  == DMA_DestIncNo))
+X#define IS_DMA_DEST_INC_STATE(STATE)    (((STATE) == DMA_DestIncByte)       ||                                         ((STATE)  == DMA_DestIncHalfword)   ||                                         ((STATE)  == DMA_DestIncWord)       ||                                         ((STATE)  == DMA_DestIncNo))
+N
+N/** @} */ /* End of group DMA_dest_incremented_mode */
+N
+N/** @defgroup DMA_memory_data_size DMA memory data size
+N  * @{
+N  */
+N
+N#define DMA_MemoryDataSize_Byte        ((uint32_t)(0x00 << 24))
+N#define DMA_MemoryDataSize_HalfWord    ((uint32_t)(0x11 << 24))
+N#define DMA_MemoryDataSize_Word        ((uint32_t)(0x22 << 24))
+N#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      || \
+N                                       ((SIZE) == DMA_MemoryDataSize_HalfWord)  || \
+N                                       ((SIZE) == DMA_MemoryDataSize_Word))
+X#define IS_DMA_MEMORY_DATA_SIZE(SIZE) (((SIZE) == DMA_MemoryDataSize_Byte)      ||                                        ((SIZE) == DMA_MemoryDataSize_HalfWord)  ||                                        ((SIZE) == DMA_MemoryDataSize_Word))
+N
+N/** @} */ /* End of group DMA_memory_data_size */
+N
+N/** @defgroup DMA_operating_mode DMA operating mode
+N  * @{
+N  */
+N
+N#define DMA_Mode_Stop                       ((uint32_t)0x0)
+N#define DMA_Mode_Basic                      ((uint32_t)0x1)
+N#define DMA_Mode_AutoRequest                ((uint32_t)0x2)
+N#define DMA_Mode_PingPong                   ((uint32_t)0x3)
+N#define DMA_Mode_MemScatterPri              ((uint32_t)0x4)
+N#define DMA_Mode_MemScatterAlt              ((uint32_t)0x5)
+N#define DMA_Mode_PerScatterPri              ((uint32_t)0x6)
+N#define DMA_Mode_PerScatterAlt              ((uint32_t)0x7)
+N#define DMA_Mode_PerScatterAltBurst         ((uint32_t)0xF)
+N
+N#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           || \
+N                                    ((MODE) == DMA_Mode_Basic)          || \
+N                                    ((MODE) == DMA_Mode_AutoRequest)    || \
+N                                    ((MODE) == DMA_Mode_PingPong)       || \
+N                                    ((MODE) == DMA_Mode_MemScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_MemScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterPri)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAlt)  || \
+N                                    ((MODE) == DMA_Mode_PerScatterAltBurst))
+X#define IS_DMA_MODE(MODE)          (((MODE) == DMA_Mode_Stop)           ||                                     ((MODE) == DMA_Mode_Basic)          ||                                     ((MODE) == DMA_Mode_AutoRequest)    ||                                     ((MODE) == DMA_Mode_PingPong)       ||                                     ((MODE) == DMA_Mode_MemScatterPri)  ||                                     ((MODE) == DMA_Mode_MemScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterPri)  ||                                     ((MODE) == DMA_Mode_PerScatterAlt)  ||                                     ((MODE) == DMA_Mode_PerScatterAltBurst))
+N
+N/** @} */ /* End of group DMA_operating_mode */
+N
+N/** @defgroup DMA_cycle_size DMA cycle size
+N  * @{
+N  */
+N
+N#define IS_DMA_CYCLE_SIZE(SIZE)   ((SIZE >= 1) && (SIZE <= 1024))
+N
+N/** @} */ /* End of group DMA_cycle_size */
+N
+N/** @defgroup DMA_priority_level DMA priority level
+N  * @{
+N  */
+N
+N#define DMA_Priority_Default                ((uint8_t)0x00)
+N#define DMA_Priority_High                   ((uint8_t)0x01)
+N#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) || \
+N                                            ((PRIORITY)  == DMA_Priority_High))
+X#define IS_DMA_PRIORITY(PRIORITY)           (((PRIORITY) == DMA_Priority_Default) ||                                             ((PRIORITY)  == DMA_Priority_High))
+N
+N/** @} */ /* End of group DMA_priority_level */
+N
+N/** @defgroup DMA_burst_mode DMA burst mode
+N  * @{
+N  */
+N
+N#define DMA_BurstClear                      ((uint8_t)0x00)
+N#define DMA_BurstSet                        ((uint8_t)0x01)
+N#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) || \
+N                                            ((STATE)  == DMA_BurstSet))
+X#define IS_DMA_BURST(STATE)                 (((STATE) == DMA_BurstClear) ||                                             ((STATE)  == DMA_BurstSet))
+N
+N/** @} */ /* End of group DMA_burst_mode */
+N
+N
+N/** @defgroup DMA_source_protection_control DMA source protection control
+N  * @{
+N  */
+N
+N#define DMA_SourceCacheable                 ((uint32_t)(0x01 << 20))
+N#define DMA_SourceBufferable                ((uint32_t)(0x01 << 19))
+N#define DMA_SourcePrivileged                ((uint32_t)(0x01 << 18))
+N
+N#define IS_DMA_SOURCE_PROT(STATE)           ((STATE & (~(0x7 << 18))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_dest_protection_control DMA dest protection control
+N  * @{
+N  */
+N
+N#define DMA_DestCacheable                   ((uint32_t)(0x01 << 23))
+N#define DMA_DestBufferable                  ((uint32_t)(0x01 << 22))
+N#define DMA_DestPrivileged                  ((uint32_t)(0x01 << 21))
+N
+N#define IS_DMA_DEST_PROT(STATE)             ((STATE & (~(0x7 << 21))) == 0)
+N
+N/** @} */ /* End of group DMA_dest_protection_control */
+N
+N/** @defgroup DMA_AHB_protection_control DMA AHB-Lite protection control
+N  * @{
+N  */
+N
+N#define DMA_AHB_Cacheable                 ((uint32_t)(0x01 << 7))
+N#define DMA_AHB_Bufferable                ((uint32_t)(0x01 << 6))
+N#define DMA_AHB_Privileged                ((uint32_t)(0x01 << 5))
+N
+N#define IS_DMA_AHB_PROT(STATE)            ((STATE & (~(0x7 << 5))) == 0)
+N
+N/** @} */ /* End of group DMA_source_protection_control */
+N
+N/** @defgroup DMA_number_continuous_transfers DMA number continuous transfers
+N  * @{
+N  */
+N
+N#define DMA_Transfers_1                     ((uint32_t)(0x00 << 14))
+N#define DMA_Transfers_2                     ((uint32_t)(0x01 << 14))
+N#define DMA_Transfers_4                     ((uint32_t)(0x02 << 14))
+N#define DMA_Transfers_8                     ((uint32_t)(0x03 << 14))
+N#define DMA_Transfers_16                    ((uint32_t)(0x04 << 14))
+N#define DMA_Transfers_32                    ((uint32_t)(0x05 << 14))
+N#define DMA_Transfers_64                    ((uint32_t)(0x06 << 14))
+N#define DMA_Transfers_128                   ((uint32_t)(0x07 << 14))
+N#define DMA_Transfers_256                   ((uint32_t)(0x08 << 14))
+N#define DMA_Transfers_512                   ((uint32_t)(0x09 << 14))
+N#define DMA_Transfers_1024                  ((uint32_t)(0x0A << 14))
+N
+N#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      || \
+N                                            ((NUMBER)  == DMA_Transfers_2)      || \
+N                                            ((NUMBER)  == DMA_Transfers_4)      || \
+N                                            ((NUMBER)  == DMA_Transfers_8)      || \
+N                                            ((NUMBER)  == DMA_Transfers_16)     || \
+N                                            ((NUMBER)  == DMA_Transfers_32)     || \
+N                                            ((NUMBER)  == DMA_Transfers_64)     || \
+N                                            ((NUMBER)  == DMA_Transfers_128)    || \
+N                                            ((NUMBER)  == DMA_Transfers_256)    || \
+N                                            ((NUMBER)  == DMA_Transfers_512)    || \
+N                                            ((NUMBER)  == DMA_Transfers_1024))
+X#define IS_DMA_CONTINUOUS_NUMBER(NUMBER)   (((NUMBER)  == DMA_Transfers_1)      ||                                             ((NUMBER)  == DMA_Transfers_2)      ||                                             ((NUMBER)  == DMA_Transfers_4)      ||                                             ((NUMBER)  == DMA_Transfers_8)      ||                                             ((NUMBER)  == DMA_Transfers_16)     ||                                             ((NUMBER)  == DMA_Transfers_32)     ||                                             ((NUMBER)  == DMA_Transfers_64)     ||                                             ((NUMBER)  == DMA_Transfers_128)    ||                                             ((NUMBER)  == DMA_Transfers_256)    ||                                             ((NUMBER)  == DMA_Transfers_512)    ||                                             ((NUMBER)  == DMA_Transfers_1024))
+N
+N/** @} */ /* End of group DMA_number_continuous_transfers */
+N
+N/** @defgroup DMA_data_structure_selection DMA data structure selection
+N  * @{
+N  */
+N
+N#define DMA_CTRL_DATA_PRIMARY   ((uint8_t)0x00)
+N
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N
+N  #define DMA_CTRL_DATA_ALTERNATE ((uint8_t)0x01)
+N
+N  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      || \
+N                                              ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+X  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY)      ||                                               ((TYPE)  == DMA_CTRL_DATA_ALTERNATE))
+N#else
+S  #define IS_DMA_SELECT_DATA_STRUCTURE(TYPE) (((TYPE)  == DMA_CTRL_DATA_PRIMARY))
+N#endif
+N
+N/** @} */ /* End of group DMA_data_structure_selection */
+N
+N/** @defgroup DMA_flags_definition DMA flags definition
+N  * @{
+N  */
+N
+N#define DMA_FLAG_DMA_ENA        ((uint8_t)0x01)
+N#define DMA_FLAG_DMA_ERR        ((uint8_t)0x02)
+N#define DMA_FLAG_CHNL_ENA       ((uint8_t)0x03)
+N#define DMA_FLAG_CHNL_MASK      ((uint8_t)0x04)
+N#define DMA_FLAG_CHNL_WAIT      ((uint8_t)0x05)
+N#define DMA_FLAG_CHNL_BURST     ((uint8_t)0x06)
+N#define DMA_FLAG_CHNL_ALT       ((uint8_t)0x07)
+N#define DMA_FLAG_CHNL_PRIORITY  ((uint8_t)0x08)
+N
+N#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      || \
+N                                 ((FLAG)  == DMA_FLAG_DMA_ERR)      || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ENA)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_MASK)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_WAIT)    || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_BURST)   || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_ALT)     || \
+N                                 ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+X#define IS_DMA_FLAG(FLAG)       (((FLAG)  == DMA_FLAG_DMA_ENA)      ||                                  ((FLAG)  == DMA_FLAG_DMA_ERR)      ||                                  ((FLAG)  == DMA_FLAG_CHNL_ENA)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_MASK)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_WAIT)    ||                                  ((FLAG)  == DMA_FLAG_CHNL_BURST)   ||                                  ((FLAG)  == DMA_FLAG_CHNL_ALT)     ||                                  ((FLAG)  == DMA_FLAG_CHNL_PRIORITY))
+N
+N/** @} */ /* End of group DMA_flags_definition */
+N
+N/** @} */ /* End of group DMA_Exported_Constants */
+N
+N/** @defgroup DMA_Exported_Macros DMA Exported Macros
+N  * @{
+N  */
+N
+N/** @} */ /* End of group DMA_Exported_Macros */
+N
+N/** @defgroup DMA_Exported_Functions DMA Exported Functions
+N  * @{
+N  */
+N
+Nvoid DMA_DeInit(void);
+Nvoid DMA_Init(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_Init( uint8_t DMA_Channel, DMA_Channel_SG_InitTypeDef *DMA_SG_InitStruct);
+Nvoid DMA_StructInit(DMA_ChannelInitTypeDef* DMA_InitStruct);
+Nvoid DMA_SG_StructInit(DMA_Channel_SG_InitTypeDef* DMA_InitStruct);
+Nvoid DMA_CtrlInit(uint8_t DMA_Channel, uint8_t DMA_CtrlDataType,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_SG_CtrlInit(uint32_t DMA_Task, DMA_CtrlDataTypeDef *DMA_SG_TaskArray,  DMA_CtrlDataInitTypeDef* DMA_CtrlStruct);
+Nvoid DMA_Cmd(uint8_t DMA_Channel, FunctionalState NewState);
+Nvoid DMA_Request(uint8_t DMA_Channel);
+Nvoid DMA_ClearError(void);
+Nuint32_t DMA_GetCurrTransferCounter(uint8_t DMA_Channel, uint8_t DMA_CtrlData);
+NFlagStatus DMA_GetFlagStatus(uint8_t DMA_Channel, uint8_t DMA_Flag);
+N
+N/** @} */ /* End of group DMA_Exported_Functions */
+N
+N/** @} */ /* End of group DMA */
+N
+N/** @} */ /* End of group __MDR32F9Qx_StdPeriph_Driver */
+N
+N#endif /* __MDR32F9Qx_DMA_H */
+N
+N/******************* (C) COPYRIGHT 2010 Phyton *********************************
+N*
+N* END OF FILE MDR32F9Qx_dma.h */
+N
+L 3 "src\systemfunc.h" 2
+N
 N// All ports
 N#define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
 N                       RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
@@ -11911,12 +12392,8 @@ N
 N
 N
 N
-N//#define TSTATE_START_EXTERNAL	0x01		// ADC FSM states
-N//#define TSTATE_GET_EXTERNAL		0x02
-N//#define	TSTATE_DONE_EXTERNAL	0x03
-N
-N
-N
+Nvoid my_DMA_GlobalInit(void);
+Nvoid my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
 N
 Nvoid Setup_CPU_Clock(void);
 Nvoid HW_NVIC_init(void);
@@ -12427,6 +12904,43 @@ N
 N
 L 28 "src\converter.c" 2
 N
+N#include "guiTop.h"
+L 1 "src\guiTop.h" 1
+N#include "FreeRTOS.h"
+N#include "task.h"
+N#include "queue.h"
+N
+N
+N#define GUI_TASK_REDRAW				0		// draw
+N#define GUI_TASK_PROCESS_BUTTONS	1		// buttons/encoder
+N
+N#define GUI_TASK_UPDATE_VOLTAGE_CURRENT			0x10	// Refreshes voltage and current indicators
+N#define GUI_TASK_UPDATE_VOLTAGE_SETTING			0x14	// Refreshes voltage setting
+N#define GUI_TASK_UPDATE_CURRENT_SETTING			0x15	// Refreshes current setting
+N
+N#define GUI_TASK_UPDATE_CURRENT_LIMIT			0x13	// Refreshes current limit
+N#define GUI_TASK_UPDATE_FEEDBACK_CHANNEL		0x11	// Refreshes feedback channel
+N#define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
+N
+N
+N
+N// SelectedChannel
+N#define	GUI_CHANNEL_5V			0x1
+N#define	GUI_CHANNEL_12V			0x0
+N// CurrentLimit
+N#define	GUI_CURRENT_LIM_HIGH	0x1
+N#define	GUI_CURRENT_LIM_LOW	 	0x0
+N
+N
+N
+Nextern xQueueHandle xQueueGUI;
+Nvoid vTaskGUI(void *pvParameters);
+N
+Nvoid applyGuiVoltageSetting(uint16_t new_set_voltage);
+Nvoid applyGuiCurrentSetting(uint16_t new_set_current);
+Nvoid applyGuiCurrentLimit(uint8_t new_current_limit);
+L 30 "src\converter.c" 2
+N
 N
 N// Globals used for communicating with converter control task called from ISR
 Nvolatile uint8_t state_HWProcess = STATE_HW_OFF;	
@@ -12435,6 +12949,8 @@ Nvolatile uint8_t ctrl_HWProcess = 0;
 N
 Nvolatile uint8_t cmd_ADC_to_HWProcess = 0;
 N
+N
+Nstatic uint32_t gui_msg;
 N
 N
 Nconverter_regulation_t channel_5v_setting;
@@ -12814,13 +13330,22 @@ N	while(1)
 N	{
 N		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
 X		xQueueGenericReceive( ( xQueueConverter ), ( &msg ), ( ( portTickType ) 0xffffffff ), ( ( long ) 0 ) );
-N		
+N	
+N		// CHECKME - Possibly need to add a mechanism to protect against illegal messages ?
+N		// For example, GUI sends message to set new voltage, but converter has switched channel by comand from UART.
+N		// In this case, command from GUI is old and bad and should be ignored somehow.
 N
 N		switch (msg.type)
 N		{
 N			case CONVERTER_SET_VOLTAGE:
 X			case 0x07:
 N				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+N				//----- Send notification to GUI -----//
+N				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
+X				gui_msg = 0x14;
+N				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X				xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N				//------------------------------------//
 N				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
 X				if ((err_code == 0x02) || (err_code == 0x03))
 N					sound_msg = SND_CONV_SETTING_ILLEGAL;
@@ -12840,6 +13365,12 @@ N				break;
 N			case CONVERTER_SET_CURRENT:
 X			case 0x08:
 N				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+N				//----- Send notification to GUI -----//
+N				gui_msg = GUI_TASK_UPDATE_CURRENT_SETTING;
+X				gui_msg = 0x15;
+N				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X				xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N				//------------------------------------//
 N				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
 X				if ((err_code == 0x09) || (err_code == 0x0A))
 N					sound_msg = SND_CONV_SETTING_ILLEGAL;
@@ -12871,6 +13402,12 @@ N				{
 N					regulation_setting_p = &channel_5v_setting;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+X					gui_msg = 0x11;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}
@@ -12880,6 +13417,12 @@ N				{
 N					regulation_setting_p = &channel_12v_setting;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+X					gui_msg = 0x11;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}
@@ -12890,6 +13433,12 @@ N					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
 X					regulation_setting_p -> current_limit = 0x0;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
+X					gui_msg = 0x13;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}
@@ -12900,6 +13449,12 @@ N					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
 X					regulation_setting_p -> current_limit = 0x1;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
+X					gui_msg = 0x13;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}
@@ -12944,6 +13499,12 @@ N					vTaskDelay(4);
 N					regulation_setting_p = &channel_5v_setting;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+X					gui_msg = 0x11;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}
@@ -12955,6 +13516,12 @@ N					vTaskDelay(4);
 N					regulation_setting_p = &channel_5v_setting;
 N					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 X					ctrl_HWProcess = 0x08;
+N					//----- Send notification to GUI -----//
+N					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+X					gui_msg = 0x11;
+N					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+X					xQueueGenericSend( ( xQueueGUI ), ( &gui_msg ), ( 0 ), ( ( long ) 1 ) );
+N					//------------------------------------//
 N					while(ctrl_HWProcess);
 N					break;
 N				}

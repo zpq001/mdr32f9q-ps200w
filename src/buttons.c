@@ -119,6 +119,9 @@ void ProcessButtons(void)
 	
 	UpdateRawButtonState();
 	raw_current = raw_button_state ^ RAW_BUTTON_INVERSE_MASK;
+	#ifdef NOT_USE_JTAG_BUTTONS
+	raw_current &= ~BTN_JTAG_MASK;
+	#endif
 	ResetButtonEvents();
 	
 	// Loop through all buttons

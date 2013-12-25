@@ -4,1223 +4,237 @@
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
 E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\MDR_200W.uvproj
-Project File Date:  11/17/2013
+Project File Date:  12/25/2013
 
 <h2>Output:</h2>
+Clean started: Project: 'MDR_200W'
+   deleting intermediate output files for target 'RAM'
+   deleting intermediate output files for target 'FLASH'
 Build target 'FLASH'
-linking...
-Program Size: Code=27724 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
+assembling startup_MDR32F9x.s...
+compiling system_MDR32F9Qx.c...
+compiling MDR32F9Qx_rst_clk.c...
+compiling MDR32F9Qx_ssp.c...
+compiling MDR32F9Qx_port.c...
+compiling MDR32F9Qx_timer.c...
+compiling MDR32F9Qx_i2c.c...
+compiling MDR32F9Qx_adc.c...
+compiling MDR32F9Qx_uart.c...
+compiling MDR32F9Qx_dma.c...
 compiling main.c...
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+compiling systick.c...
+src\systick.c(145): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(146): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling lcd_1202.c...
+compiling buttons.c...
+compiling led.c...
+compiling encoder.c...
+compiling i2c_eeprom.c...
+compiling dwt_delay.c...
+compiling control.c...
+compiling converter.c...
+compiling service.c...
+compiling dispatcher.c...
+compiling adc.c...
 compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+src\uart.c(175): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(176): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(400): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling sound_driver.c...
+src\sound_driver.c(84): warning: C3017W: current_tone_duration may be used before being set
+src\sound_driver.c(82): warning: C3017W: tone_repeats may be used before being set
+src\sound_driver.c(81): warning: C3017W: current_tone_record may be used before being set
+src\sound_driver.c(80): warning: C3017W: ptone may be used before being set
+src\sound_driver.c(79): warning: C3017W: psample may be used before being set
+src\sound_driver.c(76): warning: C3017W: state may be used before being set
+compiling sound_samples.c...
+compiling port.c...
+compiling croutine.c...
+compiling list.c...
+compiling queue.c...
+compiling tasks.c...
+compiling timers.c...
+compiling heap_4.c...
+compiling guiMainForm.c...
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(385): warning:  #177-D: variable "label" was declared but never referenced
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+compiling guiCore.c...
+compiling guiPanel.c...
+compiling guiSpinBox.c...
+compiling guiTextLabel.c...
+compiling font_6x8_mono.c...
+compiling font_h10.c...
+compiling font_h10_bold.c...
+compiling font_h11.c...
+compiling font_h16.c...
+compiling font_h32.c...
+compiling guiGraphHAL.c...
+compiling guiGraphPrimitives.c...
+src\gui\guiGraphics\guiGraphPrimitives.c(135): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(159): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(218): warning:  #1293-D: assignment in condition
+compiling guiGraphWidgets.c...
+compiling widget_images.c...
+compiling utils.c...
 linking...
-Program Size: Code=27704 RO-data=6552 RW-data=236 ZI-data=25180  
+Program Size: Code=36216 RO-data=9308 RW-data=272 ZI-data=24448  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.704V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
+".\FLASH\MDR_200W.axf" - 0 Error(s), 16 Warning(s).
+Clean started: Project: 'MDR_200W'
+   deleting intermediate output files for target 'RAM'
+   deleting intermediate output files for target 'FLASH'
 Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.685V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(397): warning:  #177-D: variable "p1" was declared but never referenced
-src\uart.c(398): warning:  #177-D: variable "p2" was declared but never referenced
-src\uart.c(399): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27816 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 8 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(484): error:  #20: identifier "DMA_Channel_UART_TX" is undefined
-src\uart.c(397): warning:  #177-D: variable "p1" was declared but never referenced
-src\uart.c(398): warning:  #177-D: variable "p2" was declared but never referenced
-src\uart.c(399): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-Target not created
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(484): error:  #20: identifier "DMA_Channel_UART_TX" is undefined
-src\uart.c(397): warning:  #177-D: variable "p1" was declared but never referenced
-src\uart.c(398): warning:  #177-D: variable "p2" was declared but never referenced
-src\uart.c(399): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-Target not created
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(397): warning:  #177-D: variable "p1" was declared but never referenced
-src\uart.c(398): warning:  #177-D: variable "p2" was declared but never referenced
-src\uart.c(399): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27824 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 8 Warning(s).
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27824 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.523V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(368): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-linking...
-Program Size: Code=27836 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
+assembling startup_MDR32F9x.s...
+compiling system_MDR32F9Qx.c...
+compiling MDR32F9Qx_rst_clk.c...
+compiling MDR32F9Qx_ssp.c...
+compiling MDR32F9Qx_port.c...
+compiling MDR32F9Qx_timer.c...
+compiling MDR32F9Qx_i2c.c...
+compiling MDR32F9Qx_adc.c...
+compiling MDR32F9Qx_uart.c...
+compiling MDR32F9Qx_dma.c...
 compiling main.c...
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+compiling systick.c...
+src\systick.c(145): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(146): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling lcd_1202.c...
+compiling buttons.c...
+compiling led.c...
+compiling encoder.c...
+compiling i2c_eeprom.c...
+compiling dwt_delay.c...
+compiling control.c...
+compiling converter.c...
+compiling service.c...
+compiling dispatcher.c...
+compiling adc.c...
 compiling uart.c...
-src\uart.c(163): warning:  #223-D: function "HW_NVIC_check" declared implicitly
-src\uart.c(146): warning:  #177-D: variable "cmd_ok" was declared but never referenced
-src\uart.c(150): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(151): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(367): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+src\uart.c(175): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(176): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(400): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling sound_driver.c...
+src\sound_driver.c(84): warning: C3017W: current_tone_duration may be used before being set
+src\sound_driver.c(82): warning: C3017W: tone_repeats may be used before being set
+src\sound_driver.c(81): warning: C3017W: current_tone_record may be used before being set
+src\sound_driver.c(80): warning: C3017W: ptone may be used before being set
+src\sound_driver.c(79): warning: C3017W: psample may be used before being set
+src\sound_driver.c(76): warning: C3017W: state may be used before being set
+compiling sound_samples.c...
+compiling port.c...
+compiling croutine.c...
+compiling list.c...
+compiling queue.c...
+compiling tasks.c...
+compiling timers.c...
+compiling heap_4.c...
+compiling guiMainForm.c...
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(385): warning:  #177-D: variable "label" was declared but never referenced
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+compiling guiCore.c...
+compiling guiPanel.c...
+compiling guiSpinBox.c...
+compiling guiTextLabel.c...
+compiling font_6x8_mono.c...
+compiling font_h10.c...
+compiling font_h10_bold.c...
+compiling font_h11.c...
+compiling font_h16.c...
+compiling font_h32.c...
+compiling guiGraphHAL.c...
+compiling guiGraphPrimitives.c...
+src\gui\guiGraphics\guiGraphPrimitives.c(135): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(159): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(218): warning:  #1293-D: assignment in condition
+compiling guiGraphWidgets.c...
+compiling widget_images.c...
+compiling utils.c...
 linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
+Program Size: Code=36216 RO-data=9308 RW-data=272 ZI-data=24448  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
+".\FLASH\MDR_200W.axf" - 0 Error(s), 16 Warning(s).
+Clean started: Project: 'MDR_200W'
+   deleting intermediate output files for target 'RAM'
+   deleting intermediate output files for target 'FLASH'
 Build target 'FLASH'
+assembling startup_MDR32F9x.s...
+compiling system_MDR32F9Qx.c...
+compiling MDR32F9Qx_rst_clk.c...
+compiling MDR32F9Qx_ssp.c...
+compiling MDR32F9Qx_port.c...
+compiling MDR32F9Qx_timer.c...
+compiling MDR32F9Qx_i2c.c...
+compiling MDR32F9Qx_adc.c...
+compiling MDR32F9Qx_uart.c...
+compiling MDR32F9Qx_dma.c...
 compiling main.c...
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
 compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(808): warning:  #223-D: function "printf" declared implicitly
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+compiling systick.c...
+src\systick.c(145): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(146): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling lcd_1202.c...
+compiling buttons.c...
+compiling led.c...
+compiling encoder.c...
+compiling i2c_eeprom.c...
+compiling dwt_delay.c...
+compiling control.c...
+compiling converter.c...
+compiling service.c...
+compiling dispatcher.c...
+compiling adc.c...
+compiling uart.c...
+src\uart.c(175): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(176): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(400): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling sound_driver.c...
+src\sound_driver.c(84): warning: C3017W: current_tone_duration may be used before being set
+src\sound_driver.c(82): warning: C3017W: tone_repeats may be used before being set
+src\sound_driver.c(81): warning: C3017W: current_tone_record may be used before being set
+src\sound_driver.c(80): warning: C3017W: ptone may be used before being set
+src\sound_driver.c(79): warning: C3017W: psample may be used before being set
+src\sound_driver.c(76): warning: C3017W: state may be used before being set
+compiling sound_samples.c...
+compiling port.c...
+compiling croutine.c...
+compiling list.c...
+compiling queue.c...
+compiling tasks.c...
+compiling timers.c...
+compiling heap_4.c...
+compiling guiMainForm.c...
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(385): warning:  #177-D: variable "label" was declared but never referenced
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+compiling guiCore.c...
+compiling guiPanel.c...
+compiling guiSpinBox.c...
+compiling guiTextLabel.c...
+compiling font_6x8_mono.c...
+compiling font_h10.c...
+compiling font_h10_bold.c...
+compiling font_h11.c...
+compiling font_h16.c...
+compiling font_h32.c...
+compiling guiGraphHAL.c...
+compiling guiGraphPrimitives.c...
+src\gui\guiGraphics\guiGraphPrimitives.c(135): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(159): warning:  #1293-D: assignment in condition
+src\gui\guiGraphics\guiGraphPrimitives.c(218): warning:  #1293-D: assignment in condition
+compiling guiGraphWidgets.c...
+compiling widget_images.c...
+compiling utils.c...
 linking...
-Program Size: Code=30952 RO-data=6604 RW-data=248 ZI-data=25408  
+Program Size: Code=36216 RO-data=9308 RW-data=272 ZI-data=24448  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.737V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-linking...
-Program Size: Code=30952 RO-data=6604 RW-data=248 ZI-data=25408  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.756V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-linking...
-Program Size: Code=30956 RO-data=6604 RW-data=248 ZI-data=25408  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(220): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(225): error: A1516E: Bad symbol 'hard_fault_handler_c', not defined or external
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(219): warning: A1488W: PROC/FUNC at line 170 in 'startup_MDR32F9x.s' without matching ENDP/ENDFUNC
-startup_MDR32F9x.s(220): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(228): warning: A1464W: ENDP/ENDFUNC without corresponding PROC/FUNC
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(228): warning: A1464W: ENDP/ENDFUNC without corresponding PROC/FUNC
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(228): warning: A1464W: ENDP/ENDFUNC without corresponding PROC/FUNC
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(228): warning: A1464W: ENDP/ENDFUNC without corresponding PROC/FUNC
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(228): warning: A1464W: ENDP/ENDFUNC without corresponding PROC/FUNC
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(222): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-startup_MDR32F9x.s(231): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-startup_MDR32F9x.s(230): error: A1163E: Unknown opcode hard_fault_handler_c , expecting opcode or Macro
-Target not created
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-linking...
-Program Size: Code=30936 RO-data=6604 RW-data=248 ZI-data=25408  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(789): warning:  #550-D: variable "stacked_r0" was set but never used
-src\systemfunc.c(790): warning:  #550-D: variable "stacked_r1" was set but never used
-src\systemfunc.c(791): warning:  #550-D: variable "stacked_r2" was set but never used
-src\systemfunc.c(792): warning:  #550-D: variable "stacked_r3" was set but never used
-src\systemfunc.c(793): warning:  #550-D: variable "stacked_r12" was set but never used
-src\systemfunc.c(794): warning:  #550-D: variable "stacked_lr" was set but never used
-src\systemfunc.c(795): warning:  #550-D: variable "stacked_pc" was set but never used
-src\systemfunc.c(796): warning:  #550-D: variable "stacked_psr" was set but never used
-linking...
-Program Size: Code=27816 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 9 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(789): warning:  #550-D: variable "stacked_r0" was set but never used
-src\systemfunc.c(790): warning:  #550-D: variable "stacked_r1" was set but never used
-src\systemfunc.c(791): warning:  #550-D: variable "stacked_r2" was set but never used
-src\systemfunc.c(792): warning:  #550-D: variable "stacked_r3" was set but never used
-src\systemfunc.c(793): warning:  #550-D: variable "stacked_r12" was set but never used
-src\systemfunc.c(794): warning:  #550-D: variable "stacked_lr" was set but never used
-src\systemfunc.c(795): warning:  #550-D: variable "stacked_pc" was set but never used
-src\systemfunc.c(796): warning:  #550-D: variable "stacked_psr" was set but never used
-src\systemfunc.c(787): warning:  #177-D: function "hard_fault_handler_c" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 10 Warning(s).
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(787): warning:  #177-D: function "hard_fault_handler_c" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.704V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(808): warning:  #223-D: function "printf" declared implicitly
-src\systemfunc.c(787): warning:  #177-D: function "hard_fault_handler_c" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 3 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(808): warning:  #223-D: function "printf" declared implicitly
-src\systemfunc.c(787): warning:  #177-D: function "hard_fault_handler_c" was declared but never referenced
-linking...
-Program Size: Code=27812 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 3 Warning(s).
-Build target 'FLASH'
-assembling startup_MDR32F9x.s...
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(789): warning:  #550-D: variable "stacked_r0" was set but never used
-src\systemfunc.c(790): warning:  #550-D: variable "stacked_r1" was set but never used
-src\systemfunc.c(791): warning:  #550-D: variable "stacked_r2" was set but never used
-src\systemfunc.c(792): warning:  #550-D: variable "stacked_r3" was set but never used
-src\systemfunc.c(793): warning:  #550-D: variable "stacked_r12" was set but never used
-src\systemfunc.c(794): warning:  #550-D: variable "stacked_lr" was set but never used
-src\systemfunc.c(795): warning:  #550-D: variable "stacked_pc" was set but never used
-src\systemfunc.c(796): warning:  #550-D: variable "stacked_psr" was set but never used
-src\systemfunc.c(787): warning:  #177-D: function "hard_fault_handler_c" was declared but never referenced
-linking...
-.\FLASH\MDR_200W.axf: Error: L6218E: Undefined symbol hard_fault_handler_c (referred from startup_mdr32f9x.o).
-Target not created
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(789): warning:  #550-D: variable "stacked_r0" was set but never used
-src\systemfunc.c(790): warning:  #550-D: variable "stacked_r1" was set but never used
-src\systemfunc.c(791): warning:  #550-D: variable "stacked_r2" was set but never used
-src\systemfunc.c(792): warning:  #550-D: variable "stacked_r3" was set but never used
-src\systemfunc.c(793): warning:  #550-D: variable "stacked_r12" was set but never used
-src\systemfunc.c(794): warning:  #550-D: variable "stacked_lr" was set but never used
-src\systemfunc.c(795): warning:  #550-D: variable "stacked_pc" was set but never used
-src\systemfunc.c(796): warning:  #550-D: variable "stacked_psr" was set but never used
-linking...
-Program Size: Code=27832 RO-data=6552 RW-data=236 ZI-data=25180  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 9 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(808): warning:  #223-D: function "printf" declared implicitly
-linking...
-Program Size: Code=30952 RO-data=6604 RW-data=248 ZI-data=25408  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.776V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-src\systemfunc.c(806): warning:  #177-D: variable "stacked_r0" was declared but never referenced
-src\systemfunc.c(807): warning:  #177-D: variable "stacked_r1" was declared but never referenced
-src\systemfunc.c(808): warning:  #177-D: variable "stacked_r2" was declared but never referenced
-src\systemfunc.c(809): warning:  #177-D: variable "stacked_r3" was declared but never referenced
-src\systemfunc.c(810): warning:  #177-D: variable "stacked_r12" was declared but never referenced
-src\systemfunc.c(811): warning:  #177-D: variable "stacked_lr" was declared but never referenced
-src\systemfunc.c(812): warning:  #177-D: variable "stacked_pc" was declared but never referenced
-src\systemfunc.c(813): warning:  #177-D: variable "stacked_psr" was declared but never referenced
-linking...
-Program Size: Code=27868 RO-data=6552 RW-data=236 ZI-data=25236  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 9 Warning(s).
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-linking...
-Program Size: Code=27868 RO-data=6552 RW-data=236 ZI-data=25236  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Build target 'FLASH'
-compiling systemfunc.c...
-src\systemfunc.c(321): warning:  #550-D: variable "initStatus" was set but never used
-linking...
-Program Size: Code=27868 RO-data=6552 RW-data=236 ZI-data=25236  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
-Build target 'FLASH'
-linking...
-Program Size: Code=27868 RO-data=6552 RW-data=236 ZI-data=25236  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Build target 'FLASH'
-linking...
-Program Size: Code=27868 RO-data=6552 RW-data=236 ZI-data=25236  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-ROMTableAddr = 0xE00FF003
-* JLink Info: TotalIRLen = 4, IRPrint = 0x01
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-**JLink Warning: Could not set S_RESET_ST
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.769V
-State of Pins: 
-TCK: 1, TDI: 0, TDO: 1, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 1000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
+".\FLASH\MDR_200W.axf" - 0 Error(s), 16 Warning(s).

@@ -9963,6 +9963,8 @@ N
 N#include "systemfunc.h"
 L 1 "src\systemfunc.h" 1
 N
+N#include "MDR32F9Qx_dma.h"
+N
 N// All ports
 N#define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
 N                       RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
@@ -9978,12 +9980,8 @@ N
 N
 N
 N
-N//#define TSTATE_START_EXTERNAL	0x01		// ADC FSM states
-N//#define TSTATE_GET_EXTERNAL		0x02
-N//#define	TSTATE_DONE_EXTERNAL	0x03
-N
-N
-N
+Nvoid my_DMA_GlobalInit(void);
+Nvoid my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
 N
 Nvoid Setup_CPU_Clock(void);
 Nvoid HW_NVIC_init(void);
@@ -10213,11 +10211,11 @@ N#include "lcd_1202.h"
 L 1 "src\lcd_1202.h" 1
 N
 N// Size definitions in points
-N#define LCD_XSIZE 96
-N#define LCD_YSIZE 68
+N#define LCD_PHY_XSIZE 96
+N#define LCD_PHY_YSIZE 68
 N
 N// Size definitions in bytes
-N#define LCD_BUFFER_SIZE 864 //96*9
+N#define LCD_PHY_BUFFER_SIZE 864 //96*9
 N
 N
 N#define LCD0 1
@@ -10253,7 +10251,7 @@ N// Initializes both LCDs and flushes memory
 Nvoid LcdInit(void);
 N// Copy buffer data into specified LCD memory by core
 Nvoid LcdUpdateByCore(uint8_t display, uint16_t* lcd_buffer);
-N
+Nvoid LcdUpdateBothByCore(uint8_t* lcd_buffer);
 N
 N//------------------------------------//
 N// Internal functions
@@ -10274,110 +10272,208 @@ N
 N
 N
 L 24 "src\systemfunc.c" 2
-N#include "lcd_func.h"
-L 1 "src\lcd_func.h" 1
+N#include "guiGraphHAL.h"
+L 1 ".\src\gui\guiGraphics\guiGraphHAL.h" 1
+N#ifndef __GUI_GRAPH_HAL_
+N#define __GUI_GRAPH_HAL_
+N
+N#include <stdint.h>
 N
 N
-N#include "font_defs.h"
-L 1 ".\src\fonts\font_defs.h" 1
+N// Size definitions in points for Nokia 1202 LCD
+N#define LCD_XSIZE (2*96)
+N#define LCD_YSIZE 68
 N
-N#include "stdint.h"	// std typedefs
+N// Buffer size in bytes
+N#define LCD_BUFFER_SIZE (2*96*9)
 N
-N#ifndef __font_defs_h
-N#define __font_defs_h
+N/*
+N// Size definitions in points
+N#define LCD_XSIZE (2*128)
+N#define LCD_YSIZE 128
 N
+N// Buffer size in bytes
+N#define LCD_BUFFER_SIZE (LCD_XSIZE * 16)
+N*/
 N
+N// LCD functions settings
+N//#define SOFT_HORIZ_REVERSED
 N
-N
-N//----- Special fonts typedefs -----//
-Ntypedef struct 
-N{
-N	uint8_t code;
-N	uint8_t width;
-N	const uint8_t *data;
-N} tSpecialFontItem;
-N
-N
-Ntypedef struct 
-N{
-N	uint8_t height;
-N	uint8_t count;
-N	const tSpecialFontItem *Chars;
-N} tSpecialFont;
-N
-N//----------------------------------//
-N
-N
-N//----- Regular fonts typedefs -----//
-N
-Ntypedef struct 
-N{
-N	uint8_t width;
-N	uint8_t height;
-N	uint8_t count;
-N	uint8_t bytesPerChar;
-N	const uint8_t *data;
-N} tNormalFont;
-N
-N
-N//----------------------------------//
+N// counter increments from 0 to LCD_xxx_PERIOD-1
+N// if counter < LCD_xxx_COMPARE, pixel is put unchaged
+N// if counter >= LCD_xxx_COMPARE, pixel is put inversed
+N#define LCD_DOT_PERIOD      4
+N#define LCD_DOT_COMPARE     2
+N#define LCD_DASH_PERIOD     7
+N#define LCD_DASH_COMPARE    5
 N
 N
 N
 N
+N// Pixel output modes
+N#define PIXEL_MODE_REWRITE  0x00
+N#define PIXEL_MODE_AND      0x01
+N#define PIXEL_MODE_OR       0x02
+N#define PIXEL_MODE_XOR      0x03
+N
+N// Image output modes
+N#define IMAGE_MODE_NORMAL    0x01
+N#define IMAGE_MODE_INVERSE   0x00
+N// Aliases for fill rect
+N#define FILL_WITH_BLACK      0x01
+N#define FILL_WITH_WHITE      0x00
+N
+N#define LCD_FillRect(x_pos, y_pos, width, height, mode) \
+N    LCD_DrawImage(0, x_pos, y_pos, width, height, mode)
+X#define LCD_FillRect(x_pos, y_pos, width, height, mode)     LCD_DrawImage(0, x_pos, y_pos, width, height, mode)
 N
 N
-N#endif	// __font_defs_h
-N
-N
-L 4 "src\lcd_func.h" 2
-N
-N
-N
-N//----- Common LCD functions settings -----//
-N// X-axis software reverse
-N//#define SOFT_HORIZ_NORM
-N#define SOFT_HORIZ_REV
-N//-----------------------------------------//
-N
-N
-N
-N
-N#define PIXEL_OFF 0
-N#define PIXEL_ON 1
-N#define PIXEL_XOR 2
-N
-N
-N// Lcd buffers
-Nextern uint16_t lcd0_buffer[];
-Nextern uint16_t lcd1_buffer[];
+N// Line drawing mode (not for all functions)
+N#define LINE_STYLE_SOLID      0x10
+N#define LINE_STYLE_DASHED     0x20
+N#define LINE_STYLE_DOTTED     0x30
 N
 N
 N
-N// Char width for Font_6x8.h
-N#define NativeFontWidth 6
 N
 N
+Nextern uint8_t lcdBuffer[LCD_BUFFER_SIZE];
+Xextern uint8_t lcdBuffer[(2*96*9)];
+Nextern uint8_t LCD_lineStyle;
 N
-Nvoid LcdPutPixel (uint8_t x_pos, uint8_t y_pos, uint8_t mode, uint16_t *lcd_buffer);
-Nvoid LcdPutHorLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t mode, uint16_t *lcd_buffer);
-Nvoid LcdPutVertLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t mode, uint16_t *lcd_buffer);
+Nvoid LCD_SetPixelOutputMode(uint8_t newMode);
+Nvoid LCD_SetLineStyle(uint8_t newStyle);
 N
-N// Fills LCD buffer with specified value
-Nvoid LcdFillBuffer(uint16_t* lcd_buffer, uint8_t value);
+Nvoid LCD_FillWholeBuffer(uint8_t pixelValue);
+Nvoid LCD_PutPixel (uint8_t x_pos, uint8_t y_pos, uint8_t pixelValue);
+Nvoid LCD_DrawHorLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t pixelValue);
+Nvoid LCD_DrawVertLine(uint8_t x_pos, uint8_t y_pos, uint8_t length, uint8_t pixelValue);
 N
-N
-Nvoid LcdPutCharNative(uint8_t x, uint8_t y, uint8_t ch, uint8_t inversion, uint16_t* lcd_buffer);
-Nvoid LcdPutStrNative(uint8_t x, uint8_t row, uint8_t *dataPtr, uint8_t inversion, uint16_t* lcd_buffer );
-N
-Nvoid LcdPutImage(uint8_t* img, uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, uint16_t* lcd_buffer);
-N
-N
-Nvoid LcdPutSpecialStr(uint8_t x_pos, uint8_t y_pos, uint8_t* str, tSpecialFont* myFont, uint16_t* lcd_buffer);
-Nvoid LcdPutNormalStr(uint8_t x_pos, uint8_t y_pos, uint8_t* str, tNormalFont* myFont, uint16_t* lcd_buffer);
+Nvoid LCD_DrawImage(const uint8_t* img, uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, uint8_t mode);
 N
 N
+N#endif
 L 25 "src\systemfunc.c" 2
+N#include "guiFonts.h"
+L 1 ".\src\gui\guiGraphics\guiFonts.h" 1
+N#ifndef __GUI_FONTS_H_
+N#define __GUI_FONTS_H_
+N
+N#include <stdint.h>
+N
+N/*
+N    A font may have all chars present, or only some subset of chars.
+N    If a font has contiguous set of chars, starting with some char code,
+N    it is indicated by setting charTable to 0 and defining firstCharCode value.
+N    Field charCount tells how many chars the font has.
+N    Accessing some char with char code c in this case is trivial and looks like this:
+N        c -= font.firstCharCode;
+N        char_data = font.data[c * font.bytesPerChar];
+N    If a font has non-contiguous set of chars, their char codes are specified in codeTable,
+N    and offset relative to font.data is specified in offsetTable.
+N
+N    A font may be monospaced or variable-spaced.
+N    If a font is monospaced, widthTable must be set to 0. All chars will have the same width = font.width.
+N    If font is variable-spaced, widthTable is used - it contains width for every char.
+N
+N    If font has non-contiguous set of chars, or font is variable-spaced, font processing routines need to know,
+N    where particular char image is located. This information provides offsetTable.
+N
+N    So, a font can be one of the following:
+N        - monospaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     -
+N            offsetTable:    -
+N        - monospaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     -
+N            offsetTable:    present
+N        - variable-spaced, char subset is contiguous:
+N            codeTable:      -
+N            widthTable:     present
+N            offsetTable:    present
+N        - variable-spaced, char subset is non-contiguous:
+N            codeTable:      present
+N            widthTable:     present
+N            offsetTable:    present
+N
+N        Font MUST have valid offsetTable when codeTable or widthTable are used.
+N*/
+N
+N
+N//---------------------------------------------//
+N// Fonts typedefs
+N
+Ntypedef struct 
+N{
+N    uint8_t height;                     // font chars height
+N    uint8_t width;                      // actual for monospaced, ignored for variable-width fonts
+N    uint8_t charCount;                  // Total number of chars in the font
+N    uint8_t spacing;                    // Additional space between chars
+N    uint8_t bytesPerChar;               // Actual for monospaced, ignored for variable-length fonts
+N    uint8_t firstCharCode;              // Used if there is no charTable - specifies first avaliable char code in the font.
+N    const uint8_t *codeTable;           // Used if not all symbols are prensent in the font. Otherwise must be 0.
+N    const uint8_t *widthTable;          // Used if font is not monospaced. Otherwise must be 0.
+N    const uint16_t *offsetTable;        // Used with codeTable or widthTable
+N    const uint8_t *data;                // Font data - contiguous byte array
+N} tFont;
+N
+N
+Nextern const tFont font_h11;
+Nextern const tFont font_h32;
+Nextern const tFont font_h10;
+Nextern const tFont font_h10_bold;
+Nextern const tFont font_6x8_mono;
+Nextern const tFont font_h16;
+N
+N
+N#endif
+L 26 "src\systemfunc.c" 2
+N#include "guiGraphPrimitives.h"
+L 1 ".\src\gui\guiGraphics\guiGraphPrimitives.h" 1
+N#ifndef __GUI_GRAPH_PRIMITIVES_H_
+N#define __GUI_GRAPH_PRIMITIVES_H_
+N
+N#include <stdint.h>
+N#include "guiGraphHAL.h"
+N#include "guiFonts.h"
+N
+N// Align modes - required alignment mode is selected by
+N// combining these flags
+N#define ALIGN_CENTER    0x00
+N#define ALIGN_LEFT      0x01
+N#define ALIGN_RIGHT     0x02
+N#define ALIGN_TOP       0x04
+N#define ALIGN_BOTTOM    0x08
+N// Aliases
+N#define ALIGN_TOP_LEFT      (ALIGN_TOP | ALIGN_LEFT)
+N#define ALIGN_BOTTOM_LEFT   (ALIGN_BOTTOM | ALIGN_LEFT)
+N#define ALIGN_TOP_RIGHT     (ALIGN_TOP | ALIGN_RIGHT)
+N#define ALIGN_BOTTOM_RIGHT   (ALIGN_BOTTOM | ALIGN_RIGHT)
+N
+N
+Ntypedef struct {
+N    uint8_t x1;
+N    uint8_t y1;
+N    uint8_t x2;
+N    uint8_t y2;
+N} rect_t;
+N
+N
+Nextern const tFont* LCD_currentFont;
+N
+Nvoid LCD_SetFont(const tFont *newFont);
+N
+Nvoid LCD_DrawRect(uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, uint8_t pixelValue);
+Nuint8_t LCD_GetFontItem(const tFont *font, uint8_t code, uint8_t *width, uint16_t *offset);
+Nvoid LCD_PrintString(char *str, uint8_t x, uint8_t y, uint8_t mode);
+Nvoid LCD_PrintStringAligned(char *str, rect_t *rect, uint8_t alignment, uint8_t mode);
+Nvoid LCD_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t mode);
+N
+N
+N#endif
+L 27 "src\systemfunc.c" 2
+N
 N#include "dwt_delay.h"
 L 1 "src\dwt_delay.h" 1
 N
@@ -10400,7 +10496,7 @@ N
 N
 N
 N
-L 26 "src\systemfunc.c" 2
+L 29 "src\systemfunc.c" 2
 N
 N#include "control.h"
 L 1 "src\control.h" 1
@@ -10472,7 +10568,7 @@ Nvoid SetFeedbackChannel(uint8_t newChannel);
 Nvoid SetCurrentLimit(uint8_t newLimit);
 Nvoid SetOutputLoad(uint8_t newLoad);
 N
-L 28 "src\systemfunc.c" 2
+L 31 "src\systemfunc.c" 2
 N#include "led.h"
 L 1 "src\led.h" 1
 N
@@ -10485,72 +10581,100 @@ N
 N// Update LEDs
 Nvoid UpdateLEDs(uint8_t led_state);
 N
-L 29 "src\systemfunc.c" 2
+L 32 "src\systemfunc.c" 2
 N
-N#include "fonts.h"
-L 1 ".\src\fonts\fonts.h" 1
-N#include "font_defs.h"
-L 1 ".\src\fonts\font_defs.h" 1
-N
-N#include "stdint.h"	// std typedefs
-N
-N#ifndef __font_defs_h
-S#define __font_defs_h
-S
-S
-S
-S
-S//----- Special fonts typedefs -----//
-Stypedef struct 
-S{
-S	uint8_t code;
-S	uint8_t width;
-S	const uint8_t *data;
-S} tSpecialFontItem;
-S
-S
-Stypedef struct 
-S{
-S	uint8_t height;
-S	uint8_t count;
-S	const tSpecialFontItem *Chars;
-S} tSpecialFont;
-S
-S//----------------------------------//
-S
-S
-S//----- Regular fonts typedefs -----//
-S
-Stypedef struct 
-S{
-S	uint8_t width;
-S	uint8_t height;
-S	uint8_t count;
-S	uint8_t bytesPerChar;
-S	const uint8_t *data;
-S} tNormalFont;
-S
-S
-S//----------------------------------//
-S
-S
-S
-S
-S
-S
-N#endif	// __font_defs_h
+N//#include "fonts.h"
 N
 N
-L 2 ".\src\fonts\fonts.h" 2
+Nextern DMA_CtrlDataTypeDef DMA_ControlTable[];
+Nvoid DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr);
 N
 N
-Nextern tNormalFont font_32x19;
-Nextern tNormalFont font_16x10;
-Nextern tNormalFont font_8x12;
 N
-L 31 "src\systemfunc.c" 2
+N// Globally initializes DMA controller
+Nvoid my_DMA_GlobalInit(void)
+N{
+N	/* Check the CTRL_BASE_PTR initialisation */
+N	// MDR_DMA->ALT_CTRL_BASE_PTR is automatically updated by DMA itself and is accessible for read only
+N	MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+X	((MDR_DMA_TypeDef *) (0x40028000))->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
+N	/* DMA configuration register */
+N	//MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || 0 /*DMA_InitStruct->DMA_ProtCtrl*/;		// CHECKME
+N	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_AHB_Privileged;
+X	((MDR_DMA_TypeDef *) (0x40028000))->CFG = ((uint32_t)0x00000001) || ((uint32_t)(0x01 << 5));
+N}
 N
+N// Operates similar to SPL function DMA_Init(), but:
+N//	- Disables channel before init
+N//	- Does NOT start the channel
+N//  - Does not modify general DMA controller registers
+N//	- DMA_ChannelInitStruct.ProtCtrl is unused
+Nvoid my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef* DMA_InitStruct)
+N{
+N	// Make sure channel is disabled
+N	MDR_DMA->CHNL_ENABLE_CLR = (1 << DMA_Channel);
+X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_ENABLE_CLR = (1 << DMA_Channel);
 N
+N	/* Primary Control Data Init */
+N	if (DMA_InitStruct->DMA_PriCtrlData)
+N	{
+N		DMA_CtrlDataInit(DMA_InitStruct->DMA_PriCtrlData, &DMA_ControlTable[DMA_Channel]);
+N	}
+N
+N#if (DMA_AlternateData == 1)
+X#if (1 == 1)
+N	/* Alternate Control Data Init */
+N	if (DMA_InitStruct->DMA_AltCtrlData)
+N	{
+N		uint32_t ptr = (MDR_DMA->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+X		uint32_t ptr = (((MDR_DMA_TypeDef *) (0x40028000))->ALT_CTRL_BASE_PTR + (DMA_Channel * sizeof(DMA_CtrlDataTypeDef)));
+N		DMA_CtrlDataInit(DMA_InitStruct->DMA_AltCtrlData, (DMA_CtrlDataTypeDef *)ptr);
+N	}
+N#endif
+N
+N	/* Burst mode */
+N	if (DMA_InitStruct->DMA_UseBurst == DMA_BurstSet)
+X	if (DMA_InitStruct->DMA_UseBurst == ((uint8_t)0x01))
+N	{
+N		MDR_DMA->CHNL_USEBURST_SET = (1 << DMA_Channel);
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET = (1 << DMA_Channel);
+N	}
+N	else
+N	{
+N		MDR_DMA->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_CLR = (1 << DMA_Channel);
+N	}
+N
+N	/* Channel mask clear - enable requests to channel */
+N	MDR_DMA->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_CLR = (1 << DMA_Channel);
+N  
+N	/* Primary - Alternate control data structure selection */
+N	if (DMA_InitStruct->DMA_SelectDataStructure == DMA_CTRL_DATA_PRIMARY)
+X	if (DMA_InitStruct->DMA_SelectDataStructure == ((uint8_t)0x00))
+N	{
+N		MDR_DMA->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);       /* Use Primary */
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_CLR = (1 << DMA_Channel);        
+N	}
+N	else
+N	{
+N		MDR_DMA->CHNL_PRI_ALT_SET = (1 << DMA_Channel);       /* Use Alternate */
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRI_ALT_SET = (1 << DMA_Channel);        
+N	}
+N
+N	/* Channel priority set */
+N	if (DMA_InitStruct->DMA_Priority == DMA_Priority_High)
+X	if (DMA_InitStruct->DMA_Priority == ((uint8_t)0x01))
+N	{
+N		MDR_DMA->CHNL_PRIORITY_SET = (1 << DMA_Channel);      /* High priority */
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_SET = (1 << DMA_Channel);       
+N	}
+N	else
+N	{
+N		MDR_DMA->CHNL_PRIORITY_CLR = (1 << DMA_Channel);      /* Default priority */
+X		((MDR_DMA_TypeDef *) (0x40028000))->CHNL_PRIORITY_CLR = (1 << DMA_Channel);       
+N	}
+N}
 N
 N
 N
@@ -10621,22 +10745,26 @@ N
 Nvoid HW_NVIC_init(void)
 N{
 N	
+N	// There are 3 bits of priority implemented in MDR32F9Qx device
+N	// Setting all bits to pre-emption, see link below
+N	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0552a/BABHGEAJ.html
 N	NVIC_SetPriorityGrouping( 3 );
 N	
 N	pr[0] = NVIC_GetPriority(SVCall_IRQn);
 N	pr[1] = NVIC_GetPriority(PendSV_IRQn);
 N	pr[2] = NVIC_GetPriority(SysTick_IRQn);
-N	
 N	pr[3] = NVIC_GetPriority(DMA_IRQn);
 N	pr[4] = NVIC_GetPriority(Timer2_IRQn);
 N
-N//	NVIC_SetPriority(SVCall_IRQn,-1);
 N	NVIC_SetPriority(DMA_IRQn,6);
 N	NVIC_SetPriority(Timer2_IRQn,6);
 N
 N	pr[0] = NVIC_GetPriority(SVCall_IRQn);
 N	pr[1] = NVIC_GetPriority(PendSV_IRQn);
 N	pr[2] = NVIC_GetPriority(SysTick_IRQn);
+N	pr[3] = NVIC_GetPriority(DMA_IRQn);
+N	pr[4] = NVIC_GetPriority(Timer2_IRQn);
+N	
 N	
 N}
 N
@@ -10954,7 +11082,7 @@ N	/* Enable UART1 DMA Rx and Tx request */
 N//	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
 N	/* Enable UART2 DMA Rx and Tx request */
 N//	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
-W "src\systemfunc.c" 321 17 variable "initStatus" was set but never used
+W "src\systemfunc.c" 402 17 variable "initStatus" was set but never used
 N}
 N
 N//-----------------------------------------------------------------//
@@ -10966,27 +11094,32 @@ N{
 N	// Reset all DMA settings
 N	DMA_DeInit();	
 N	
+N	// Vital for proper DMA IRQ function
+N	// Single requests from ADC?
 N	MDR_DMA->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	// Disable all requests
 X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_REQ_MASK_SET = 0xFFFFFFFF;	
 N	MDR_DMA->CHNL_USEBURST_SET = 0xFFFFFFFF;	// disable sreq[]
 X	((MDR_DMA_TypeDef *) (0x40028000))->CHNL_USEBURST_SET = 0xFFFFFFFF;	
 N	
-N	
+N	// MDR32F9Qx false DMA requests workaround
+N	// This must be executed next to clock setup
 N	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,ENABLE);
 X	RST_CLK_PCLKcmd(((uint32_t)(1 << ((((uint32_t)(0x40040000)) >> 15) & 0x1F))) ,ENABLE);
-N	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		// F_SSPCLK = HCLK / 1
+N	SSP_BRGInit(MDR_SSP1,SSP_HCLKdiv1);		
 X	SSP_BRGInit(((MDR_SSP_TypeDef *) (0x40040000)),((uint32_t)0x00000000));		
-N	MDR_SSP1->DMACR = 0;
-X	((MDR_SSP_TypeDef *) (0x40040000))->DMACR = 0;
+N	MDR_SSP1->DMACR = 0;					// Reset false requests
+X	((MDR_SSP_TypeDef *) (0x40040000))->DMACR = 0;					
 N	MDR_SSP2->DMACR = 0;
 X	((MDR_SSP_TypeDef *) (0x400A0000))->DMACR = 0;
+N	RST_CLK_PCLKcmd(RST_CLK_PCLK_SSP1 ,DISABLE);
+X	RST_CLK_PCLKcmd(((uint32_t)(1 << ((((uint32_t)(0x40040000)) >> 15) & 0x1F))) ,DISABLE);
 N	
-N	NVIC->ICPR[0] = 0xFFFFFFFF;
-X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICPR[0] = 0xFFFFFFFF;
-N	NVIC->ICER[0] = 0xFFFFFFFF;
-X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICER[0] = 0xFFFFFFFF;
+N	NVIC->ICPR[0] = 0xFFFFFFFF;		// Reset all pending interrupts
+X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICPR[0] = 0xFFFFFFFF;		
+N	NVIC->ICER[0] = 0xFFFFFFFF;		// Disable all interrupts
+X	((NVIC_Type *) ((0xE000E000UL) + 0x0100UL) )->ICER[0] = 0xFFFFFFFF;		
 N	
-N	
+N	my_DMA_GlobalInit();
 N	
 N	NVIC_EnableIRQ(DMA_IRQn);
 N}
@@ -11449,10 +11582,18 @@ N		SetCurrentPWMPeriod(0);
 N
 N
 N		// Put message
-N		LcdFillBuffer(lcd0_buffer,0);
-N		LcdFillBuffer(lcd1_buffer,0);
-N		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
-N		LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+N		//LcdFillBuffer(lcd0_buffer,0);
+N		//LcdFillBuffer(lcd1_buffer,0);
+N		LCD_FillWholeBuffer(0);
+N		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
+N		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
+N		LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+X		LCD_SetPixelOutputMode(0x00);
+N		LCD_SetFont(&font_h11);
+N		LCD_PrintString("Power OFF", 0, 10, IMAGE_MODE_NORMAL);
+X		LCD_PrintString("Power OFF", 0, 10, 0x01);
+N		LCD_PrintString("Power OFF", 96+0, 10, IMAGE_MODE_NORMAL);
+X		LCD_PrintString("Power OFF", 96+0, 10, 0x01);
 N
 N
 N
@@ -11465,10 +11606,9 @@ X		SetCurrentLimit(0x1);
 N		SetOutputLoad(LOAD_DISABLE); 
 X		SetOutputLoad(0x1); 
 N
-N		LcdUpdateByCore(LCD0,lcd0_buffer);
-X		LcdUpdateByCore(1,lcd0_buffer);
-N		LcdUpdateByCore(LCD1,lcd1_buffer);
-X		LcdUpdateByCore(2,lcd1_buffer);
+N//		LcdUpdateByCore(LCD0,lcd0_buffer);
+N//		LcdUpdateByCore(LCD1,lcd1_buffer);
+N		LcdUpdateBothByCore(lcdBuffer);
 N
 N
 N

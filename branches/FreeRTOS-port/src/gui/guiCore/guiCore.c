@@ -403,6 +403,8 @@ void guiCore_RedrawAll(void)
             widget = widget->parent;
         }
     }
+    // Process messages
+    guiCore_ProcessMessageQueue();
 }
 
 

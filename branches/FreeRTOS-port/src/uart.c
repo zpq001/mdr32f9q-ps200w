@@ -159,6 +159,42 @@ static void UART_init_TX_DMA(MDR_UART_TypeDef *MDR_UARTx, DMA_CtrlDataInitTypeDe
 }
 
 
+uint16_t parseKeyCode(char *arg)
+{
+	if (strcmp(arg, "btn_esc") == 0)
+		return BTN_ESC;
+	else if (strcmp(arg, "btn_ok") == 0)
+		return BTN_OK;
+	else if (strcmp(arg, "btn_left") == 0)
+		return BTN_LEFT;
+	else if (strcmp(arg, "btn_right") == 0)
+		return BTN_RIGHT;
+	else if (strcmp(arg, "btn_encoder") == 0)
+		return BTN_ENCODER;	
+	else
+		return 0;
+}
+
+uint16_t parseKeyType(char *arg)
+{
+	if (strcmp(arg, "down") == 0)
+		return BTN_EVENT_DOWN;
+	else if (strcmp(arg, "up") == 0)
+		return BTN_EVENT_UP;
+	else if (strcmp(arg, "up_short") == 0)
+		return BTN_EVENT_UP_SHORT;
+	else if (strcmp(arg, "up_long") == 0)
+		return BTN_EVENT_UP_LONG;
+	else if (strcmp(arg, "hold") == 0)
+		return BTN_EVENT_HOLD;
+	else if (strcmp(arg, "repeat") == 0)
+		return BTN_EVENT_REPEAT;
+	else
+		return 0;
+}
+
+
+
 
 void vTaskUARTReceiver(void *pvParameters) 
 {
@@ -170,6 +206,8 @@ void vTaskUARTReceiver(void *pvParameters)
 	uint16_t uart_rx_word;
 	uint16_t search_for_word = 1;
 	
+	uint16_t keyCmdType;
+	uint16_t keyCmdCode;
 	
 	// Debug
 	uint16_t i;
@@ -251,6 +289,7 @@ void vTaskUARTReceiver(void *pvParameters)
 					dispatcher_msg.type = 0;
 					transmitter_msg.type = RESPONSE_OK;
 					
+					
 					//---------- Converter control -----------//
 					if (strcmp(argv[0], "on") == 0)							// Turn converter ON	
 					{
@@ -302,41 +341,40 @@ void vTaskUARTReceiver(void *pvParameters)
 							dispatcher_msg.data = strtoul(argv[1], 0, 0);
 						}
 					}
-					//----- button and encoder emulation -----//
-					else if (strcmp(argv[0], "btn_esc") == 0)				// ESC button
+					//----- button and encoder emulation -----//	
+					else if (strcmp(argv[0], "key") == 0)				// KEY command
 					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_ESC;
-					}
-					else if (strcmp(argv[0], "btn_ok") == 0)				// OK button
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_OK;
-					}
-					else if (strcmp(argv[0], "btn_left") == 0)				// LEFT button
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_LEFT;
-					}
-					else if (strcmp(argv[0], "btn_right") == 0)				// RIGHT button
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_RIGHT;
-					}
-					else if (strcmp(argv[0], "btn_on") == 0)				// ON button
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_ON;
-					}
-					else if (strcmp(argv[0], "btn_off") == 0)				// OFF button
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_OFF;
-					}
-					else if (strcmp(argv[0], "push_encoder") == 0)			// Encoder push
-					{
-						dispatcher_msg.type = DP_EMU_BTN_DOWN;
-						dispatcher_msg.data = BTN_ENCODER;
+						// There should be 2 parameters - key code specifier and key event specifier
+						if (argc < 3)
+						{
+							transmitter_msg.type = SEND_STRING;
+							transmitter_msg.pdata = "ERR: missing key command arguments\r";
+						}
+						else
+						{
+							keyCmdCode = parseKeyCode(argv[1]);
+							if (keyCmdCode == 0)
+							{
+								transmitter_msg.type = SEND_STRING;
+								transmitter_msg.pdata = "ERR: unknown key code\r";
+							}
+							else
+							{
+								keyCmdType = parseKeyType(argv[2]);
+								if (keyCmdType == 0)
+								{
+									transmitter_msg.type = SEND_STRING;
+									transmitter_msg.pdata = "ERR: unknown key type\r";
+								}
+								else
+								{
+									// Send parsed key command to dispatcher
+									// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
+									dispatcher_msg.type = DISPATCHER_EMULATE_BUTTON;
+									dispatcher_msg.data = keyCmdCode | ((uint32_t)keyCmdType << 16);
+								}
+							}
+						}
 					}
 					else if (strcmp(argv[0], "encoder_delta") == 0)			// Encoder delta
 					{

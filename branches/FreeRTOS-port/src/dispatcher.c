@@ -30,9 +30,8 @@
 
 xQueueHandle xQueueDispatcher;
 
-
-
 const dispatch_incoming_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
+
 
 
 
@@ -41,10 +40,9 @@ void vTaskDispatcher(void *pvParameters)
 	dispatch_incoming_msg_t income_msg;
 	int16_t encoder_delta;
 	conveter_message_t converter_msg;
-	uint32_t gui_msg;
+	gui_incoming_msg_t gui_msg;
+	uint16_t mask;
 	
-	uint16_t button_emulation = 0;
-	int16_t encoder_emulation = 0;
 	
 	// Initialize
 	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_incoming_msg_t ) );		// Queue can contain 5 elements of type uint32_t
@@ -55,7 +53,6 @@ void vTaskDispatcher(void *pvParameters)
 	}
 	
 	
-	
 	while(1)
 	{
 		xQueueReceive(xQueueDispatcher, &income_msg, portMAX_DELAY);
@@ -64,60 +61,88 @@ void vTaskDispatcher(void *pvParameters)
 		switch (income_msg.type)
 		{
 			case DISPATCHER_TICK:
-				ProcessButtons();
-				//encoder_delta = GetEncoderDelta();	
+			
+				ProcessButtons();	
 				UpdateEncoderDelta();
 				
-				// Apply emulation
-				buttons.action_down |= button_emulation;
-				encoder_delta += encoder_emulation;
-				button_emulation = 0;
-				encoder_emulation = 0;
-			
+				//---------- Converter control -----------//
 				
-			
 				// Feedback channel select
 				if (buttons.action_down & SW_CHANNEL)
 				{
 					// Send switch channel to 5V message
 					converter_msg.type = CONVERTER_SWITCH_TO_5VCH;
+					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
 				else if (buttons.action_up & SW_CHANNEL)
 				{
 					// Send switch channel to 12V message
 					converter_msg.type = CONVERTER_SWITCH_TO_12VCH;
+					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
-				else if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
+				
+				if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
 				{
 					// Send OFF mesage to converter task
 					converter_msg.type = CONVERTER_TURN_OFF;
+					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
 				else if ((buttons.action_down & BTN_ON) || (buttons.action_down & SW_EXTERNAL))
 				{
 					// Send ON mesage to converter task
 					converter_msg.type = CONVERTER_TURN_ON;
+					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
-			
 				
-					
-				//---------------------------//	
-				//---------------------------//
-
-				// Make GUI process buttons and encoder
-				gui_msg = GUI_TASK_PROCESS_BUTTONS;
-				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-			
+				converter_msg.type  = 0;
+				
+				//------------- GUI control --------------//
+				
+				// Serialize button events to GUI
+				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
+				mask = 0x0001;
+				while(mask)
+				{
+					if (buttons.action_down & mask)
+					{
+						gui_msg.data = mask | (BTN_EVENT_DOWN << 16);
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+					}
+					if (buttons.action_up & mask)
+					{
+						gui_msg.data = mask | (BTN_EVENT_UP << 16);
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+					}
+					if (buttons.action_hold & mask)
+					{
+						gui_msg.data = mask | (BTN_EVENT_HOLD << 16);
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+					}
+					mask <<= 1;
+				}
+				
+				// Send encoder events to GUI
+				if (encoder_delta)
+				{
+					gui_msg.type = GUI_TASK_PROCESS_ENCODER;
+					gui_msg.data = (uint32_t)encoder_delta;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				}
+				
 				break;
 				
 			//----- button and encoder emulation -----//
-			case DP_EMU_BTN_DOWN:
-				button_emulation |= income_msg.data;
+			case DISPATCHER_EMULATE_BUTTON:
+				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
+				gui_msg.data = income_msg.data;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				break;
 			case DP_EMU_ENC_DELTA:
-				encoder_emulation += (int16_t)income_msg.data;
+				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
+				gui_msg.data = income_msg.data;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				break;
 			
-				
 			//----- converter control -----//
 			case DP_CONVERTER_TURN_ON:
 				converter_msg.type = CONVERTER_TURN_ON;

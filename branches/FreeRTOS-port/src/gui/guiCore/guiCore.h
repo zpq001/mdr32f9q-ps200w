@@ -50,10 +50,18 @@ typedef struct {
 
 // Keyboard codes are design-specific and should be defined in
 // one of top-level modules
+// If you want to override defalut GUI keys, define USE_CUSTOM_KEYS in guiConfig.h
+
+#ifndef USE_CUSTOM_KEYS
+#define USE_CUSTOM_KEYS
 
 // Key event specifications
-#define GUI_KEY_EVENT_DOWN   0x01        // A key has been pressed
-#define GUI_KEY_EVENT_UP     0x02        // A key has been released
+#define GUI_KEY_EVENT_DOWN      0x01        // A key has been pressed
+#define GUI_KEY_EVENT_UP        0x02        // A key has been released
+#define GUI_KEY_EVENT_UP_SHORT  0x03
+#define GUI_KEY_EVENT_UP_LONG   0x04
+#define GUI_KEY_EVENT_HOLD      0x05
+#define GUI_KEY_EVENT_REPEAT    0x06
 
 // Button codes
 #define GUI_KEY_ESC     0x01
@@ -63,6 +71,8 @@ typedef struct {
 #define GUI_KEY_UP      0x05
 #define GUI_KEY_DOWN    0x06
 #define GUI_KEY_ENCODER 0x07
+
+#endif
 
 
 //-----------------------------------//

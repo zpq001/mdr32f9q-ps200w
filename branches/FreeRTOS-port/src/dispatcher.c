@@ -38,7 +38,6 @@ const dispatch_incoming_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
 void vTaskDispatcher(void *pvParameters) 
 {
 	dispatch_incoming_msg_t income_msg;
-	int16_t encoder_delta;
 	conveter_message_t converter_msg;
 	gui_incoming_msg_t gui_msg;
 	uint16_t mask;

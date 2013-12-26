@@ -38,7 +38,7 @@
 #define USE_ACTION_UP				// Triggers when button is released
 //#define USE_ACTION_UP_SHORT			// Triggers when button is released and had been pressed for short time
 //#define USE_ACTION_UP_LONG			// Triggers when button is released and had been pressed for long time
-//#define USE_ACTION_HOLD				// Triggers when button is being pressed for long time
+#define USE_ACTION_HOLD				// Triggers when button is being pressed for long time
 //#define USE_ACTION_TOGGLE			// Toggles every time button is pressed
 
 

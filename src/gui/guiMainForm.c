@@ -122,7 +122,7 @@ static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiE
             break;
 
         case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
+            if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
             {
                 if (guiMasterPanel.isVisible)
                 {

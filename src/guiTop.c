@@ -38,13 +38,44 @@ xQueueHandle xQueueGUI;
 static conveter_message_t converter_msg;	// to save stack
 
 
+// Encode physical buttons into GUI virtual keys
+static uint8_t encodeGuiKey(uint16_t btnCode)
+{
+	switch (btnCode)
+	{
+		case BTN_ESC:
+			return GUI_KEY_ESC;
+		case BTN_OK:
+			return GUI_KEY_OK;
+		case BTN_LEFT:
+			return GUI_KEY_LEFT;
+		case BTN_RIGHT:
+			return GUI_KEY_RIGHT;
+		case BTN_ENCODER:
+			return GUI_KEY_ENCODER;
+		default: 
+			return 0;
+	}
+}
+
+// Encode physical buttons events into GUI virtual events
+static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
+{
+	return (uint8_t)btnEvent;
+}
+
+
+
+
 void vTaskGUI(void *pvParameters) 
 {
-	uint32_t msg;
-	uint8_t button_spec;
+	gui_incoming_msg_t msg;
+	uint8_t guiKeyCode;
+	uint8_t guiKeyEvent;
+	int16_t encoder_delta;
 	
 	// Initialize
-	xQueueGUI = xQueueCreate( 10, sizeof( uint32_t ) );		// GUI queue can contain 10 elements of type uint32_t
+	xQueueGUI = xQueueCreate( 10, sizeof( gui_incoming_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
 	if( xQueueGUI == 0 )
 	{
 		// Queue was not created and must not be used.
@@ -64,7 +95,7 @@ void vTaskGUI(void *pvParameters)
 	while(1)
 	{
 		xQueueReceive(xQueueGUI, &msg, portMAX_DELAY);
-		switch (msg)
+		switch (msg.type)
 		{
 			case GUI_TASK_REDRAW:
 				// Draw GUI
@@ -73,19 +104,17 @@ void vTaskGUI(void *pvParameters)
 				LcdUpdateBothByCore(lcdBuffer);
 				break;
 			case GUI_TASK_PROCESS_BUTTONS:
-				// Serialize button events
-				button_spec = GUI_KEY_EVENT_DOWN;
-				if (buttons.action_down & BTN_ESC)
-					guiCore_ProcessKeyEvent(GUI_KEY_ESC, button_spec);
-				if (buttons.action_down & BTN_OK)
-					guiCore_ProcessKeyEvent(GUI_KEY_OK, button_spec);
-				if (buttons.action_down & BTN_LEFT)
-					guiCore_ProcessKeyEvent(GUI_KEY_LEFT, button_spec);
-				if (buttons.action_down & BTN_RIGHT)
-					guiCore_ProcessKeyEvent(GUI_KEY_RIGHT, button_spec);
-				if (buttons.action_down & BTN_ENCODER)
-					guiCore_ProcessKeyEvent(GUI_KEY_ENCODER, button_spec);
-				// Encoder
+				// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
+				guiKeyCode = encodeGuiKey((uint16_t)msg.data);
+				if (guiKeyCode == 0)
+					break;
+				guiKeyEvent = encodeGuiKeyEvent((uint16_t)(msg.data >> 16));
+				if (guiKeyEvent == 0)
+					break;
+				guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
+				break;
+			case GUI_TASK_PROCESS_ENCODER:
+				encoder_delta = (int16_t)msg.data;
 				if (encoder_delta)
 					guiCore_ProcessEncoderEvent(encoder_delta);
 				break;

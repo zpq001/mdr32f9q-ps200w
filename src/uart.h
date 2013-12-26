@@ -47,6 +47,23 @@ typedef struct {
 
 
 
+
+
+typedef struct {
+	char *keyword;
+	void *nextTable;
+	void (*func_ptr)(int32_t n);
+	int32_t funcArg;
+} parser_table_record_t;
+
+
+
+
+
+
+
+
+
 void vTaskUARTReceiver(void *pvParameters);
 void vTaskUARTTransmitter(void *pvParameters);
 

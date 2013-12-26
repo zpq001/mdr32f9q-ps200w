@@ -263,6 +263,11 @@ static uint8_t guiMasterPanel_ProcessEvents(struct guiGenericWidget_t *widget, g
                 guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMasterPanel,1);
             break;
         case GUI_EVENT_KEY:
+            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
+            {
+                // do nothing and accept event
+                break;
+            }
             if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ENCODER))
             {
                 if (spinBox_voltage.isFocused)

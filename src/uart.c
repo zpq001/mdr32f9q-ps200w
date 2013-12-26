@@ -18,6 +18,8 @@
 #include "buttons.h"
 #include "systemfunc.h"
 
+#include "guiTop.h"
+
 #include "dwt_delay.h"
 
 extern DMA_CtrlDataTypeDef DMA_ControlTable[];
@@ -352,7 +354,7 @@ void vTaskUARTReceiver(void *pvParameters)
 						}
 						else
 						{
-							keyCmdCode = parseKeyCode(argv[1]);
+							keyCmdCode = parseKeyType(argv[1]);
 							if (keyCmdCode == 0)
 							{
 								transmitter_msg.type = SEND_STRING;
@@ -360,7 +362,7 @@ void vTaskUARTReceiver(void *pvParameters)
 							}
 							else
 							{
-								keyCmdType = parseKeyType(argv[2]);
+								keyCmdType = parseKeyCode(argv[2]);
 								if (keyCmdType == 0)
 								{
 									transmitter_msg.type = SEND_STRING;
@@ -371,7 +373,7 @@ void vTaskUARTReceiver(void *pvParameters)
 									// Send parsed key command to dispatcher
 									// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
 									dispatcher_msg.type = DISPATCHER_EMULATE_BUTTON;
-									dispatcher_msg.data = keyCmdCode | ((uint32_t)keyCmdType << 16);
+									dispatcher_msg.data = ((uint32_t)keyCmdCode << 16) | keyCmdType;
 								}
 							}
 						}

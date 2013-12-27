@@ -23,6 +23,8 @@ typedef struct {
 #define GUI_TASK_REDRAW				0		// draw
 #define GUI_TASK_PROCESS_BUTTONS	1		// buttons
 #define GUI_TASK_PROCESS_ENCODER	2		// encoder
+#define GUI_TASK_RESTORE_ALL		3		// read data from settings and converter structures and update widgets
+#define GUI_TASK_EEPROM_STATE		4
 
 #define GUI_TASK_UPDATE_VOLTAGE_CURRENT			0x10	// Refreshes voltage and current indicators
 #define GUI_TASK_UPDATE_VOLTAGE_SETTING			0x14	// Refreshes voltage setting
@@ -42,6 +44,8 @@ typedef struct {
 #define	GUI_CURRENT_LIM_LOW	 	0x0
 
 
+
+void GUI_Init(void);
 
 extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);

@@ -30,6 +30,8 @@ uint16_t beep_cnt;
 // Profiling
 time_profile_t time_profile;
 
+uint8_t enable_task_ticks = 0;
+
 
 //-----------------------------------------------------------------//
 // FreeRTOS tick hook - called from ISR
@@ -50,30 +52,33 @@ void vApplicationTickHook( void )
 	// We have not woken a task at the start of the ISR.
 	xHigherPriorityTaskWokenByPost = pdFALSE;
 	
-	if (--tmr_gui_update == 0)
+	if (enable_task_ticks)
 	{
-		msg = GUI_TASK_REDRAW;
-		xQueueSendToBackFromISR(xQueueGUI, &msg, &xHigherPriorityTaskWokenByPost);
-		tmr_gui_update = GUI_UPDATE_INTERVAL;
-	}
-	
-	if (--tmr_converter_tick == 0)
-	{
-		//msg = CONVERTER_TICK;
-		xQueueSendToBackFromISR(xQueueConverter, &converter_tick_message, &xHigherPriorityTaskWokenByPost);
-		tmr_converter_tick = CONVERTER_TICK_INTERVAL;
-	}
-	
-	if (--tmr_dispatcher_tick == 0)
-	{
-		xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
-		tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
-	}
-	
-	if (--tmr_sound_driver_tick == 0)
-	{
-		xQueueSendToBackFromISR(xQueueSound, &sound_driver_sync_msg, &xHigherPriorityTaskWokenByPost);
-		tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
+		if (--tmr_gui_update == 0)
+		{
+			msg = GUI_TASK_REDRAW;
+			xQueueSendToBackFromISR(xQueueGUI, &msg, &xHigherPriorityTaskWokenByPost);
+			tmr_gui_update = GUI_UPDATE_INTERVAL;
+		}
+		
+		if (--tmr_converter_tick == 0)
+		{
+			//msg = CONVERTER_TICK;
+			xQueueSendToBackFromISR(xQueueConverter, &converter_tick_message, &xHigherPriorityTaskWokenByPost);
+			tmr_converter_tick = CONVERTER_TICK_INTERVAL;
+		}
+		
+		if (--tmr_dispatcher_tick == 0)
+		{
+			xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
+			tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+		}
+		
+		if (--tmr_sound_driver_tick == 0)
+		{
+			xQueueSendToBackFromISR(xQueueSound, &sound_driver_sync_msg, &xHigherPriorityTaskWokenByPost);
+			tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
+		}
 	}
 	
 	// Force context switching if required

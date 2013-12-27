@@ -41,7 +41,7 @@ void vTaskDispatcher(void *pvParameters)
 	conveter_message_t converter_msg;
 	gui_incoming_msg_t gui_msg;
 	uint16_t mask;
-	
+	uint32_t sound_msg;
 	
 	// Initialize
 	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_incoming_msg_t ) );		// Queue can contain 5 elements of type uint32_t
@@ -51,6 +51,42 @@ void vTaskDispatcher(void *pvParameters)
 		while(1);
 	}
 	
+	
+	//---------- Task init sequence ----------//
+	// Tasks suspended on this moment:
+	//		- vTaskConverter
+	
+	// Provide some time for hardware to stay idle
+	vTaskDelay( 500 / portTICK_RATE_MS);
+	
+	// EEPROM status (fake for now)
+	gui_msg.type = GUI_TASK_EEPROM_STATE;
+	gui_msg.data = 1;	// 1 = OK, 0 = FAIL
+	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+	
+	// Init and start converter
+	ProcessButtons();
+	if (buttons.raw_state & SW_CHANNEL)
+		Converter_Init(CHANNEL_5V);
+	else
+		Converter_Init(CHANNEL_12V);
+	vTaskResume(vTaskConverter);	
+	
+	// Wait a bit more
+	vTaskDelay( 200 / portTICK_RATE_MS);
+	
+	// Send GUI task message to read all settings and converter setup and update it's widgets.
+	gui_msg.type = GUI_TASK_RESTORE_ALL;
+	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+	
+	// Some tasks stay suspended. Start them.  - TODO
+	
+	// Sound notification
+	sound_msg = SND_CONV_SETTING_OK;
+	xQueueSendToBack(xQueueSound, &sound_msg, 0);
+	
+	// Clear message queue from tick messages and start normal operation
+	xQueueReset(xQueueDispatcher);
 	
 	while(1)
 	{

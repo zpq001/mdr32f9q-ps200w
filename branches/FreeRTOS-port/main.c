@@ -113,6 +113,19 @@ void vTaskLED2(void *pvParameters) {
 /*****************************************************************************
 *		Main function
 *
+
+	Start-up sequence:
+	
+		First, all hardware setup is made. It includes clocks, interrupt controller, 
+		ADC, DMA and other peripheral blocks.
+		After that, some low-level initialization functions are called, then
+		interrupts are enabled. From this moment, low-level interrupt-driven 
+		systems are working.
+		After that, system settings are restored (from serial EEPROM or other source).
+		Now tasks are created and sheduler is started. Some tasks start immediately, 
+		while others wait for specific initialization messages. 
+		Dispatcher task takes care ot that.
+
 ******************************************************************************/
 int main(void)
 
@@ -133,21 +146,14 @@ int main(void)
 	HW_UARTInit();
 	HW_DMAInit();
 	LcdInit();
-	
-//	UARTInit();
-	
+
 	InitButtons();
-	ProcessButtons();
-	// Default feedback channel select
-	if (buttons.raw_state & SW_CHANNEL)
-		Converter_Init(CHANNEL_5V);
-	else
-		Converter_Init(CHANNEL_12V);
+
+	// CHECKME - low level converter iint - required ?
 	
-	
-	// Enable interrupt
+	// Enable interrupt for fast low-level control dispatcher
+	// TODO: bring ISR from systick.c to systemfunc.c
 	NVIC_EnableIRQ(Timer2_IRQn);
-	
 	
 	SetCoolerSpeed(80);
 	LcdSetBacklight(85);
@@ -156,6 +162,8 @@ int main(void)
 	time_profile.max_ticks_in_Systick_hook = 0;
 	time_profile.max_ticks_in_Timer2_ISR = 0;
 	
+	enable_task_ticks = 1;	// enable software timers (in systick hook)
+							// CHECKME
 	
 	xTaskCreate( vTaskGUI, 			( signed char * ) 		"GUI top", 		configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);

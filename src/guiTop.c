@@ -65,6 +65,18 @@ static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
 }
 
 
+// GUI initialization
+void GUI_Init(void)
+{
+
+	
+	// Get values from converter - must be already initialized
+	
+	
+	// Restore values from settings
+
+}
+
 
 
 void vTaskGUI(void *pvParameters) 
@@ -73,6 +85,7 @@ void vTaskGUI(void *pvParameters)
 	uint8_t guiKeyCode;
 	uint8_t guiKeyEvent;
 	int16_t encoder_delta;
+	guiEvent_t guiEvent;
 	
 	// Initialize
 	xQueueGUI = xQueueCreate( 10, sizeof( gui_incoming_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
@@ -82,26 +95,43 @@ void vTaskGUI(void *pvParameters)
 		while(1);
 	}
 	
-	// GUI initialize
+	// Create all GUI elements and prepare core
 	guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
-	// TODO - add restoring values from EEPROM
+	// GUI is ready, but initial welcome screen is what will be displayed.
+	// When all other systems init will be done, GUI should be sent 
+	// a special message to start operate normally.
 	
-	//setVoltageSetting(regulation_setting_p->set_voltage);
-	//setCurrentSetting(regulation_setting_p->set_current);
-	//setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
-	//setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
 	
 	while(1)
 	{
 		xQueueReceive(xQueueGUI, &msg, portMAX_DELAY);
 		switch (msg.type)
 		{
+			case GUI_TASK_RESTORE_ALL:
+				setVoltageSetting(regulation_setting_p->set_voltage);
+				setCurrentSetting(regulation_setting_p->set_current);
+				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
+				// Retore other values from EEPROM
+				// TODO
+				
+				// Start normal GUI operation
+				guiEvent.type = GUI_EVENT_START;
+				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
+				guiCore_ProcessMessageQueue();
+				break;
 			case GUI_TASK_REDRAW:
 				// Draw GUI
 				guiCore_RedrawAll();
 				// Flush buffer to LCDs
 				LcdUpdateBothByCore(lcdBuffer);
+				break;
+			case GUI_TASK_EEPROM_STATE:
+				guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
+				guiEvent.spec = (uint8_t)msg.data;
+				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
+				guiCore_ProcessMessageQueue();
 				break;
 			case GUI_TASK_PROCESS_BUTTONS:
 				// msg.data[31:16] = key code, 	msg.data[15:0] = key event type

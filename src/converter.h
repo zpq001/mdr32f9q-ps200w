@@ -132,6 +132,7 @@ typedef struct {
 #define SET_CURRENT_LIMIT_40A		0x06
 #define CONVERTER_SET_VOLTAGE		0x07
 #define CONVERTER_SET_CURRENT		0x08
+#define CONVERTER_INITIALIZE		0x09
 
 
 /*

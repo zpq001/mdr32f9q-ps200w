@@ -34,7 +34,7 @@ typedef struct {
 
 
 extern time_profile_t time_profile;
-
+extern uint8_t enable_task_ticks;
            
 extern uint32_t ticks_per_us;
 

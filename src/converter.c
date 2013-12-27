@@ -51,6 +51,8 @@ converter_regulation_t *regulation_setting_p;
 
 const conveter_message_t converter_tick_message = 	{	CONVERTER_TICK, 0, 0 };
 const conveter_message_t converter_update_message = {	CONVERTER_UPDATE, 0, 0 };
+//const conveter_message_t converter_init_message = {	CONVERTER_INITIALIZE, 0, 0 };
+
 
 xQueueHandle xQueueConverter;
 
@@ -282,7 +284,7 @@ void Converter_Init(uint8_t default_channel)
 	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
 	channel_12v_setting.soft_current_range_enable = 0;
 	
-	// 
+	// Select default channel
 	if (default_channel == CHANNEL_12V)
 		regulation_setting_p = &channel_12v_setting;
 	else
@@ -290,11 +292,12 @@ void Converter_Init(uint8_t default_channel)
 	
 	
 	// Apply controls
-	//__disable_irq();
+	__disable_irq();
 	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
-	//__enable_irq();
+	__enable_irq();
 	SetCurrentLimit(regulation_setting_p->current_limit);
-	SetOutputLoad(channel_12v_setting.load_state);
+	SetOutputLoad(regulation_setting_p->load_state);
+	apply_regulation();										// Apply voltage and current settings
 }
 
 
@@ -363,6 +366,9 @@ void vTaskConverter(void *pvParameters)
 		while(1);
 	}
 	
+	// Wait until task is started by dispatcher
+	vTaskSuspend(NULL);			
+	xQueueReset(xQueueConverter);
 	
 	
 	while(1)

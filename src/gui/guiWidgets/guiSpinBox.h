@@ -33,7 +33,7 @@
 uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 
 void guiSpinBox_Initialize(guiSpinBox_t *spinBox, guiGenericWidget_t *parent);
-void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value);
+void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value, uint8_t callHandler);
 
 
 

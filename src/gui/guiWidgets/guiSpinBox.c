@@ -37,7 +37,7 @@ uint8_t guiSpinBox_SetActive(guiSpinBox_t *spinBox, uint8_t newActiveState, uint
         spinBox->isActive = 0;
         if ((spinBox->restoreValueOnEscape) && (restoreValue))
         {
-            guiSpinBox_SetValue(spinBox, spinBox->savedValue);
+            guiSpinBox_SetValue(spinBox, spinBox->savedValue, 1);
             spinBox->newValueAccepted = 0;
         }
         else
@@ -79,7 +79,7 @@ void guiSpinBox_SetActiveDigit(guiSpinBox_t *spinBox, int8_t num)
 }
 
 
-void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value)
+void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value, uint8_t callHandler)
 {
     int32_t newValue;
     guiEvent_t event;
@@ -96,8 +96,11 @@ void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value)
             spinBox->digitsToDisplay = i32toa_align_right(spinBox->value, spinBox->text,
                                        SPINBOX_STRING_LENGTH | NO_TERMINATING_ZERO, spinBox->minDigitsToDisplay);
             // Call handler
-            event.type = SPINBOX_VALUE_CHANGED;
-            guiCore_CallEventHandler((guiGenericWidget_t *)spinBox, &event);
+            if (callHandler)
+            {
+                event.type = SPINBOX_VALUE_CHANGED;
+                guiCore_CallEventHandler((guiGenericWidget_t *)spinBox, &event);
+            }
             // Check active digit position
             guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit);
         }
@@ -115,7 +118,7 @@ void guiSpinBox_IncrementValue(guiSpinBox_t *spinBox, int32_t delta)
             mul_c *= 10;
         }
         delta *= mul_c;
-        guiSpinBox_SetValue(spinBox, spinBox->value + delta);
+        guiSpinBox_SetValue(spinBox, spinBox->value + delta, 1);
     }
 }
 

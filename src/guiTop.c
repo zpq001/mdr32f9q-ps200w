@@ -12,6 +12,7 @@
 #include "lcd_1202.h"		// physical driver
 
 //------ GUI components ------//
+#include "guiConfig.h"
 #include "guiTop.h"
 #include "guiFonts.h"
 #include "guiGraphHAL.h"

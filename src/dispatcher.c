@@ -25,7 +25,7 @@
 //#include "gui_top.h"
 #include "guiTop.h"
 #include "dispatcher.h"
-
+#include "sound_driver.h"
 
 
 xQueueHandle xQueueDispatcher;
@@ -70,7 +70,8 @@ void vTaskDispatcher(void *pvParameters)
 		Converter_Init(CHANNEL_5V);
 	else
 		Converter_Init(CHANNEL_12V);
-	vTaskResume(vTaskConverter);	
+	//vTaskResume(vTaskConverter);	
+	taskConverter_Enable = 1;
 	
 	// Wait a bit more
 	vTaskDelay( 200 / portTICK_RATE_MS);

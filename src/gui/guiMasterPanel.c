@@ -95,7 +95,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     // Initialize text label for measured voltage display
     guiTextLabel_Initialize(&textLabel_voltage, (guiGenericWidget_t *)&guiMasterPanel);
     textLabel_voltage.x = 1;
-    textLabel_voltage.y = 1;
+    textLabel_voltage.y = 0;
     textLabel_voltage.width = 94;
     textLabel_voltage.height = 32;
     textLabel_voltage.textAlignment = ALIGN_TOP_RIGHT;
@@ -105,7 +105,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     // Initialize text label for measured current display
     guiTextLabel_Initialize(&textLabel_current, (guiGenericWidget_t *)&guiMasterPanel);
     textLabel_current.x = 96 + 1;
-    textLabel_current.y = 1;
+    textLabel_current.y = 0;
     textLabel_current.width = 94;
     textLabel_current.height = 32;
     textLabel_current.textAlignment = ALIGN_TOP_RIGHT;
@@ -166,7 +166,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiSpinBox_Initialize(&spinBox_voltage, (guiGenericWidget_t *)&guiMasterPanel);
     spinBox_voltage.processEvent = spinBoxEventProcessFunction;
     spinBox_voltage.x = 30;
-    spinBox_voltage.y = 34;
+    spinBox_voltage.y = 33;
     spinBox_voltage.width = 45;
     spinBox_voltage.height = 21;
     spinBox_voltage.textRightOffset = 0;
@@ -184,7 +184,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiSpinBox_Initialize(&spinBox_current, (guiGenericWidget_t *)&guiMasterPanel);
     spinBox_current.processEvent = spinBoxEventProcessFunction;
     spinBox_current.x = 96+30;
-    spinBox_current.y = 34;
+    spinBox_current.y = 33;
     spinBox_current.width = 45;
     spinBox_current.height = 21;
     spinBox_current.textRightOffset = 0;
@@ -325,12 +325,12 @@ static uint8_t onSpinBoxDrawEvent(void *sender, guiEvent_t *event)
         if (spinBox->isFocused)
         {
             LCD_SetPixelOutputMode(PIXEL_MODE_OR);
-            LCD_DrawImage((uint8_t*)&selector_tri, 88, 40, 6, 12, IMAGE_MODE_NORMAL);
+            LCD_DrawImage((uint8_t*)&selector_tri, 88, 39, 6, 12, IMAGE_MODE_NORMAL);
         }
         else
         {
             LCD_SetPixelOutputMode(PIXEL_MODE_AND);
-            LCD_DrawImage((uint8_t*)&selector_tri, 88, 40, 6, 12, IMAGE_MODE_INVERSE);
+            LCD_DrawImage((uint8_t*)&selector_tri, 88, 39, 6, 12, IMAGE_MODE_INVERSE);
         }
     }
     if ((spinBox->redrawFocus) && (spinBox == &spinBox_current))
@@ -338,12 +338,12 @@ static uint8_t onSpinBoxDrawEvent(void *sender, guiEvent_t *event)
         if (spinBox->isFocused)
         {
             LCD_SetPixelOutputMode(PIXEL_MODE_OR);
-            LCD_DrawImage((uint8_t*)&selector_tri, 96+88, 40, 6, 12, IMAGE_MODE_NORMAL);
+            LCD_DrawImage((uint8_t*)&selector_tri, 96+88, 39, 6, 12, IMAGE_MODE_NORMAL);
         }
         else
         {
             LCD_SetPixelOutputMode(PIXEL_MODE_AND);
-            LCD_DrawImage((uint8_t*)&selector_tri, 96+88, 40, 6, 12, IMAGE_MODE_INVERSE);
+            LCD_DrawImage((uint8_t*)&selector_tri, 96+88, 39, 6, 12, IMAGE_MODE_INVERSE);
         }
     }
     return 0;   // doesn't matter
@@ -387,7 +387,7 @@ static uint8_t onTextLabelDrawEvent(void *sender, guiEvent_t *event)
 
 static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
 {
-    guiTextLabel_t *label = (guiTextLabel_t *)sender;
+    //guiTextLabel_t *label = (guiTextLabel_t *)sender;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     switch (event->type)
     {
@@ -417,8 +417,7 @@ void setVoltageIndicator(uint16_t value)
 
 void setVoltageSetting(uint16_t value)
 {
-    // FIXME
-    guiSpinBox_SetValue(&spinBox_voltage, value/10);
+    guiSpinBox_SetValue(&spinBox_voltage, value/10, 0);     // do not call handler
 
 }
 
@@ -431,8 +430,7 @@ void setCurrentIndicator(uint16_t value)
 
 void setCurrentSetting(uint16_t value)
 {
-    // FIXME
-    guiSpinBox_SetValue(&spinBox_current, value/10);
+    guiSpinBox_SetValue(&spinBox_current, value/10, 0);     // do not call handler
 }
 
 void setPowerIndicator(uint32_t value)

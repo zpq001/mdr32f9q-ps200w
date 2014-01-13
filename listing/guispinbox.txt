@@ -61,95 +61,101 @@
 
                   guiSpinBox_SetValue PROC
 ;;;81     
-;;;82     void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value)
-00004a  b51c              PUSH     {r2-r4,lr}
+;;;82     void guiSpinBox_SetValue(guiSpinBox_t *spinBox, int32_t value, uint8_t callHandler)
+00004a  b57c              PUSH     {r2-r6,lr}
 ;;;83     {
 00004c  4604              MOV      r4,r0
 00004e  4608              MOV      r0,r1
+000050  4615              MOV      r5,r2
 ;;;84         int32_t newValue;
 ;;;85         guiEvent_t event;
 ;;;86         if (spinBox != 0)
-000050  2c00              CMP      r4,#0
-000052  d02d              BEQ      |L1.176|
+000052  2c00              CMP      r4,#0
+000054  d02e              BEQ      |L1.180|
 ;;;87         {
 ;;;88             newValue = (value < spinBox->minValue) ? spinBox->minValue :
-000054  6b61              LDR      r1,[r4,#0x34]
-000056  4281              CMP      r1,r0
-000058  dd01              BLE      |L1.94|
-00005a  4608              MOV      r0,r1
-00005c  e003              B        |L1.102|
-                  |L1.94|
+000056  6b61              LDR      r1,[r4,#0x34]
+000058  4281              CMP      r1,r0
+00005a  dd01              BLE      |L1.96|
+00005c  4608              MOV      r0,r1
+00005e  e003              B        |L1.104|
+                  |L1.96|
 ;;;89                        ((value > spinBox->maxValue) ? spinBox->maxValue : value);
-00005e  6b21              LDR      r1,[r4,#0x30]
-000060  4281              CMP      r1,r0
-000062  da00              BGE      |L1.102|
-000064  4608              MOV      r0,r1
-                  |L1.102|
+000060  6b21              LDR      r1,[r4,#0x30]
+000062  4281              CMP      r1,r0
+000064  da00              BGE      |L1.104|
+000066  4608              MOV      r0,r1
+                  |L1.104|
 ;;;90     
 ;;;91             if (newValue != spinBox->value)
-000066  6aa1              LDR      r1,[r4,#0x28]
-000068  4281              CMP      r1,r0
-00006a  d021              BEQ      |L1.176|
+000068  6aa1              LDR      r1,[r4,#0x28]
+00006a  4281              CMP      r1,r0
+00006c  d022              BEQ      |L1.180|
 ;;;92             {
 ;;;93                 spinBox->value = newValue;
-00006c  f1040408          ADD      r4,r4,#8
-000070  6220              STR      r0,[r4,#0x20]
+00006e  f1040408          ADD      r4,r4,#8
+000072  6220              STR      r0,[r4,#0x20]
 ;;;94                 spinBox->redrawValue = 1;
-000072  7f21              LDRB     r1,[r4,#0x1c]
-000074  f0410102          ORR      r1,r1,#2
-000078  7721              STRB     r1,[r4,#0x1c]
+000074  7f21              LDRB     r1,[r4,#0x1c]
+000076  f0410102          ORR      r1,r1,#2
+00007a  7721              STRB     r1,[r4,#0x1c]
 ;;;95                 spinBox->redrawRequired = 1;
-00007a  7821              LDRB     r1,[r4,#0]
-00007c  f0410140          ORR      r1,r1,#0x40
-000080  7021              STRB     r1,[r4,#0]
+00007c  7821              LDRB     r1,[r4,#0]
+00007e  f0410140          ORR      r1,r1,#0x40
+000082  7021              STRB     r1,[r4,#0]
 ;;;96                 spinBox->digitsToDisplay = i32toa_align_right(spinBox->value, spinBox->text,
-000082  7f63              LDRB     r3,[r4,#0x1d]
-000084  f1a40408          SUB      r4,r4,#8
-000088  f04f028c          MOV      r2,#0x8c
-00008c  f1040138          ADD      r1,r4,#0x38
-000090  f7fffffe          BL       i32toa_align_right
-000094  f8840044          STRB     r0,[r4,#0x44]
+000084  7f63              LDRB     r3,[r4,#0x1d]
+000086  f1a40408          SUB      r4,r4,#8
+00008a  f04f028c          MOV      r2,#0x8c
+00008e  f1040138          ADD      r1,r4,#0x38
+000092  f7fffffe          BL       i32toa_align_right
+000096  f8840044          STRB     r0,[r4,#0x44]
 ;;;97                                            SPINBOX_STRING_LENGTH | NO_TERMINATING_ZERO, spinBox->minDigitsToDisplay);
 ;;;98                 // Call handler
-;;;99                 event.type = SPINBOX_VALUE_CHANGED;
-000098  20c1              MOVS     r0,#0xc1
-00009a  f88d0000          STRB     r0,[sp,#0]
-;;;100                guiCore_CallEventHandler((guiGenericWidget_t *)spinBox, &event);
-00009e  4669              MOV      r1,sp
-0000a0  4620              MOV      r0,r4
-0000a2  f7fffffe          BL       guiCore_CallEventHandler
-;;;101                // Check active digit position
-;;;102                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit);
-0000a6  f9941026          LDRSB    r1,[r4,#0x26]
-0000aa  4620              MOV      r0,r4
-0000ac  f7fffffe          BL       guiSpinBox_SetActiveDigit
-                  |L1.176|
-;;;103            }
-;;;104        }
-;;;105    }
-0000b0  bd1c              POP      {r2-r4,pc}
-;;;106    
+;;;99                 if (callHandler)
+00009a  b135              CBZ      r5,|L1.170|
+;;;100                {
+;;;101                    event.type = SPINBOX_VALUE_CHANGED;
+00009c  20c1              MOVS     r0,#0xc1
+00009e  f88d0000          STRB     r0,[sp,#0]
+;;;102                    guiCore_CallEventHandler((guiGenericWidget_t *)spinBox, &event);
+0000a2  4669              MOV      r1,sp
+0000a4  4620              MOV      r0,r4
+0000a6  f7fffffe          BL       guiCore_CallEventHandler
+                  |L1.170|
+;;;103                }
+;;;104                // Check active digit position
+;;;105                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit);
+0000aa  f9941026          LDRSB    r1,[r4,#0x26]
+0000ae  4620              MOV      r0,r4
+0000b0  f7fffffe          BL       guiSpinBox_SetActiveDigit
+                  |L1.180|
+;;;106            }
+;;;107        }
+;;;108    }
+0000b4  bd7c              POP      {r2-r6,pc}
+;;;109    
                           ENDP
 
                   guiSpinBox_SetActive PROC
 ;;;20     
 ;;;21     uint8_t guiSpinBox_SetActive(guiSpinBox_t *spinBox, uint8_t newActiveState, uint8_t restoreValue)
-0000b2  b51c              PUSH     {r2-r4,lr}
+0000b6  b51c              PUSH     {r2-r4,lr}
 ;;;22     {
-0000b4  4604              MOV      r4,r0
+0000b8  4604              MOV      r4,r0
 ;;;23         guiEvent_t event;
 ;;;24         if (spinBox == 0) return 0;
-0000b6  b134              CBZ      r4,|L1.198|
+0000ba  b134              CBZ      r4,|L1.202|
 ;;;25     
 ;;;26         if (newActiveState)
-0000b8  b171              CBZ      r1,|L1.216|
+0000bc  b171              CBZ      r1,|L1.220|
 ;;;27         {
 ;;;28             // Activate
 ;;;29             if (spinBox->isActive) return 0;
-0000ba  f8940024          LDRB     r0,[r4,#0x24]
-0000be  0701              LSLS     r1,r0,#28
-0000c0  d503              BPL      |L1.202|
-0000c2  2000              MOVS     r0,#0
+0000be  f8940024          LDRB     r0,[r4,#0x24]
+0000c2  0701              LSLS     r1,r0,#28
+0000c4  d503              BPL      |L1.206|
+0000c6  2000              MOVS     r0,#0
 ;;;30             spinBox->isActive = 1;
 ;;;31             spinBox->savedValue = spinBox->value;
 ;;;32         }
@@ -160,7 +166,7 @@
 ;;;37             spinBox->isActive = 0;
 ;;;38             if ((spinBox->restoreValueOnEscape) && (restoreValue))
 ;;;39             {
-;;;40                 guiSpinBox_SetValue(spinBox, spinBox->savedValue);
+;;;40                 guiSpinBox_SetValue(spinBox, spinBox->savedValue, 1);
 ;;;41                 spinBox->newValueAccepted = 0;
 ;;;42             }
 ;;;43             else
@@ -178,512 +184,514 @@
 ;;;55         }
 ;;;56         return 1;
 ;;;57     }
-0000c4  bd1c              POP      {r2-r4,pc}
-                  |L1.198|
-0000c6  2000              MOVS     r0,#0                 ;24
 0000c8  bd1c              POP      {r2-r4,pc}
                   |L1.202|
-0000ca  f0400008          ORR      r0,r0,#8              ;30
-0000ce  f8840024          STRB     r0,[r4,#0x24]         ;30
-0000d2  6aa0              LDR      r0,[r4,#0x28]         ;31
-0000d4  62e0              STR      r0,[r4,#0x2c]         ;31
-0000d6  e01b              B        |L1.272|
-                  |L1.216|
-0000d8  f8940024          LDRB     r0,[r4,#0x24]         ;36
-0000dc  0701              LSLS     r1,r0,#28             ;36
-0000de  d401              BMI      |L1.228|
-0000e0  2000              MOVS     r0,#0                 ;36
-0000e2  bd1c              POP      {r2-r4,pc}
-                  |L1.228|
-0000e4  f0200008          BIC      r0,r0,#8              ;37
-0000e8  f8840024          STRB     r0,[r4,#0x24]         ;37
-0000ec  06c1              LSLS     r1,r0,#27             ;38
-0000ee  d50b              BPL      |L1.264|
-0000f0  b152              CBZ      r2,|L1.264|
-0000f2  4620              MOV      r0,r4                 ;40
-0000f4  6ae1              LDR      r1,[r4,#0x2c]         ;40
-0000f6  f7fffffe          BL       guiSpinBox_SetValue
-0000fa  f8940024          LDRB     r0,[r4,#0x24]         ;41
-0000fe  f0200020          BIC      r0,r0,#0x20           ;41
-000102  f8840024          STRB     r0,[r4,#0x24]         ;41
-000106  e003              B        |L1.272|
-                  |L1.264|
-000108  f0400020          ORR      r0,r0,#0x20           ;45
-00010c  f8840024          STRB     r0,[r4,#0x24]         ;45
-                  |L1.272|
-000110  f8940024          LDRB     r0,[r4,#0x24]         ;49
-000114  f0400004          ORR      r0,r0,#4              ;49
-000118  f8840024          STRB     r0,[r4,#0x24]         ;49
-00011c  7a20              LDRB     r0,[r4,#8]            ;50
-00011e  f0400040          ORR      r0,r0,#0x40           ;50
-000122  7220              STRB     r0,[r4,#8]            ;50
-000124  7e20              LDRB     r0,[r4,#0x18]         ;51
-000126  b130              CBZ      r0,|L1.310|
-000128  20c0              MOVS     r0,#0xc0              ;53
-00012a  f88d0000          STRB     r0,[sp,#0]            ;53
-00012e  4669              MOV      r1,sp                 ;54
-000130  4620              MOV      r0,r4                 ;54
-000132  f7fffffe          BL       guiCore_CallEventHandler
-                  |L1.310|
-000136  2001              MOVS     r0,#1                 ;56
-000138  bd1c              POP      {r2-r4,pc}
+0000ca  2000              MOVS     r0,#0                 ;24
+0000cc  bd1c              POP      {r2-r4,pc}
+                  |L1.206|
+0000ce  f0400008          ORR      r0,r0,#8              ;30
+0000d2  f8840024          STRB     r0,[r4,#0x24]         ;30
+0000d6  6aa0              LDR      r0,[r4,#0x28]         ;31
+0000d8  62e0              STR      r0,[r4,#0x2c]         ;31
+0000da  e01c              B        |L1.278|
+                  |L1.220|
+0000dc  f8940024          LDRB     r0,[r4,#0x24]         ;36
+0000e0  0701              LSLS     r1,r0,#28             ;36
+0000e2  d401              BMI      |L1.232|
+0000e4  2000              MOVS     r0,#0                 ;36
+0000e6  bd1c              POP      {r2-r4,pc}
+                  |L1.232|
+0000e8  f0200008          BIC      r0,r0,#8              ;37
+0000ec  f8840024          STRB     r0,[r4,#0x24]         ;37
+0000f0  06c1              LSLS     r1,r0,#27             ;38
+0000f2  d50c              BPL      |L1.270|
+0000f4  b15a              CBZ      r2,|L1.270|
+0000f6  2201              MOVS     r2,#1                 ;40
+0000f8  4620              MOV      r0,r4                 ;40
+0000fa  6ae1              LDR      r1,[r4,#0x2c]         ;40
+0000fc  f7fffffe          BL       guiSpinBox_SetValue
+000100  f8940024          LDRB     r0,[r4,#0x24]         ;41
+000104  f0200020          BIC      r0,r0,#0x20           ;41
+000108  f8840024          STRB     r0,[r4,#0x24]         ;41
+00010c  e003              B        |L1.278|
+                  |L1.270|
+00010e  f0400020          ORR      r0,r0,#0x20           ;45
+000112  f8840024          STRB     r0,[r4,#0x24]         ;45
+                  |L1.278|
+000116  f8940024          LDRB     r0,[r4,#0x24]         ;49
+00011a  f0400004          ORR      r0,r0,#4              ;49
+00011e  f8840024          STRB     r0,[r4,#0x24]         ;49
+000122  7a20              LDRB     r0,[r4,#8]            ;50
+000124  f0400040          ORR      r0,r0,#0x40           ;50
+000128  7220              STRB     r0,[r4,#8]            ;50
+00012a  7e20              LDRB     r0,[r4,#0x18]         ;51
+00012c  b130              CBZ      r0,|L1.316|
+00012e  20c0              MOVS     r0,#0xc0              ;53
+000130  f88d0000          STRB     r0,[sp,#0]            ;53
+000134  4669              MOV      r1,sp                 ;54
+000136  4620              MOV      r0,r4                 ;54
+000138  f7fffffe          BL       guiCore_CallEventHandler
+                  |L1.316|
+00013c  2001              MOVS     r0,#1                 ;56
+00013e  bd1c              POP      {r2-r4,pc}
 ;;;58     
                           ENDP
 
                   guiSpinBox_IncrementValue PROC
-;;;106    
-;;;107    void guiSpinBox_IncrementValue(guiSpinBox_t *spinBox, int32_t delta)
-00013a  b430              PUSH     {r4,r5}
-;;;108    {
-;;;109        int32_t mul_c = 1;
-00013c  2301              MOVS     r3,#1
-;;;110        uint8_t i;
-;;;111        if ((spinBox != 0) && (delta != 0))
-00013e  2800              CMP      r0,#0
-000140  d011              BEQ      |L1.358|
-000142  2900              CMP      r1,#0
-000144  d00f              BEQ      |L1.358|
-;;;112        {
-;;;113            for (i=0;i<spinBox->activeDigit;i++)
-000146  2200              MOVS     r2,#0
-000148  f8904026          LDRB     r4,[r0,#0x26]
-00014c  e004              B        |L1.344|
-                  |L1.334|
-;;;114            {
-;;;115                mul_c *= 10;
-00014e  eb030383          ADD      r3,r3,r3,LSL #2
-000152  005b              LSLS     r3,r3,#1
-000154  1c52              ADDS     r2,r2,#1              ;113
-000156  b2d2              UXTB     r2,r2                 ;113
-                  |L1.344|
-000158  4294              CMP      r4,r2                 ;113
-00015a  d8f8              BHI      |L1.334|
-;;;116            }
-;;;117            delta *= mul_c;
-00015c  4359              MULS     r1,r3,r1
-;;;118            guiSpinBox_SetValue(spinBox, spinBox->value + delta);
-00015e  6a82              LDR      r2,[r0,#0x28]
-000160  bc30              POP      {r4,r5}
-000162  4411              ADD      r1,r1,r2
-000164  e7fe              B        guiSpinBox_SetValue
-                  |L1.358|
-;;;119        }
-;;;120    }
+;;;109    
+;;;110    void guiSpinBox_IncrementValue(guiSpinBox_t *spinBox, int32_t delta)
+000140  b430              PUSH     {r4,r5}
+;;;111    {
+;;;112        int32_t mul_c = 1;
+000142  2301              MOVS     r3,#1
+;;;113        uint8_t i;
+;;;114        if ((spinBox != 0) && (delta != 0))
+000144  2800              CMP      r0,#0
+000146  d012              BEQ      |L1.366|
+000148  2900              CMP      r1,#0
+00014a  d010              BEQ      |L1.366|
+;;;115        {
+;;;116            for (i=0;i<spinBox->activeDigit;i++)
+00014c  2200              MOVS     r2,#0
+00014e  f8904026          LDRB     r4,[r0,#0x26]
+000152  e004              B        |L1.350|
+                  |L1.340|
+;;;117            {
+;;;118                mul_c *= 10;
+000154  eb030383          ADD      r3,r3,r3,LSL #2
+000158  005b              LSLS     r3,r3,#1
+00015a  1c52              ADDS     r2,r2,#1              ;116
+00015c  b2d2              UXTB     r2,r2                 ;116
+                  |L1.350|
+00015e  4294              CMP      r4,r2                 ;116
+000160  d8f8              BHI      |L1.340|
+;;;119            }
+;;;120            delta *= mul_c;
+000162  4359              MULS     r1,r3,r1
+;;;121            guiSpinBox_SetValue(spinBox, spinBox->value + delta, 1);
+000164  6a82              LDR      r2,[r0,#0x28]
 000166  bc30              POP      {r4,r5}
-000168  4770              BX       lr
-;;;121    
+000168  4411              ADD      r1,r1,r2
+00016a  2201              MOVS     r2,#1
+00016c  e7fe              B        guiSpinBox_SetValue
+                  |L1.366|
+;;;122        }
+;;;123    }
+00016e  bc30              POP      {r4,r5}
+000170  4770              BX       lr
+;;;124    
                           ENDP
 
                   guiSpinBox_ProcessKey PROC
-;;;130    //-------------------------------------------------------//
-;;;131    uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
-00016a  b510              PUSH     {r4,lr}
-;;;132    {
-;;;133        if (spinBox->isActive)
-00016c  f8902024          LDRB     r2,[r0,#0x24]
-000170  0712              LSLS     r2,r2,#28
-000172  d52e              BPL      |L1.466|
-;;;134        {
-;;;135            if (key == SPINBOX_KEY_SELECT)
-000174  2901              CMP      r1,#1
-000176  d00b              BEQ      |L1.400|
-;;;136            {
-;;;137                guiSpinBox_SetActive(spinBox, 0, 0);
-;;;138            }
-;;;139            else if (key == SPINBOX_KEY_EXIT)
-000178  2902              CMP      r1,#2
-00017a  d00e              BEQ      |L1.410|
-;;;140            {
-;;;141                guiSpinBox_SetActive(spinBox, 0, 1);
-;;;142            }
-;;;143            else if (key == SPINBOX_KEY_LEFT)
-00017c  2904              CMP      r1,#4
-00017e  d011              BEQ      |L1.420|
-;;;144            {
-;;;145                // move active digit left
-;;;146                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit + 1);
-;;;147            }
-;;;148            else if (key == SPINBOX_KEY_RIGHT)
-000180  2903              CMP      r1,#3
-000182  d016              BEQ      |L1.434|
-;;;149            {
-;;;150                // move active digit right
-;;;151                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit - 1);
-;;;152            }
-;;;153            else if (key == SPINBOX_KEY_UP)
-000184  2905              CMP      r1,#5
-000186  d01b              BEQ      |L1.448|
-;;;154            {
-;;;155                // increase value
-;;;156                guiSpinBox_IncrementValue(spinBox, 1);
-;;;157            }
-;;;158            else if (key == SPINBOX_KEY_DOWN)
-000188  2906              CMP      r1,#6
-00018a  d01d              BEQ      |L1.456|
-;;;159            {
-;;;160                //decrease value
-;;;161                guiSpinBox_IncrementValue(spinBox, -1);
-;;;162            }
-;;;163            else
-;;;164            {
-;;;165                return GUI_EVENT_DECLINE;
-00018c  2000              MOVS     r0,#0
-;;;166            }
-;;;167        }
-;;;168        else
-;;;169        {
-;;;170            if (key == SPINBOX_KEY_SELECT)
-;;;171            {
-;;;172                guiSpinBox_SetActive(spinBox, 1, 0);
-;;;173            }
-;;;174            else
-;;;175            {
-;;;176                return GUI_EVENT_DECLINE;
-;;;177            }
-;;;178        }
-;;;179    
-;;;180        return GUI_EVENT_ACCEPTED;
-;;;181    }
-00018e  bd10              POP      {r4,pc}
-                  |L1.400|
-000190  2200              MOVS     r2,#0                 ;137
-000192  4611              MOV      r1,r2                 ;137
-000194  f7fffffe          BL       guiSpinBox_SetActive
-000198  e023              B        |L1.482|
-                  |L1.410|
-00019a  2201              MOVS     r2,#1                 ;141
-00019c  2100              MOVS     r1,#0                 ;141
-00019e  f7fffffe          BL       guiSpinBox_SetActive
-0001a2  e01e              B        |L1.482|
-                  |L1.420|
-0001a4  f8901026          LDRB     r1,[r0,#0x26]         ;146
-0001a8  1c49              ADDS     r1,r1,#1              ;146
-0001aa  b249              SXTB     r1,r1                 ;146
-0001ac  f7fffffe          BL       guiSpinBox_SetActiveDigit
-0001b0  e017              B        |L1.482|
-                  |L1.434|
-0001b2  f8901026          LDRB     r1,[r0,#0x26]         ;151
-0001b6  1e49              SUBS     r1,r1,#1              ;151
-0001b8  b249              SXTB     r1,r1                 ;151
-0001ba  f7fffffe          BL       guiSpinBox_SetActiveDigit
-0001be  e010              B        |L1.482|
-                  |L1.448|
-0001c0  2101              MOVS     r1,#1                 ;156
-0001c2  f7fffffe          BL       guiSpinBox_IncrementValue
-0001c6  e00c              B        |L1.482|
-                  |L1.456|
-0001c8  f04f31ff          MOV      r1,#0xffffffff        ;161
-0001cc  f7fffffe          BL       guiSpinBox_IncrementValue
-0001d0  e007              B        |L1.482|
-                  |L1.466|
-0001d2  2901              CMP      r1,#1                 ;170
-0001d4  d001              BEQ      |L1.474|
-0001d6  2000              MOVS     r0,#0                 ;176
-0001d8  bd10              POP      {r4,pc}
-                  |L1.474|
-0001da  2200              MOVS     r2,#0                 ;172
-0001dc  2101              MOVS     r1,#1                 ;172
-0001de  f7fffffe          BL       guiSpinBox_SetActive
-                  |L1.482|
-0001e2  2001              MOVS     r0,#1                 ;180
-0001e4  bd10              POP      {r4,pc}
+;;;133    //-------------------------------------------------------//
+;;;134    uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
+000172  b510              PUSH     {r4,lr}
+;;;135    {
+;;;136        if (spinBox->isActive)
+000174  f8902024          LDRB     r2,[r0,#0x24]
+000178  0712              LSLS     r2,r2,#28
+00017a  d52e              BPL      |L1.474|
+;;;137        {
+;;;138            if (key == SPINBOX_KEY_SELECT)
+00017c  2901              CMP      r1,#1
+00017e  d00b              BEQ      |L1.408|
+;;;139            {
+;;;140                guiSpinBox_SetActive(spinBox, 0, 0);
+;;;141            }
+;;;142            else if (key == SPINBOX_KEY_EXIT)
+000180  2902              CMP      r1,#2
+000182  d00e              BEQ      |L1.418|
+;;;143            {
+;;;144                guiSpinBox_SetActive(spinBox, 0, 1);
+;;;145            }
+;;;146            else if (key == SPINBOX_KEY_LEFT)
+000184  2904              CMP      r1,#4
+000186  d011              BEQ      |L1.428|
+;;;147            {
+;;;148                // move active digit left
+;;;149                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit + 1);
+;;;150            }
+;;;151            else if (key == SPINBOX_KEY_RIGHT)
+000188  2903              CMP      r1,#3
+00018a  d016              BEQ      |L1.442|
+;;;152            {
+;;;153                // move active digit right
+;;;154                guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit - 1);
+;;;155            }
+;;;156            else if (key == SPINBOX_KEY_UP)
+00018c  2905              CMP      r1,#5
+00018e  d01b              BEQ      |L1.456|
+;;;157            {
+;;;158                // increase value
+;;;159                guiSpinBox_IncrementValue(spinBox, 1);
+;;;160            }
+;;;161            else if (key == SPINBOX_KEY_DOWN)
+000190  2906              CMP      r1,#6
+000192  d01d              BEQ      |L1.464|
+;;;162            {
+;;;163                //decrease value
+;;;164                guiSpinBox_IncrementValue(spinBox, -1);
+;;;165            }
+;;;166            else
+;;;167            {
+;;;168                return GUI_EVENT_DECLINE;
+000194  2000              MOVS     r0,#0
+;;;169            }
+;;;170        }
+;;;171        else
+;;;172        {
+;;;173            if (key == SPINBOX_KEY_SELECT)
+;;;174            {
+;;;175                guiSpinBox_SetActive(spinBox, 1, 0);
+;;;176            }
+;;;177            else
+;;;178            {
+;;;179                return GUI_EVENT_DECLINE;
+;;;180            }
+;;;181        }
 ;;;182    
+;;;183        return GUI_EVENT_ACCEPTED;
+;;;184    }
+000196  bd10              POP      {r4,pc}
+                  |L1.408|
+000198  2200              MOVS     r2,#0                 ;140
+00019a  4611              MOV      r1,r2                 ;140
+00019c  f7fffffe          BL       guiSpinBox_SetActive
+0001a0  e023              B        |L1.490|
+                  |L1.418|
+0001a2  2201              MOVS     r2,#1                 ;144
+0001a4  2100              MOVS     r1,#0                 ;144
+0001a6  f7fffffe          BL       guiSpinBox_SetActive
+0001aa  e01e              B        |L1.490|
+                  |L1.428|
+0001ac  f8901026          LDRB     r1,[r0,#0x26]         ;149
+0001b0  1c49              ADDS     r1,r1,#1              ;149
+0001b2  b249              SXTB     r1,r1                 ;149
+0001b4  f7fffffe          BL       guiSpinBox_SetActiveDigit
+0001b8  e017              B        |L1.490|
+                  |L1.442|
+0001ba  f8901026          LDRB     r1,[r0,#0x26]         ;154
+0001be  1e49              SUBS     r1,r1,#1              ;154
+0001c0  b249              SXTB     r1,r1                 ;154
+0001c2  f7fffffe          BL       guiSpinBox_SetActiveDigit
+0001c6  e010              B        |L1.490|
+                  |L1.456|
+0001c8  2101              MOVS     r1,#1                 ;159
+0001ca  f7fffffe          BL       guiSpinBox_IncrementValue
+0001ce  e00c              B        |L1.490|
+                  |L1.464|
+0001d0  f04f31ff          MOV      r1,#0xffffffff        ;164
+0001d4  f7fffffe          BL       guiSpinBox_IncrementValue
+0001d8  e007              B        |L1.490|
+                  |L1.474|
+0001da  2901              CMP      r1,#1                 ;173
+0001dc  d001              BEQ      |L1.482|
+0001de  2000              MOVS     r0,#0                 ;179
+0001e0  bd10              POP      {r4,pc}
+                  |L1.482|
+0001e2  2200              MOVS     r2,#0                 ;175
+0001e4  2101              MOVS     r1,#1                 ;175
+0001e6  f7fffffe          BL       guiSpinBox_SetActive
+                  |L1.490|
+0001ea  2001              MOVS     r0,#1                 ;183
+0001ec  bd10              POP      {r4,pc}
+;;;185    
                           ENDP
 
                   guiSpinBox_ProcessEvent PROC
-;;;190    //-------------------------------------------------------//
-;;;191    uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
-0001e6  b537              PUSH     {r0-r2,r4,r5,lr}
-;;;192    {
-0001e8  4604              MOV      r4,r0
-;;;193        guiSpinBox_t *spinBox = (guiSpinBox_t *)widget;
-;;;194        uint8_t processResult = GUI_EVENT_ACCEPTED;
-0001ea  2501              MOVS     r5,#1
-;;;195        uint8_t key;
-;;;196    
-;;;197        switch (event.type)
-0001ec  f89d0004          LDRB     r0,[sp,#4]
-0001f0  2809              CMP      r0,#9
-0001f2  d02e              BEQ      |L1.594|
-0001f4  dc08              BGT      |L1.520|
-0001f6  2801              CMP      r0,#1
-0001f8  d013              BEQ      |L1.546|
-0001fa  2806              CMP      r0,#6
-0001fc  d04b              BEQ      |L1.662|
-0001fe  2807              CMP      r0,#7
-000200  d044              BEQ      |L1.652|
-000202  2808              CMP      r0,#8
-000204  d106              BNE      |L1.532|
-000206  e02e              B        |L1.614|
-                  |L1.520|
-000208  280b              CMP      r0,#0xb
-00020a  d05f              BEQ      |L1.716|
-00020c  280c              CMP      r0,#0xc
-00020e  d047              BEQ      |L1.672|
-000210  2840              CMP      r0,#0x40
-000212  d032              BEQ      |L1.634|
-                  |L1.532|
-;;;198        {
-;;;199            case GUI_EVENT_DRAW:
-;;;200                guiGraph_DrawSpinBox(spinBox);
-;;;201                // Call handler
-;;;202                guiCore_CallEventHandler(widget, &event);
-;;;203                // Reset flags - redrawForced will be reset by core
-;;;204                spinBox->redrawFocus = 0;
-;;;205                spinBox->redrawDigitSelection = 0;
-;;;206                spinBox->redrawValue = 0;
-;;;207                spinBox->redrawRequired = 0;
-;;;208                break;
-;;;209            case GUI_EVENT_FOCUS:
-;;;210                if (SPINBOX_ACCEPTS_FOCUS_EVENT(spinBox))
-;;;211                    guiCore_SetFocused((guiGenericWidget_t *)spinBox,1);
-;;;212                else
-;;;213                    processResult = GUI_EVENT_DECLINE;      // Cannot accept focus
-;;;214                break;
-;;;215            case GUI_EVENT_UNFOCUS:
-;;;216                guiCore_SetFocused((guiGenericWidget_t *)spinBox,0);
-;;;217                guiSpinBox_SetActive(spinBox, 0, 0);        // Do not restore
-;;;218                //spinBox->keepTouch = 0;
-;;;219                break;
-;;;220            case SPINBOX_EVENT_ACTIVATE:
-;;;221                if (spinBox->isFocused)
-;;;222                {
-;;;223                    guiSpinBox_SetActive(spinBox, 1, 0);
-;;;224                }
-;;;225                // Accept event anyway
-;;;226                break;
-;;;227            case GUI_EVENT_SHOW:
-;;;228                guiCore_SetVisible((guiGenericWidget_t *)spinBox, 1);
+;;;193    //-------------------------------------------------------//
+;;;194    uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
+0001ee  b537              PUSH     {r0-r2,r4,r5,lr}
+;;;195    {
+0001f0  4604              MOV      r4,r0
+;;;196        guiSpinBox_t *spinBox = (guiSpinBox_t *)widget;
+;;;197        uint8_t processResult = GUI_EVENT_ACCEPTED;
+0001f2  2501              MOVS     r5,#1
+;;;198        uint8_t key;
+;;;199    
+;;;200        switch (event.type)
+0001f4  f89d0004          LDRB     r0,[sp,#4]
+0001f8  2809              CMP      r0,#9
+0001fa  d02e              BEQ      |L1.602|
+0001fc  dc08              BGT      |L1.528|
+0001fe  2801              CMP      r0,#1
+000200  d013              BEQ      |L1.554|
+000202  2806              CMP      r0,#6
+000204  d04b              BEQ      |L1.670|
+000206  2807              CMP      r0,#7
+000208  d044              BEQ      |L1.660|
+00020a  2808              CMP      r0,#8
+00020c  d106              BNE      |L1.540|
+00020e  e02e              B        |L1.622|
+                  |L1.528|
+000210  280b              CMP      r0,#0xb
+000212  d05f              BEQ      |L1.724|
+000214  280c              CMP      r0,#0xc
+000216  d047              BEQ      |L1.680|
+000218  2840              CMP      r0,#0x40
+00021a  d032              BEQ      |L1.642|
+                  |L1.540|
+;;;201        {
+;;;202            case GUI_EVENT_DRAW:
+;;;203                guiGraph_DrawSpinBox(spinBox);
+;;;204                // Call handler
+;;;205                guiCore_CallEventHandler(widget, &event);
+;;;206                // Reset flags - redrawForced will be reset by core
+;;;207                spinBox->redrawFocus = 0;
+;;;208                spinBox->redrawDigitSelection = 0;
+;;;209                spinBox->redrawValue = 0;
+;;;210                spinBox->redrawRequired = 0;
+;;;211                break;
+;;;212            case GUI_EVENT_FOCUS:
+;;;213                if (SPINBOX_ACCEPTS_FOCUS_EVENT(spinBox))
+;;;214                    guiCore_SetFocused((guiGenericWidget_t *)spinBox,1);
+;;;215                else
+;;;216                    processResult = GUI_EVENT_DECLINE;      // Cannot accept focus
+;;;217                break;
+;;;218            case GUI_EVENT_UNFOCUS:
+;;;219                guiCore_SetFocused((guiGenericWidget_t *)spinBox,0);
+;;;220                guiSpinBox_SetActive(spinBox, 0, 0);        // Do not restore
+;;;221                //spinBox->keepTouch = 0;
+;;;222                break;
+;;;223            case SPINBOX_EVENT_ACTIVATE:
+;;;224                if (spinBox->isFocused)
+;;;225                {
+;;;226                    guiSpinBox_SetActive(spinBox, 1, 0);
+;;;227                }
+;;;228                // Accept event anyway
 ;;;229                break;
-;;;230            case GUI_EVENT_HIDE:
-;;;231                guiCore_SetVisible((guiGenericWidget_t *)spinBox, 0);
+;;;230            case GUI_EVENT_SHOW:
+;;;231                guiCore_SetVisible((guiGenericWidget_t *)spinBox, 1);
 ;;;232                break;
-;;;233            case GUI_EVENT_ENCODER:
-;;;234                processResult = GUI_EVENT_DECLINE;
-;;;235                if (SPINBOX_ACCEPTS_ENCODER_EVENT(spinBox))
-;;;236                {
-;;;237                    if (spinBox->isActive)
-;;;238                    {
-;;;239                        guiSpinBox_IncrementValue(spinBox, (int16_t)event.lparam);
-;;;240                        processResult = GUI_EVENT_ACCEPTED;
-;;;241                    }
-;;;242                    processResult |= guiCore_CallEventHandler(widget, &event);
-;;;243                }
-;;;244                break;
-;;;245            case GUI_EVENT_KEY:
-;;;246                processResult = GUI_EVENT_DECLINE;
-;;;247                if (SPINBOX_ACCEPTS_KEY_EVENT(spinBox))
-;;;248                {
-;;;249                    if (event.spec == GUI_KEY_EVENT_DOWN)
-;;;250                    {
-;;;251                        if (event.lparam == GUI_KEY_OK)
-;;;252                            key = SPINBOX_KEY_SELECT;
-;;;253                        else if (event.lparam == GUI_KEY_ESC)
-;;;254                            key = SPINBOX_KEY_EXIT;
-;;;255                        else if (event.lparam == GUI_KEY_LEFT)
-;;;256                            key = SPINBOX_KEY_LEFT;
-;;;257                        else if (event.lparam == GUI_KEY_RIGHT)
-;;;258                            key = SPINBOX_KEY_RIGHT;
-;;;259                        else if (event.lparam == GUI_KEY_UP)
-;;;260                            key = SPINBOX_KEY_UP;
-;;;261                        else if (event.lparam == GUI_KEY_DOWN)
-;;;262                            key = SPINBOX_KEY_DOWN;
-;;;263                        else
-;;;264                            key = 0;
-;;;265                        if (key != 0)
-;;;266                            processResult = guiSpinBox_ProcessKey(spinBox,key);
-;;;267                    }
-;;;268                    // Call KEY event handler
-;;;269                    processResult |= guiCore_CallEventHandler(widget, &event);
-;;;270                }
-;;;271                break;
-;;;272    
-;;;273            default:
-;;;274                // Widget cannot process incoming event. Try to find a handler.
-;;;275                processResult = guiCore_CallEventHandler(widget, &event);
-000214  a901              ADD      r1,sp,#4
-000216  4620              MOV      r0,r4
-000218  f7fffffe          BL       guiCore_CallEventHandler
-00021c  4605              MOV      r5,r0
-                  |L1.542|
-;;;276        }
-;;;277        return processResult;
-00021e  4628              MOV      r0,r5
-;;;278    }
-000220  bd3e              POP      {r1-r5,pc}
-                  |L1.546|
-000222  4620              MOV      r0,r4                 ;200
-000224  f7fffffe          BL       guiGraph_DrawSpinBox
-000228  a901              ADD      r1,sp,#4              ;202
-00022a  4620              MOV      r0,r4                 ;202
-00022c  f7fffffe          BL       guiCore_CallEventHandler
-000230  f1040408          ADD      r4,r4,#8              ;204
-000234  7860              LDRB     r0,[r4,#1]            ;204
-000236  f0200001          BIC      r0,r0,#1              ;204
-00023a  7060              STRB     r0,[r4,#1]            ;204
-00023c  7f20              LDRB     r0,[r4,#0x1c]         ;205
-00023e  f0200004          BIC      r0,r0,#4              ;205
-000242  f0200002          BIC      r0,r0,#2              ;206
-000246  7720              STRB     r0,[r4,#0x1c]         ;206
-000248  7820              LDRB     r0,[r4,#0]            ;207
-00024a  f0200040          BIC      r0,r0,#0x40           ;207
-00024e  7020              STRB     r0,[r4,#0]            ;207
-000250  e7e5              B        |L1.542|
-                  |L1.594|
-000252  7a20              LDRB     r0,[r4,#8]            ;210
-000254  06c0              LSLS     r0,r0,#27             ;210
-000256  d504              BPL      |L1.610|
-000258  2101              MOVS     r1,#1                 ;211
-00025a  4620              MOV      r0,r4                 ;211
-00025c  f7fffffe          BL       guiCore_SetFocused
-000260  e7dd              B        |L1.542|
-                  |L1.610|
-000262  2500              MOVS     r5,#0                 ;213
-000264  e7db              B        |L1.542|
-                  |L1.614|
-000266  2100              MOVS     r1,#0                 ;216
-000268  4620              MOV      r0,r4                 ;216
-00026a  f7fffffe          BL       guiCore_SetFocused
-00026e  2200              MOVS     r2,#0                 ;217
-000270  4611              MOV      r1,r2                 ;217
-000272  4620              MOV      r0,r4                 ;217
-000274  f7fffffe          BL       guiSpinBox_SetActive
-000278  e7d1              B        |L1.542|
-                  |L1.634|
-00027a  7a20              LDRB     r0,[r4,#8]            ;221
-00027c  0700              LSLS     r0,r0,#28             ;221
-00027e  d5ce              BPL      |L1.542|
-000280  2200              MOVS     r2,#0                 ;223
-000282  2101              MOVS     r1,#1                 ;223
-000284  4620              MOV      r0,r4                 ;223
-000286  f7fffffe          BL       guiSpinBox_SetActive
-00028a  e7c8              B        |L1.542|
-                  |L1.652|
-00028c  2101              MOVS     r1,#1                 ;228
-00028e  4620              MOV      r0,r4                 ;228
-000290  f7fffffe          BL       guiCore_SetVisible
-000294  e7c3              B        |L1.542|
-                  |L1.662|
-000296  2100              MOVS     r1,#0                 ;231
-000298  4620              MOV      r0,r4                 ;231
-00029a  f7fffffe          BL       guiCore_SetVisible
-00029e  e7be              B        |L1.542|
-                  |L1.672|
-0002a0  2500              MOVS     r5,#0                 ;234
-0002a2  7a20              LDRB     r0,[r4,#8]            ;235
-0002a4  0701              LSLS     r1,r0,#28             ;235
-0002a6  d5ba              BPL      |L1.542|
-0002a8  06c0              LSLS     r0,r0,#27             ;235
-0002aa  d5b8              BPL      |L1.542|
-0002ac  f8940024          LDRB     r0,[r4,#0x24]         ;237
-0002b0  0700              LSLS     r0,r0,#28             ;237
-0002b2  d505              BPL      |L1.704|
-0002b4  f9bd1006          LDRSH    r1,[sp,#6]            ;239
-0002b8  4620              MOV      r0,r4                 ;239
-0002ba  f7fffffe          BL       guiSpinBox_IncrementValue
-0002be  2501              MOVS     r5,#1                 ;240
-                  |L1.704|
-0002c0  a901              ADD      r1,sp,#4              ;242
-0002c2  4620              MOV      r0,r4                 ;242
-0002c4  f7fffffe          BL       guiCore_CallEventHandler
-0002c8  4305              ORRS     r5,r5,r0              ;242
-0002ca  e7a8              B        |L1.542|
-                  |L1.716|
-0002cc  2500              MOVS     r5,#0                 ;246
-0002ce  7a20              LDRB     r0,[r4,#8]            ;247
-0002d0  0701              LSLS     r1,r0,#28             ;247
-0002d2  d5a4              BPL      |L1.542|
-0002d4  06c0              LSLS     r0,r0,#27             ;247
-0002d6  d5a2              BPL      |L1.542|
-0002d8  f89d0005          LDRB     r0,[sp,#5]            ;249
-0002dc  2801              CMP      r0,#1                 ;249
-0002de  d113              BNE      |L1.776|
-0002e0  f8bd0006          LDRH     r0,[sp,#6]            ;251
-0002e4  2802              CMP      r0,#2                 ;251
-0002e6  d015              BEQ      |L1.788|
-0002e8  2801              CMP      r0,#1                 ;253
-0002ea  d015              BEQ      |L1.792|
-0002ec  2803              CMP      r0,#3                 ;255
+;;;233            case GUI_EVENT_HIDE:
+;;;234                guiCore_SetVisible((guiGenericWidget_t *)spinBox, 0);
+;;;235                break;
+;;;236            case GUI_EVENT_ENCODER:
+;;;237                processResult = GUI_EVENT_DECLINE;
+;;;238                if (SPINBOX_ACCEPTS_ENCODER_EVENT(spinBox))
+;;;239                {
+;;;240                    if (spinBox->isActive)
+;;;241                    {
+;;;242                        guiSpinBox_IncrementValue(spinBox, (int16_t)event.lparam);
+;;;243                        processResult = GUI_EVENT_ACCEPTED;
+;;;244                    }
+;;;245                    processResult |= guiCore_CallEventHandler(widget, &event);
+;;;246                }
+;;;247                break;
+;;;248            case GUI_EVENT_KEY:
+;;;249                processResult = GUI_EVENT_DECLINE;
+;;;250                if (SPINBOX_ACCEPTS_KEY_EVENT(spinBox))
+;;;251                {
+;;;252                    if (event.spec == GUI_KEY_EVENT_DOWN)
+;;;253                    {
+;;;254                        if (event.lparam == GUI_KEY_OK)
+;;;255                            key = SPINBOX_KEY_SELECT;
+;;;256                        else if (event.lparam == GUI_KEY_ESC)
+;;;257                            key = SPINBOX_KEY_EXIT;
+;;;258                        else if (event.lparam == GUI_KEY_LEFT)
+;;;259                            key = SPINBOX_KEY_LEFT;
+;;;260                        else if (event.lparam == GUI_KEY_RIGHT)
+;;;261                            key = SPINBOX_KEY_RIGHT;
+;;;262                        else if (event.lparam == GUI_KEY_UP)
+;;;263                            key = SPINBOX_KEY_UP;
+;;;264                        else if (event.lparam == GUI_KEY_DOWN)
+;;;265                            key = SPINBOX_KEY_DOWN;
+;;;266                        else
+;;;267                            key = 0;
+;;;268                        if (key != 0)
+;;;269                            processResult = guiSpinBox_ProcessKey(spinBox,key);
+;;;270                    }
+;;;271                    // Call KEY event handler
+;;;272                    processResult |= guiCore_CallEventHandler(widget, &event);
+;;;273                }
+;;;274                break;
+;;;275    
+;;;276            default:
+;;;277                // Widget cannot process incoming event. Try to find a handler.
+;;;278                processResult = guiCore_CallEventHandler(widget, &event);
+00021c  a901              ADD      r1,sp,#4
+00021e  4620              MOV      r0,r4
+000220  f7fffffe          BL       guiCore_CallEventHandler
+000224  4605              MOV      r5,r0
+                  |L1.550|
+;;;279        }
+;;;280        return processResult;
+000226  4628              MOV      r0,r5
+;;;281    }
+000228  bd3e              POP      {r1-r5,pc}
+                  |L1.554|
+00022a  4620              MOV      r0,r4                 ;203
+00022c  f7fffffe          BL       guiGraph_DrawSpinBox
+000230  a901              ADD      r1,sp,#4              ;205
+000232  4620              MOV      r0,r4                 ;205
+000234  f7fffffe          BL       guiCore_CallEventHandler
+000238  f1040408          ADD      r4,r4,#8              ;207
+00023c  7860              LDRB     r0,[r4,#1]            ;207
+00023e  f0200001          BIC      r0,r0,#1              ;207
+000242  7060              STRB     r0,[r4,#1]            ;207
+000244  7f20              LDRB     r0,[r4,#0x1c]         ;208
+000246  f0200004          BIC      r0,r0,#4              ;208
+00024a  f0200002          BIC      r0,r0,#2              ;209
+00024e  7720              STRB     r0,[r4,#0x1c]         ;209
+000250  7820              LDRB     r0,[r4,#0]            ;210
+000252  f0200040          BIC      r0,r0,#0x40           ;210
+000256  7020              STRB     r0,[r4,#0]            ;210
+000258  e7e5              B        |L1.550|
+                  |L1.602|
+00025a  7a20              LDRB     r0,[r4,#8]            ;213
+00025c  06c0              LSLS     r0,r0,#27             ;213
+00025e  d504              BPL      |L1.618|
+000260  2101              MOVS     r1,#1                 ;214
+000262  4620              MOV      r0,r4                 ;214
+000264  f7fffffe          BL       guiCore_SetFocused
+000268  e7dd              B        |L1.550|
+                  |L1.618|
+00026a  2500              MOVS     r5,#0                 ;216
+00026c  e7db              B        |L1.550|
+                  |L1.622|
+00026e  2100              MOVS     r1,#0                 ;219
+000270  4620              MOV      r0,r4                 ;219
+000272  f7fffffe          BL       guiCore_SetFocused
+000276  2200              MOVS     r2,#0                 ;220
+000278  4611              MOV      r1,r2                 ;220
+00027a  4620              MOV      r0,r4                 ;220
+00027c  f7fffffe          BL       guiSpinBox_SetActive
+000280  e7d1              B        |L1.550|
+                  |L1.642|
+000282  7a20              LDRB     r0,[r4,#8]            ;224
+000284  0700              LSLS     r0,r0,#28             ;224
+000286  d5ce              BPL      |L1.550|
+000288  2200              MOVS     r2,#0                 ;226
+00028a  2101              MOVS     r1,#1                 ;226
+00028c  4620              MOV      r0,r4                 ;226
+00028e  f7fffffe          BL       guiSpinBox_SetActive
+000292  e7c8              B        |L1.550|
+                  |L1.660|
+000294  2101              MOVS     r1,#1                 ;231
+000296  4620              MOV      r0,r4                 ;231
+000298  f7fffffe          BL       guiCore_SetVisible
+00029c  e7c3              B        |L1.550|
+                  |L1.670|
+00029e  2100              MOVS     r1,#0                 ;234
+0002a0  4620              MOV      r0,r4                 ;234
+0002a2  f7fffffe          BL       guiCore_SetVisible
+0002a6  e7be              B        |L1.550|
+                  |L1.680|
+0002a8  2500              MOVS     r5,#0                 ;237
+0002aa  7a20              LDRB     r0,[r4,#8]            ;238
+0002ac  0701              LSLS     r1,r0,#28             ;238
+0002ae  d5ba              BPL      |L1.550|
+0002b0  06c0              LSLS     r0,r0,#27             ;238
+0002b2  d5b8              BPL      |L1.550|
+0002b4  f8940024          LDRB     r0,[r4,#0x24]         ;240
+0002b8  0700              LSLS     r0,r0,#28             ;240
+0002ba  d505              BPL      |L1.712|
+0002bc  f9bd1006          LDRSH    r1,[sp,#6]            ;242
+0002c0  4620              MOV      r0,r4                 ;242
+0002c2  f7fffffe          BL       guiSpinBox_IncrementValue
+0002c6  2501              MOVS     r5,#1                 ;243
+                  |L1.712|
+0002c8  a901              ADD      r1,sp,#4              ;245
+0002ca  4620              MOV      r0,r4                 ;245
+0002cc  f7fffffe          BL       guiCore_CallEventHandler
+0002d0  4305              ORRS     r5,r5,r0              ;245
+0002d2  e7a8              B        |L1.550|
+                  |L1.724|
+0002d4  2500              MOVS     r5,#0                 ;249
+0002d6  7a20              LDRB     r0,[r4,#8]            ;250
+0002d8  0701              LSLS     r1,r0,#28             ;250
+0002da  d5a4              BPL      |L1.550|
+0002dc  06c0              LSLS     r0,r0,#27             ;250
+0002de  d5a2              BPL      |L1.550|
+0002e0  f89d0005          LDRB     r0,[sp,#5]            ;252
+0002e4  2801              CMP      r0,#1                 ;252
+0002e6  d113              BNE      |L1.784|
+0002e8  f8bd0006          LDRH     r0,[sp,#6]            ;254
+0002ec  2802              CMP      r0,#2                 ;254
 0002ee  d015              BEQ      |L1.796|
-0002f0  2804              CMP      r0,#4                 ;257
+0002f0  2801              CMP      r0,#1                 ;256
 0002f2  d015              BEQ      |L1.800|
-0002f4  2805              CMP      r0,#5                 ;259
+0002f4  2803              CMP      r0,#3                 ;258
 0002f6  d015              BEQ      |L1.804|
-0002f8  2806              CMP      r0,#6                 ;261
+0002f8  2804              CMP      r0,#4                 ;260
 0002fa  d015              BEQ      |L1.808|
-0002fc  2100              MOVS     r1,#0                 ;264
-                  |L1.766|
-0002fe  b119              CBZ      r1,|L1.776|
-000300  4620              MOV      r0,r4                 ;266
-000302  f7fffffe          BL       guiSpinBox_ProcessKey
-000306  4605              MOV      r5,r0                 ;266
-                  |L1.776|
-000308  a901              ADD      r1,sp,#4              ;269
-00030a  4620              MOV      r0,r4                 ;269
-00030c  f7fffffe          BL       guiCore_CallEventHandler
-000310  4305              ORRS     r5,r5,r0              ;269
-000312  e784              B        |L1.542|
-                  |L1.788|
-000314  2101              MOVS     r1,#1                 ;252
-000316  e7f2              B        |L1.766|
-                  |L1.792|
-000318  2102              MOVS     r1,#2                 ;254
-00031a  e7f0              B        |L1.766|
+0002fc  2805              CMP      r0,#5                 ;262
+0002fe  d015              BEQ      |L1.812|
+000300  2806              CMP      r0,#6                 ;264
+000302  d015              BEQ      |L1.816|
+000304  2100              MOVS     r1,#0                 ;267
+                  |L1.774|
+000306  b119              CBZ      r1,|L1.784|
+000308  4620              MOV      r0,r4                 ;269
+00030a  f7fffffe          BL       guiSpinBox_ProcessKey
+00030e  4605              MOV      r5,r0                 ;269
+                  |L1.784|
+000310  a901              ADD      r1,sp,#4              ;272
+000312  4620              MOV      r0,r4                 ;272
+000314  f7fffffe          BL       guiCore_CallEventHandler
+000318  4305              ORRS     r5,r5,r0              ;272
+00031a  e784              B        |L1.550|
                   |L1.796|
-00031c  2104              MOVS     r1,#4                 ;256
-00031e  e7ee              B        |L1.766|
+00031c  2101              MOVS     r1,#1                 ;255
+00031e  e7f2              B        |L1.774|
                   |L1.800|
-000320  2103              MOVS     r1,#3                 ;258
-000322  e7ec              B        |L1.766|
+000320  2102              MOVS     r1,#2                 ;257
+000322  e7f0              B        |L1.774|
                   |L1.804|
-000324  2105              MOVS     r1,#5                 ;260
-000326  e7ea              B        |L1.766|
+000324  2104              MOVS     r1,#4                 ;259
+000326  e7ee              B        |L1.774|
                   |L1.808|
-000328  2106              MOVS     r1,#6                 ;262
-00032a  e7e8              B        |L1.766|
-;;;279    
+000328  2103              MOVS     r1,#3                 ;261
+00032a  e7ec              B        |L1.774|
+                  |L1.812|
+00032c  2105              MOVS     r1,#5                 ;263
+00032e  e7ea              B        |L1.774|
+                  |L1.816|
+000330  2106              MOVS     r1,#6                 ;265
+000332  e7e8              B        |L1.774|
+;;;282    
                           ENDP
 
                   guiSpinBox_Initialize PROC
-;;;287    //-------------------------------------------------------//
-;;;288    void guiSpinBox_Initialize(guiSpinBox_t *spinBox, guiGenericWidget_t *parent)
-00032c  b570              PUSH     {r4-r6,lr}
-;;;289    {
-00032e  4604              MOV      r4,r0
-000330  460d              MOV      r5,r1
-;;;290        memset(spinBox, 0, sizeof(*spinBox));
-000332  2148              MOVS     r1,#0x48
-000334  4620              MOV      r0,r4
-000336  f7fffffe          BL       __aeabi_memclr4
-;;;291        spinBox->type = WT_SPINBOX;
-00033a  2006              MOVS     r0,#6
-00033c  7020              STRB     r0,[r4,#0]
-;;;292        spinBox->parent = parent;
-00033e  6065              STR      r5,[r4,#4]
-;;;293        spinBox->acceptFocusByTab = 1;
-000340  7a20              LDRB     r0,[r4,#8]
-000342  f0400001          ORR      r0,r0,#1
-;;;294        spinBox->isVisible = 1;
-000346  f0400010          ORR      r0,r0,#0x10
-00034a  7220              STRB     r0,[r4,#8]
-;;;295        spinBox->showFocus = 1;
-00034c  7a60              LDRB     r0,[r4,#9]
-00034e  f0400002          ORR      r0,r0,#2
-000352  7260              STRB     r0,[r4,#9]
-;;;296        spinBox->processEvent = guiSpinBox_ProcessEvent;
-000354  f2af1071          ADR      r0,guiSpinBox_ProcessEvent + 1
-000358  6160              STR      r0,[r4,#0x14]
-;;;297        spinBox->minDigitsToDisplay = 1;
-00035a  2001              MOVS     r0,#1
-00035c  f8840025          STRB     r0,[r4,#0x25]
-;;;298        spinBox->maxValue = INT32_MAX;
-000360  f06f4000          MVN      r0,#0x80000000
-000364  6320              STR      r0,[r4,#0x30]
-;;;299        spinBox->minValue = INT32_MIN;
-000366  07c0              LSLS     r0,r0,#31
-000368  6360              STR      r0,[r4,#0x34]
-;;;300    }
-00036a  bd70              POP      {r4-r6,pc}
-;;;301    
+;;;290    //-------------------------------------------------------//
+;;;291    void guiSpinBox_Initialize(guiSpinBox_t *spinBox, guiGenericWidget_t *parent)
+000334  b570              PUSH     {r4-r6,lr}
+;;;292    {
+000336  4604              MOV      r4,r0
+000338  460d              MOV      r5,r1
+;;;293        memset(spinBox, 0, sizeof(*spinBox));
+00033a  2148              MOVS     r1,#0x48
+00033c  4620              MOV      r0,r4
+00033e  f7fffffe          BL       __aeabi_memclr4
+;;;294        spinBox->type = WT_SPINBOX;
+000342  2006              MOVS     r0,#6
+000344  7020              STRB     r0,[r4,#0]
+;;;295        spinBox->parent = parent;
+000346  6065              STR      r5,[r4,#4]
+;;;296        spinBox->acceptFocusByTab = 1;
+000348  7a20              LDRB     r0,[r4,#8]
+00034a  f0400001          ORR      r0,r0,#1
+;;;297        spinBox->isVisible = 1;
+00034e  f0400010          ORR      r0,r0,#0x10
+000352  7220              STRB     r0,[r4,#8]
+;;;298        spinBox->showFocus = 1;
+000354  7a60              LDRB     r0,[r4,#9]
+000356  f0400002          ORR      r0,r0,#2
+00035a  7260              STRB     r0,[r4,#9]
+;;;299        spinBox->processEvent = guiSpinBox_ProcessEvent;
+00035c  f2af1071          ADR      r0,guiSpinBox_ProcessEvent + 1
+000360  6160              STR      r0,[r4,#0x14]
+;;;300        spinBox->minDigitsToDisplay = 1;
+000362  2001              MOVS     r0,#1
+000364  f8840025          STRB     r0,[r4,#0x25]
+;;;301        spinBox->maxValue = INT32_MAX;
+000368  f06f4000          MVN      r0,#0x80000000
+00036c  6320              STR      r0,[r4,#0x30]
+;;;302        spinBox->minValue = INT32_MIN;
+00036e  07c0              LSLS     r0,r0,#31
+000370  6360              STR      r0,[r4,#0x34]
+;;;303    }
+000372  bd70              POP      {r4-r6,pc}
+;;;304    
                           ENDP
 

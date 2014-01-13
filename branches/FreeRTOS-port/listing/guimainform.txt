@@ -5,216 +5,385 @@
                           AREA ||.text||, CODE, READONLY, ALIGN=2
 
                   guiMainForm_ProcessEvents PROC
-;;;88     
-;;;89     static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event)
-000000  b507              PUSH     {r0-r2,lr}
-;;;90     {
-;;;91         // Process GUI messages - focus, draw, etc
-;;;92         switch(event.type)
-000002  f89d0004          LDRB     r0,[sp,#4]
-000006  2808              CMP      r0,#8
-000008  d04a              BEQ      |L1.160|
-00000a  dc06              BGT      |L1.26|
-;;;93         {
-;;;94              case GUI_EVENT_INIT:
-;;;95                 guiMainForm.isVisible = 1;
-00000c  4a35              LDR      r2,|L1.228|
-00000e  2801              CMP      r0,#1                 ;92
-000010  7a11              LDRB     r1,[r2,#8]
-000012  d01a              BEQ      |L1.74|
-000014  2802              CMP      r0,#2                 ;92
-000016  d143              BNE      |L1.160|
-000018  e004              B        |L1.36|
-                  |L1.26|
-00001a  2809              CMP      r0,#9                 ;92
-00001c  d040              BEQ      |L1.160|
-00001e  280b              CMP      r0,#0xb               ;92
-000020  d13e              BNE      |L1.160|
-000022  e01a              B        |L1.90|
-                  |L1.36|
-000024  f0410010          ORR      r0,r1,#0x10
-;;;96                 guiMainForm.redrawRequired = 1;
-000028  f0400040          ORR      r0,r0,#0x40
-;;;97                 guiMainForm.redrawForced = 1;
-00002c  f0400080          ORR      r0,r0,#0x80
-000030  7210              STRB     r0,[r2,#8]
-;;;98                 guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
-000032  2101              MOVS     r1,#1
-000034  482b              LDR      r0,|L1.228|
-000036  f7fffffe          BL       guiCore_SetFocused
-;;;99                 // The following actions should be made by greeting timer expire
-;;;100                guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, &guiEvent_SHOW);
-00003a  492b              LDR      r1,|L1.232|
-00003c  482b              LDR      r0,|L1.236|
-00003e  f7fffffe          BL       guiCore_AddMessageToQueue
-;;;101                guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
-000042  482a              LDR      r0,|L1.236|
-000044  f7fffffe          BL       guiCore_RequestFocusChange
-;;;102                break;
-000048  e02a              B        |L1.160|
+;;;90     
+;;;91     static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event)
+000000  b5f7              PUSH     {r0-r2,r4-r7,lr}
+;;;92     {
+000002  b082              SUB      sp,sp,#8
+;;;93         // Process GUI messages - focus, draw, etc
+;;;94         switch(event.type)
+;;;95         {
+;;;96              case GUI_EVENT_INIT:
+;;;97                 guiMainForm.isVisible = 1;
+000004  4c6e              LDR      r4,|L1.448|
+000006  f89d000c          LDRB     r0,[sp,#0xc]          ;94
+;;;98                 guiMainForm.redrawRequired = 1;
+;;;99                 guiMainForm.redrawForced = 1;
+;;;100                guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
+;;;101                break;
+;;;102             case GUI_EVENT_START:
+;;;103                // The following actions should be made by greeting timer expire
+;;;104                guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, &guiEvent_SHOW);
+00000a  4e6c              LDR      r6,|L1.444|
+00000c  7a21              LDRB     r1,[r4,#8]            ;97
+;;;105                guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
+;;;106                break;
+;;;107              case GUI_EVENT_EEPROM_MESSAGE:
+;;;108                // event.spec = 1 => EEPROM is OK
+;;;109                greetingFlags |= (event.spec) ? 0x01 : 0x02;
+00000e  4d6d              LDR      r5,|L1.452|
+000010  2809              CMP      r0,#9                 ;94
+000012  d019              BEQ      |L1.72|
+000014  dc04              BGT      |L1.32|
+000016  2801              CMP      r0,#1                 ;94
+000018  d02a              BEQ      |L1.112|
+00001a  2802              CMP      r0,#2                 ;94
+                  |L1.28|
+00001c  d114              BNE      |L1.72|
+00001e  e008              B        |L1.50|
+                  |L1.32|
+000020  f89d200d          LDRB     r2,[sp,#0xd]
+000024  280b              CMP      r0,#0xb               ;94
+000026  d074              BEQ      |L1.274|
+000028  28f0              CMP      r0,#0xf0              ;94
+00002a  d00e              BEQ      |L1.74|
+00002c  28f1              CMP      r0,#0xf1              ;94
+00002e  d1f5              BNE      |L1.28|
+000030  e013              B        |L1.90|
+                  |L1.50|
+000032  f0410010          ORR      r0,r1,#0x10           ;97
+000036  f0400040          ORR      r0,r0,#0x40           ;98
+00003a  f0400080          ORR      r0,r0,#0x80           ;99
+00003e  7220              STRB     r0,[r4,#8]            ;99
+000040  2101              MOVS     r1,#1                 ;100
+000042  485f              LDR      r0,|L1.448|
+000044  f7fffffe          BL       guiCore_SetFocused
+                  |L1.72|
+000048  e094              B        |L1.372|
                   |L1.74|
-;;;103              case GUI_EVENT_DRAW:
-;;;104                // Clear screen and put greeting image
-;;;105                // TODO
-;;;106                //guiGraph_DrawPanel(&guiMainForm);
-;;;107                // Draw static elemens
-;;;108                //if (guiMainForm.redrawForced)
-;;;109                //    LCD_DrawHorLine(0,110,255,1);
-;;;110                // Reset flags
-;;;111                guiMainForm.redrawFocus = 0;
-00004a  7a50              LDRB     r0,[r2,#9]  ; guiMainForm
-00004c  f0200001          BIC      r0,r0,#1
-000050  7250              STRB     r0,[r2,#9]
-;;;112                guiMainForm.redrawRequired = 0;
-000052  f0210040          BIC      r0,r1,#0x40
-000056  7210              STRB     r0,[r2,#8]
-;;;113                break;
-000058  e022              B        |L1.160|
+00004a  495f              LDR      r1,|L1.456|
+00004c  485b              LDR      r0,|L1.444|
+00004e  f7fffffe          BL       guiCore_AddMessageToQueue
+000052  485a              LDR      r0,|L1.444|
+000054  f7fffffe          BL       guiCore_RequestFocusChange
+000058  e08c              B        |L1.372|
                   |L1.90|
-;;;114            case GUI_EVENT_FOCUS:
-;;;115    
-;;;116                //guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
-;;;117                //guiCore_RequestFocusChange(guiMainForm.widgets.elements[guiMainForm.widgets.focusedIndex]);
-;;;118                //guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,1);
-;;;119                break;
-;;;120            case GUI_EVENT_UNFOCUS:
-;;;121                //guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 0);
-;;;122                break;
-;;;123    
-;;;124            case GUI_EVENT_KEY:
-;;;125                if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
-00005a  f89d0005          LDRB     r0,[sp,#5]
-00005e  2805              CMP      r0,#5
-000060  d11e              BNE      |L1.160|
-000062  f8bd0006          LDRH     r0,[sp,#6]
-000066  2801              CMP      r0,#1
-000068  d11a              BNE      |L1.160|
-;;;126                {
-;;;127                    if (guiMasterPanel.isVisible)
-00006a  4820              LDR      r0,|L1.236|
-00006c  7a00              LDRB     r0,[r0,#8]  ; guiMasterPanel
-00006e  06c0              LSLS     r0,r0,#27
-000070  d50b              BPL      |L1.138|
-;;;128                    {
-;;;129                        guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 0);
-000072  2100              MOVS     r1,#0
-000074  481d              LDR      r0,|L1.236|
-000076  f7fffffe          BL       guiCore_SetVisible
-;;;130                        guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 1);
-00007a  2101              MOVS     r1,#1
-00007c  481c              LDR      r0,|L1.240|
-00007e  f7fffffe          BL       guiCore_SetVisible
-;;;131                        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiSetupPanel);
-000082  481b              LDR      r0,|L1.240|
-000084  f7fffffe          BL       guiCore_RequestFocusChange
-000088  e00a              B        |L1.160|
-                  |L1.138|
-;;;132                    }
-;;;133                    else
-;;;134                    {
-;;;135                        guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 0);
-00008a  2100              MOVS     r1,#0
-00008c  4818              LDR      r0,|L1.240|
-00008e  f7fffffe          BL       guiCore_SetVisible
-;;;136                        guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 1);
-000092  2101              MOVS     r1,#1
-000094  4815              LDR      r0,|L1.236|
-000096  f7fffffe          BL       guiCore_SetVisible
-;;;137                        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
-00009a  4814              LDR      r0,|L1.236|
-00009c  f7fffffe          BL       guiCore_RequestFocusChange
-                  |L1.160|
-;;;138                    }
-;;;139                    break;
-;;;140                }
-;;;141    
-;;;142            /*
-;;;143                if (event.spec == GUI_KEY_EVENT_DOWN)
-;;;144                {
-;;;145                    if (event.lparam == GUI_KEY_LEFT)
-;;;146                        guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,-1);
-;;;147                    else if (event.lparam == GUI_KEY_RIGHT)
-;;;148                        guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,1);
-;;;149                    else if (event.lparam == GUI_KEY_ESC)
-;;;150                    {
-;;;151                        //guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSubForm1, &guiEvent_HIDE);
-;;;152                        //guiCore_SetVisibleByTag(&guiMainForm.widgets, 10,20,ITEMS_IN_RANGE_ARE_VISIBLE);
-;;;153                        //guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMainForm);
-;;;154                    }
-;;;155                } */
-;;;156                break;
-;;;157        }
-;;;158        return GUI_EVENT_ACCEPTED;
-0000a0  2001              MOVS     r0,#1
-;;;159    }
-0000a2  bd0e              POP      {r1-r3,pc}
-;;;160    
+00005a  b10a              CBZ      r2,|L1.96|
+00005c  2001              MOVS     r0,#1
+00005e  e000              B        |L1.98|
+                  |L1.96|
+000060  2002              MOVS     r0,#2
+                  |L1.98|
+000062  782a              LDRB     r2,[r5,#0]  ; greetingFlags
+000064  4310              ORRS     r0,r0,r2
+000066  7028              STRB     r0,[r5,#0]
+;;;110                guiMainForm.redrawRequired = 1;
+000068  f0410040          ORR      r0,r1,#0x40
+00006c  7220              STRB     r0,[r4,#8]
+;;;111                break;
+00006e  e081              B        |L1.372|
+                  |L1.112|
+;;;112              case GUI_EVENT_DRAW:
+;;;113                // Greeting screen
+;;;114                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+000070  2000              MOVS     r0,#0
+000072  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;115                if (guiMainForm.redrawForced)
+000076  7a20              LDRB     r0,[r4,#8]  ; guiMainForm
+000078  f04f0700          MOV      r7,#0                 ;109
+00007c  0600              LSLS     r0,r0,#24
+00007e  d536              BPL      |L1.238|
+;;;116                {
+;;;117                    // Erase rectangle
+;;;118                    LCD_FillRect(wx,wy,guiMasterPanel.width,guiMasterPanel.height,FILL_WITH_WHITE);
+000080  8a70              LDRH     r0,[r6,#0x12]  ; guiMasterPanel
+000082  b2c0              UXTB     r0,r0
+000084  e9cd0700          STRD     r0,r7,[sp,#0]
+000088  8a30              LDRH     r0,[r6,#0x10]  ; guiMasterPanel
+00008a  b2c3              UXTB     r3,r0
+00008c  484f              LDR      r0,|L1.460|
+00008e  8800              LDRH     r0,[r0,#0]  ; wy
+000090  b2c2              UXTB     r2,r0
+000092  484f              LDR      r0,|L1.464|
+000094  8800              LDRH     r0,[r0,#0]  ; wx
+000096  b2c1              UXTB     r1,r0
+000098  2000              MOVS     r0,#0
+00009a  f7fffffe          BL       LCD_DrawImage
+;;;119                    LCD_SetFont(&font_h11);
+00009e  484d              LDR      r0,|L1.468|
+0000a0  f7fffffe          BL       LCD_SetFont
+;;;120                    LCD_PrintString("PS200", 28, 2, 1);
+0000a4  2301              MOVS     r3,#1
+0000a6  2202              MOVS     r2,#2
+0000a8  211c              MOVS     r1,#0x1c
+0000aa  a04b              ADR      r0,|L1.472|
+0000ac  f7fffffe          BL       LCD_PrintString
+;;;121                    LCD_PrintString("Power supply", 8, 15, 1);
+0000b0  2301              MOVS     r3,#1
+0000b2  220f              MOVS     r2,#0xf
+0000b4  2108              MOVS     r1,#8
+0000b6  a04a              ADR      r0,|L1.480|
+0000b8  f7fffffe          BL       LCD_PrintString
+;;;122                    LCD_PrintString("MDR32F9Qx", 96+5, 2, 1);
+0000bc  2301              MOVS     r3,#1
+0000be  2202              MOVS     r2,#2
+0000c0  2165              MOVS     r1,#0x65
+0000c2  a04b              ADR      r0,|L1.496|
+0000c4  f7fffffe          BL       LCD_PrintString
+;;;123                    LCD_SetFont(&font_h10);
+0000c8  484c              LDR      r0,|L1.508|
+0000ca  f7fffffe          BL       LCD_SetFont
+;;;124                    LCD_PrintString("powered by", 96+10, 15, 1);
+0000ce  2301              MOVS     r3,#1
+0000d0  220f              MOVS     r2,#0xf
+0000d2  216a              MOVS     r1,#0x6a
+0000d4  a04a              ADR      r0,|L1.512|
+0000d6  f7fffffe          BL       LCD_PrintString
+;;;125                    LCD_DrawImage(freeRTOS_logo_96x36, 96,27,96,36,1);
+0000da  2001              MOVS     r0,#1
+0000dc  2124              MOVS     r1,#0x24
+0000de  e9cd1000          STRD     r1,r0,[sp,#0]
+0000e2  2360              MOVS     r3,#0x60
+0000e4  221b              MOVS     r2,#0x1b
+0000e6  4619              MOV      r1,r3
+0000e8  4848              LDR      r0,|L1.524|
+0000ea  f7fffffe          BL       LCD_DrawImage
+                  |L1.238|
+;;;126                }
+;;;127                LCD_SetFont(&font_6x8_mono);
+0000ee  4848              LDR      r0,|L1.528|
+0000f0  f7fffffe          BL       LCD_SetFont
+;;;128                if ((greetingFlags & 0x03) == 0x01)
+0000f4  7828              LDRB     r0,[r5,#0]  ; greetingFlags
+0000f6  f0000003          AND      r0,r0,#3
+0000fa  2801              CMP      r0,#1
+0000fc  d002              BEQ      |L1.260|
+;;;129                    LCD_PrintString("EEPROM OK", 5, 55, 1);
+;;;130                else if ((greetingFlags & 0x03) == 0x02)
+0000fe  2802              CMP      r0,#2
+000100  d008              BEQ      |L1.276|
+000102  e00d              B        |L1.288|
+                  |L1.260|
+000104  2301              MOVS     r3,#1                 ;129
+000106  2237              MOVS     r2,#0x37              ;129
+000108  2105              MOVS     r1,#5                 ;129
+00010a  a042              ADR      r0,|L1.532|
+00010c  f7fffffe          BL       LCD_PrintString
+000110  e006              B        |L1.288|
+                  |L1.274|
+000112  e00f              B        |L1.308|
+                  |L1.276|
+;;;131                    LCD_PrintString("EEPROM FAIL", 5, 55, 1);
+000114  2301              MOVS     r3,#1
+000116  2237              MOVS     r2,#0x37
+000118  2105              MOVS     r1,#5
+00011a  a041              ADR      r0,|L1.544|
+00011c  f7fffffe          BL       LCD_PrintString
+                  |L1.288|
+;;;132                // Reset flags
+;;;133                greetingFlags = 0;
+000120  702f              STRB     r7,[r5,#0]
+;;;134                guiMainForm.redrawFocus = 0;
+000122  7a60              LDRB     r0,[r4,#9]  ; guiMainForm
+000124  f0200001          BIC      r0,r0,#1
+000128  7260              STRB     r0,[r4,#9]
+;;;135                guiMainForm.redrawRequired = 0;
+00012a  7a20              LDRB     r0,[r4,#8]  ; guiMainForm
+00012c  f0200040          BIC      r0,r0,#0x40
+000130  7220              STRB     r0,[r4,#8]
+;;;136                break;
+000132  e01f              B        |L1.372|
+                  |L1.308|
+;;;137            case GUI_EVENT_FOCUS:
+;;;138    
+;;;139                //guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
+;;;140                //guiCore_RequestFocusChange(guiMainForm.widgets.elements[guiMainForm.widgets.focusedIndex]);
+;;;141                //guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,1);
+;;;142                break;
+;;;143            case GUI_EVENT_UNFOCUS:
+;;;144                //guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 0);
+;;;145                break;
+;;;146    
+;;;147            case GUI_EVENT_KEY:
+;;;148                if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
+000134  2a05              CMP      r2,#5
+000136  d11d              BNE      |L1.372|
+000138  f8bd000e          LDRH     r0,[sp,#0xe]
+00013c  2801              CMP      r0,#1
+00013e  d119              BNE      |L1.372|
+;;;149                {
+;;;150                    if (guiMasterPanel.isVisible)
+000140  7a30              LDRB     r0,[r6,#8]  ; guiMasterPanel
+000142  06c0              LSLS     r0,r0,#27
+000144  d50b              BPL      |L1.350|
+;;;151                    {
+;;;152                        guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 0);
+000146  2100              MOVS     r1,#0
+000148  481c              LDR      r0,|L1.444|
+00014a  f7fffffe          BL       guiCore_SetVisible
+;;;153                        guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 1);
+00014e  2101              MOVS     r1,#1
+000150  4836              LDR      r0,|L1.556|
+000152  f7fffffe          BL       guiCore_SetVisible
+;;;154                        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiSetupPanel);
+000156  4835              LDR      r0,|L1.556|
+000158  f7fffffe          BL       guiCore_RequestFocusChange
+00015c  e00a              B        |L1.372|
+                  |L1.350|
+;;;155                    }
+;;;156                    else
+;;;157                    {
+;;;158                        guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 0);
+00015e  2100              MOVS     r1,#0
+000160  4832              LDR      r0,|L1.556|
+000162  f7fffffe          BL       guiCore_SetVisible
+;;;159                        guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 1);
+000166  2101              MOVS     r1,#1
+000168  4814              LDR      r0,|L1.444|
+00016a  f7fffffe          BL       guiCore_SetVisible
+;;;160                        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
+00016e  4813              LDR      r0,|L1.444|
+000170  f7fffffe          BL       guiCore_RequestFocusChange
+                  |L1.372|
+;;;161                    }
+;;;162                    break;
+;;;163                }
+;;;164    
+;;;165            /*
+;;;166                if (event.spec == GUI_KEY_EVENT_DOWN)
+;;;167                {
+;;;168                    if (event.lparam == GUI_KEY_LEFT)
+;;;169                        guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,-1);
+;;;170                    else if (event.lparam == GUI_KEY_RIGHT)
+;;;171                        guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMainForm,1);
+;;;172                    else if (event.lparam == GUI_KEY_ESC)
+;;;173                    {
+;;;174                        //guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSubForm1, &guiEvent_HIDE);
+;;;175                        //guiCore_SetVisibleByTag(&guiMainForm.widgets, 10,20,ITEMS_IN_RANGE_ARE_VISIBLE);
+;;;176                        //guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMainForm);
+;;;177                    }
+;;;178                } */
+;;;179                break;
+;;;180        }
+;;;181        return GUI_EVENT_ACCEPTED;
+;;;182    }
+000174  b005              ADD      sp,sp,#0x14
+000176  2001              MOVS     r0,#1                 ;181
+000178  bdf0              POP      {r4-r7,pc}
+;;;183    
                           ENDP
 
                   guiMainForm_Initialize PROC
-;;;66     
-;;;67     void guiMainForm_Initialize(void)
-0000a4  b510              PUSH     {r4,lr}
-;;;68     {
-;;;69         // Initialize form
-;;;70         guiPanel_Initialize(&guiMainForm, 0);
-0000a6  2100              MOVS     r1,#0
-0000a8  480e              LDR      r0,|L1.228|
-0000aa  f7fffffe          BL       guiPanel_Initialize
-;;;71         guiMainForm.processEvent = guiMainForm_ProcessEvents;
-0000ae  480d              LDR      r0,|L1.228|
-0000b0  4910              LDR      r1,|L1.244|
-0000b2  6141              STR      r1,[r0,#0x14]  ; guiMainForm
-;;;72         guiMainForm.widgets.count = MAIN_FORM_ELEMENTS_COUNT;
-0000b4  2102              MOVS     r1,#2
-0000b6  f8801020          STRB     r1,[r0,#0x20]
-;;;73         guiMainForm.widgets.elements = guiMainFormElements;
-0000ba  490f              LDR      r1,|L1.248|
-0000bc  6241              STR      r1,[r0,#0x24]  ; guiMainForm
-;;;74         guiMainForm.widgets.elements[0] = &guiMasterPanel;
-0000be  4a0b              LDR      r2,|L1.236|
-0000c0  600a              STR      r2,[r1,#0]
-;;;75         guiMainForm.widgets.elements[1] = &guiSetupPanel;
-0000c2  4a0b              LDR      r2,|L1.240|
-0000c4  604a              STR      r2,[r1,#4]
-;;;76     
-;;;77         guiMainForm.x = 0;
-0000c6  2100              MOVS     r1,#0
-0000c8  8181              STRH     r1,[r0,#0xc]
-;;;78         guiMainForm.y = 0;
-0000ca  81c1              STRH     r1,[r0,#0xe]
-;;;79         guiMainForm.width = 96 * 2;
-0000cc  21c0              MOVS     r1,#0xc0
-0000ce  8201              STRH     r1,[r0,#0x10]
-;;;80         guiMainForm.height = 68;
-0000d0  2144              MOVS     r1,#0x44
-0000d2  8241              STRH     r1,[r0,#0x12]
-;;;81     
-;;;82     
-;;;83         // Other panels are all initialized to be invisible
-;;;84         guiMasterPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
-0000d4  f7fffffe          BL       guiMasterPanel_Initialize
-;;;85         guiSetupPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
-0000d8  e8bd4010          POP      {r4,lr}
-0000dc  4801              LDR      r0,|L1.228|
-0000de  f7ffbffe          B.W      guiSetupPanel_Initialize
-;;;86     }
-;;;87     
+;;;68     
+;;;69     void guiMainForm_Initialize(void)
+00017a  b510              PUSH     {r4,lr}
+;;;70     {
+;;;71         // Initialize form
+;;;72         guiPanel_Initialize(&guiMainForm, 0);
+00017c  2100              MOVS     r1,#0
+00017e  4810              LDR      r0,|L1.448|
+000180  f7fffffe          BL       guiPanel_Initialize
+;;;73         guiMainForm.processEvent = guiMainForm_ProcessEvents;
+000184  480e              LDR      r0,|L1.448|
+000186  492a              LDR      r1,|L1.560|
+000188  6141              STR      r1,[r0,#0x14]  ; guiMainForm
+;;;74         guiMainForm.widgets.count = MAIN_FORM_ELEMENTS_COUNT;
+00018a  2102              MOVS     r1,#2
+00018c  f8801020          STRB     r1,[r0,#0x20]
+;;;75         guiMainForm.widgets.elements = guiMainFormElements;
+000190  490c              LDR      r1,|L1.452|
+000192  1d09              ADDS     r1,r1,#4
+000194  6241              STR      r1,[r0,#0x24]  ; guiMainForm
+;;;76         guiMainForm.widgets.elements[0] = &guiMasterPanel;
+000196  4a09              LDR      r2,|L1.444|
+000198  600a              STR      r2,[r1,#0]
+;;;77         guiMainForm.widgets.elements[1] = &guiSetupPanel;
+00019a  4a24              LDR      r2,|L1.556|
+00019c  604a              STR      r2,[r1,#4]
+;;;78     
+;;;79         guiMainForm.x = 0;
+00019e  2100              MOVS     r1,#0
+0001a0  8181              STRH     r1,[r0,#0xc]
+;;;80         guiMainForm.y = 0;
+0001a2  81c1              STRH     r1,[r0,#0xe]
+;;;81         guiMainForm.width = 96 * 2;
+0001a4  21c0              MOVS     r1,#0xc0
+0001a6  8201              STRH     r1,[r0,#0x10]
+;;;82         guiMainForm.height = 68;
+0001a8  2144              MOVS     r1,#0x44
+0001aa  8241              STRH     r1,[r0,#0x12]
+;;;83     
+;;;84     
+;;;85         // Other panels are all initialized to be invisible
+;;;86         guiMasterPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
+0001ac  f7fffffe          BL       guiMasterPanel_Initialize
+;;;87         guiSetupPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
+0001b0  e8bd4010          POP      {r4,lr}
+0001b4  4802              LDR      r0,|L1.448|
+0001b6  f7ffbffe          B.W      guiSetupPanel_Initialize
+;;;88     }
+;;;89     
                           ENDP
 
-0000e2  0000              DCW      0x0000
-                  |L1.228|
-                          DCD      ||.bss||
-                  |L1.232|
-                          DCD      guiEvent_SHOW
-                  |L1.236|
+0001ba  0000              DCW      0x0000
+                  |L1.444|
                           DCD      guiMasterPanel
-                  |L1.240|
-                          DCD      guiSetupPanel
-                  |L1.244|
-                          DCD      guiMainForm_ProcessEvents
-                  |L1.248|
+                  |L1.448|
+                          DCD      ||.bss||
+                  |L1.452|
                           DCD      ||.data||
+                  |L1.456|
+                          DCD      guiEvent_SHOW
+                  |L1.460|
+                          DCD      ||wy||
+                  |L1.464|
+                          DCD      ||wx||
+                  |L1.468|
+                          DCD      font_h11
+                  |L1.472|
+0001d8  50533230          DCB      "PS200",0
+0001dc  3000    
+0001de  00                DCB      0
+0001df  00                DCB      0
+                  |L1.480|
+0001e0  506f7765          DCB      "Power supply",0
+0001e4  72207375
+0001e8  70706c79
+0001ec  00      
+0001ed  00                DCB      0
+0001ee  00                DCB      0
+0001ef  00                DCB      0
+                  |L1.496|
+0001f0  4d445233          DCB      "MDR32F9Qx",0
+0001f4  32463951
+0001f8  7800    
+0001fa  00                DCB      0
+0001fb  00                DCB      0
+                  |L1.508|
+                          DCD      font_h10
+                  |L1.512|
+000200  706f7765          DCB      "powered by",0
+000204  72656420
+000208  627900  
+00020b  00                DCB      0
+                  |L1.524|
+                          DCD      freeRTOS_logo_96x36
+                  |L1.528|
+                          DCD      font_6x8_mono
+                  |L1.532|
+000214  45455052          DCB      "EEPROM OK",0
+000218  4f4d204f
+00021c  4b00    
+00021e  00                DCB      0
+00021f  00                DCB      0
+                  |L1.544|
+000220  45455052          DCB      "EEPROM FAIL",0
+000224  4f4d2046
+000228  41494c00
+                  |L1.556|
+                          DCD      guiSetupPanel
+                  |L1.560|
+                          DCD      guiMainForm_ProcessEvents
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
@@ -223,5 +392,7 @@
 
                           AREA ||.data||, DATA, ALIGN=2
 
+                  greetingFlags
+000000  00000000          DCB      0x00,0x00,0x00,0x00
                   guiMainFormElements
                           %        8

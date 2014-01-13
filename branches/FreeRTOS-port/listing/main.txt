@@ -32,7 +32,7 @@
 000006  2000              MOVS     r0,#0
 000008  f7fffffe          BL       EEPROMReadBlock
 ;;;69     	  if (*((uint32_t*)eeprom_data_rd) != 0x88776655)
-00000c  494c              LDR      r1,|L1.320|
+00000c  4947              LDR      r1,|L1.300|
 00000e  9800              LDR      r0,[sp,#0]
 ;;;70     			error |= 0x01;
 ;;;71     		
@@ -42,7 +42,7 @@
 000014  f24070fc          MOV      r0,#0x7fc
 000018  f7fffffe          BL       EEPROMReadBlock
 ;;;73     	  if (*((uint32_t*)eeprom_data_rd) != 0x44332211)
-00001c  4a49              LDR      r2,|L1.324|
+00001c  4a44              LDR      r2,|L1.304|
 00001e  9900              LDR      r1,[sp,#0]
 000020  4291              CMP      r1,r2
 000022  d001              BEQ      |L1.40|
@@ -57,245 +57,231 @@
                           ENDP
 
                   main PROC
-;;;116    ******************************************************************************/
-;;;117    int main(void)
+;;;129    ******************************************************************************/
+;;;130    int main(void)
 00002a  b51f              PUSH     {r0-r4,lr}
-;;;118    
-;;;119    {
-;;;120    	
-;;;121    
-;;;122    	//=============================================//
-;;;123    	// system initialization
-;;;124    	//=============================================//
-;;;125    	Setup_CPU_Clock();
+;;;131    
+;;;132    {
+;;;133    	
+;;;134    
+;;;135    	//=============================================//
+;;;136    	// system initialization
+;;;137    	//=============================================//
+;;;138    	Setup_CPU_Clock();
 00002c  f7fffffe          BL       Setup_CPU_Clock
-;;;126    	HW_NVIC_init();
+;;;139    	HW_NVIC_init();
 000030  f7fffffe          BL       HW_NVIC_init
-;;;127    	DWT_Init();
+;;;140    	DWT_Init();
 000034  f7fffffe          BL       DWT_Init
-;;;128    	HW_SSPInit();
+;;;141    	HW_SSPInit();
 000038  f7fffffe          BL       HW_SSPInit
-;;;129    	HW_I2CInit();
+;;;142    	HW_I2CInit();
 00003c  f7fffffe          BL       HW_I2CInit
-;;;130    	HW_TimersInit();
+;;;143    	HW_TimersInit();
 000040  f7fffffe          BL       HW_TimersInit
-;;;131    	HW_PortInit();
+;;;144    	HW_PortInit();
 000044  f7fffffe          BL       HW_PortInit
-;;;132    	HW_ADCInit();
+;;;145    	HW_ADCInit();
 000048  f7fffffe          BL       HW_ADCInit
-;;;133    	HW_UARTInit();
+;;;146    	HW_UARTInit();
 00004c  f7fffffe          BL       HW_UARTInit
-;;;134    	HW_DMAInit();
+;;;147    	HW_DMAInit();
 000050  f7fffffe          BL       HW_DMAInit
-;;;135    	LcdInit();
+;;;148    	LcdInit();
 000054  f7fffffe          BL       LcdInit
-;;;136    	
-;;;137    //	UARTInit();
-;;;138    	
-;;;139    	InitButtons();
+;;;149    
+;;;150    	InitButtons();
 000058  f7fffffe          BL       InitButtons
-;;;140    	ProcessButtons();
-00005c  f7fffffe          BL       ProcessButtons
-;;;141    	// Default feedback channel select
-;;;142    	if (buttons.raw_state & SW_CHANNEL)
-000060  4839              LDR      r0,|L1.328|
-000062  8800              LDRH     r0,[r0,#0]  ; buttons
-000064  0680              LSLS     r0,r0,#26
-000066  d503              BPL      |L1.112|
-;;;143    		Converter_Init(CHANNEL_5V);
-000068  2001              MOVS     r0,#1
-00006a  f7fffffe          BL       Converter_Init
-00006e  e002              B        |L1.118|
-                  |L1.112|
-;;;144    	else
-;;;145    		Converter_Init(CHANNEL_12V);
-000070  2000              MOVS     r0,#0
-000072  f7fffffe          BL       Converter_Init
-                  |L1.118|
-000076  2501              MOVS     r5,#1
-000078  4834              LDR      r0,|L1.332|
-00007a  03e9              LSLS     r1,r5,#15
-00007c  2400              MOVS     r4,#0
-00007e  6001              STR      r1,[r0,#0]
-;;;146    	
-;;;147    	
-;;;148    	// Enable interrupt
-;;;149    	NVIC_EnableIRQ(Timer2_IRQn);
-;;;150    	
-;;;151    	
-;;;152    	SetCoolerSpeed(80);
-000080  f04f0050          MOV      r0,#0x50
-000084  f7fffffe          BL       SetCoolerSpeed
-;;;153    	LcdSetBacklight(85);
-000088  2055              MOVS     r0,#0x55
-00008a  f7fffffe          BL       LcdSetBacklight
-;;;154    	
-;;;155    	// Reset time statistics
-;;;156    	time_profile.max_ticks_in_Systick_hook = 0;
-00008e  4830              LDR      r0,|L1.336|
-000090  6004              STR      r4,[r0,#0]  ; time_profile
-;;;157    	time_profile.max_ticks_in_Timer2_ISR = 0;
-000092  6044              STR      r4,[r0,#4]  ; time_profile
-;;;158    	
-;;;159    	
-;;;160    	xTaskCreate( vTaskGUI, 			( signed char * ) 		"GUI top", 		configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
-000094  e9cd5400          STRD     r5,r4,[sp,#0]
+00005c  2501              MOVS     r5,#1
+00005e  4835              LDR      r0,|L1.308|
+000060  03e9              LSLS     r1,r5,#15
+000062  2400              MOVS     r4,#0
+000064  6001              STR      r1,[r0,#0]
+;;;151    
+;;;152    	// CHECKME - low level converter iint - required ?
+;;;153    	
+;;;154    	// Enable interrupt for fast low-level control dispatcher
+;;;155    	// TODO: bring ISR from systick.c to systemfunc.c
+;;;156    	NVIC_EnableIRQ(Timer2_IRQn);
+;;;157    	
+;;;158    	SetCoolerSpeed(80);
+000066  f04f0050          MOV      r0,#0x50
+00006a  f7fffffe          BL       SetCoolerSpeed
+;;;159    	LcdSetBacklight(85);
+00006e  2055              MOVS     r0,#0x55
+000070  f7fffffe          BL       LcdSetBacklight
+;;;160    	
+;;;161    	// Reset time statistics
+;;;162    	time_profile.max_ticks_in_Systick_hook = 0;
+000074  4830              LDR      r0,|L1.312|
+000076  6004              STR      r4,[r0,#0]  ; time_profile
+;;;163    	time_profile.max_ticks_in_Timer2_ISR = 0;
+000078  6044              STR      r4,[r0,#4]  ; time_profile
+;;;164    	
+;;;165    	enable_task_ticks = 1;	// enable software timers (in systick hook)
+00007a  4830              LDR      r0,|L1.316|
+00007c  7005              STRB     r5,[r0,#0]
+;;;166    							// CHECKME
+;;;167    	
+;;;168    	xTaskCreate( vTaskGUI, 			( signed char * ) 		"GUI top", 		configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
+00007e  e9cd5400          STRD     r5,r4,[sp,#0]
+000082  9402              STR      r4,[sp,#8]
+000084  2300              MOVS     r3,#0
+000086  2280              MOVS     r2,#0x80
+000088  a12d              ADR      r1,|L1.320|
+00008a  482f              LDR      r0,|L1.328|
+00008c  9403              STR      r4,[sp,#0xc]
+00008e  f7fffffe          BL       xTaskGenericCreate
+;;;169    	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
+000092  2602              MOVS     r6,#2
+000094  e9cd6400          STRD     r6,r4,[sp,#0]
 000098  9402              STR      r4,[sp,#8]
 00009a  2300              MOVS     r3,#0
 00009c  2280              MOVS     r2,#0x80
-00009e  a12d              ADR      r1,|L1.340|
-0000a0  482e              LDR      r0,|L1.348|
+00009e  a12b              ADR      r1,|L1.332|
+0000a0  482d              LDR      r0,|L1.344|
 0000a2  9403              STR      r4,[sp,#0xc]
 0000a4  f7fffffe          BL       xTaskGenericCreate
-;;;161    	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
-0000a8  2602              MOVS     r6,#2
-0000aa  e9cd6400          STRD     r6,r4,[sp,#0]
-0000ae  9402              STR      r4,[sp,#8]
-0000b0  2300              MOVS     r3,#0
-0000b2  2280              MOVS     r2,#0x80
-0000b4  a12a              ADR      r1,|L1.352|
-0000b6  482d              LDR      r0,|L1.364|
-0000b8  9403              STR      r4,[sp,#0xc]
-0000ba  f7fffffe          BL       xTaskGenericCreate
-;;;162    	xTaskCreate( vTaskService, 		( signed char * ) 		"Service", 		configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
-0000be  9400              STR      r4,[sp,#0]
-0000c0  9401              STR      r4,[sp,#4]
+;;;170    	xTaskCreate( vTaskService, 		( signed char * ) 		"Service", 		configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
+0000a8  9400              STR      r4,[sp,#0]
+0000aa  9401              STR      r4,[sp,#4]
+0000ac  9402              STR      r4,[sp,#8]
+0000ae  2300              MOVS     r3,#0
+0000b0  2280              MOVS     r2,#0x80
+0000b2  a12a              ADR      r1,|L1.348|
+0000b4  482b              LDR      r0,|L1.356|
+0000b6  9403              STR      r4,[sp,#0xc]
+0000b8  f7fffffe          BL       xTaskGenericCreate
+;;;171    	xTaskCreate( vTaskDispatcher, 	( signed char * ) 		"Dispatcher", 	configMINIMAL_STACK_SIZE, 	NULL, 3, ( xTaskHandle * ) NULL);
+0000bc  2003              MOVS     r0,#3
+0000be  e9cd0400          STRD     r0,r4,[sp,#0]
 0000c2  9402              STR      r4,[sp,#8]
 0000c4  2300              MOVS     r3,#0
 0000c6  2280              MOVS     r2,#0x80
-0000c8  a129              ADR      r1,|L1.368|
-0000ca  482b              LDR      r0,|L1.376|
+0000c8  a127              ADR      r1,|L1.360|
+0000ca  482a              LDR      r0,|L1.372|
 0000cc  9403              STR      r4,[sp,#0xc]
 0000ce  f7fffffe          BL       xTaskGenericCreate
-;;;163    	xTaskCreate( vTaskDispatcher, 	( signed char * ) 		"Dispatcher", 	configMINIMAL_STACK_SIZE, 	NULL, 3, ( xTaskHandle * ) NULL);
-0000d2  2003              MOVS     r0,#3
-0000d4  e9cd0400          STRD     r0,r4,[sp,#0]
-0000d8  9402              STR      r4,[sp,#8]
-0000da  2300              MOVS     r3,#0
-0000dc  2280              MOVS     r2,#0x80
-0000de  a127              ADR      r1,|L1.380|
-0000e0  4829              LDR      r0,|L1.392|
-0000e2  9403              STR      r4,[sp,#0xc]
-0000e4  f7fffffe          BL       xTaskGenericCreate
-;;;164    	xTaskCreate( vTaskADC, 			( signed char * ) 		"ADC", 			configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
-0000e8  e9cd6400          STRD     r6,r4,[sp,#0]
+;;;172    	xTaskCreate( vTaskADC, 			( signed char * ) 		"ADC", 			configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
+0000d2  e9cd6400          STRD     r6,r4,[sp,#0]
+0000d6  9402              STR      r4,[sp,#8]
+0000d8  2300              MOVS     r3,#0
+0000da  2280              MOVS     r2,#0x80
+0000dc  a126              ADR      r1,|L1.376|
+0000de  4827              LDR      r0,|L1.380|
+0000e0  9403              STR      r4,[sp,#0xc]
+0000e2  f7fffffe          BL       xTaskGenericCreate
+;;;173    	
+;;;174    	// Transmitter task priority should be > receiver's due to unknown error which invokes hard fault handler with INVPC error
+;;;175    	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART2 RX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
+0000e6  e9cd5400          STRD     r5,r4,[sp,#0]
+0000ea  022e              LSLS     r6,r5,#8
 0000ec  9402              STR      r4,[sp,#8]
 0000ee  2300              MOVS     r3,#0
-0000f0  2280              MOVS     r2,#0x80
-0000f2  a126              ADR      r1,|L1.396|
-0000f4  4826              LDR      r0,|L1.400|
+0000f0  4632              MOV      r2,r6
+0000f2  a123              ADR      r1,|L1.384|
+0000f4  4825              LDR      r0,|L1.396|
 0000f6  9403              STR      r4,[sp,#0xc]
 0000f8  f7fffffe          BL       xTaskGenericCreate
-;;;165    	
-;;;166    	// Transmitter task priority should be > receiver's due to unknown error which invokes hard fault handler with INVPC error
-;;;167    	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART2 RX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
+;;;176    	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART2 TX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
 0000fc  e9cd5400          STRD     r5,r4,[sp,#0]
-000100  022e              LSLS     r6,r5,#8
-000102  9402              STR      r4,[sp,#8]
-000104  2300              MOVS     r3,#0
-000106  4632              MOV      r2,r6
-000108  a122              ADR      r1,|L1.404|
-00010a  4825              LDR      r0,|L1.416|
-00010c  9403              STR      r4,[sp,#0xc]
-00010e  f7fffffe          BL       xTaskGenericCreate
-;;;168    	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART2 TX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
-000112  e9cd5400          STRD     r5,r4,[sp,#0]
-000116  9402              STR      r4,[sp,#8]
-000118  2300              MOVS     r3,#0
-00011a  4632              MOV      r2,r6
-00011c  a121              ADR      r1,|L1.420|
-00011e  4824              LDR      r0,|L1.432|
-000120  9403              STR      r4,[sp,#0xc]
-000122  f7fffffe          BL       xTaskGenericCreate
-;;;169    	
-;;;170    	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
-000126  e9cd5400          STRD     r5,r4,[sp,#0]
-00012a  9402              STR      r4,[sp,#8]
-00012c  2300              MOVS     r3,#0
-00012e  2280              MOVS     r2,#0x80
-000130  a120              ADR      r1,|L1.436|
-000132  4824              LDR      r0,|L1.452|
-000134  9403              STR      r4,[sp,#0xc]
-000136  f7fffffe          BL       xTaskGenericCreate
-;;;171    	
-;;;172    	vTaskStartScheduler();
-00013a  f7fffffe          BL       vTaskStartScheduler
-                  |L1.318|
-;;;173    	
-;;;174    
-;;;175    	while(1);
-00013e  e7fe              B        |L1.318|
-;;;176    	
-;;;177    }
-;;;178    
+000100  9402              STR      r4,[sp,#8]
+000102  2300              MOVS     r3,#0
+000104  4632              MOV      r2,r6
+000106  a122              ADR      r1,|L1.400|
+000108  4824              LDR      r0,|L1.412|
+00010a  9403              STR      r4,[sp,#0xc]
+00010c  f7fffffe          BL       xTaskGenericCreate
+;;;177    	
+;;;178    	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
+000110  e9cd5400          STRD     r5,r4,[sp,#0]
+000114  9402              STR      r4,[sp,#8]
+000116  2300              MOVS     r3,#0
+000118  2280              MOVS     r2,#0x80
+00011a  a121              ADR      r1,|L1.416|
+00011c  4824              LDR      r0,|L1.432|
+00011e  9403              STR      r4,[sp,#0xc]
+000120  f7fffffe          BL       xTaskGenericCreate
+;;;179    	
+;;;180    	vTaskStartScheduler();
+000124  f7fffffe          BL       vTaskStartScheduler
+                  |L1.296|
+;;;181    	
+;;;182    
+;;;183    	while(1);
+000128  e7fe              B        |L1.296|
+;;;184    	
+;;;185    }
+;;;186    
                           ENDP
 
-                  |L1.320|
+00012a  0000              DCW      0x0000
+                  |L1.300|
                           DCD      0x88776655
-                  |L1.324|
+                  |L1.304|
                           DCD      0x44332211
-                  |L1.328|
-                          DCD      buttons
-                  |L1.332|
+                  |L1.308|
                           DCD      0xe000e100
-                  |L1.336|
+                  |L1.312|
                           DCD      time_profile
-                  |L1.340|
-000154  47554920          DCB      "GUI top",0
-000158  746f7000
-                  |L1.348|
+                  |L1.316|
+                          DCD      enable_task_ticks
+                  |L1.320|
+000140  47554920          DCB      "GUI top",0
+000144  746f7000
+                  |L1.328|
                           DCD      vTaskGUI
-                  |L1.352|
-000160  436f6e76          DCB      "Converter",0
-000164  65727465
-000168  7200    
-00016a  00                DCB      0
-00016b  00                DCB      0
-                  |L1.364|
+                  |L1.332|
+00014c  436f6e76          DCB      "Converter",0
+000150  65727465
+000154  7200    
+000156  00                DCB      0
+000157  00                DCB      0
+                  |L1.344|
                           DCD      vTaskConverter
-                  |L1.368|
-000170  53657276          DCB      "Service",0
-000174  69636500
-                  |L1.376|
+                  |L1.348|
+00015c  53657276          DCB      "Service",0
+000160  69636500
+                  |L1.356|
                           DCD      vTaskService
-                  |L1.380|
-00017c  44697370          DCB      "Dispatcher",0
-000180  61746368
-000184  657200  
-000187  00                DCB      0
-                  |L1.392|
+                  |L1.360|
+000168  44697370          DCB      "Dispatcher",0
+00016c  61746368
+000170  657200  
+000173  00                DCB      0
+                  |L1.372|
                           DCD      vTaskDispatcher
-                  |L1.396|
-00018c  41444300          DCB      "ADC",0
-                  |L1.400|
+                  |L1.376|
+000178  41444300          DCB      "ADC",0
+                  |L1.380|
                           DCD      vTaskADC
-                  |L1.404|
-000194  55415254          DCB      "UART2 RX",0
-000198  32205258
-00019c  00      
-00019d  00                DCB      0
-00019e  00                DCB      0
-00019f  00                DCB      0
-                  |L1.416|
+                  |L1.384|
+000180  55415254          DCB      "UART2 RX",0
+000184  32205258
+000188  00      
+000189  00                DCB      0
+00018a  00                DCB      0
+00018b  00                DCB      0
+                  |L1.396|
                           DCD      vTaskUARTReceiver
-                  |L1.420|
-0001a4  55415254          DCB      "UART2 TX",0
-0001a8  32205458
+                  |L1.400|
+000190  55415254          DCB      "UART2 TX",0
+000194  32205458
+000198  00      
+000199  00                DCB      0
+00019a  00                DCB      0
+00019b  00                DCB      0
+                  |L1.412|
+                          DCD      vTaskUARTTransmitter
+                  |L1.416|
+0001a0  536f756e          DCB      "Sound driver",0
+0001a4  64206472
+0001a8  69766572
 0001ac  00      
 0001ad  00                DCB      0
 0001ae  00                DCB      0
 0001af  00                DCB      0
                   |L1.432|
-                          DCD      vTaskUARTTransmitter
-                  |L1.436|
-0001b4  536f756e          DCB      "Sound driver",0
-0001b8  64206472
-0001bc  69766572
-0001c0  00      
-0001c1  00                DCB      0
-0001c2  00                DCB      0
-0001c3  00                DCB      0
-                  |L1.452|
                           DCD      vTaskSound
 
 ;*** Start embedded assembler ***

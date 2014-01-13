@@ -17,5 +17,8 @@
 //#define USE_TOUCH_SUPPORT
 
 
+// Design-specific events
+#define GUI_EVENT_START  0xF0
+#define GUI_EVENT_EEPROM_MESSAGE    0xF1
 
 #endif

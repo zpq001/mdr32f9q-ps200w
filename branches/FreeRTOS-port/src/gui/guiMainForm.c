@@ -32,6 +32,7 @@
 #include "guiGraphHAL.h"
 #include "guiGraphPrimitives.h"
 #include "guiGraphWidgets.h"
+#include "guiImages.h"
 
 #include "guiCore.h"
 #include "guiEvents.h"
@@ -62,6 +63,7 @@ static uint8_t guiMainForm_ProcessEvents(guiGenericWidget_t *widget, guiEvent_t 
 #define MAIN_FORM_ELEMENTS_COUNT 2
 guiPanel_t     guiMainForm;
 static void *guiMainFormElements[MAIN_FORM_ELEMENTS_COUNT];
+static uint8_t greetingFlags = 0;
 
 
 void guiMainForm_Initialize(void)
@@ -96,18 +98,39 @@ static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiE
             guiMainForm.redrawRequired = 1;
             guiMainForm.redrawForced = 1;
             guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
+            break;
+         case GUI_EVENT_START:
             // The following actions should be made by greeting timer expire
             guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, &guiEvent_SHOW);
             guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
             break;
+          case GUI_EVENT_EEPROM_MESSAGE:
+            // event.spec = 1 => EEPROM is OK
+            greetingFlags |= (event.spec) ? 0x01 : 0x02;
+            guiMainForm.redrawRequired = 1;
+            break;
           case GUI_EVENT_DRAW:
-            // Clear screen and put greeting image
-            // TODO
-            //guiGraph_DrawPanel(&guiMainForm);
-            // Draw static elemens
-            //if (guiMainForm.redrawForced)
-            //    LCD_DrawHorLine(0,110,255,1);
+            // Greeting screen
+            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+            if (guiMainForm.redrawForced)
+            {
+                // Erase rectangle
+                LCD_FillRect(wx,wy,guiMasterPanel.width,guiMasterPanel.height,FILL_WITH_WHITE);
+                LCD_SetFont(&font_h11);
+                LCD_PrintString("PS200", 28, 2, 1);
+                LCD_PrintString("Power supply", 8, 15, 1);
+                LCD_PrintString("MDR32F9Qx", 96+5, 2, 1);
+                LCD_SetFont(&font_h10);
+                LCD_PrintString("powered by", 96+10, 15, 1);
+                LCD_DrawImage(freeRTOS_logo_96x36, 96,27,96,36,1);
+            }
+            LCD_SetFont(&font_6x8_mono);
+            if ((greetingFlags & 0x03) == 0x01)
+                LCD_PrintString("EEPROM OK", 5, 55, 1);
+            else if ((greetingFlags & 0x03) == 0x02)
+                LCD_PrintString("EEPROM FAIL", 5, 55, 1);
             // Reset flags
+            greetingFlags = 0;
             guiMainForm.redrawFocus = 0;
             guiMainForm.redrawRequired = 0;
             break;

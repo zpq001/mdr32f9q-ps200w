@@ -5,11 +5,11 @@
                           AREA ||.text||, CODE, READONLY, ALIGN=2
 
                   encodeGuiKey PROC
-;;;41     // Encode physical buttons into GUI virtual keys
-;;;42     static uint8_t encodeGuiKey(uint16_t btnCode)
+;;;42     // Encode physical buttons into GUI virtual keys
+;;;43     static uint8_t encodeGuiKey(uint16_t btnCode)
 000000  2804              CMP      r0,#4
-;;;43     {
-;;;44     	switch (btnCode)
+;;;44     {
+;;;45     	switch (btnCode)
 000002  d011              BEQ      |L1.40|
 000004  dc04              BGT      |L1.16|
 000006  2801              CMP      r0,#1
@@ -23,354 +23,408 @@
 000014  2810              CMP      r0,#0x10
 000016  d009              BEQ      |L1.44|
                   |L1.24|
-;;;45     	{
-;;;46     		case BTN_ESC:
-;;;47     			return GUI_KEY_ESC;
-;;;48     		case BTN_OK:
-;;;49     			return GUI_KEY_OK;
-;;;50     		case BTN_LEFT:
-;;;51     			return GUI_KEY_LEFT;
-;;;52     		case BTN_RIGHT:
-;;;53     			return GUI_KEY_RIGHT;
-;;;54     		case BTN_ENCODER:
-;;;55     			return GUI_KEY_ENCODER;
-;;;56     		default: 
-;;;57     			return 0;
+;;;46     	{
+;;;47     		case BTN_ESC:
+;;;48     			return GUI_KEY_ESC;
+;;;49     		case BTN_OK:
+;;;50     			return GUI_KEY_OK;
+;;;51     		case BTN_LEFT:
+;;;52     			return GUI_KEY_LEFT;
+;;;53     		case BTN_RIGHT:
+;;;54     			return GUI_KEY_RIGHT;
+;;;55     		case BTN_ENCODER:
+;;;56     			return GUI_KEY_ENCODER;
+;;;57     		default: 
+;;;58     			return 0;
 000018  2000              MOVS     r0,#0
-;;;58     	}
-;;;59     }
+;;;59     	}
+;;;60     }
 00001a  4770              BX       lr
                   |L1.28|
-00001c  2001              MOVS     r0,#1                 ;47
+00001c  2001              MOVS     r0,#1                 ;48
 00001e  4770              BX       lr
                   |L1.32|
-000020  2002              MOVS     r0,#2                 ;49
+000020  2002              MOVS     r0,#2                 ;50
 000022  4770              BX       lr
                   |L1.36|
-000024  2003              MOVS     r0,#3                 ;51
+000024  2003              MOVS     r0,#3                 ;52
 000026  4770              BX       lr
                   |L1.40|
-000028  2004              MOVS     r0,#4                 ;53
+000028  2004              MOVS     r0,#4                 ;54
 00002a  4770              BX       lr
                   |L1.44|
-00002c  2007              MOVS     r0,#7                 ;55
+00002c  2007              MOVS     r0,#7                 ;56
 00002e  4770              BX       lr
-;;;60     
+;;;61     
                           ENDP
 
                   encodeGuiKeyEvent PROC
-;;;61     // Encode physical buttons events into GUI virtual events
-;;;62     static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
+;;;62     // Encode physical buttons events into GUI virtual events
+;;;63     static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
 000030  b2c0              UXTB     r0,r0
-;;;63     {
-;;;64     	return (uint8_t)btnEvent;
-;;;65     }
+;;;64     {
+;;;65     	return (uint8_t)btnEvent;
+;;;66     }
 000032  4770              BX       lr
-;;;66     
+;;;67     
+                          ENDP
+
+                  GUI_Init PROC
+;;;69     // GUI initialization
+;;;70     void GUI_Init(void)
+000034  4770              BX       lr
+;;;71     {
+;;;72     
+;;;73     	
+;;;74     	// Get values from converter - must be already initialized
+;;;75     	
+;;;76     	
+;;;77     	// Restore values from settings
+;;;78     
+;;;79     }
+;;;80     
                           ENDP
 
                   vTaskGUI PROC
-;;;69     
-;;;70     void vTaskGUI(void *pvParameters) 
-000034  b51c              PUSH     {r2-r4,lr}
-;;;71     {
-;;;72     	gui_incoming_msg_t msg;
-;;;73     	uint8_t guiKeyCode;
-;;;74     	uint8_t guiKeyEvent;
-;;;75     	int16_t encoder_delta;
-;;;76     	
-;;;77     	// Initialize
-;;;78     	xQueueGUI = xQueueCreate( 10, sizeof( gui_incoming_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
-000036  2200              MOVS     r2,#0
-000038  2108              MOVS     r1,#8
-00003a  200a              MOVS     r0,#0xa
-00003c  f7fffffe          BL       xQueueGenericCreate
-000040  4d53              LDR      r5,|L1.400|
-000042  6028              STR      r0,[r5,#0]  ; xQueueGUI
-;;;79     	if( xQueueGUI == 0 )
-000044  b328              CBZ      r0,|L1.146|
-;;;80     	{
-;;;81     		// Queue was not created and must not be used.
-;;;82     		while(1);
-;;;83     	}
-;;;84     	
-;;;85     	// GUI initialize
-;;;86     	guiMainForm_Initialize();
-000046  f7fffffe          BL       guiMainForm_Initialize
-;;;87         guiCore_Init((guiGenericWidget_t *)&guiMainForm);
-00004a  4852              LDR      r0,|L1.404|
-00004c  f7fffffe          BL       guiCore_Init
-;;;88     	// TODO - add restoring values from EEPROM
-;;;89     	
-;;;90     	//setVoltageSetting(regulation_setting_p->set_voltage);
-;;;91     	//setCurrentSetting(regulation_setting_p->set_current);
-;;;92     	//setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
-;;;93     	//setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
-;;;94     	
-;;;95     	while(1)
-;;;96     	{
-;;;97     		xQueueReceive(xQueueGUI, &msg, portMAX_DELAY);
-;;;98     		switch (msg.type)
-;;;99     		{
-;;;100    			case GUI_TASK_REDRAW:
-;;;101    				// Draw GUI
-;;;102    				guiCore_RedrawAll();
-;;;103    				// Flush buffer to LCDs
-;;;104    				LcdUpdateBothByCore(lcdBuffer);
-;;;105    				break;
-;;;106    			case GUI_TASK_PROCESS_BUTTONS:
-;;;107    				// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
-;;;108    				guiKeyCode = encodeGuiKey((uint16_t)msg.data);
-;;;109    				if (guiKeyCode == 0)
-;;;110    					break;
-;;;111    				guiKeyEvent = encodeGuiKeyEvent((uint16_t)(msg.data >> 16));
-;;;112    				if (guiKeyEvent == 0)
-;;;113    					break;
-;;;114    				guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
-;;;115    				break;
-;;;116    			case GUI_TASK_PROCESS_ENCODER:
-;;;117    				encoder_delta = (int16_t)msg.data;
-;;;118    				if (encoder_delta)
-;;;119    					guiCore_ProcessEncoderEvent(encoder_delta);
-;;;120    				break;
-;;;121    			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
-;;;122    				setVoltageIndicator(voltage_adc);
-;;;123    				setCurrentIndicator(current_adc);
-;;;124    				setPowerIndicator(power_adc);
-;;;125    				break;
-;;;126    			case GUI_TASK_UPDATE_VOLTAGE_SETTING:
-;;;127    				setVoltageSetting(regulation_setting_p->set_voltage);
-000050  4c51              LDR      r4,|L1.408|
-000052  f04f36ff          MOV      r6,#0xffffffff        ;97
-                  |L1.86|
-000056  2300              MOVS     r3,#0                 ;97
-000058  4632              MOV      r2,r6                 ;97
-00005a  4669              MOV      r1,sp                 ;97
-00005c  6828              LDR      r0,[r5,#0]            ;97  ; xQueueGUI
-00005e  f7fffffe          BL       xQueueGenericReceive
-000062  9800              LDR      r0,[sp,#0]            ;98
-000064  2811              CMP      r0,#0x11              ;98
-000066  d054              BEQ      |L1.274|
-000068  dc14              BGT      |L1.148|
-00006a  b300              CBZ      r0,|L1.174|
-00006c  2801              CMP      r0,#1                 ;98
-00006e  d024              BEQ      |L1.186|
-000070  2802              CMP      r0,#2                 ;98
-000072  d034              BEQ      |L1.222|
-000074  2810              CMP      r0,#0x10              ;98
-000076  d1ee              BNE      |L1.86|
-000078  4848              LDR      r0,|L1.412|
-00007a  8800              LDRH     r0,[r0,#0]            ;122  ; voltage_adc
-00007c  f7fffffe          BL       setVoltageIndicator
-000080  4847              LDR      r0,|L1.416|
-000082  8800              LDRH     r0,[r0,#0]            ;123  ; current_adc
-000084  f7fffffe          BL       setCurrentIndicator
-000088  4846              LDR      r0,|L1.420|
-00008a  6800              LDR      r0,[r0,#0]            ;124  ; power_adc
-00008c  f7fffffe          BL       setPowerIndicator
-000090  e7e1              B        |L1.86|
-                  |L1.146|
-000092  e7fe              B        |L1.146|
-                  |L1.148|
-000094  2812              CMP      r0,#0x12              ;98
-000096  d052              BEQ      |L1.318|
-000098  2813              CMP      r0,#0x13              ;98
-00009a  d02c              BEQ      |L1.246|
-00009c  2814              CMP      r0,#0x14              ;98
-00009e  d025              BEQ      |L1.236|
-0000a0  2815              CMP      r0,#0x15              ;98
-0000a2  d1d8              BNE      |L1.86|
-;;;128    				break;
-;;;129    			case GUI_TASK_UPDATE_CURRENT_SETTING:
-;;;130    				setCurrentSetting(regulation_setting_p->set_current);
-0000a4  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-0000a6  8a40              LDRH     r0,[r0,#0x12]
-0000a8  f7fffffe          BL       setCurrentSetting
-;;;131    				break;
-0000ac  e7d3              B        |L1.86|
-                  |L1.174|
-0000ae  f7fffffe          BL       guiCore_RedrawAll
-0000b2  483d              LDR      r0,|L1.424|
-0000b4  f7fffffe          BL       LcdUpdateBothByCore
-0000b8  e7cd              B        |L1.86|
-                  |L1.186|
-0000ba  9801              LDR      r0,[sp,#4]            ;108
-0000bc  b280              UXTH     r0,r0                 ;108
-0000be  f7fffffe          BL       encodeGuiKey
-0000c2  4607              MOV      r7,r0                 ;108
-0000c4  2f00              CMP      r7,#0                 ;109
-0000c6  d0c6              BEQ      |L1.86|
-0000c8  9801              LDR      r0,[sp,#4]            ;111
-0000ca  0c00              LSRS     r0,r0,#16             ;111
-0000cc  f7fffffe          BL       encodeGuiKeyEvent
-0000d0  4601              MOV      r1,r0                 ;111
-0000d2  2900              CMP      r1,#0                 ;112
-0000d4  d0bf              BEQ      |L1.86|
-0000d6  4638              MOV      r0,r7                 ;114
-0000d8  f7fffffe          BL       guiCore_ProcessKeyEvent
-0000dc  e7bb              B        |L1.86|
-                  |L1.222|
-0000de  9801              LDR      r0,[sp,#4]            ;117
-0000e0  b200              SXTH     r0,r0                 ;117
-0000e2  2800              CMP      r0,#0                 ;118
-0000e4  d0b7              BEQ      |L1.86|
-0000e6  f7fffffe          BL       guiCore_ProcessEncoderEvent
-0000ea  e7b4              B        |L1.86|
-                  |L1.236|
-0000ec  6820              LDR      r0,[r4,#0]            ;127  ; regulation_setting_p
-0000ee  8840              LDRH     r0,[r0,#2]            ;127
-0000f0  f7fffffe          BL       setVoltageSetting
-0000f4  e7af              B        |L1.86|
-                  |L1.246|
-;;;132    			case GUI_TASK_UPDATE_CURRENT_LIMIT:
-;;;133    				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
-0000f6  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-0000f8  7c40              LDRB     r0,[r0,#0x11]
-0000fa  2801              CMP      r0,#1
-0000fc  d007              BEQ      |L1.270|
-0000fe  2000              MOVS     r0,#0
-                  |L1.256|
-000100  f7fffffe          BL       setCurrentLimitIndicator
-;;;134    				// CHECKME - possibly conveter module has to send GUI_TASK_UPDATE_CURRENT_SETTING message when updating limit
-;;;135    				setCurrentSetting(regulation_setting_p->set_current);			
-000104  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-000106  8a40              LDRH     r0,[r0,#0x12]
-000108  f7fffffe          BL       setCurrentSetting
+;;;82     
+;;;83     void vTaskGUI(void *pvParameters) 
+000036  b51f              PUSH     {r0-r4,lr}
+;;;84     {
+;;;85     	gui_incoming_msg_t msg;
+;;;86     	uint8_t guiKeyCode;
+;;;87     	uint8_t guiKeyEvent;
+;;;88     	int16_t encoder_delta;
+;;;89     	guiEvent_t guiEvent;
+;;;90     	
+;;;91     	// Initialize
+;;;92     	xQueueGUI = xQueueCreate( 10, sizeof( gui_incoming_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
+000038  2200              MOVS     r2,#0
+00003a  2108              MOVS     r1,#8
+00003c  200a              MOVS     r0,#0xa
+00003e  f7fffffe          BL       xQueueGenericCreate
+000042  4d69              LDR      r5,|L1.488|
+000044  6028              STR      r0,[r5,#0]  ; xQueueGUI
+;;;93     	if( xQueueGUI == 0 )
+000046  b1f0              CBZ      r0,|L1.134|
+;;;94     	{
+;;;95     		// Queue was not created and must not be used.
+;;;96     		while(1);
+;;;97     	}
+;;;98     	
+;;;99     	// Create all GUI elements and prepare core
+;;;100    	guiMainForm_Initialize();
+000048  f7fffffe          BL       guiMainForm_Initialize
+;;;101        guiCore_Init((guiGenericWidget_t *)&guiMainForm);
+00004c  4867              LDR      r0,|L1.492|
+00004e  f7fffffe          BL       guiCore_Init
+;;;102    	// GUI is ready, but initial welcome screen is what will be displayed.
+;;;103    	// When all other systems init will be done, GUI should be sent 
+;;;104    	// a special message to start operate normally.
+;;;105    	
+;;;106    	
+;;;107    	while(1)
+;;;108    	{
+;;;109    		xQueueReceive(xQueueGUI, &msg, portMAX_DELAY);
+;;;110    		switch (msg.type)
+;;;111    		{
+;;;112    			case GUI_TASK_RESTORE_ALL:
+;;;113    				setVoltageSetting(regulation_setting_p->set_voltage);
+000052  4c67              LDR      r4,|L1.496|
+000054  f04f36ff          MOV      r6,#0xffffffff        ;109
+                  |L1.88|
+000058  2300              MOVS     r3,#0                 ;109
+00005a  4632              MOV      r2,r6                 ;109
+00005c  a902              ADD      r1,sp,#8              ;109
+00005e  6828              LDR      r0,[r5,#0]            ;109  ; xQueueGUI
+000060  f7fffffe          BL       xQueueGenericReceive
+000064  9802              LDR      r0,[sp,#8]            ;110
+000066  2816              CMP      r0,#0x16              ;110
+000068  d2f6              BCS      |L1.88|
+00006a  e8dff000          TBB      [pc,r0]               ;110
+00006e  2c3f              DCB      0x2c,0x3f
+000070  510d320b          DCB      0x51,0x0d,0x32,0x0b
+000074  0b0b0b0b          DCB      0x0b,0x0b,0x0b,0x0b
+000078  0b0b0b0b          DCB      0x0b,0x0b,0x0b,0x0b
+00007c  0b0b587d          DCB      0x0b,0x0b,0x58,0x7d
+000080  936f656a          DCB      0x93,0x6f,0x65,0x6a
+000084  e7e8              B        |L1.88|
+                  |L1.134|
+000086  e7fe              B        |L1.134|
+000088  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00008a  8840              LDRH     r0,[r0,#2]
+00008c  f7fffffe          BL       setVoltageSetting
+;;;114    				setCurrentSetting(regulation_setting_p->set_current);
+000090  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+000092  8a40              LDRH     r0,[r0,#0x12]
+000094  f7fffffe          BL       setCurrentSetting
+;;;115    				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+000098  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00009a  7c40              LDRB     r0,[r0,#0x11]
+00009c  2801              CMP      r0,#1
+00009e  d010              BEQ      |L1.194|
+0000a0  2000              MOVS     r0,#0
+                  |L1.162|
+0000a2  f7fffffe          BL       setCurrentLimitIndicator
+;;;116    				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
+0000a6  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+0000a8  7800              LDRB     r0,[r0,#0]
+0000aa  f7fffffe          BL       setFeedbackChannelIndicator
+;;;117    				// Retore other values from EEPROM
+;;;118    				// TODO
+;;;119    				
+;;;120    				// Start normal GUI operation
+;;;121    				guiEvent.type = GUI_EVENT_START;
+0000ae  20f0              MOVS     r0,#0xf0
+0000b0  f88d0000          STRB     r0,[sp,#0]
+;;;122    				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
+0000b4  4669              MOV      r1,sp
+0000b6  484d              LDR      r0,|L1.492|
+0000b8  f7fffffe          BL       guiCore_AddMessageToQueue
+;;;123    				guiCore_ProcessMessageQueue();
+0000bc  f7fffffe          BL       guiCore_ProcessMessageQueue
+;;;124    				break;
+0000c0  e7ca              B        |L1.88|
+                  |L1.194|
+0000c2  2001              MOVS     r0,#1                 ;115
+0000c4  e7ed              B        |L1.162|
+;;;125    			case GUI_TASK_REDRAW:
+;;;126    				// Draw GUI
+;;;127    				guiCore_RedrawAll();
+0000c6  f7fffffe          BL       guiCore_RedrawAll
+;;;128    				// Flush buffer to LCDs
+;;;129    				LcdUpdateBothByCore(lcdBuffer);
+0000ca  484a              LDR      r0,|L1.500|
+0000cc  f7fffffe          BL       LcdUpdateBothByCore
+;;;130    				break;
+0000d0  e7c2              B        |L1.88|
+;;;131    			case GUI_TASK_EEPROM_STATE:
+;;;132    				guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
+0000d2  20f1              MOVS     r0,#0xf1
+0000d4  f88d0000          STRB     r0,[sp,#0]
+;;;133    				guiEvent.spec = (uint8_t)msg.data;
+0000d8  9803              LDR      r0,[sp,#0xc]
+0000da  f88d0001          STRB     r0,[sp,#1]
+;;;134    				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
+0000de  4669              MOV      r1,sp
+0000e0  4842              LDR      r0,|L1.492|
+0000e2  f7fffffe          BL       guiCore_AddMessageToQueue
+;;;135    				guiCore_ProcessMessageQueue();
+0000e6  f7fffffe          BL       guiCore_ProcessMessageQueue
 ;;;136    				break;
-00010c  e7a3              B        |L1.86|
-                  |L1.270|
-00010e  2001              MOVS     r0,#1                 ;133
-000110  e7f6              B        |L1.256|
-                  |L1.274|
-;;;137    			case GUI_TASK_UPDATE_FEEDBACK_CHANNEL:
-;;;138    				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
-000112  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-000114  7800              LDRB     r0,[r0,#0]
-000116  f7fffffe          BL       setFeedbackChannelIndicator
-;;;139    				// CHECKME - same as above
-;;;140    				setVoltageSetting(regulation_setting_p->set_voltage);
-00011a  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-00011c  8840              LDRH     r0,[r0,#2]
-00011e  f7fffffe          BL       setVoltageSetting
-;;;141    				setCurrentSetting(regulation_setting_p->set_current);
-000122  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-000124  8a40              LDRH     r0,[r0,#0x12]
-000126  f7fffffe          BL       setCurrentSetting
-;;;142    				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
-00012a  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
-00012c  7c40              LDRB     r0,[r0,#0x11]
-00012e  2801              CMP      r0,#1
-000130  d003              BEQ      |L1.314|
-000132  2000              MOVS     r0,#0
-                  |L1.308|
-000134  f7fffffe          BL       setCurrentLimitIndicator
-;;;143    				break;
-000138  e78d              B        |L1.86|
-                  |L1.314|
-00013a  2001              MOVS     r0,#1                 ;142
-00013c  e7fa              B        |L1.308|
-                  |L1.318|
-;;;144    			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
-;;;145    				setTemperatureIndicator(converter_temp_celsius);
-00013e  481b              LDR      r0,|L1.428|
-000140  f9b00000          LDRSH    r0,[r0,#0]  ; converter_temp_celsius
-000144  f7fffffe          BL       setTemperatureIndicator
+0000ea  e7b5              B        |L1.88|
+;;;137    			case GUI_TASK_PROCESS_BUTTONS:
+;;;138    				// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
+;;;139    				guiKeyCode = encodeGuiKey((uint16_t)msg.data);
+0000ec  9803              LDR      r0,[sp,#0xc]
+0000ee  b280              UXTH     r0,r0
+0000f0  f7fffffe          BL       encodeGuiKey
+0000f4  4607              MOV      r7,r0
+;;;140    				if (guiKeyCode == 0)
+0000f6  2f00              CMP      r7,#0
+0000f8  d0ae              BEQ      |L1.88|
+;;;141    					break;
+;;;142    				guiKeyEvent = encodeGuiKeyEvent((uint16_t)(msg.data >> 16));
+0000fa  9803              LDR      r0,[sp,#0xc]
+0000fc  0c00              LSRS     r0,r0,#16
+0000fe  f7fffffe          BL       encodeGuiKeyEvent
+000102  4601              MOV      r1,r0
+;;;143    				if (guiKeyEvent == 0)
+000104  2900              CMP      r1,#0
+000106  d0a7              BEQ      |L1.88|
+;;;144    					break;
+;;;145    				guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
+000108  4638              MOV      r0,r7
+00010a  f7fffffe          BL       guiCore_ProcessKeyEvent
 ;;;146    				break;
-000148  e785              B        |L1.86|
-;;;147    		}
-;;;148    	}
-;;;149    }
-;;;150    
-                          ENDP
-
-                  applyGuiVoltageSetting PROC
-;;;156    // Apply voltage setting from GUI
-;;;157    void applyGuiVoltageSetting(uint16_t new_set_voltage)
-00014a  4919              LDR      r1,|L1.432|
-;;;158    {
-;;;159    	converter_msg.type = CONVERTER_SET_VOLTAGE;
-00014c  2207              MOVS     r2,#7
-00014e  600a              STR      r2,[r1,#0]  ; converter_msg
-;;;160    	converter_msg.data_a = new_set_voltage;
-000150  6048              STR      r0,[r1,#4]  ; converter_msg
-;;;161    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-000152  4818              LDR      r0,|L1.436|
-000154  2300              MOVS     r3,#0
-000156  461a              MOV      r2,r3
-000158  6800              LDR      r0,[r0,#0]  ; xQueueConverter
-00015a  f7ffbffe          B.W      xQueueGenericSend
-;;;162    }
-;;;163    
-                          ENDP
-
-                  applyGuiCurrentSetting PROC
-;;;164    // Apply current setting from GUI
-;;;165    void applyGuiCurrentSetting(uint16_t new_set_current)
-00015e  4914              LDR      r1,|L1.432|
-;;;166    {
-;;;167    	converter_msg.type = CONVERTER_SET_CURRENT;
-000160  2208              MOVS     r2,#8
-000162  600a              STR      r2,[r1,#0]  ; converter_msg
-;;;168    	converter_msg.data_a = new_set_current;
-000164  6048              STR      r0,[r1,#4]  ; converter_msg
-;;;169    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-000166  4813              LDR      r0,|L1.436|
-000168  2300              MOVS     r3,#0
-00016a  461a              MOV      r2,r3
-00016c  6800              LDR      r0,[r0,#0]  ; xQueueConverter
-00016e  f7ffbffe          B.W      xQueueGenericSend
-;;;170    }
-;;;171    
-                          ENDP
-
-                  applyGuiCurrentLimit PROC
-;;;172    // Apply new selected feedback channel
-;;;173    void applyGuiCurrentLimit(uint8_t new_current_limit)
-000172  490f              LDR      r1,|L1.432|
-;;;174    {
-;;;175    	if (new_current_limit == GUI_CURRENT_LIM_HIGH)
-000174  2801              CMP      r0,#1
-000176  d008              BEQ      |L1.394|
-;;;176    		converter_msg.type = SET_CURRENT_LIMIT_40A;
-;;;177    	else
-;;;178    		converter_msg.type = SET_CURRENT_LIMIT_20A;
-000178  2005              MOVS     r0,#5
-00017a  6008              STR      r0,[r1,#0]  ; converter_msg
-                  |L1.380|
-;;;179    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-00017c  480d              LDR      r0,|L1.436|
-00017e  2300              MOVS     r3,#0
-000180  461a              MOV      r2,r3
-000182  490b              LDR      r1,|L1.432|
-000184  6800              LDR      r0,[r0,#0]  ; xQueueConverter
-000186  f7ffbffe          B.W      xQueueGenericSend
+00010e  e7a3              B        |L1.88|
+;;;147    			case GUI_TASK_PROCESS_ENCODER:
+;;;148    				encoder_delta = (int16_t)msg.data;
+000110  9803              LDR      r0,[sp,#0xc]
+000112  b200              SXTH     r0,r0
+;;;149    				if (encoder_delta)
+000114  2800              CMP      r0,#0
+000116  d09f              BEQ      |L1.88|
+;;;150    					guiCore_ProcessEncoderEvent(encoder_delta);
+000118  f7fffffe          BL       guiCore_ProcessEncoderEvent
+00011c  e79c              B        |L1.88|
+;;;151    				break;
+;;;152    			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
+;;;153    				setVoltageIndicator(voltage_adc);
+00011e  4836              LDR      r0,|L1.504|
+000120  8800              LDRH     r0,[r0,#0]  ; voltage_adc
+000122  f7fffffe          BL       setVoltageIndicator
+;;;154    				setCurrentIndicator(current_adc);
+000126  4835              LDR      r0,|L1.508|
+000128  8800              LDRH     r0,[r0,#0]  ; current_adc
+00012a  f7fffffe          BL       setCurrentIndicator
+;;;155    				setPowerIndicator(power_adc);
+00012e  4834              LDR      r0,|L1.512|
+000130  6800              LDR      r0,[r0,#0]  ; power_adc
+000132  f7fffffe          BL       setPowerIndicator
+;;;156    				break;
+000136  e78f              B        |L1.88|
+;;;157    			case GUI_TASK_UPDATE_VOLTAGE_SETTING:
+;;;158    				setVoltageSetting(regulation_setting_p->set_voltage);
+000138  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00013a  8840              LDRH     r0,[r0,#2]
+00013c  f7fffffe          BL       setVoltageSetting
+;;;159    				break;
+000140  e78a              B        |L1.88|
+;;;160    			case GUI_TASK_UPDATE_CURRENT_SETTING:
+;;;161    				setCurrentSetting(regulation_setting_p->set_current);
+000142  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+000144  8a40              LDRH     r0,[r0,#0x12]
+000146  f7fffffe          BL       setCurrentSetting
+;;;162    				break;
+00014a  e785              B        |L1.88|
+;;;163    			case GUI_TASK_UPDATE_CURRENT_LIMIT:
+;;;164    				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+00014c  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00014e  7c40              LDRB     r0,[r0,#0x11]
+000150  2801              CMP      r0,#1
+000152  d007              BEQ      |L1.356|
+000154  2000              MOVS     r0,#0
+                  |L1.342|
+000156  f7fffffe          BL       setCurrentLimitIndicator
+;;;165    				// CHECKME - possibly conveter module has to send GUI_TASK_UPDATE_CURRENT_SETTING message when updating limit
+;;;166    				setCurrentSetting(regulation_setting_p->set_current);			
+00015a  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00015c  8a40              LDRH     r0,[r0,#0x12]
+00015e  f7fffffe          BL       setCurrentSetting
+;;;167    				break;
+000162  e779              B        |L1.88|
+                  |L1.356|
+000164  2001              MOVS     r0,#1                 ;164
+000166  e7f6              B        |L1.342|
+;;;168    			case GUI_TASK_UPDATE_FEEDBACK_CHANNEL:
+;;;169    				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
+000168  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00016a  7800              LDRB     r0,[r0,#0]
+00016c  f7fffffe          BL       setFeedbackChannelIndicator
+;;;170    				// CHECKME - same as above
+;;;171    				setVoltageSetting(regulation_setting_p->set_voltage);
+000170  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+000172  8840              LDRH     r0,[r0,#2]
+000174  f7fffffe          BL       setVoltageSetting
+;;;172    				setCurrentSetting(regulation_setting_p->set_current);
+000178  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+00017a  8a40              LDRH     r0,[r0,#0x12]
+00017c  f7fffffe          BL       setCurrentSetting
+;;;173    				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+000180  6820              LDR      r0,[r4,#0]  ; regulation_setting_p
+000182  7c40              LDRB     r0,[r0,#0x11]
+000184  2801              CMP      r0,#1
+000186  d003              BEQ      |L1.400|
+000188  2000              MOVS     r0,#0
                   |L1.394|
-00018a  2006              MOVS     r0,#6                 ;176
-00018c  6008              STR      r0,[r1,#0]            ;176  ; converter_msg
-00018e  e7f5              B        |L1.380|
+00018a  f7fffffe          BL       setCurrentLimitIndicator
+;;;174    				break;
+00018e  e763              B        |L1.88|
+                  |L1.400|
+000190  2001              MOVS     r0,#1                 ;173
+000192  e7fa              B        |L1.394|
+;;;175    			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
+;;;176    				setTemperatureIndicator(converter_temp_celsius);
+000194  481b              LDR      r0,|L1.516|
+000196  f9b00000          LDRSH    r0,[r0,#0]  ; converter_temp_celsius
+00019a  f7fffffe          BL       setTemperatureIndicator
+;;;177    				break;
+00019e  e75b              B        |L1.88|
+;;;178    		}
+;;;179    	}
 ;;;180    }
 ;;;181    
                           ENDP
 
-                  |L1.400|
+                  applyGuiVoltageSetting PROC
+;;;187    // Apply voltage setting from GUI
+;;;188    void applyGuiVoltageSetting(uint16_t new_set_voltage)
+0001a0  4919              LDR      r1,|L1.520|
+;;;189    {
+;;;190    	converter_msg.type = CONVERTER_SET_VOLTAGE;
+0001a2  2207              MOVS     r2,#7
+0001a4  600a              STR      r2,[r1,#0]  ; converter_msg
+;;;191    	converter_msg.data_a = new_set_voltage;
+0001a6  6048              STR      r0,[r1,#4]  ; converter_msg
+;;;192    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+0001a8  4818              LDR      r0,|L1.524|
+0001aa  2300              MOVS     r3,#0
+0001ac  461a              MOV      r2,r3
+0001ae  6800              LDR      r0,[r0,#0]  ; xQueueConverter
+0001b0  f7ffbffe          B.W      xQueueGenericSend
+;;;193    }
+;;;194    
+                          ENDP
+
+                  applyGuiCurrentSetting PROC
+;;;195    // Apply current setting from GUI
+;;;196    void applyGuiCurrentSetting(uint16_t new_set_current)
+0001b4  4914              LDR      r1,|L1.520|
+;;;197    {
+;;;198    	converter_msg.type = CONVERTER_SET_CURRENT;
+0001b6  2208              MOVS     r2,#8
+0001b8  600a              STR      r2,[r1,#0]  ; converter_msg
+;;;199    	converter_msg.data_a = new_set_current;
+0001ba  6048              STR      r0,[r1,#4]  ; converter_msg
+;;;200    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+0001bc  4813              LDR      r0,|L1.524|
+0001be  2300              MOVS     r3,#0
+0001c0  461a              MOV      r2,r3
+0001c2  6800              LDR      r0,[r0,#0]  ; xQueueConverter
+0001c4  f7ffbffe          B.W      xQueueGenericSend
+;;;201    }
+;;;202    
+                          ENDP
+
+                  applyGuiCurrentLimit PROC
+;;;203    // Apply new selected feedback channel
+;;;204    void applyGuiCurrentLimit(uint8_t new_current_limit)
+0001c8  490f              LDR      r1,|L1.520|
+;;;205    {
+;;;206    	if (new_current_limit == GUI_CURRENT_LIM_HIGH)
+0001ca  2801              CMP      r0,#1
+0001cc  d008              BEQ      |L1.480|
+;;;207    		converter_msg.type = SET_CURRENT_LIMIT_40A;
+;;;208    	else
+;;;209    		converter_msg.type = SET_CURRENT_LIMIT_20A;
+0001ce  2005              MOVS     r0,#5
+0001d0  6008              STR      r0,[r1,#0]  ; converter_msg
+                  |L1.466|
+;;;210    	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+0001d2  480e              LDR      r0,|L1.524|
+0001d4  2300              MOVS     r3,#0
+0001d6  461a              MOV      r2,r3
+0001d8  490b              LDR      r1,|L1.520|
+0001da  6800              LDR      r0,[r0,#0]  ; xQueueConverter
+0001dc  f7ffbffe          B.W      xQueueGenericSend
+                  |L1.480|
+0001e0  2006              MOVS     r0,#6                 ;207
+0001e2  6008              STR      r0,[r1,#0]            ;207  ; converter_msg
+0001e4  e7f5              B        |L1.466|
+;;;211    }
+;;;212    
+                          ENDP
+
+0001e6  0000              DCW      0x0000
+                  |L1.488|
                           DCD      ||.data||
-                  |L1.404|
+                  |L1.492|
                           DCD      guiMainForm
-                  |L1.408|
+                  |L1.496|
                           DCD      regulation_setting_p
-                  |L1.412|
-                          DCD      voltage_adc
-                  |L1.416|
-                          DCD      current_adc
-                  |L1.420|
-                          DCD      power_adc
-                  |L1.424|
+                  |L1.500|
                           DCD      lcdBuffer
-                  |L1.428|
+                  |L1.504|
+                          DCD      voltage_adc
+                  |L1.508|
+                          DCD      current_adc
+                  |L1.512|
+                          DCD      power_adc
+                  |L1.516|
                           DCD      converter_temp_celsius
-                  |L1.432|
+                  |L1.520|
                           DCD      ||.bss||
-                  |L1.436|
+                  |L1.524|
                           DCD      xQueueConverter
 
                           AREA ||.bss||, DATA, NOINIT, ALIGN=2
@@ -388,9 +442,9 @@
 #line 1 "src\\guiTop.c"
 	AREA ||.rev16_text||, CODE, READONLY
 	THUMB
-	EXPORT |__asm___8_guiTop_c_vTaskGUI____REV16|
+	EXPORT |__asm___8_guiTop_c_GUI_Init____REV16|
 #line 115 "C:\\Keil\\ARM\\CMSIS\\Include\\core_cmInstr.h"
-|__asm___8_guiTop_c_vTaskGUI____REV16| PROC
+|__asm___8_guiTop_c_GUI_Init____REV16| PROC
 #line 116
 
  rev16 r0, r0
@@ -398,9 +452,9 @@
 	ENDP
 	AREA ||.revsh_text||, CODE, READONLY
 	THUMB
-	EXPORT |__asm___8_guiTop_c_vTaskGUI____REVSH|
+	EXPORT |__asm___8_guiTop_c_GUI_Init____REVSH|
 #line 130
-|__asm___8_guiTop_c_vTaskGUI____REVSH| PROC
+|__asm___8_guiTop_c_GUI_Init____REVSH| PROC
 #line 131
 
  revsh r0, r0

@@ -345,6 +345,7 @@ static uint32_t disableConverterAndCheckHWState(void)
 }
 
 
+uint8_t taskConverter_Enable = 0;
 
 //---------------------------------------------//
 //	Main converter task
@@ -367,7 +368,11 @@ void vTaskConverter(void *pvParameters)
 	}
 	
 	// Wait until task is started by dispatcher
-	vTaskSuspend(NULL);			
+	//vTaskSuspend(vTaskConverter);			
+	
+	while (taskConverter_Enable == 0)
+		vTaskDelay(5);
+	
 	xQueueReset(xQueueConverter);
 	
 	

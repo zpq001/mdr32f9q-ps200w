@@ -182,7 +182,9 @@ extern volatile uint8_t cmd_ADC_to_HWProcess;
 extern uint16_t voltage_adc;	// [mV]
 extern uint16_t current_adc;	// [mA]
 extern uint32_t power_adc;		// [mW]
-	
+
+extern uint8_t taskConverter_Enable;
+
 void Converter_ProcessADC(void);
 uint8_t Converter_SetVoltage(int32_t new_voltage);
 uint8_t Converter_SetCurrent(int32_t new_current);
@@ -199,5 +201,8 @@ void vTaskConverter(void *pvParameters);
 
 void Converter_HWProcess(void);
 void Converter_HW_ADCProcess(void);
+
+
+
 
 

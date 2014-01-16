@@ -102,7 +102,8 @@ static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
 		error = VCHECK_ABS_MAX;
 	}
 	
-	*err_code = error;
+	if (err_code)
+		*err_code = error;
 	return (uint16_t)new_set_voltage;
 }
 
@@ -152,7 +153,8 @@ static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
 		error = CCHECK_ABS_MAX;
 	}
 	
-	*err_code = error;
+	if (err_code)
+		*err_code = error;
 	return (uint16_t)new_set_current;
 }
 
@@ -193,7 +195,7 @@ uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p,
 		new_limit = minimum;
 		err_code = SLIM_MIN;
 	}
-	else if (new_limit > maximum)
+	if (new_limit > maximum)	// MAX has greater priority
 	{
 		new_limit = maximum;
 		err_code = SLIM_MAX;
@@ -243,7 +245,7 @@ void Converter_Init(uint8_t default_channel)
 	channel_5v_setting.soft_min_voltage = 3000;
 	channel_5v_setting.SOFT_MAX_VOLTAGE_LIMIT = 10000;						// Maximum soft voltage limit
 	channel_5v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-	channel_5v_setting.soft_voltage_range_enable = 0;
+	channel_5v_setting.soft_voltage_limits_enable = 0;
 	// Current
 	channel_5v_setting.current_limit = CURRENT_LIM_LOW;
 	channel_5v_setting.set_current = 4000;
@@ -255,7 +257,7 @@ void Converter_Init(uint8_t default_channel)
 	channel_5v_setting.soft_min_current = 30000;
 	channel_5v_setting.SOFT_MAX_CURRENT_LIMIT = 40000;						// Maximum soft current limit
 	channel_5v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-	channel_5v_setting.soft_current_range_enable = 0;
+	channel_5v_setting.soft_current_limits_enable = 0;
 	
 	
 	
@@ -270,7 +272,7 @@ void Converter_Init(uint8_t default_channel)
 	channel_12v_setting.soft_min_voltage = 1500;
 	channel_12v_setting.SOFT_MAX_VOLTAGE_LIMIT = 20000;						// Maximum soft voltage limit
 	channel_12v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-	channel_12v_setting.soft_voltage_range_enable = 0;
+	channel_12v_setting.soft_voltage_limits_enable = 0;
 	// Current
 	channel_12v_setting.current_limit = CURRENT_LIM_LOW;
 	channel_12v_setting.set_current = 2000;
@@ -282,7 +284,7 @@ void Converter_Init(uint8_t default_channel)
 	channel_12v_setting.soft_min_current = 6000;
 	channel_12v_setting.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
 	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-	channel_12v_setting.soft_current_range_enable = 0;
+	channel_12v_setting.soft_current_limits_enable = 0;
 	
 	// Select default channel
 	if (default_channel == CHANNEL_12V)
@@ -410,6 +412,39 @@ void vTaskConverter(void *pvParameters)
 				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
+					sound_msg = SND_CONV_SETTING_ILLEGAL;
+				else
+					sound_msg = SND_CONV_SETTING_OK;
+				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+				break;
+			case CONVERTER_SET_VOLTAGE_LIMIT:
+				// Apply new software limits
+				errCode = Converter_SetSoftLimit((int32_t)msg.data_b, regulation_setting_p, (uint8_t)msg.data_a)
+				if (msg.data_a & 0x80000000)	// if limit enabled
+				{
+					regulation_setting_p.soft_voltage_limits_enable |= ((uint8_t)msg.data_a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+				}
+				else
+				{
+					regulation_setting_p.soft_voltage_limits_enable &= ~((uint8_t)msg.data_a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+				}
+				//----- Send notification to GUI -----//
+				gui_msg = GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS;
+				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+				//------------------------------------//
+				
+				// Apply limit settings to voltage
+				regulation_setting_p->set_voltage = CheckSetVoltageRange(regulation_setting_p->set_voltage, 0);
+				//----- Send notification to GUI -----//
+				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
+				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+				//------------------------------------//
+				
+				// Apply voltage and current settings
+				apply_regulation();		
+				
+				if ((err_code == SLIM_MAX) || (err_code == SLIM_MIN))
 					sound_msg = SND_CONV_SETTING_ILLEGAL;
 				else
 					sound_msg = SND_CONV_SETTING_OK;

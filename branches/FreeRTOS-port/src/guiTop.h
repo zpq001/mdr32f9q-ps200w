@@ -34,6 +34,7 @@ typedef struct {
 #define GUI_TASK_UPDATE_FEEDBACK_CHANNEL		0x11	// Refreshes feedback channel
 #define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
 
+#define GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS		0x16	// Refreshes all voltage and current software limit settings
 
 
 // SelectedChannel

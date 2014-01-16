@@ -165,12 +165,18 @@ void vTaskGUI(void *pvParameters)
 				// CHECKME - possibly conveter module has to send GUI_TASK_UPDATE_CURRENT_SETTING message when updating limit
 				setCurrentSetting(regulation_setting_p->set_current);			
 				break;
+			case GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS:
+				setLowVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_LOW_LIMIT, regulation_setting_p->soft_min_voltage);
+				setHighVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_HIGH_LIMIT, regulation_setting_p->soft_max_voltage);
+				break;
 			case GUI_TASK_UPDATE_FEEDBACK_CHANNEL:
 				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
 				// CHECKME - same as above
 				setVoltageSetting(regulation_setting_p->set_voltage);
 				setCurrentSetting(regulation_setting_p->set_current);
 				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+				setLowVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_LOW_LIMIT, regulation_setting_p->soft_min_voltage);
+				setHighVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_HIGH_LIMIT, regulation_setting_p->soft_max_voltage);
 				break;
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
 				setTemperatureIndicator(converter_temp_celsius);
@@ -189,6 +195,15 @@ void applyGuiVoltageSetting(uint16_t new_set_voltage)
 {
 	converter_msg.type = CONVERTER_SET_VOLTAGE;
 	converter_msg.data_a = new_set_voltage;
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+}
+
+void applyGuiVoltageSoftwareLimit(uint8_t type, uint8_t enable, uint16_t value)
+{
+	converter_msg.type = CONVETER_SET_VOLTAGE_LIMIT;
+	converter_msg.data_a = (type == 0) ? SET_LOW_VOLTAGE_SOFT_LIMIT : SET_HIGH_VOLTAGE_SOFT_LIMIT;
+	converter_msg.data_b = value;
+	if (enable) converter_msg.data_a |= 0x80000000;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 

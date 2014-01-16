@@ -36,6 +36,9 @@
 #define SET_LOW_CURRENT_SOFT_LIMIT	0x03
 #define SET_HIGH_CURRENT_SOFT_LIMIT	0x04
 
+// Converter soft limit enable codes
+#define ENABLE_LOW_LIMIT		0x01
+#define ENABLE_HIGH_LIMIT		0x02
 
 //---------------------------------------------//
 // Converter_HWProcess
@@ -133,6 +136,7 @@ typedef struct {
 #define CONVERTER_SET_VOLTAGE		0x07
 #define CONVERTER_SET_CURRENT		0x08
 #define CONVERTER_INITIALIZE		0x09
+#define CONVETER_SET_VOLTAGE_LIMIT	0x0A
 
 
 /*
@@ -154,7 +158,7 @@ typedef struct {
 	uint16_t soft_min_voltage;
 	uint16_t SOFT_MAX_VOLTAGE_LIMIT;
 	uint16_t SOFT_MIN_VOLTAGE_LIMIT;
-	uint8_t soft_voltage_range_enable;
+	uint8_t soft_voltage_limits_enable;
 	
 	uint8_t current_limit;
 	uint16_t set_current;	
@@ -166,7 +170,7 @@ typedef struct {
 	uint16_t soft_min_current;
 	uint16_t SOFT_MAX_CURRENT_LIMIT;
 	uint16_t SOFT_MIN_CURRENT_LIMIT;
-	uint8_t soft_current_range_enable;
+	uint8_t soft_current_limits_enable;
 	
 } converter_regulation_t;
 

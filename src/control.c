@@ -57,9 +57,9 @@ void SetFeedbackChannel(uint8_t newChannel)
 //-------------------------------------------------------//
 // Current amplifier gain select (20A or 40A)
 //-------------------------------------------------------//
-void SetCurrentLimit(uint8_t newLimit)
+void SetCurrentRange(uint8_t newRange)
 {
-	if (newLimit == CURRENT_LIM_HIGH)
+	if (newRange == CURRENT_RANGE_HIGH)
 		PORT_SetBits(MDR_PORTA, 1<<CLIM_SEL);
 	else
 		PORT_ResetBits(MDR_PORTA, 1<<CLIM_SEL);

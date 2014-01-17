@@ -20,6 +20,23 @@ typedef struct {
 } gui_incoming_msg_t;
 
 
+enum guiTaskCmd {
+	GUI_TASK_REDRAW,
+	GUI_TASK_PROCESS_BUTTONS,
+	GUI_TASK_PROCESS_ENCODER,
+	GUI_TASK_RESTORE_ALL,
+	GUI_TASK_EEPROM_STATE,
+	
+	GUI_TASK_UPDATE_VOLTAGE_CURRENT,
+	GUI_TASK_UPDATE_VOLTAGE_SETTING,
+	GUI_TASK_UPDATE_CURRENT_SETTING,	
+	GUI_TASK_UPDATE_CURRENT_LIMIT,
+	GUI_TASK_UPDATE_FEEDBACK_CHANNEL,
+	GUI_TASK_UPDATE_TEMPERATURE_INDICATOR,
+	GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS
+};
+
+/*
 #define GUI_TASK_REDRAW				0		// draw
 #define GUI_TASK_PROCESS_BUTTONS	1		// buttons
 #define GUI_TASK_PROCESS_ENCODER	2		// encoder
@@ -35,10 +52,10 @@ typedef struct {
 #define GUI_TASK_UPDATE_TEMPERATURE_INDICATOR	0x12	// Refreshes temperature
 
 #define GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS		0x16	// Refreshes all voltage and current software limit settings
-
+*/
 
 // SelectedChannel
-#define	GUI_CHANNEL_5V			0x1
+#define	GUI_CHANNEL_5V			0x1		// ??? remove TODO
 #define	GUI_CHANNEL_12V			0x0
 // CurrentLimit
 #define	GUI_CURRENT_LIM_HIGH	0x1
@@ -52,5 +69,10 @@ extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);
 
 void applyGuiVoltageSetting(uint16_t new_set_voltage);
+void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value);
 void applyGuiCurrentSetting(uint16_t new_set_current);
-void applyGuiCurrentLimit(uint8_t new_current_limit);
+
+void applyGuiCurrentRange(uint8_t new_range);
+
+
+

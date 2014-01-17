@@ -187,10 +187,11 @@ void vTaskGUI(void *pvParameters)
 
 //=================================================================//
 //=================================================================//
-//                      Hardware control interface                 //
+//                   Hardware control interface                    //
+//						GUI -> converter						   //
 //=================================================================//
 
-// Apply voltage setting from GUI
+// Apply voltage setting
 void applyGuiVoltageSetting(uint16_t new_set_voltage)
 {
 	converter_msg.type = CONVERTER_SET_VOLTAGE;
@@ -198,16 +199,16 @@ void applyGuiVoltageSetting(uint16_t new_set_voltage)
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
-void applyGuiVoltageSoftwareLimit(uint8_t type, uint8_t enable, uint16_t value)
+void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value)
 {
 	converter_msg.type = CONVETER_SET_VOLTAGE_LIMIT;
-	converter_msg.data_a = (type == 0) ? SET_LOW_VOLTAGE_SOFT_LIMIT : SET_HIGH_VOLTAGE_SOFT_LIMIT;
-	converter_msg.data_b = value;
-	if (enable) converter_msg.data_a |= 0x80000000;
+	converter_msg.voltage_limit_setting.mode = type;		// 1 - high, 0 - low
+	converter_msg.voltage_limit_setting.enable = enable;
+	converter_msg.voltage_limit_setting.value = value;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
-// Apply current setting from GUI
+// Apply current setting
 void applyGuiCurrentSetting(uint16_t new_set_current)
 {
 	converter_msg.type = CONVERTER_SET_CURRENT;
@@ -215,11 +216,11 @@ void applyGuiCurrentSetting(uint16_t new_set_current)
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
-// Apply new selected feedback channel
-void applyGuiCurrentLimit(uint8_t new_current_limit)
+// Apply new current range
+void applyGuiCurrentRange(uint8_t new_range)
 {
-	if (new_current_limit == GUI_CURRENT_LIM_HIGH)
-		converter_msg.type = SET_CURRENT_LIMIT_40A;
+	if (new_range == GUI_CURRENT_LIM_HIGH)
+		converter_msg.type = SET_CURRENT_RANGE_40A;
 	else
 		converter_msg.type = SET_CURRENT_LIMIT_20A;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);

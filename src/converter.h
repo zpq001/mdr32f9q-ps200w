@@ -6,9 +6,10 @@
 #define CONV_MIN_VOLTAGE_12V_CHANNEL	0		// [mV]
 
 // Common for both channels
-#define CONV_HIGH_LIM_MAX_CURRENT		40000	// [mA]
-#define CONV_LOW_LIM_MAX_CURRENT		20000	// [mA]
-#define CONV_MIN_CURRENT				0		// [mA]
+#define CONV_LOW_CURRENT_RANGE_MAX		20000	// [mA]
+#define CONV_LOW_CURRENT_RANGE_MIN		0		// [mA]
+#define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
+#define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
 
 // CheckSetVoltageRange error codes			// TODO: bring into *.c file
@@ -31,14 +32,11 @@
 #define SLIM_MAX				0x12
 
 //Converter_SetSoftLimit mode codes
-#define SET_LOW_VOLTAGE_SOFT_LIMIT	0x01
-#define SET_HIGH_VOLTAGE_SOFT_LIMIT	0x02
-#define SET_LOW_CURRENT_SOFT_LIMIT	0x03
-#define SET_HIGH_CURRENT_SOFT_LIMIT	0x04
+#define SET_LOW_VOLTAGE_LIMIT	0x01
+#define SET_HIGH_VOLTAGE_LIMIT	0x02
+#define SET_LOW_CURRENT_LIMIT	0x03
+#define SET_HIGH_CURRENT_LIMIT	0x04
 
-// Converter soft limit enable codes
-#define ENABLE_LOW_LIMIT		0x01
-#define ENABLE_HIGH_LIMIT		0x02
 
 //---------------------------------------------//
 // Converter_HWProcess
@@ -78,7 +76,8 @@
 #define CMD_ADC_START_CURRENT		0x02
 #define CMD_ADC_START_DISCON		0x04
 
-
+//---------------------------------------------//
+// Other
 
 #define HW_IRQ_PERIOD				(16*200)		// in units of 62.5ns, must be <= timer period
 #define HW_ADC_CALL_PERIOD			5				// in units of HW_IRQ period
@@ -119,12 +118,44 @@
 //---------------------------------------------//
 // Task queue messages
 
+
 typedef struct {
-	uint32_t type;
-	uint32_t data_a;
-	uint32_t data_b;
+    uint32_t type;
+    union {
+        struct {
+            uint32_t a;
+            uint32_t b;
+        } data;
+        struct {
+            uint16_t mode;
+            uint16_t enable;
+            uint32_t value;
+        } voltage_limit_setting;
+    };
+    //	uint32_t data_a;
+    //	uint32_t data_b;
 } conveter_message_t;
 
+
+
+
+enum converterTaskCmd {
+	CONVERTER_TICK,				
+	CONVERTER_UPDATE,			
+	CONVERTER_TURN_ON,			
+	CONVERTER_TURN_OFF,			
+	
+	CONVERTER_SWITCH_TO_5VCH,	
+	CONVERTER_SWITCH_TO_12VCH,
+	CONVERTER_SET_CURRENT_RANGE,		
+	CONVERTER_SET_VOLTAGE,		
+	CONVERTER_SET_VOLTAGE_LIMIT,
+	
+	CONVERTER_SET_CURRENT,		
+	CONVERTER_INITIALIZE
+};
+
+/*
 #define CONVERTER_TICK				0xFF
 #define CONVERTER_UPDATE			0xFE
 #define CONVERTER_TURN_ON			0x01
@@ -137,41 +168,51 @@ typedef struct {
 #define CONVERTER_SET_CURRENT		0x08
 #define CONVERTER_INITIALIZE		0x09
 #define CONVETER_SET_VOLTAGE_LIMIT	0x0A
+*/
 
 
 /*
-typedef struct {
-	uint8_t feedback_channel;
-	uint8_t load_state;
-} converter_state_t;
+	There are two channels in the power supply. Every channel has it's own voltage and current settings.
+	Every channel has 2 current ranges - low (20A for now) and high (40A). Every current range
+	has related limitations and settings, so if current range is changed, current setting is changed too.
 */
 
 typedef struct {
-	
-	uint8_t CHANNEL;			// const
-	uint8_t load_state;
-	
-	uint16_t set_voltage;
-	uint16_t MAX_VOLTAGE;		// const
-	uint16_t MIN_VOLTAGE;		// const
-	uint16_t soft_max_voltage;
-	uint16_t soft_min_voltage;
-	uint16_t SOFT_MAX_VOLTAGE_LIMIT;
-	uint16_t SOFT_MIN_VOLTAGE_LIMIT;
-	uint8_t soft_voltage_limits_enable;
-	
-	uint8_t current_limit;
-	uint16_t set_current;	
-	uint16_t LOW_LIM_MAX_CURRENT;	// const
-	uint16_t LOW_LIM_MIN_CURRENT;	// const
-	uint16_t HIGH_LIM_MAX_CURRENT;	// const
-	uint16_t HIGH_LIM_MIN_CURRENT;	// const
-	uint16_t soft_max_current;
-	uint16_t soft_min_current;
-	uint16_t SOFT_MAX_CURRENT_LIMIT;
-	uint16_t SOFT_MIN_CURRENT_LIMIT;
-	uint8_t soft_current_limits_enable;
-	
+	uint16_t setting;	
+	uint16_t MINIMUM;					// const, minimum avaliable current setting 
+	uint16_t MAXIMUM;					// const, maximum avaliable current setting 
+	uint16_t limit_low;
+	uint16_t limit_high;
+	uint16_t LIMIT_MIN;					// const, minimum current limit setting
+	uint16_t LIMIT_MAX;					// const, maximum current limit setting
+	uint8_t enable_low_limit : 1;		
+	uint8_t enable_high_limit : 1;
+	uint8_t RANGE : 1;					// const, used for current range distinction
+} current_setting_t;
+
+typedef struct {
+	uint16_t setting;	
+	uint16_t MINIMUM;					// const, minimum avaliable current setting 
+	uint16_t MAXIMUM;					// const, maximum avaliable current setting 
+	uint16_t limit_low;
+	uint16_t limit_high;
+	uint16_t LIMIT_MIN;					// const, minimum current limit setting
+	uint16_t LIMIT_MAX;					// const, maximum current limit setting
+	uint8_t enable_low_limit : 1;		
+	uint8_t enable_high_limit : 1;
+} voltage_setting_t;
+
+typedef struct {
+	uint8_t CHANNEL : 1;						// const
+	uint8_t load_state : 1;	
+	uint8_t overload_protection_enable : 1;
+	uint8_t overload_timeout;
+	// Voltage
+	voltage_setting_t voltage;
+	// Current
+	current_setting_t current_low_range;
+	current_setting_t current_high_range;
+	current_setting_t *current;
 } converter_regulation_t;
 
 

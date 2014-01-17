@@ -39,8 +39,8 @@ volatile uint8_t cmd_ADC_to_HWProcess = 0;
 static uint32_t gui_msg;
 
 
-converter_regulation_t channel_5v_setting;
-converter_regulation_t channel_12v_setting;
+converter_regulation_t channel_5v;
+converter_regulation_t channel_12v;
 converter_regulation_t *regulation_setting_p;
 
 
@@ -159,6 +159,43 @@ static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
 }
 
 
+
+
+
+uint8_t Converter_SetVoltageLimit(uint8_t type, int32_t value, uint8_t enable)
+{
+	uint8_t error = 0;
+	
+	// Bound limit
+	if (value <= regulation_setting_p->voltage.LIMIT_MIN)
+	{
+		value = regulation_setting_p->voltage.LIMIT_MIN;
+		error = 1;
+	}
+	if (value >= regulation_setting_p->voltage.LIMIT_MAX)
+	{
+		value = regulation_setting_p->voltage.LIMIT_MAX;
+		error = 1;
+	}
+	
+	if (type == 0)
+	{
+		// Low limit
+		regulation_setting_p->voltage.limit_low = (uint16_t) value;
+		regulation_setting_p->voltage.enable_low_limit = enable;
+	}
+	else
+	{
+		// High limit
+		regulation_setting_p->voltage.limit_high = (uint16_t) value;
+		regulation_setting_p->voltage.enable_low_high = enable;
+	}
+	
+	return error;
+}
+
+/*
+
 uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p, uint8_t mode)
 {
 	uint8_t err_code = SLIM_OK;
@@ -204,7 +241,7 @@ uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p,
 	
 	return err_code;
 }
-
+*/
 
 static void apply_regulation(void)
 {
@@ -228,69 +265,181 @@ static void apply_regulation(void)
 
 // TODO: add regulation of overload parameters - different for each channel or common for both ?
 
+void Converter_Init(uint8_t default_channel)
+{
+	// Converter is powered off.
+	// TODO: add restore from EEPROM
+	
+	//---------- Channel 5V ------------//
+	
+	// Common
+	channel_5v.CHANNEL = CHANNEL_5V;
+	channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
+	channel_5v.overload_protection_enable = 1;									// TODO: EEPROM
+	channel_5v.overload_timeout = 1;											// TODO: EEPROM
+	
+	// Voltage
+	channel_5v.voltage.setting = 5000;											// TODO: EEPROM
+	channel_5v.voltage.MINIMUM = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage setting for channel
+	channel_5v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage setting for channel
+	channel_5v.voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;					// TODO: EEPROM
+	channel_5v.voltage.limit_high = CONV_MAX_VOLTAGE_5V_CHANNEL;				// TODO: EEPROM
+	channel_5v.VOLTAGE.LIMIT_MIN = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage limit setting
+	channel_5v.VOLTAGE.LIMIT_MAX = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage limit setting
+	channel_5v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+	channel_5v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+	
+	// Current
+	channel_5v.current_low_range.RANGE = 0;										// LOW current range
+	channel_5v.current_low_range.setting = 4000;								// TODO: EEPROM
+	channel_5v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+	channel_5v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+	channel_5v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	channel_5v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	channel_5v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	channel_5v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	channel_5v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+	channel_5v.current_low_range.enable_high_limit = 0;							// TODO: EEPROM
+	
+	channel_5v.current_high_range.RANGE = 1;									// HIGH current range
+	channel_5v.current_high_range.setting = 4000;								// TODO: EEPROM
+	channel_5v.current_high_range.MINIMUM = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+	channel_5v.current_high_range.MAXIMUM = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+	channel_5v.current_high_range.limit_low = CONV_HIGH_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	channel_5v.current_high_range.limit_high = CONV_HIGH_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	channel_5v.current_high_range.LIMIT_MIN = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	channel_5v.current_high_range.LIMIT_MAX = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	channel_5v.current_high_range.enable_low_limit = 0;							// TODO: EEPROM
+	channel_5v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
 
+	channel_5v.current = &channel_5v.current_low_range;
+	
+	//---------- Channel 12V -----------//
+	
+	// Common
+	channel_12v.CHANNEL = CHANNEL_12V;
+	channel_12v.load_state = LOAD_ENABLE;										
+	channel_12v.overload_protection_enable = 1;									// TODO: EEPROM
+	channel_12v.overload_timeout = 1;											// TODO: EEPROM
+	
+	// Voltage
+	channel_12v.voltage.setting = 12000;										// TODO: EEPROM
+	channel_12v.voltage.MINIMUM = CONV_MIN_VOLTAGE_12V_CHANNEL;					// Minimum voltage setting for channel
+	channel_12v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_12V_CHANNEL;					// Maximum voltage setting for channel
+	channel_12v.voltage.limit_low = CONV_MIN_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+	channel_12v.voltage.limit_high = CONV_MAX_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+	channel_12v.VOLTAGE.LIMIT_MIN = CONV_MIN_VOLTAGE_12V_CHANNEL;				// Minimum voltage limit setting
+	channel_12v.VOLTAGE.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting
+	channel_12v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+	channel_12v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+	
+	// Current
+	channel_12v.current_low_range.RANGE = 0;									// LOW current range
+	channel_12v.current_low_range.setting = 2000;								// TODO: EEPROM
+	channel_12v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+	channel_12v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+	channel_12v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	channel_12v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	channel_12v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	channel_12v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	channel_12v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+	channel_12v.current_low_range.enable_high_limit = 0;						// TODO: EEPROM
+	
+	// 12V channel cannot provide currents > 20A (low range)
+	channel_12v.current_high_range.RANGE = 1;									// HIGH current range
+	channel_12v.current_high_range.setting = 4000;								// TODO: EEPROM
+	channel_12v.current_high_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+	channel_12v.current_high_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+	channel_12v.current_high_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	channel_12v.current_high_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	channel_12v.current_high_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	channel_12v.current_high_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	channel_12v.current_high_range.enable_low_limit = 0;						// TODO: EEPROM
+	channel_12v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
+
+	channel_12v.current = &channel_12v.current_low_range;
+	
+	
+	// Select default channel
+	if (default_channel == CHANNEL_12V)
+		regulation_setting_p = &channel_12v;
+	else
+		regulation_setting_p = &channel_5v;
+	
+	
+	// Apply controls
+	__disable_irq();
+	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+	__enable_irq();
+	SetCurrentRange(regulation_setting_p->current->RANGE);
+	SetOutputLoad(regulation_setting_p->load_state);
+	apply_regulation();										// Apply voltage and current settings
+}
+
+
+/*
 void Converter_Init(uint8_t default_channel)
 {
 	// Converter is powered off.
 	// TODO: add restore from EEPROM
 	
 	// Common
-	channel_5v_setting.CHANNEL = CHANNEL_5V;
-	channel_5v_setting.load_state = LOAD_ENABLE;							// dummy - load at 5V channel can not be disabled
+	channel_5v.CHANNEL = CHANNEL_5V;
+	channel_5v.load_state = LOAD_ENABLE;							// dummy - load at 5V channel can not be disabled
 	// Voltage
-	channel_5v_setting.set_voltage = 5000;
-	channel_5v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;			// Maximum voltage setting for channel
-	channel_5v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_5V_CHANNEL;			// Minimum voltage setting for channel
-	channel_5v_setting.soft_max_voltage = 8000;
-	channel_5v_setting.soft_min_voltage = 3000;
-	channel_5v_setting.SOFT_MAX_VOLTAGE_LIMIT = 10000;						// Maximum soft voltage limit
-	channel_5v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-	channel_5v_setting.soft_voltage_limits_enable = 0;
+	channel_5v.set_voltage = 5000;
+	channel_5v.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;			// Maximum voltage setting for channel
+	channel_5v.MIN_VOLTAGE = CONV_MIN_VOLTAGE_5V_CHANNEL;			// Minimum voltage setting for channel
+	channel_5v.soft_max_voltage = 8000;
+	channel_5v.soft_min_voltage = 3000;
+	channel_5v.SOFT_MAX_VOLTAGE_LIMIT = 10000;						// Maximum soft voltage limit
+	channel_5v.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
+	channel_5v.soft_voltage_limits_enable = 0;
 	// Current
-	channel_5v_setting.current_limit = CURRENT_LIM_LOW;
-	channel_5v_setting.set_current = 4000;
-	channel_5v_setting.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
-	channel_5v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
-	channel_5v_setting.HIGH_LIM_MAX_CURRENT = CONV_HIGH_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
-	channel_5v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// High limit (40A) min current setting
-	channel_5v_setting.soft_max_current = 37000;
-	channel_5v_setting.soft_min_current = 30000;
-	channel_5v_setting.SOFT_MAX_CURRENT_LIMIT = 40000;						// Maximum soft current limit
-	channel_5v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-	channel_5v_setting.soft_current_limits_enable = 0;
+	channel_5v.current_limit = CURRENT_LIM_LOW;
+	channel_5v.set_current = 4000;
+	channel_5v.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
+	channel_5v.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
+	channel_5v.HIGH_LIM_MAX_CURRENT = CONV_HIGH_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
+	channel_5v.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// High limit (40A) min current setting
+	channel_5v.soft_max_current = 37000;
+	channel_5v.soft_min_current = 30000;
+	channel_5v.SOFT_MAX_CURRENT_LIMIT = 40000;						// Maximum soft current limit
+	channel_5v.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
+	channel_5v.soft_current_limits_enable = 0;
 	
 	
 	
 	// Common
-	channel_12v_setting.CHANNEL = CHANNEL_12V;
-	channel_12v_setting.load_state = LOAD_ENABLE;
+	channel_12v.CHANNEL = CHANNEL_12V;
+	channel_12v.load_state = LOAD_ENABLE;
 	// Voltage
-	channel_12v_setting.set_voltage = 12000;
-	channel_12v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_12V_CHANNEL;			// Maximum voltage setting for channel
-	channel_12v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_12V_CHANNEL;			// Minimum voltage setting for channel
-	channel_12v_setting.soft_max_voltage = 16000;
-	channel_12v_setting.soft_min_voltage = 1500;
-	channel_12v_setting.SOFT_MAX_VOLTAGE_LIMIT = 20000;						// Maximum soft voltage limit
-	channel_12v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-	channel_12v_setting.soft_voltage_limits_enable = 0;
+	channel_12v.set_voltage = 12000;
+	channel_12v.MAX_VOLTAGE = CONV_MAX_VOLTAGE_12V_CHANNEL;			// Maximum voltage setting for channel
+	channel_12v.MIN_VOLTAGE = CONV_MIN_VOLTAGE_12V_CHANNEL;			// Minimum voltage setting for channel
+	channel_12v.soft_max_voltage = 16000;
+	channel_12v.soft_min_voltage = 1500;
+	channel_12v.SOFT_MAX_VOLTAGE_LIMIT = 20000;						// Maximum soft voltage limit
+	channel_12v.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
+	channel_12v.soft_voltage_limits_enable = 0;
 	// Current
-	channel_12v_setting.current_limit = CURRENT_LIM_LOW;
-	channel_12v_setting.set_current = 2000;
-	channel_12v_setting.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
-	channel_12v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
-	channel_12v_setting.HIGH_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
-	channel_12v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;			// High limit (40A) min current setting
-	channel_12v_setting.soft_max_current = 18000;
-	channel_12v_setting.soft_min_current = 6000;
-	channel_12v_setting.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
-	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-	channel_12v_setting.soft_current_limits_enable = 0;
+	channel_12v.current_limit = CURRENT_LIM_LOW;
+	channel_12v.set_current = 2000;
+	channel_12v.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
+	channel_12v.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
+	channel_12v.HIGH_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
+	channel_12v.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;			// High limit (40A) min current setting
+	channel_12v.soft_max_current = 18000;
+	channel_12v.soft_min_current = 6000;
+	channel_12v.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
+	channel_12v.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
+	channel_12v.soft_current_limits_enable = 0;
 	
 	// Select default channel
 	if (default_channel == CHANNEL_12V)
-		regulation_setting_p = &channel_12v_setting;
+		regulation_setting_p = &channel_12v;
 	else
-		regulation_setting_p = &channel_5v_setting;
+		regulation_setting_p = &channel_5v;
 	
 	
 	// Apply controls
@@ -301,7 +450,7 @@ void Converter_Init(uint8_t default_channel)
 	SetOutputLoad(regulation_setting_p->load_state);
 	apply_regulation();										// Apply voltage and current settings
 }
-
+*/
 
 
 
@@ -389,7 +538,7 @@ void vTaskConverter(void *pvParameters)
 		switch (msg.type)
 		{
 			case CONVERTER_SET_VOLTAGE:
-				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
+				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data.a, &err_code);
 				//----- Send notification to GUI -----//
 				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
 				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
@@ -404,7 +553,7 @@ void vTaskConverter(void *pvParameters)
 				xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				break;
 			case CONVERTER_SET_CURRENT:
-				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
+				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data.a, &err_code);
 				//----- Send notification to GUI -----//
 				gui_msg = GUI_TASK_UPDATE_CURRENT_SETTING;
 				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
@@ -419,16 +568,27 @@ void vTaskConverter(void *pvParameters)
 				xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				break;
 			case CONVERTER_SET_VOLTAGE_LIMIT:
-				// Apply new software limits
-				errCode = Converter_SetSoftLimit((int32_t)msg.data_b, regulation_setting_p, (uint8_t)msg.data_a)
-				if (msg.data_a & 0x80000000)	// if limit enabled
+				// Apply new voltage limit
+				
+				//msg.voltage_limit_setting.mode
+				//msg.voltage_limit_setting.enable
+				//msg.voltage_limit_setting.value
+				
+				errCode =  Converter_SetVoltageLimit( msg.voltage_limit_setting.mode, 
+													  (int32_t)msg.voltage_limit_setting.value, 
+												      msg.voltage_limit_setting.enable);
+				
+		
+				/*
+				errCode = Converter_SetSoftLimit((int32_t)msg.data.b, regulation_setting_p, (uint8_t)msg.data.a);
+				if (msg.data.a & 0x80000000)	// if limit enabled
 				{
-					regulation_setting_p.soft_voltage_limits_enable |= ((uint8_t)msg.data_a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+					regulation_setting_p.soft_voltage_limits_enable |= ((uint8_t)msg.data.a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
 				}
 				else
 				{
-					regulation_setting_p.soft_voltage_limits_enable &= ~((uint8_t)msg.data_a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
-				}
+					regulation_setting_p.soft_voltage_limits_enable &= ~((uint8_t)msg.data.a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+				} */
 				//----- Send notification to GUI -----//
 				gui_msg = GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS;
 				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
@@ -460,7 +620,7 @@ void vTaskConverter(void *pvParameters)
 			case CONV_OFF:
 				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
 				{
-					regulation_setting_p = &channel_5v_setting;
+					regulation_setting_p = &channel_5v;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 					//----- Send notification to GUI -----//
 					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
@@ -471,7 +631,7 @@ void vTaskConverter(void *pvParameters)
 				}
 				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
 				{
-					regulation_setting_p = &channel_12v_setting;
+					regulation_setting_p = &channel_12v;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 					//----- Send notification to GUI -----//
 					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
@@ -527,11 +687,11 @@ void vTaskConverter(void *pvParameters)
 					conv_state = disableConverterAndCheckHWState();
 					break;
 				}
-				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) && (regulation_setting_p != &channel_5v_setting) )
+				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) && (regulation_setting_p != &channel_5v) )
 				{
 					conv_state = disableConverterAndCheckHWState();
 					vTaskDelay(4);
-					regulation_setting_p = &channel_5v_setting;
+					regulation_setting_p = &channel_5v;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 					//----- Send notification to GUI -----//
 					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
@@ -540,11 +700,11 @@ void vTaskConverter(void *pvParameters)
 					while(ctrl_HWProcess);
 					break;
 				}
-				if ( (msg.type == CONVERTER_SWITCH_TO_12VCH) && (regulation_setting_p != &channel_12v_setting) )
+				if ( (msg.type == CONVERTER_SWITCH_TO_12VCH) && (regulation_setting_p != &channel_12v) )
 				{
 					conv_state = disableConverterAndCheckHWState();
 					vTaskDelay(4);
-					regulation_setting_p = &channel_5v_setting;
+					regulation_setting_p = &channel_5v;
 					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
 					//----- Send notification to GUI -----//
 					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
@@ -584,7 +744,7 @@ void vTaskConverter(void *pvParameters)
 		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
 		__enable_irq();
 		SetCurrentLimit(regulation_setting_p->current_limit);
-		SetOutputLoad(channel_12v_setting.load_state);
+		SetOutputLoad(channel_12v.load_state);
 	
 		// Always make sure settings are within allowed range
 		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &err_code);

@@ -3,14 +3,14 @@
 	Definitions for system control
 ********************************************************************/
 // ConverterState
-#define CONVERTER_OFF    0x0
-#define CONVERTER_ON     0x1
+#define CONVERTER_OFF    	0x0
+#define CONVERTER_ON     	0x1
 // SelectedChannel
 #define	CHANNEL_5V			0x1
 #define	CHANNEL_12V			0x0
 // CurrentLimit
-#define	CURRENT_LIM_HIGH	0x1
-#define	CURRENT_LIM_LOW	 	0x0
+#define	CURRENT_RANGE_HIGH	0x1
+#define	CURRENT_RANGE_LOW 	0x0
 // LoadDisable
 #define	LOAD_DISABLE		0x1
 #define	LOAD_ENABLE			0x0
@@ -63,6 +63,6 @@ uint8_t GetACLineStatus(void);
 
 void SetConverterState(uint8_t newState);
 void SetFeedbackChannel(uint8_t newChannel);
-void SetCurrentLimit(uint8_t newLimit);
+void SetCurrentRange(uint8_t newLimit);
 void SetOutputLoad(uint8_t newLoad);
 

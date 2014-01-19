@@ -693,6 +693,26 @@
               <FileType>5</FileType>
               <FilePath>.\src\gui\guiWidgets\guiWidgets.h</FilePath>
             </File>
+            <File>
+              <FileName>guiStringList.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiStringList.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiStringList.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiStringList.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiCheckBox.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiCheckBox.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiCheckBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiCheckBox.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1483,6 +1503,26 @@
               <FileName>guiWidgets.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\src\gui\guiWidgets\guiWidgets.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiStringList.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiStringList.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiStringList.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiStringList.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiCheckBox.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiCheckBox.h</FilePath>
+            </File>
+            <File>
+              <FileName>guiCheckBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiWidgets\guiCheckBox.c</FilePath>
             </File>
           </Files>
         </Group>

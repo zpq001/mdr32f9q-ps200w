@@ -223,11 +223,11 @@
 ;;;394            case GUI_EVENT_ENCODER:
 ;;;395                if ((int16_t)event->lparam < 0)
 ;;;396                {
-;;;397                    applyGuiCurrentLimit(GUI_CURRENT_LIM_LOW);
+;;;397                    applyGuiCurrentRange(GUI_CURRENT_RANGE_LOW);
 ;;;398                }
 ;;;399                else if ((int16_t)event->lparam > 0)
 ;;;400                {
-;;;401                    applyGuiCurrentLimit(GUI_CURRENT_LIM_HIGH);
+;;;401                    applyGuiCurrentRange(GUI_CURRENT_RANGE_HIGH);
 ;;;402                }
 ;;;403                break;
 ;;;404            default:
@@ -244,12 +244,12 @@
 00011c  2a00              CMP      r2,#0                 ;395
 00011e  da04              BGE      |L1.298|
 000120  f04f0000          MOV      r0,#0                 ;397
-000124  f7fffffe          BL       applyGuiCurrentLimit
+000124  f7fffffe          BL       applyGuiCurrentRange
 000128  e7f4              B        |L1.276|
                   |L1.298|
 00012a  ddf3              BLE      |L1.276|
 00012c  f04f0001          MOV      r0,#1                 ;401
-000130  f7fffffe          BL       applyGuiCurrentLimit
+000130  f7fffffe          BL       applyGuiCurrentRange
 000134  e7ee              B        |L1.276|
 ;;;409    
                           ENDP
@@ -1123,7 +1123,7 @@
 ;;;460    void setCurrentLimitIndicator(uint8_t current_limit)
 0006a0  b510              PUSH     {r4,lr}
 ;;;461    {
-;;;462        if (current_limit == GUI_CURRENT_LIM_LOW)
+;;;462        if (current_limit == GUI_CURRENT_RANGE_LOW)
 ;;;463            sprintf(textLabel_currLimit.text, "20A");
 0006a2  4c11              LDR      r4,|L1.1768|
 0006a4  0001              MOVS     r1,r0                 ;462

@@ -188,17 +188,18 @@ void vTaskDispatcher(void *pvParameters)
 				break;
 			case DP_CONVERTER_SET_VOLTAGE:
 				converter_msg.type = CONVERTER_SET_VOLTAGE;
-				converter_msg.data_a = income_msg.data;
+				converter_msg.data.a = income_msg.data;
 				break;
 			case DP_CONVERTER_SET_CURRENT:
 				converter_msg.type = CONVERTER_SET_CURRENT;
-				converter_msg.data_a = income_msg.data;
+				converter_msg.data.a = income_msg.data;
 				break;
 			case DP_CONVERTER_SET_CURRENT_LIMIT:
+				converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
 				if (income_msg.data == 20)
-					converter_msg.type = SET_CURRENT_LIMIT_20A;
+					converter_msg.data.a = CURRENT_RANGE_LOW;
 				else if (income_msg.data == 40)
-					converter_msg.type = SET_CURRENT_LIMIT_40A;
+					converter_msg.data.a = CURRENT_RANGE_HIGH;
 				break;
 		}
 		

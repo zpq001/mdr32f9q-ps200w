@@ -24,6 +24,7 @@
 #include "guiTextLabel.h"
 #include "guiMainForm.h"
 #include "guiMasterPanel.h"
+#include "guiSetupPanel.h"
 //----------------------------//
 
 #include "converter.h"	// voltage, current, etc
@@ -110,9 +111,10 @@ void vTaskGUI(void *pvParameters)
 		switch (msg.type)
 		{
 			case GUI_TASK_RESTORE_ALL:
-				setVoltageSetting(regulation_setting_p->set_voltage);
-				setCurrentSetting(regulation_setting_p->set_current);
-				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+				setVoltageSetting(regulation_setting_p->voltage.setting);
+				setCurrentSetting(regulation_setting_p->current->setting);
+				setCurrentLimitIndicator( (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH) ? GUI_CURRENT_RANGE_HIGH : GUI_CURRENT_RANGE_LOW );
+				//	FIXME - GUI_CURRENT_LIM_HIGH
 				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
 				// Retore other values from EEPROM
 				// TODO
@@ -155,28 +157,28 @@ void vTaskGUI(void *pvParameters)
 				setPowerIndicator(power_adc);
 				break;
 			case GUI_TASK_UPDATE_VOLTAGE_SETTING:
-				setVoltageSetting(regulation_setting_p->set_voltage);
+				setVoltageSetting(regulation_setting_p->voltage.setting);
 				break;
 			case GUI_TASK_UPDATE_CURRENT_SETTING:
-				setCurrentSetting(regulation_setting_p->set_current);
+				setCurrentSetting(regulation_setting_p->current->setting);
 				break;
 			case GUI_TASK_UPDATE_CURRENT_LIMIT:
-				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
+				setCurrentLimitIndicator( (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH) ? GUI_CURRENT_RANGE_HIGH : GUI_CURRENT_RANGE_LOW );
 				// CHECKME - possibly conveter module has to send GUI_TASK_UPDATE_CURRENT_SETTING message when updating limit
-				setCurrentSetting(regulation_setting_p->set_current);			
+				setCurrentSetting(regulation_setting_p->current->setting);			
 				break;
 			case GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS:
-				setLowVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_LOW_LIMIT, regulation_setting_p->soft_min_voltage);
-				setHighVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_HIGH_LIMIT, regulation_setting_p->soft_max_voltage);
+				setLowVoltageLimitSetting(regulation_setting_p->voltage.enable_low_limit, regulation_setting_p->voltage.limit_low);
+				setHighVoltageLimitSetting(regulation_setting_p->voltage.enable_high_limit, regulation_setting_p->voltage.limit_high);
 				break;
 			case GUI_TASK_UPDATE_FEEDBACK_CHANNEL:
-				setFeedbackChannelIndicator(regulation_setting_p->CHANNEL);
+				setFeedbackChannelIndicator( (regulation_setting_p->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
 				// CHECKME - same as above
-				setVoltageSetting(regulation_setting_p->set_voltage);
-				setCurrentSetting(regulation_setting_p->set_current);
-				setCurrentLimitIndicator( (regulation_setting_p->current_limit == CURRENT_LIM_HIGH) ? GUI_CURRENT_LIM_HIGH : GUI_CURRENT_LIM_LOW );
-				setLowVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_LOW_LIMIT, regulation_setting_p->soft_min_voltage);
-				setHighVoltageLimitSetting(regulation_setting_p->soft_voltage_limits_enable & ENABLE_HIGH_LIMIT, regulation_setting_p->soft_max_voltage);
+				setVoltageSetting(regulation_setting_p->voltage.setting);
+				setCurrentSetting(regulation_setting_p->current->setting);
+				setCurrentLimitIndicator( (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH) ? GUI_CURRENT_RANGE_HIGH : GUI_CURRENT_RANGE_LOW );
+				setLowVoltageLimitSetting(regulation_setting_p->voltage.enable_low_limit, regulation_setting_p->voltage.limit_low);
+				setHighVoltageLimitSetting(regulation_setting_p->voltage.enable_high_limit, regulation_setting_p->voltage.limit_high);
 				break;
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
 				setTemperatureIndicator(converter_temp_celsius);
@@ -195,13 +197,13 @@ void vTaskGUI(void *pvParameters)
 void applyGuiVoltageSetting(uint16_t new_set_voltage)
 {
 	converter_msg.type = CONVERTER_SET_VOLTAGE;
-	converter_msg.data_a = new_set_voltage;
+	converter_msg.data.a = new_set_voltage;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
 void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value)
 {
-	converter_msg.type = CONVETER_SET_VOLTAGE_LIMIT;
+	converter_msg.type = CONVERTER_SET_VOLTAGE_LIMIT;
 	converter_msg.voltage_limit_setting.mode = type;		// 1 - high, 0 - low
 	converter_msg.voltage_limit_setting.enable = enable;
 	converter_msg.voltage_limit_setting.value = value;
@@ -212,17 +214,18 @@ void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value)
 void applyGuiCurrentSetting(uint16_t new_set_current)
 {
 	converter_msg.type = CONVERTER_SET_CURRENT;
-	converter_msg.data_a = new_set_current;
+	converter_msg.data.a = new_set_current;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
 // Apply new current range
 void applyGuiCurrentRange(uint8_t new_range)
 {
-	if (new_range == GUI_CURRENT_LIM_HIGH)
-		converter_msg.type = SET_CURRENT_RANGE_40A;
+	converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
+	if (new_range == GUI_CURRENT_RANGE_HIGH)
+		converter_msg.data.a = CURRENT_RANGE_HIGH;
 	else
-		converter_msg.type = SET_CURRENT_LIMIT_20A;
+		converter_msg.data.a = CURRENT_RANGE_LOW;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 

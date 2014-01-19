@@ -4,9 +4,1440 @@
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
 E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\MDR_200W.uvproj
-Project File Date:  12/27/2013
+Project File Date:  12/28/2013
 
 <h2>Output:</h2>
+Build target 'FLASH'
+compiling main.c...
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+src\systemfunc.c(849): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\systemfunc.c(849): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling systick.c...
+src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling control.c...
+compiling converter.c...
+src\converter.c(79): error:  #136: struct "<unnamed>" has no field "soft_voltage_range_enable"
+src\converter.c(81): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\converter.c(83): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\converter.c(86): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\converter.c(88): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\converter.c(94): error:  #136: struct "<unnamed>" has no field "MIN_VOLTAGE"
+src\converter.c(96): error:  #136: struct "<unnamed>" has no field "MIN_VOLTAGE"
+src\converter.c(99): error:  #136: struct "<unnamed>" has no field "MAX_VOLTAGE"
+src\converter.c(101): error:  #136: struct "<unnamed>" has no field "MAX_VOLTAGE"
+src\converter.c(117): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(117): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(119): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MAX_CURRENT"
+src\converter.c(120): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MIN_CURRENT"
+src\converter.c(124): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MAX_CURRENT"
+src\converter.c(125): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MIN_CURRENT"
+src\converter.c(129): error:  #136: struct "<unnamed>" has no field "soft_current_range_enable"
+src\converter.c(131): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(133): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(136): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(138): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(250): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(255): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(256): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(256): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(286): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(287): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(330): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(331): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(540): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(555): error:  #136: struct "<unnamed>" has no field "set_current"
+compiling service.c...
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling uart.c...
+src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(216): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(440): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling guiMainForm.c...
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(397): warning:  #223-D: function "applyGuiCurrentLimit" declared implicitly
+src\gui\guiMasterPanel.c(401): warning:  #223-D: function "applyGuiCurrentLimit" declared implicitly
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+compiling guiCore.c...
+compiling guiPanel.c...
+compiling guiSpinBox.c...
+compiling guiTextLabel.c...
+compiling guiStringList.c...
+compiling guiGraphWidgets.c...
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+src\systemfunc.c(849): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\systemfunc.c(849): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling converter.c...
+src\converter.c(79): error:  #44: expression must have pointer type
+src\converter.c(80): error:  #44: expression must have pointer type
+src\converter.c(82): error:  #44: expression must have pointer type
+src\converter.c(86): error:  #44: expression must have pointer type
+src\converter.c(87): error:  #44: expression must have pointer type
+src\converter.c(89): error:  #44: expression must have pointer type
+src\converter.c(94): error:  #44: expression must have pointer type
+src\converter.c(96): error:  #44: expression must have pointer type
+src\converter.c(99): error:  #44: expression must have pointer type
+src\converter.c(101): error:  #44: expression must have pointer type
+src\converter.c(117): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(117): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(119): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MAX_CURRENT"
+src\converter.c(120): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MIN_CURRENT"
+src\converter.c(124): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MAX_CURRENT"
+src\converter.c(125): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MIN_CURRENT"
+src\converter.c(129): error:  #136: struct "<unnamed>" has no field "soft_current_range_enable"
+src\converter.c(131): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(133): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(136): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(138): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(250): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(255): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(256): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(256): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(286): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(287): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(330): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(331): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(540): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+src\systemfunc.c(849): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\systemfunc.c(849): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling converter.c...
+src\converter.c(80): error:  #44: expression must have pointer type
+src\converter.c(82): error:  #44: expression must have pointer type
+src\converter.c(86): error:  #44: expression must have pointer type
+src\converter.c(87): error:  #44: expression must have pointer type
+src\converter.c(89): error:  #44: expression must have pointer type
+src\converter.c(94): error:  #44: expression must have pointer type
+src\converter.c(96): error:  #44: expression must have pointer type
+src\converter.c(99): error:  #44: expression must have pointer type
+src\converter.c(101): error:  #44: expression must have pointer type
+src\converter.c(117): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(117): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(119): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MAX_CURRENT"
+src\converter.c(120): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MIN_CURRENT"
+src\converter.c(124): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MAX_CURRENT"
+src\converter.c(125): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MIN_CURRENT"
+src\converter.c(129): error:  #136: struct "<unnamed>" has no field "soft_current_range_enable"
+src\converter.c(131): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(133): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(136): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(138): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(250): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(255): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(256): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(256): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(286): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(287): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(330): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(331): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(540): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(555): error:  #136: struct "<unnamed>" has no field "set_current"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+src\systemfunc.c(849): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\systemfunc.c(849): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling converter.c...
+src\converter.c(86): error:  #44: expression must have pointer type
+src\converter.c(117): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(117): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(119): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MAX_CURRENT"
+src\converter.c(120): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MIN_CURRENT"
+src\converter.c(124): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MAX_CURRENT"
+src\converter.c(125): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MIN_CURRENT"
+src\converter.c(129): error:  #136: struct "<unnamed>" has no field "soft_current_range_enable"
+src\converter.c(131): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(133): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(136): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(138): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(250): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(255): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(256): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(256): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(286): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(287): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(330): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(331): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(540): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(555): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(576): error:  #20: identifier "errCode" is undefined
+src\converter.c(597): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(597): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(642): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(644): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(644): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(653): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(655): error:  #136: struct "<unnamed>" has no field "current_limit"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+compiling converter.c...
+src\converter.c(86): error:  #44: expression must have pointer type
+src\converter.c(117): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(117): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(119): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MAX_CURRENT"
+src\converter.c(120): error:  #136: struct "<unnamed>" has no field "HIGH_LIM_MIN_CURRENT"
+src\converter.c(124): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MAX_CURRENT"
+src\converter.c(125): error:  #136: struct "<unnamed>" has no field "LOW_LIM_MIN_CURRENT"
+src\converter.c(129): error:  #136: struct "<unnamed>" has no field "soft_current_range_enable"
+src\converter.c(131): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(133): error:  #136: struct "<unnamed>" has no field "soft_min_current"
+src\converter.c(136): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(138): error:  #136: struct "<unnamed>" has no field "soft_max_current"
+src\converter.c(250): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(255): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(256): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(256): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(286): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(287): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(330): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(331): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(540): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(555): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(576): error:  #20: identifier "errCode" is undefined
+src\converter.c(597): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(597): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(642): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(644): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(644): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(653): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(655): error:  #136: struct "<unnamed>" has no field "current_limit"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(238): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(243): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(244): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(244): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(274): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(275): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(318): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(319): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(528): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(543): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(564): error:  #20: identifier "errCode" is undefined
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(274): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(275): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(318): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(319): error:  #136: struct "<unnamed>" has no field "VOLTAGE"
+src\converter.c(528): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(543): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(564): error:  #20: identifier "errCode" is undefined
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(528): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(543): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(564): error:  #20: identifier "errCode" is undefined
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(564): error:  #20: identifier "errCode" is undefined
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(585): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(630): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\converter.c(632): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(632): error:  #20: identifier "CURRENT_LIM_LOW" is undefined
+src\converter.c(641): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+src\converter.c(643): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(643): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\converter.c(733): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(733): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(737): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(738): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(633): error:  #154: expression must have struct or union type
+src\converter.c(635): error:  #154: expression must have struct or union type
+src\converter.c(727): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(727): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(727): warning:  #223-D: function "SetCurrentLimit" declared implicitly
+src\converter.c(727): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(727): error:  #154: expression must have struct or union type
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(731): error:  #136: struct "<unnamed>" has no field "set_current"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\converter.c(732): error:  #136: struct "<unnamed>" has no field "set_voltage"
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling converter.c...
+compiling dispatcher.c...
+src\dispatcher.c(191): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(195): error:  #136: struct "<unnamed>" has no field "data_a"
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling dispatcher.c...
+src\dispatcher.c(199): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+src\dispatcher.c(201): error:  #20: identifier "SET_CURRENT_LIMIT_40A" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling dispatcher.c...
+src\dispatcher.c(198): error:  #20: identifier "SET_CURRENT_RANGE" is undefined
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling dispatcher.c...
+compiling adc.c...
+src\adc.c(67): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\adc.c(67): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling adc.c...
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(26): error:  #5: cannot open source input file "guiCheckBox.h": No such file or directory
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiSetupPanel.c...
+src\gui\guiSetupPanel.c(296): warning:  #223-D: function "applyGuiVoltageSoftwareLimit" declared implicitly
+src\gui\guiSetupPanel.c(311): warning:  #223-D: function "applyGuiVoltageSoftwareLimit" declared implicitly
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+compiling guiCheckBox.c...
+Target not created
+Build target 'FLASH'
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+src\guiTop.c(113): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(114): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(115): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(115): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(158): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(161): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(164): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(164): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(166): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(169): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(169): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(169): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(170): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(175): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(198): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(204): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(215): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(223): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(165): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(165): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(167): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(170): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(171): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(171): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(199): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(205): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(216): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(224): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(226): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(167): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(170): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(171): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(171): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(199): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(205): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(216): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(224): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(226): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(170): warning:  #223-D: function "setLowVoltageLimitSetting" declared implicitly
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(170): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(170): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(171): warning:  #223-D: function "setHighVoltageLimitSetting" declared implicitly
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(171): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(176): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(178): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(199): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(205): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(216): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(224): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(226): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(171): error:  #20: identifier "ENABLE_LOW_LIMIT" is undefined
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(172): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(172): error:  #20: identifier "ENABLE_HIGH_LIMIT" is undefined
+src\guiTop.c(172): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(177): error:  #136: struct "<unnamed>" has no field "set_voltage"
+src\guiTop.c(178): error:  #136: struct "<unnamed>" has no field "set_current"
+src\guiTop.c(179): error:  #136: struct "<unnamed>" has no field "current_limit"
+src\guiTop.c(179): error:  #20: identifier "CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "soft_min_voltage"
+src\guiTop.c(181): error:  #136: struct "<unnamed>" has no field "soft_voltage_limits_enable"
+src\guiTop.c(181): error:  #136: struct "<unnamed>" has no field "soft_max_voltage"
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(171): error:  #136: struct "<unnamed>" has no field "low_limit_enable"
+src\guiTop.c(171): error:  #44: expression must have pointer type
+src\guiTop.c(172): error:  #136: struct "<unnamed>" has no field "high_limit_enable"
+src\guiTop.c(172): error:  #44: expression must have pointer type
+src\guiTop.c(177): error:  #44: expression must have pointer type
+src\guiTop.c(180): error:  #136: struct "<unnamed>" has no field "low_limit_enable"
+src\guiTop.c(180): error:  #44: expression must have pointer type
+src\guiTop.c(181): error:  #136: struct "<unnamed>" has no field "high_limit_enable"
+src\guiTop.c(181): error:  #44: expression must have pointer type
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(171): error:  #44: expression must have pointer type
+src\guiTop.c(172): error:  #44: expression must have pointer type
+src\guiTop.c(177): error:  #44: expression must have pointer type
+src\guiTop.c(180): error:  #44: expression must have pointer type
+src\guiTop.c(181): error:  #44: expression must have pointer type
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(177): error:  #44: expression must have pointer type
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(178): error:  #154: expression must have struct or union type
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(200): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(217): error:  #136: struct "<unnamed>" has no field "data_a"
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(206): error:  #20: identifier "CONVETER_SET_VOLTAGE_LIMIT" is undefined
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(225): error:  #20: identifier "SET_CURRENT_RANGE_40A" is undefined
+src\guiTop.c(227): error:  #20: identifier "SET_CURRENT_LIMIT_20A" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(224): error:  #20: identifier "SET_CURRENT_RANGE" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+linking...
+.\FLASH\MDR_200W.axf: Error: L6218E: Undefined symbol applyGuiCurrentLimit (referred from guimasterpanel.o).
+Target not created
 Rebuild target 'FLASH'
 assembling startup_MDR32F9x.s...
 compiling system_MDR32F9Qx.c...
@@ -34,8 +1465,6 @@ compiling control.c...
 compiling converter.c...
 compiling service.c...
 compiling dispatcher.c...
-src\dispatcher.c(85): error:  #20: identifier "SND_CONV_SETTING_OK" is undefined
-src\dispatcher.c(86): error:  #20: identifier "xQueueSound" is undefined
 compiling adc.c...
 compiling uart.c...
 src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
@@ -58,15 +1487,16 @@ compiling timers.c...
 compiling heap_4.c...
 compiling guiMainForm.c...
 compiling guiMasterPanel.c...
-src\gui\guiMasterPanel.c(390): warning:  #177-D: variable "label" was declared but never referenced
+src\gui\guiMasterPanel.c(397): warning:  #223-D: function "applyGuiCurrentLimit" declared implicitly
+src\gui\guiMasterPanel.c(401): warning:  #223-D: function "applyGuiCurrentLimit" declared implicitly
 compiling guiSetupPanel.c...
 compiling guiTop.c...
-src\guiTop.c(120): error:  #20: identifier "GUI_EVENT_START" is undefined
-src\guiTop.c(131): error:  #20: identifier "GUI_EVENT_EEPROM_MESSAGE" is undefined
 compiling guiCore.c...
 compiling guiPanel.c...
 compiling guiSpinBox.c...
 compiling guiTextLabel.c...
+compiling guiStringList.c...
+compiling guiCheckBox.c...
 compiling font_6x8_mono.c...
 compiling font_h10.c...
 compiling font_h10_bold.c...
@@ -80,51 +1510,15 @@ src\gui\guiGraphics\guiGraphPrimitives.c(159): warning:  #1293-D: assignment in 
 src\gui\guiGraphics\guiGraphPrimitives.c(218): warning:  #1293-D: assignment in condition
 compiling guiGraphWidgets.c...
 compiling widget_images.c...
-compiling utils.c...
-Target not created
-Build target 'FLASH'
-compiling dispatcher.c...
-src\dispatcher.c(85): error:  #20: identifier "SND_CONV_SETTING_OK" is undefined
-src\dispatcher.c(86): error:  #20: identifier "xQueueSound" is undefined
-compiling guiTop.c...
-src\guiTop.c(121): error:  #20: identifier "GUI_EVENT_START" is undefined
-src\guiTop.c(132): error:  #20: identifier "GUI_EVENT_EEPROM_MESSAGE" is undefined
-Target not created
-Build target 'FLASH'
-compiling dispatcher.c...
-compiling guiTop.c...
-src\guiTop.c(121): error:  #20: identifier "GUI_EVENT_START" is undefined
-src\guiTop.c(132): error:  #20: identifier "GUI_EVENT_EEPROM_MESSAGE" is undefined
-Target not created
-Build target 'FLASH'
-compiling main.c...
-compiling systick.c...
-src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
-src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
-compiling converter.c...
-compiling service.c...
-compiling dispatcher.c...
-compiling adc.c...
-compiling uart.c...
-src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(216): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(440): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-compiling guiMainForm.c...
-compiling guiMasterPanel.c...
-compiling guiSetupPanel.c...
-compiling guiTop.c...
-compiling guiCore.c...
-compiling guiPanel.c...
-compiling guiSpinBox.c...
-compiling guiTextLabel.c...
-compiling guiGraphWidgets.c...
-linking...
-.\FLASH\MDR_200W.axf: Error: L6218E: Undefined symbol freeRTOS_logo_96x36 (referred from guimainform.o).
-Target not created
-Build target 'FLASH'
 compiling other_images.c...
+compiling utils.c...
 linking...
-Program Size: Code=37132 RO-data=15084 RW-data=280 ZI-data=24440  
+.\FLASH\MDR_200W.axf: Error: L6218E: Undefined symbol applyGuiCurrentLimit (referred from guimasterpanel.o).
+Target not created
+Build target 'FLASH'
+compiling guiMasterPanel.c...
+linking...
+Program Size: Code=40192 RO-data=15084 RW-data=288 ZI-data=24808  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Rebuild target 'FLASH'
@@ -182,6 +1576,8 @@ compiling guiCore.c...
 compiling guiPanel.c...
 compiling guiSpinBox.c...
 compiling guiTextLabel.c...
+compiling guiStringList.c...
+compiling guiCheckBox.c...
 compiling font_6x8_mono.c...
 compiling font_h10.c...
 compiling font_h10_bold.c...
@@ -198,7 +1594,7 @@ compiling widget_images.c...
 compiling other_images.c...
 compiling utils.c...
 linking...
-Program Size: Code=37132 RO-data=15084 RW-data=280 ZI-data=24440  
+Program Size: Code=40192 RO-data=15084 RW-data=288 ZI-data=24808  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 15 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
@@ -225,7 +1621,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.549V
+VTarget = 2.484V
 State of Pins: 
 TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -239,7 +1635,7 @@ Verify OK.
 Build target 'FLASH'
 compiling converter.c...
 linking...
-Program Size: Code=37136 RO-data=15084 RW-data=280 ZI-data=24440  
+Program Size: Code=40200 RO-data=15084 RW-data=288 ZI-data=24808  
 FromELF: creating hex file...
 ".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
@@ -266,116 +1662,7 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.497V
-State of Pins: 
-TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
-Hardware-Breakpoints: 6
-Software-Breakpoints: 8192
-Watchpoints:          4
-JTAG speed: 2000 kHz
- 
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'FLASH'
-assembling startup_MDR32F9x.s...
-compiling system_MDR32F9Qx.c...
-compiling MDR32F9Qx_rst_clk.c...
-compiling MDR32F9Qx_ssp.c...
-compiling MDR32F9Qx_port.c...
-compiling MDR32F9Qx_timer.c...
-compiling MDR32F9Qx_i2c.c...
-compiling MDR32F9Qx_adc.c...
-compiling MDR32F9Qx_uart.c...
-compiling MDR32F9Qx_dma.c...
-compiling main.c...
-compiling systemfunc.c...
-src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
-compiling systick.c...
-src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
-src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
-compiling lcd_1202.c...
-compiling buttons.c...
-compiling led.c...
-compiling encoder.c...
-compiling i2c_eeprom.c...
-compiling dwt_delay.c...
-compiling control.c...
-compiling converter.c...
-compiling service.c...
-compiling dispatcher.c...
-compiling adc.c...
-compiling uart.c...
-src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
-src\uart.c(216): warning:  #177-D: variable "temp32u" was declared but never referenced
-src\uart.c(440): warning:  #177-D: function "UART_sendStr" was declared but never referenced
-compiling sound_driver.c...
-src\sound_driver.c(84): warning: C3017W: current_tone_duration may be used before being set
-src\sound_driver.c(82): warning: C3017W: tone_repeats may be used before being set
-src\sound_driver.c(81): warning: C3017W: current_tone_record may be used before being set
-src\sound_driver.c(80): warning: C3017W: ptone may be used before being set
-src\sound_driver.c(79): warning: C3017W: psample may be used before being set
-src\sound_driver.c(76): warning: C3017W: state may be used before being set
-compiling sound_samples.c...
-compiling port.c...
-compiling croutine.c...
-compiling list.c...
-compiling queue.c...
-compiling tasks.c...
-compiling timers.c...
-compiling heap_4.c...
-compiling guiMainForm.c...
-compiling guiMasterPanel.c...
-compiling guiSetupPanel.c...
-compiling guiTop.c...
-compiling guiCore.c...
-compiling guiPanel.c...
-compiling guiSpinBox.c...
-compiling guiTextLabel.c...
-compiling font_6x8_mono.c...
-compiling font_h10.c...
-compiling font_h10_bold.c...
-compiling font_h11.c...
-compiling font_h16.c...
-compiling font_h32.c...
-compiling guiGraphHAL.c...
-compiling guiGraphPrimitives.c...
-src\gui\guiGraphics\guiGraphPrimitives.c(135): warning:  #1293-D: assignment in condition
-src\gui\guiGraphics\guiGraphPrimitives.c(159): warning:  #1293-D: assignment in condition
-src\gui\guiGraphics\guiGraphPrimitives.c(218): warning:  #1293-D: assignment in condition
-compiling guiGraphWidgets.c...
-compiling widget_images.c...
-compiling other_images.c...
-compiling utils.c...
-linking...
-Program Size: Code=37136 RO-data=15084 RW-data=280 ZI-data=24440  
-FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 15 Warning(s).
-Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
-Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
- 
-JLink info:
-------------
-DLL: V4.40c, compiled Jan 24 2012 09:30:33
-Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
-Hardware: V7.00
-S/N : 11111117 
-Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
- 
-* JLink Info: Found SWD-DP with ID 0x2BA01477
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
-ROMTableAddr = 0xE00FF003
-* JLink Info: Found SWD-DP with ID 0x2BA01477
-* JLink Info: TPIU fitted.
-* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
-* JLink Info: Found Cortex-M3 r2p0, Little endian.
- 
-Target info:
-------------
-Device: MDR32F9Q2I
-VTarget = 2.575V
+VTarget = 2.491V
 State of Pins: 
 TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6
@@ -387,18 +1674,11 @@ Erase Done.
 Programming Done.
 Verify OK.
 Build target 'FLASH'
-compiling main.c...
-compiling systick.c...
-src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
-src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
-compiling converter.c...
-compiling dispatcher.c...
-compiling adc.c...
-compiling guiTop.c...
+compiling guiSetupPanel.c...
 linking...
-Program Size: Code=37136 RO-data=15084 RW-data=280 ZI-data=24440  
+Program Size: Code=40212 RO-data=15084 RW-data=288 ZI-data=24808  
 FromELF: creating hex file...
-".\FLASH\MDR_200W.axf" - 0 Error(s), 2 Warning(s).
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
 Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
 Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
  
@@ -423,7 +1703,303 @@ ROMTableAddr = 0xE00FF003
 Target info:
 ------------
 Device: MDR32F9Q2I
-VTarget = 2.510V
+VTarget = 2.523V
+State of Pins: 
+TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling lcd_1202.c...
+linking...
+Program Size: Code=40216 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ROMTableAddr = 0xE00FF003
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.491V
+State of Pins: 
+TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling guiSetupPanel.c...
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ROMTableAddr = 0xE00FF003
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.504V
+State of Pins: 
+TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling guiTop.c...
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'FLASH'
+compiling main.c...
+compiling systick.c...
+src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling converter.c...
+compiling service.c...
+compiling dispatcher.c...
+compiling adc.c...
+compiling uart.c...
+src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(216): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(440): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(397): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+src\gui\guiMasterPanel.c(401): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+src\gui\guiMasterPanel.c(462): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+src\guiTop.c(116): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(116): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+src\guiTop.c(225): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiMasterPanel.c...
+src\gui\guiMasterPanel.c(462): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+compiling guiTop.c...
+src\guiTop.c(116): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(116): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+src\guiTop.c(225): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiMasterPanel.c...
+compiling guiTop.c...
+src\guiTop.c(166): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+src\guiTop.c(166): error:  #20: identifier "GUI_CURRENT_LIM_LOW" is undefined
+src\guiTop.c(225): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+src\guiTop.c(225): error:  #20: identifier "GUI_CURRENT_LIM_HIGH" is undefined
+Target not created
+Build target 'FLASH'
+compiling guiTop.c...
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'FLASH'
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Build target 'FLASH'
+compiling main.c...
+compiling systick.c...
+src\systick.c(150): warning:  #177-D: variable "hw_uart2_rx_counter" was declared but never referenced
+src\systick.c(151): warning:  #177-D: variable "hw_uart2_tx_counter" was declared but never referenced
+compiling converter.c...
+compiling service.c...
+compiling dispatcher.c...
+compiling adc.c...
+compiling uart.c...
+src\uart.c(215): warning:  #177-D: variable "i" was declared but never referenced
+src\uart.c(216): warning:  #177-D: variable "temp32u" was declared but never referenced
+src\uart.c(440): warning:  #177-D: function "UART_sendStr" was declared but never referenced
+compiling guiMasterPanel.c...
+compiling guiSetupPanel.c...
+compiling guiTop.c...
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 5 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ROMTableAddr = 0xE00FF003
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.517V
+State of Pins: 
+TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+Build target 'FLASH'
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 0 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ROMTableAddr = 0xE00FF003
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.536V
+State of Pins: 
+TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
+Hardware-Breakpoints: 6
+Software-Breakpoints: 8192
+Watchpoints:          4
+JTAG speed: 2000 kHz
+ 
+Erase Done.
+Programming Done.
+Verify OK.
+Build target 'FLASH'
+compiling systemfunc.c...
+src\systemfunc.c(402): warning:  #550-D: variable "initStatus" was set but never used
+linking...
+Program Size: Code=40224 RO-data=15084 RW-data=288 ZI-data=24808  
+FromELF: creating hex file...
+".\FLASH\MDR_200W.axf" - 0 Error(s), 1 Warning(s).
+Load "E:\\EXlam\\ARM Projects Keil\\mdr32f9q-ps200w\\FLASH\\MDR_200W.AXF" 
+Set JLink Project File to "E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\JLinkSettings.ini"
+ 
+JLink info:
+------------
+DLL: V4.40c, compiled Jan 24 2012 09:30:33
+Firmware: J-Link ARM V7 compiled Jun 20 2012 19:45:53
+Hardware: V7.00
+S/N : 11111117 
+Feature(s) : RDI, FlashBP, FlashDL, JFlash, GDBFull 
+ 
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ROMTableAddr = 0xE00FF003
+* JLink Info: Found SWD-DP with ID 0x2BA01477
+* JLink Info: TPIU fitted.
+* JLink Info:   FPUnit: 6 code (BP) slots and 2 literal slots
+* JLink Info: Found Cortex-M3 r2p0, Little endian.
+ 
+Target info:
+------------
+Device: MDR32F9Q2I
+VTarget = 2.504V
 State of Pins: 
 TCK: 0, TDI: 1, TDO: 0, TMS: 0, TRES: 1, TRST: 1
 Hardware-Breakpoints: 6

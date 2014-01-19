@@ -316,41 +316,41 @@
                           ENDP
 
                   guiGraph_DrawCheckBox PROC
-;;;159    
-;;;160    void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox)
+;;;163    //-------------------------------------------------------//
+;;;164    void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox)
 0001c4  e92d43fe          PUSH     {r1-r9,lr}
-;;;161    {
+;;;165    {
 0001c8  4604              MOV      r4,r0
-;;;162        int8_t y_aligned;
-;;;163        rect_t rect;
-;;;164        uint8_t *img;
-;;;165    
-;;;166        y_aligned = checkBox->height - CHECKBOX_GRAPH_YSIZE;
+;;;166        int8_t y_aligned;
+;;;167        rect_t rect;
+;;;168        uint8_t *img;
+;;;169    
+;;;170        y_aligned = checkBox->height - CHECKBOX_GRAPH_YSIZE;
 0001ca  8a60              LDRH     r0,[r4,#0x12]
 0001cc  380a              SUBS     r0,r0,#0xa
 0001ce  b240              SXTB     r0,r0
-;;;167        y_aligned /= 2;
+;;;171        y_aligned /= 2;
 0001d0  eb0070d0          ADD      r0,r0,r0,LSR #31
 0001d4  1040              ASRS     r0,r0,#1
-;;;168        y_aligned = wy + y_aligned;
+;;;172        y_aligned = wy + y_aligned;
 0001d6  4d89              LDR      r5,|L1.1020|
 0001d8  8869              LDRH     r1,[r5,#2]  ; wy
 0001da  4408              ADD      r0,r0,r1
 0001dc  b247              SXTB     r7,r0
-;;;169    
-;;;170        //-----------------------------------------//
-;;;171        // Draw background
-;;;172        if (checkBox->redrawForced)
+;;;173    
+;;;174        //-----------------------------------------//
+;;;175        // Draw background
+;;;176        if (checkBox->redrawForced)
 0001de  7a20              LDRB     r0,[r4,#8]
-;;;173        {
-;;;174            // Erase rectangle
-;;;175            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;177        {
+;;;178            // Erase rectangle
+;;;179            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 0001e0  f04f0800          MOV      r8,#0
-0001e4  0600              LSLS     r0,r0,#24             ;172
+0001e4  0600              LSLS     r0,r0,#24             ;176
 0001e6  d535              BPL      |L1.596|
 0001e8  2000              MOVS     r0,#0
 0001ea  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;176            LCD_FillRect(wx+1,wy+1,checkBox->width-2,checkBox->height-2,FILL_WITH_WHITE);
+;;;180            LCD_FillRect(wx+1,wy+1,checkBox->width-2,checkBox->height-2,FILL_WITH_WHITE);
 0001ee  8a60              LDRH     r0,[r4,#0x12]
 0001f0  1e80              SUBS     r0,r0,#2
 0001f2  b2c0              UXTB     r0,r0
@@ -366,75 +366,75 @@
 000208  b2c1              UXTB     r1,r0
 00020a  2000              MOVS     r0,#0
 00020c  f7fffffe          BL       LCD_DrawImage
-;;;177    
-;;;178            // Draw string
-;;;179            if (checkBox->text)
+;;;181    
+;;;182            // Draw string
+;;;183            if (checkBox->text)
 000210  6a20              LDR      r0,[r4,#0x20]
 000212  b1f8              CBZ      r0,|L1.596|
-;;;180            {
-;;;181                LCD_SetPixelOutputMode(PIXEL_MODE_OR);
+;;;184            {
+;;;185                LCD_SetPixelOutputMode(PIXEL_MODE_OR);
 000214  2002              MOVS     r0,#2
 000216  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;182                LCD_SetFont(checkBox->font);
+;;;186                LCD_SetFont(checkBox->font);
 00021a  6a60              LDR      r0,[r4,#0x24]
 00021c  f7fffffe          BL       LCD_SetFont
-;;;183                rect.x1 = wx + 2 + CHECKBOX_TEXT_MARGIN + CHECKBOX_GRAPH_XSIZE;
+;;;187                rect.x1 = wx + 2 + CHECKBOX_TEXT_MARGIN + CHECKBOX_GRAPH_XSIZE;
 000220  8828              LDRH     r0,[r5,#0]  ; wx
 000222  f1000112          ADD      r1,r0,#0x12
 000226  f88d1008          STRB     r1,[sp,#8]
-;;;184                rect.y1 = wy + 1;
+;;;188                rect.y1 = wy + 1;
 00022a  8869              LDRH     r1,[r5,#2]  ; wy
 00022c  1c4a              ADDS     r2,r1,#1
 00022e  f88d2009          STRB     r2,[sp,#9]
-;;;185                rect.x2 = wx + checkBox->width - 2;
+;;;189                rect.x2 = wx + checkBox->width - 2;
 000232  8a22              LDRH     r2,[r4,#0x10]
 000234  1e80              SUBS     r0,r0,#2
 000236  4410              ADD      r0,r0,r2
 000238  f88d000a          STRB     r0,[sp,#0xa]
-;;;186                rect.y2 = wy + checkBox->height - 2;
+;;;190                rect.y2 = wy + checkBox->height - 2;
 00023c  8a60              LDRH     r0,[r4,#0x12]
 00023e  1e89              SUBS     r1,r1,#2
 000240  4408              ADD      r0,r0,r1
 000242  f88d000b          STRB     r0,[sp,#0xb]
-;;;187                LCD_PrintStringAligned(checkBox->text, &rect, checkBox->textAlignment, IMAGE_MODE_NORMAL);
+;;;191                LCD_PrintStringAligned(checkBox->text, &rect, checkBox->textAlignment, IMAGE_MODE_NORMAL);
 000246  f8942028          LDRB     r2,[r4,#0x28]
 00024a  2301              MOVS     r3,#1
 00024c  a902              ADD      r1,sp,#8
 00024e  6a20              LDR      r0,[r4,#0x20]
 000250  f7fffffe          BL       LCD_PrintStringAligned
                   |L1.596|
-;;;188            }
-;;;189    
-;;;190            // Draw rectangle frame
-;;;191            //LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
-;;;192            //LCD_DrawRect(wx + 2,y_aligned,CHECKBOX_GRAPH_XSIZE,CHECKBOX_GRAPH_YSIZE,1);
-;;;193        }
-;;;194    
-;;;195    
-;;;196        //-----------------------------------------//
-;;;197        // Draw focus / frame
-;;;198        if ((checkBox->redrawForced) || (checkBox->redrawFocus))
+;;;192            }
+;;;193    
+;;;194            // Draw rectangle frame
+;;;195            //LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;196            //LCD_DrawRect(wx + 2,y_aligned,CHECKBOX_GRAPH_XSIZE,CHECKBOX_GRAPH_YSIZE,1);
+;;;197        }
+;;;198    
+;;;199    
+;;;200        //-----------------------------------------//
+;;;201        // Draw focus / frame
+;;;202        if ((checkBox->redrawForced) || (checkBox->redrawFocus))
 000254  7a20              LDRB     r0,[r4,#8]
-000256  f04f0601          MOV      r6,#1                 ;187
+000256  f04f0601          MOV      r6,#1                 ;191
 00025a  0600              LSLS     r0,r0,#24
 00025c  d402              BMI      |L1.612|
 00025e  7a60              LDRB     r0,[r4,#9]
 000260  07c0              LSLS     r0,r0,#31
 000262  d033              BEQ      |L1.716|
                   |L1.612|
-;;;199        {
-;;;200            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;203        {
+;;;204            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 000264  2000              MOVS     r0,#0
 000266  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;201            if (checkBox->isFocused)
+;;;205            if (checkBox->isFocused)
 00026a  7a20              LDRB     r0,[r4,#8]
 00026c  0700              LSLS     r0,r0,#28
 00026e  d50e              BPL      |L1.654|
-;;;202            {
-;;;203                LCD_SetLineStyle(LINE_STYLE_DOTTED);
+;;;206            {
+;;;207                LCD_SetLineStyle(LINE_STYLE_DOTTED);
 000270  2030              MOVS     r0,#0x30
 000272  f7fffffe          BL       LCD_SetLineStyle
-;;;204                LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,1);
+;;;208                LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,1);
 000276  9600              STR      r6,[sp,#0]
 000278  8a60              LDRH     r0,[r4,#0x12]
 00027a  b2c3              UXTB     r3,r0
@@ -447,17 +447,17 @@
 000288  f7fffffe          BL       LCD_DrawRect
 00028c  e01e              B        |L1.716|
                   |L1.654|
-;;;205            }
-;;;206            else
-;;;207            {
-;;;208                LCD_SetLineStyle(LINE_STYLE_SOLID);
+;;;209            }
+;;;210            else
+;;;211            {
+;;;212                LCD_SetLineStyle(LINE_STYLE_SOLID);
 00028e  2010              MOVS     r0,#0x10
 000290  f7fffffe          BL       LCD_SetLineStyle
-;;;209                if (checkBox->hasFrame)
+;;;213                if (checkBox->hasFrame)
 000294  f8940029          LDRB     r0,[r4,#0x29]
 000298  07c0              LSLS     r0,r0,#31
 00029a  d00b              BEQ      |L1.692|
-;;;210                    LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,1);
+;;;214                    LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,1);
 00029c  9600              STR      r6,[sp,#0]
 00029e  8a60              LDRH     r0,[r4,#0x12]
 0002a0  b2c3              UXTB     r3,r0
@@ -470,8 +470,8 @@
 0002ae  f7fffffe          BL       LCD_DrawRect
 0002b2  e00b              B        |L1.716|
                   |L1.692|
-;;;211                else
-;;;212                    LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,0);
+;;;215                else
+;;;216                    LCD_DrawRect(wx,wy,checkBox->width,checkBox->height,0);
 0002b4  f8cd8000          STR      r8,[sp,#0]
 0002b8  8a60              LDRH     r0,[r4,#0x12]
 0002ba  b2c3              UXTB     r3,r0
@@ -483,13 +483,13 @@
 0002c6  b2c0              UXTB     r0,r0
 0002c8  f7fffffe          BL       LCD_DrawRect
                   |L1.716|
-;;;213            }
-;;;214        }
-;;;215    
-;;;216    
-;;;217        //-----------------------------------------//
-;;;218        // Draw focus / frame
-;;;219        if ((checkBox->redrawForced) || (checkBox->redrawCheckedState))
+;;;217            }
+;;;218        }
+;;;219    
+;;;220    
+;;;221        //-----------------------------------------//
+;;;222        // Draw focus / frame
+;;;223        if ((checkBox->redrawForced) || (checkBox->redrawCheckedState))
 0002cc  7a20              LDRB     r0,[r4,#8]
 0002ce  0600              LSLS     r0,r0,#24
 0002d0  d403              BMI      |L1.730|
@@ -497,21 +497,21 @@
 0002d6  0740              LSLS     r0,r0,#29
 0002d8  d513              BPL      |L1.770|
                   |L1.730|
-;;;220        {
-;;;221            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;224        {
+;;;225            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 0002da  2000              MOVS     r0,#0
 0002dc  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;222            img = (checkBox->isChecked) ? CHECKBOX_IMG_CHECKED :
+;;;226            img = (checkBox->isChecked) ? CHECKBOX_IMG_CHECKED :
 0002e0  f8940029          LDRB     r0,[r4,#0x29]
 0002e4  0780              LSLS     r0,r0,#30
 0002e6  d501              BPL      |L1.748|
 0002e8  4845              LDR      r0,|L1.1024|
 0002ea  e000              B        |L1.750|
                   |L1.748|
-;;;223                                          CHECKBOX_IMG_EMPTY;
+;;;227                                          CHECKBOX_IMG_EMPTY;
 0002ec  4845              LDR      r0,|L1.1028|
                   |L1.750|
-;;;224            LCD_DrawImage(img,wx+2,y_aligned,CHECKBOX_GRAPH_XSIZE, CHECKBOX_GRAPH_YSIZE,IMAGE_MODE_NORMAL);
+;;;228            LCD_DrawImage(img,wx+2,y_aligned,CHECKBOX_GRAPH_XSIZE, CHECKBOX_GRAPH_YSIZE,IMAGE_MODE_NORMAL);
 0002ee  210a              MOVS     r1,#0xa
 0002f0  e9cd1600          STRD     r1,r6,[sp,#0]
 0002f4  460b              MOV      r3,r1
@@ -521,37 +521,37 @@
 0002fc  b2c9              UXTB     r1,r1
 0002fe  f7fffffe          BL       LCD_DrawImage
                   |L1.770|
-;;;225        }
-;;;226    
-;;;227    }
+;;;229        }
+;;;230    
+;;;231    }
 000302  e8bd83fe          POP      {r1-r9,pc}
-;;;228    
+;;;232    
                           ENDP
 
                   guiGraph_DrawSpinBox PROC
-;;;231    
-;;;232    void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox)
+;;;239    //-------------------------------------------------------//
+;;;240    void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox)
 000306  e92d4ff0          PUSH     {r4-r11,lr}
-;;;233    {
+;;;241    {
 00030a  b085              SUB      sp,sp,#0x14
 00030c  4604              MOV      r4,r0
-;;;234        uint8_t frameStyle;
-;;;235        uint8_t framePixelValue;
-;;;236        uint8_t charIndex;
-;;;237        uint8_t charWidth;
-;;;238        uint16_t charOffset;
-;;;239        int8_t i;
-;;;240        int16_t x,y, y_underline;
-;;;241        uint8_t numDigits;
-;;;242        char c;
-;;;243    
-;;;244        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;242        uint8_t frameStyle;
+;;;243        uint8_t framePixelValue;
+;;;244        uint8_t charIndex;
+;;;245        uint8_t charWidth;
+;;;246        uint16_t charOffset;
+;;;247        int8_t i;
+;;;248        int16_t x,y, y_underline;
+;;;249        uint8_t numDigits;
+;;;250        char c;
+;;;251    
+;;;252        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 00030e  2000              MOVS     r0,#0
 000310  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;245    
-;;;246        //-----------------------------------------//
-;;;247        // Draw background
-;;;248        if ((spinBox->redrawForced) || (spinBox->redrawValue) || (spinBox->redrawDigitSelection))
+;;;253    
+;;;254        //-----------------------------------------//
+;;;255        // Draw background
+;;;256        if ((spinBox->redrawForced) || (spinBox->redrawValue) || (spinBox->redrawDigitSelection))
 000314  7a20              LDRB     r0,[r4,#8]
 000316  0600              LSLS     r0,r0,#24
 000318  d405              BMI      |L1.806|
@@ -561,9 +561,9 @@
 000322  0740              LSLS     r0,r0,#29
 000324  d512              BPL      |L1.844|
                   |L1.806|
-;;;249        {
-;;;250            // Erase rectangle
-;;;251            LCD_FillRect(wx+1,wy+1,spinBox->width-2,spinBox->height-2,FILL_WITH_WHITE);
+;;;257        {
+;;;258            // Erase rectangle
+;;;259            LCD_FillRect(wx+1,wy+1,spinBox->width-2,spinBox->height-2,FILL_WITH_WHITE);
 000326  8a60              LDRH     r0,[r4,#0x12]
 000328  2100              MOVS     r1,#0
 00032a  1e80              SUBS     r0,r0,#2
@@ -582,12 +582,12 @@
 000346  2000              MOVS     r0,#0
 000348  f7fffffe          BL       LCD_DrawImage
                   |L1.844|
-;;;252        }
-;;;253    
-;;;254    
-;;;255        //-----------------------------------------//
-;;;256        // Draw text value
-;;;257        if ((spinBox->redrawForced) || (spinBox->redrawValue) || (spinBox->redrawDigitSelection))
+;;;260        }
+;;;261    
+;;;262    
+;;;263        //-----------------------------------------//
+;;;264        // Draw text value
+;;;265        if ((spinBox->redrawForced) || (spinBox->redrawValue) || (spinBox->redrawDigitSelection))
 00034c  7a20              LDRB     r0,[r4,#8]
 00034e  0600              LSLS     r0,r0,#24
 000350  d405              BMI      |L1.862|
@@ -597,8 +597,8 @@
 00035a  0740              LSLS     r0,r0,#29
 00035c  d57b              BPL      |L1.1110|
                   |L1.862|
-;;;258        {
-;;;259            x = wx + spinBox->width - 1 + spinBox->textRightOffset;
+;;;266        {
+;;;267            x = wx + spinBox->width - 1 + spinBox->textRightOffset;
 00035e  8a20              LDRH     r0,[r4,#0x10]
 000360  f9941045          LDRSB    r1,[r4,#0x45]
 000364  1842              ADDS     r2,r0,r1
@@ -607,18 +607,18 @@
 00036a  1e49              SUBS     r1,r1,#1
 00036c  4411              ADD      r1,r1,r2
 00036e  fa0ff981          SXTH     r9,r1
-;;;260            y = wy + spinBox->textTopOffset;
+;;;268            y = wy + spinBox->textTopOffset;
 000372  f9941046          LDRSB    r1,[r4,#0x46]
 000376  8840              LDRH     r0,[r0,#2]  ; wy
 000378  4408              ADD      r0,r0,r1
 00037a  fa0ff880          SXTH     r8,r0
-;;;261    
-;;;262            i = 0;
+;;;269    
+;;;270            i = 0;
 00037e  2700              MOVS     r7,#0
-;;;263            charIndex = 0;
+;;;271            charIndex = 0;
 000380  2600              MOVS     r6,#0
-;;;264            // Add one extra digit for minus sign
-;;;265            numDigits = (spinBox->value >= 0) ? spinBox->digitsToDisplay : spinBox->digitsToDisplay + 1;
+;;;272            // Add one extra digit for minus sign
+;;;273            numDigits = (spinBox->value >= 0) ? spinBox->digitsToDisplay : spinBox->digitsToDisplay + 1;
 000382  6aa0              LDR      r0,[r4,#0x28]
 000384  2800              CMP      r0,#0
 000386  db02              BLT      |L1.910|
@@ -630,12 +630,12 @@
                   |L1.916|
 000394  b2c0              UXTB     r0,r0
 000396  9002              STR      r0,[sp,#8]
-;;;266    
-;;;267            while(charIndex < numDigits)
+;;;274    
+;;;275            while(charIndex < numDigits)
 000398  e05a              B        |L1.1104|
                   |L1.922|
-;;;268            {
-;;;269                c = (i == spinBox->dotPosition) ? '.' : spinBox->text[SPINBOX_STRING_LENGTH - 1 - charIndex++];
+;;;276            {
+;;;277                c = (i == spinBox->dotPosition) ? '.' : spinBox->text[SPINBOX_STRING_LENGTH - 1 - charIndex++];
 00039a  f9940027          LDRSB    r0,[r4,#0x27]
 00039e  42b8              CMP      r0,r7
 0003a0  d101              BNE      |L1.934|
@@ -649,19 +649,19 @@
 0003b0  f8901038          LDRB     r1,[r0,#0x38]
 0003b4  b2f6              UXTB     r6,r6
                   |L1.950|
-;;;270                if (LCD_GetFontItem(spinBox->font, c, &charWidth, &charOffset) == 0)
+;;;278                if (LCD_GetFontItem(spinBox->font, c, &charWidth, &charOffset) == 0)
 0003b6  ab03              ADD      r3,sp,#0xc
 0003b8  aa04              ADD      r2,sp,#0x10
 0003ba  6a20              LDR      r0,[r4,#0x20]
 0003bc  f7fffffe          BL       LCD_GetFontItem
 0003c0  b1d8              CBZ      r0,|L1.1018|
-;;;271                    continue;
-;;;272                x -= charWidth;
+;;;279                    continue;
+;;;280                x -= charWidth;
 0003c2  f89d3010          LDRB     r3,[sp,#0x10]
 0003c6  eba90003          SUB      r0,r9,r3
 0003ca  fa0ff980          SXTH     r9,r0
-;;;273    
-;;;274                LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_NORMAL);
+;;;281    
+;;;282                LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_NORMAL);
 0003ce  6a20              LDR      r0,[r4,#0x20]
 0003d0  2201              MOVS     r2,#1
 0003d2  7801              LDRB     r1,[r0,#0]
@@ -673,7 +673,7 @@
 0003e4  f00901ff          AND      r1,r9,#0xff
 0003e8  468b              MOV      r11,r1
 0003ea  f7fffffe          BL       LCD_DrawImage
-;;;275                if ((charIndex == spinBox->activeDigit+1) && (i != spinBox->dotPosition) && (spinBox->isActive))
+;;;283                if ((charIndex == spinBox->activeDigit+1) && (i != spinBox->dotPosition) && (spinBox->isActive))
 0003ee  f8940026          LDRB     r0,[r4,#0x26]
 0003f2  1c40              ADDS     r0,r0,#1
 0003f4  42b0              CMP      r0,r6
@@ -694,56 +694,56 @@
 000410  f8940024          LDRB     r0,[r4,#0x24]
 000414  0700              LSLS     r0,r0,#28
 000416  d519              BPL      |L1.1100|
-;;;276                {
-;;;277                    LCD_SetLineStyle(LINE_STYLE_SOLID);
+;;;284                {
+;;;285                    LCD_SetLineStyle(LINE_STYLE_SOLID);
 000418  2010              MOVS     r0,#0x10
 00041a  f7fffffe          BL       LCD_SetLineStyle
-;;;278                    for (y_underline = y + spinBox->font->height + SPINBOX_ACTIVE_UNDERLINE_MARGIN;
+;;;286                    for (y_underline = y + spinBox->font->height + SPINBOX_ACTIVE_UNDERLINE_MARGIN;
 00041e  6a20              LDR      r0,[r4,#0x20]
 000420  7801              LDRB     r1,[r0,#0]
 000422  f1080001          ADD      r0,r8,#1
 000426  4408              ADD      r0,r0,r1
 000428  b205              SXTH     r5,r0
-;;;279                         y_underline < y + spinBox->font->height + SPINBOX_ACTIVE_UNDERLINE_MARGIN + SPINBOX_ACTIVE_UNDERLINE_WIDTH;
+;;;287                         y_underline < y + spinBox->font->height + SPINBOX_ACTIVE_UNDERLINE_MARGIN + SPINBOX_ACTIVE_UNDERLINE_WIDTH;
 00042a  f1080a03          ADD      r10,r8,#3
-;;;280                         y_underline++)
+;;;288                         y_underline++)
 00042e  e008              B        |L1.1090|
                   |L1.1072|
-;;;281                        LCD_DrawHorLine(x,y_underline,charWidth,1);
+;;;289                        LCD_DrawHorLine(x,y_underline,charWidth,1);
 000430  2301              MOVS     r3,#1
 000432  f89d2010          LDRB     r2,[sp,#0x10]
 000436  b2e9              UXTB     r1,r5
 000438  4658              MOV      r0,r11
 00043a  f7fffffe          BL       LCD_DrawHorLine
-00043e  1c6d              ADDS     r5,r5,#1              ;280
-000440  b22d              SXTH     r5,r5                 ;280
+00043e  1c6d              ADDS     r5,r5,#1              ;288
+000440  b22d              SXTH     r5,r5                 ;288
                   |L1.1090|
-000442  6a20              LDR      r0,[r4,#0x20]         ;279
-000444  7800              LDRB     r0,[r0,#0]            ;279
-000446  4450              ADD      r0,r0,r10             ;279
-000448  42a8              CMP      r0,r5                 ;279
+000442  6a20              LDR      r0,[r4,#0x20]         ;287
+000444  7800              LDRB     r0,[r0,#0]            ;287
+000446  4450              ADD      r0,r0,r10             ;287
+000448  42a8              CMP      r0,r5                 ;287
 00044a  dcf1              BGT      |L1.1072|
                   |L1.1100|
-;;;282                }
-;;;283              /*  if ((charIndex == spinBox->activeDigit+1) && (i != spinBox->dotPosition) && (spinBox->isActive))
-;;;284                    LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_INVERSE);
-;;;285                else
-;;;286                    LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_NORMAL);
-;;;287                    */
-;;;288                i++;
+;;;290                }
+;;;291              /*  if ((charIndex == spinBox->activeDigit+1) && (i != spinBox->dotPosition) && (spinBox->isActive))
+;;;292                    LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_INVERSE);
+;;;293                else
+;;;294                    LCD_DrawImage(&spinBox->font->data[charOffset],x,y,charWidth,spinBox->font->height,IMAGE_MODE_NORMAL);
+;;;295                    */
+;;;296                i++;
 00044c  1c7f              ADDS     r7,r7,#1
 00044e  b27f              SXTB     r7,r7
                   |L1.1104|
-000450  9802              LDR      r0,[sp,#8]            ;267
-000452  4286              CMP      r6,r0                 ;267
+000450  9802              LDR      r0,[sp,#8]            ;275
+000452  4286              CMP      r6,r0                 ;275
 000454  d3a1              BCC      |L1.922|
                   |L1.1110|
-;;;289            }
-;;;290        }
-;;;291    
-;;;292        //-----------------------------------------//
-;;;293        // Draw focus / frame
-;;;294        if ((spinBox->redrawForced) || (spinBox->redrawFocus))
+;;;297            }
+;;;298        }
+;;;299    
+;;;300        //-----------------------------------------//
+;;;301        // Draw focus / frame
+;;;302        if ((spinBox->redrawForced) || (spinBox->redrawFocus))
 000456  7a20              LDRB     r0,[r4,#8]
 000458  0600              LSLS     r0,r0,#24
 00045a  d402              BMI      |L1.1122|
@@ -751,8 +751,8 @@
 00045e  07c0              LSLS     r0,r0,#31
 000460  d035              BEQ      |L1.1230|
                   |L1.1122|
-;;;295        {
-;;;296            if ((spinBox->hasFrame) || (spinBox->showFocus))
+;;;303        {
+;;;304            if ((spinBox->hasFrame) || (spinBox->showFocus))
 000462  f8940024          LDRB     r0,[r4,#0x24]
 000466  07c0              LSLS     r0,r0,#31
 000468  d102              BNE      |L1.1136|
@@ -760,11 +760,11 @@
 00046c  0780              LSLS     r0,r0,#30
 00046e  d52e              BPL      |L1.1230|
                   |L1.1136|
-;;;297            {
-;;;298                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+;;;305            {
+;;;306                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 000470  2000              MOVS     r0,#0
 000472  f7fffffe          BL       LCD_SetPixelOutputMode
-;;;299                frameStyle = ((spinBox->showFocus) && (spinBox->isFocused)) ? LINE_STYLE_DOTTED : LINE_STYLE_SOLID;
+;;;307                frameStyle = ((spinBox->showFocus) && (spinBox->isFocused)) ? LINE_STYLE_DOTTED : LINE_STYLE_SOLID;
 000476  7a60              LDRB     r0,[r4,#9]
 000478  0781              LSLS     r1,r0,#30
 00047a  d504              BPL      |L1.1158|
@@ -776,7 +776,7 @@
                   |L1.1158|
 000486  2110              MOVS     r1,#0x10
                   |L1.1160|
-;;;300                framePixelValue = ((spinBox->showFocus) && (spinBox->isFocused)) ? 1 : 0;
+;;;308                framePixelValue = ((spinBox->showFocus) && (spinBox->isFocused)) ? 1 : 0;
 000488  0780              LSLS     r0,r0,#30
 00048a  d504              BPL      |L1.1174|
 00048c  7a20              LDRB     r0,[r4,#8]
@@ -787,43 +787,326 @@
                   |L1.1174|
 000496  2000              MOVS     r0,#0
                   |L1.1176|
-;;;301                framePixelValue |= (spinBox->hasFrame) ? 1 : 0;
+;;;309                framePixelValue |= (spinBox->hasFrame) ? 1 : 0;
 000498  f8942024          LDRB     r2,[r4,#0x24]
 00049c  f3c20500          UBFX     r5,r2,#0,#1
 0004a0  4305              ORRS     r5,r5,r0
-;;;302                LCD_SetLineStyle(frameStyle);
+;;;310                LCD_SetLineStyle(frameStyle);
 0004a2  4608              MOV      r0,r1
 0004a4  f7fffffe          BL       LCD_SetLineStyle
-;;;303                if (!((spinBox->redrawForced) && (framePixelValue == 0)))
+;;;311                if (!((spinBox->redrawForced) && (framePixelValue == 0)))
 0004a8  7a20              LDRB     r0,[r4,#8]
 0004aa  f04f31ff          MOV      r1,#0xffffffff
 0004ae  eb0110d0          ADD      r0,r1,r0,LSR #7
 0004b2  4328              ORRS     r0,r0,r5
 0004b4  d00b              BEQ      |L1.1230|
-;;;304                    LCD_DrawRect(wx,wy,spinBox->width,spinBox->height,framePixelValue);
+;;;312                    LCD_DrawRect(wx,wy,spinBox->width,spinBox->height,framePixelValue);
 0004b6  9500              STR      r5,[sp,#0]
 0004b8  8a60              LDRH     r0,[r4,#0x12]
 0004ba  b2c3              UXTB     r3,r0
 0004bc  8a20              LDRH     r0,[r4,#0x10]
 0004be  b2c2              UXTB     r2,r0
-0004c0  4804              LDR      r0,|L1.1236|
+0004c0  487b              LDR      r0,|L1.1712|
 0004c2  8841              LDRH     r1,[r0,#2]  ; wy
 0004c4  8800              LDRH     r0,[r0,#0]  ; wx
 0004c6  b2c9              UXTB     r1,r1
 0004c8  b2c0              UXTB     r0,r0
 0004ca  f7fffffe          BL       LCD_DrawRect
                   |L1.1230|
-;;;305            }
-;;;306        }
-;;;307    
-;;;308    
-;;;309    }
+;;;313            }
+;;;314        }
+;;;315    }
 0004ce  b005              ADD      sp,sp,#0x14
 0004d0  e8bd8ff0          POP      {r4-r11,pc}
-;;;310    
+;;;316    
                           ENDP
 
-                  |L1.1236|
+                  guiGraph_GetStringListVisibleItemCount PROC
+;;;317    
+;;;318    uint8_t guiGraph_GetStringListVisibleItemCount(guiStringList_t * list)
+0004d4  8a41              LDRH     r1,[r0,#0x12]
+;;;319    {
+;;;320        uint8_t count;
+;;;321        count = (list->height - STRINGLIST_V_FRAME_MARGIN * 1) / (list->font->height + STRINGLIST_INTERVAL);
+0004d6  6ac0              LDR      r0,[r0,#0x2c]
+0004d8  1e89              SUBS     r1,r1,#2
+0004da  7800              LDRB     r0,[r0,#0]
+0004dc  1cc0              ADDS     r0,r0,#3
+0004de  fb91f0f0          SDIV     r0,r1,r0
+0004e2  b2c0              UXTB     r0,r0
+;;;322        return count;
+;;;323    }
+0004e4  4770              BX       lr
+;;;324    
+                          ENDP
+
+                  guiGraph_DrawStringList PROC
+;;;330    //-------------------------------------------------------//
+;;;331    void guiGraph_DrawStringList(guiStringList_t * list)
+0004e6  e92d43fe          PUSH     {r1-r9,lr}
+;;;332    {
+0004ea  4604              MOV      r4,r0
+;;;333        uint8_t frameStyle;
+;;;334        uint8_t framePixelValue;
+;;;335        uint8_t elementHeight;
+;;;336        rect_t rect;
+;;;337        uint8_t index;
+;;;338        uint8_t itemsToDisplay;
+;;;339    
+;;;340        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+0004ec  2000              MOVS     r0,#0
+0004ee  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;341    
+;;;342        //-----------------------------------------//
+;;;343        // Draw background
+;;;344        if ((list->redrawForced) || (0))
+0004f2  7a20              LDRB     r0,[r4,#8]
+;;;345        {
+;;;346            // Erase rectangle
+;;;347            LCD_FillRect(wx+1,wy+1,list->width-2,list->height-2,FILL_WITH_WHITE);
+0004f4  f8df81b8          LDR      r8,|L1.1712|
+0004f8  0600              LSLS     r0,r0,#24             ;344
+0004fa  d513              BPL      |L1.1316|
+0004fc  8a60              LDRH     r0,[r4,#0x12]
+0004fe  2100              MOVS     r1,#0
+000500  1e80              SUBS     r0,r0,#2
+000502  b2c0              UXTB     r0,r0
+000504  e9cd0100          STRD     r0,r1,[sp,#0]
+000508  8a20              LDRH     r0,[r4,#0x10]
+00050a  1e80              SUBS     r0,r0,#2
+00050c  b2c3              UXTB     r3,r0
+00050e  f8b80002          LDRH     r0,[r8,#2]  ; wy
+000512  1c40              ADDS     r0,r0,#1
+000514  b2c2              UXTB     r2,r0
+000516  f8b80000          LDRH     r0,[r8,#0]  ; wx
+00051a  1c40              ADDS     r0,r0,#1
+00051c  b2c1              UXTB     r1,r0
+00051e  2000              MOVS     r0,#0
+000520  f7fffffe          BL       LCD_DrawImage
+                  |L1.1316|
+;;;348        }
+;;;349    
+;;;350        //-----------------------------------------//
+;;;351        // Draw strings
+;;;352        if (list->redrawForced)
+000524  7a20              LDRB     r0,[r4,#8]
+000526  0600              LSLS     r0,r0,#24
+000528  d57d              BPL      |L1.1574|
+;;;353        {
+;;;354            elementHeight = list->font->height + STRINGLIST_INTERVAL;
+00052a  6ae0              LDR      r0,[r4,#0x2c]
+00052c  7800              LDRB     r0,[r0,#0]
+00052e  1cc0              ADDS     r0,r0,#3
+000530  b2c7              UXTB     r7,r0
+;;;355            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+000532  2000              MOVS     r0,#0
+000534  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;356            LCD_SetFont(list->font);
+000538  6ae0              LDR      r0,[r4,#0x2c]
+00053a  f7fffffe          BL       LCD_SetFont
+;;;357    
+;;;358            index = list->firstIndexToDisplay;
+00053e  f8945024          LDRB     r5,[r4,#0x24]
+;;;359            itemsToDisplay = guiGraph_GetStringListVisibleItemCount(list);
+000542  4620              MOV      r0,r4
+000544  f7fffffe          BL       guiGraph_GetStringListVisibleItemCount
+000548  4606              MOV      r6,r0
+;;;360    
+;;;361            rect.x1 = wx + STRINGLIST_H_FRAME_MARGIN;
+00054a  f8b80000          LDRH     r0,[r8,#0]  ; wx
+00054e  1c81              ADDS     r1,r0,#2
+000550  f88d1008          STRB     r1,[sp,#8]
+;;;362            rect.y1 = wy + STRINGLIST_V_FRAME_MARGIN;
+000554  f8b81002          LDRH     r1,[r8,#2]  ; wy
+000558  1c8a              ADDS     r2,r1,#2
+00055a  f88d2009          STRB     r2,[sp,#9]
+;;;363            rect.x2 = wx + list->width - STRINGLIST_H_FRAME_MARGIN - 1;
+00055e  8a22              LDRH     r2,[r4,#0x10]
+000560  1ec0              SUBS     r0,r0,#3
+000562  4410              ADD      r0,r0,r2
+000564  f88d000a          STRB     r0,[sp,#0xa]
+;;;364            rect.y2 = wy + elementHeight;
+000568  19c8              ADDS     r0,r1,r7
+00056a  f88d000b          STRB     r0,[sp,#0xb]
+;;;365    
+;;;366            while (itemsToDisplay--)
+;;;367            {
+;;;368                LCD_PrintStringAligned(list->strings[index], &rect, list->textAlignment, IMAGE_MODE_NORMAL);
+00056e  f04f0901          MOV      r9,#1
+000572  e053              B        |L1.1564|
+                  |L1.1396|
+000574  6aa0              LDR      r0,[r4,#0x28]
+000576  f8942030          LDRB     r2,[r4,#0x30]
+00057a  2301              MOVS     r3,#1
+00057c  f8500025          LDR      r0,[r0,r5,LSL #2]
+000580  a902              ADD      r1,sp,#8
+000582  f7fffffe          BL       LCD_PrintStringAligned
+;;;369                if (index == list->selectedIndex)
+000586  f8940022          LDRB     r0,[r4,#0x22]
+00058a  42a8              CMP      r0,r5
+00058c  d133              BNE      |L1.1526|
+;;;370                {
+;;;371                    // Draw selection
+;;;372                    LCD_SetPixelOutputMode(PIXEL_MODE_XOR);
+00058e  2003              MOVS     r0,#3
+000590  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;373                    LCD_FillRect(rect.x1, rect.y1, rect.x2 - rect.x1 + 1, rect.y2 - rect.y1 + 1,FILL_WITH_BLACK);
+000594  f89d000b          LDRB     r0,[sp,#0xb]
+000598  f89d2009          LDRB     r2,[sp,#9]
+00059c  f89d1008          LDRB     r1,[sp,#8]
+0005a0  1a80              SUBS     r0,r0,r2
+0005a2  1c40              ADDS     r0,r0,#1
+0005a4  b2c0              UXTB     r0,r0
+0005a6  e9cd0900          STRD     r0,r9,[sp,#0]
+0005aa  f89d000a          LDRB     r0,[sp,#0xa]
+0005ae  1a40              SUBS     r0,r0,r1
+0005b0  1c40              ADDS     r0,r0,#1
+0005b2  b2c3              UXTB     r3,r0
+0005b4  2000              MOVS     r0,#0
+0005b6  f7fffffe          BL       LCD_DrawImage
+;;;374                    LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+0005ba  2000              MOVS     r0,#0
+0005bc  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;375                    if (list->isActive && list->showStringFocus)
+0005c0  f8940020          LDRB     r0,[r4,#0x20]
+0005c4  0781              LSLS     r1,r0,#30
+0005c6  d516              BPL      |L1.1526|
+0005c8  0700              LSLS     r0,r0,#28
+0005ca  d514              BPL      |L1.1526|
+;;;376                    {
+;;;377                        LCD_SetLineStyle(LINE_STYLE_DOTTED);
+0005cc  2030              MOVS     r0,#0x30
+0005ce  f7fffffe          BL       LCD_SetLineStyle
+;;;378                        LCD_DrawRect(rect.x1, rect.y1, rect.x2 - rect.x1 + 1, rect.y2 - rect.y1 + 1, 1);
+0005d2  f89d000b          LDRB     r0,[sp,#0xb]
+0005d6  f89d1009          LDRB     r1,[sp,#9]
+0005da  f89d200a          LDRB     r2,[sp,#0xa]
+0005de  1a40              SUBS     r0,r0,r1
+0005e0  1c40              ADDS     r0,r0,#1
+0005e2  b2c3              UXTB     r3,r0
+0005e4  f89d0008          LDRB     r0,[sp,#8]
+0005e8  f8cd9000          STR      r9,[sp,#0]
+0005ec  1a12              SUBS     r2,r2,r0
+0005ee  1c52              ADDS     r2,r2,#1
+0005f0  b2d2              UXTB     r2,r2
+0005f2  f7fffffe          BL       LCD_DrawRect
+                  |L1.1526|
+;;;379                    }
+;;;380                }
+;;;381                index = (index >= list->stringCount - 1) ? 0 : index + 1;
+0005f6  f8940021          LDRB     r0,[r4,#0x21]
+0005fa  1e40              SUBS     r0,r0,#1
+0005fc  42a8              CMP      r0,r5
+0005fe  dc01              BGT      |L1.1540|
+000600  2500              MOVS     r5,#0
+000602  e000              B        |L1.1542|
+                  |L1.1540|
+000604  1c6d              ADDS     r5,r5,#1
+                  |L1.1542|
+000606  b2ed              UXTB     r5,r5
+;;;382                rect.y1 += elementHeight;
+000608  f89d0009          LDRB     r0,[sp,#9]
+00060c  4438              ADD      r0,r0,r7
+00060e  f88d0009          STRB     r0,[sp,#9]
+;;;383                rect.y2 += elementHeight;
+000612  f89d000b          LDRB     r0,[sp,#0xb]
+000616  4438              ADD      r0,r0,r7
+000618  f88d000b          STRB     r0,[sp,#0xb]
+                  |L1.1564|
+00061c  0030              MOVS     r0,r6                 ;366
+00061e  f1a60601          SUB      r6,r6,#1              ;366
+000622  b2f6              UXTB     r6,r6                 ;366
+000624  d1a6              BNE      |L1.1396|
+                  |L1.1574|
+;;;384            }
+;;;385        }
+;;;386    
+;;;387    
+;;;388    
+;;;389        //-----------------------------------------//
+;;;390        // Draw focus / frame
+;;;391        if ((list->redrawForced) || (list->redrawFocus))
+000626  7a20              LDRB     r0,[r4,#8]
+000628  0600              LSLS     r0,r0,#24
+00062a  d402              BMI      |L1.1586|
+00062c  7a60              LDRB     r0,[r4,#9]
+00062e  07c0              LSLS     r0,r0,#31
+000630  d03d              BEQ      |L1.1710|
+                  |L1.1586|
+;;;392        {
+;;;393            if ((list->hasFrame) || (list->showFocus))
+000632  f8940020          LDRB     r0,[r4,#0x20]
+000636  07c0              LSLS     r0,r0,#31
+000638  d102              BNE      |L1.1600|
+00063a  7a60              LDRB     r0,[r4,#9]
+00063c  0780              LSLS     r0,r0,#30
+00063e  d536              BPL      |L1.1710|
+                  |L1.1600|
+;;;394            {
+;;;395                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+000640  2000              MOVS     r0,#0
+000642  f7fffffe          BL       LCD_SetPixelOutputMode
+;;;396                frameStyle = ((list->showFocus) && (list->isFocused) && (list->isActive == 0)) ? LINE_STYLE_DOTTED : LINE_STYLE_SOLID;
+000646  7a61              LDRB     r1,[r4,#9]
+000648  0788              LSLS     r0,r1,#30
+00064a  d508              BPL      |L1.1630|
+00064c  7a20              LDRB     r0,[r4,#8]
+00064e  0700              LSLS     r0,r0,#28
+000650  d505              BPL      |L1.1630|
+000652  f8940020          LDRB     r0,[r4,#0x20]
+000656  0780              LSLS     r0,r0,#30
+000658  d401              BMI      |L1.1630|
+00065a  2030              MOVS     r0,#0x30
+00065c  e000              B        |L1.1632|
+                  |L1.1630|
+00065e  2010              MOVS     r0,#0x10
+                  |L1.1632|
+;;;397                framePixelValue = ((list->showFocus) && (list->isFocused) && (list->isActive == 0)) ? 1 : 0;
+000660  0789              LSLS     r1,r1,#30
+000662  d508              BPL      |L1.1654|
+000664  7a21              LDRB     r1,[r4,#8]
+000666  0709              LSLS     r1,r1,#28
+000668  d505              BPL      |L1.1654|
+00066a  f8941020          LDRB     r1,[r4,#0x20]
+00066e  0789              LSLS     r1,r1,#30
+000670  d401              BMI      |L1.1654|
+000672  2101              MOVS     r1,#1
+000674  e000              B        |L1.1656|
+                  |L1.1654|
+000676  2100              MOVS     r1,#0
+                  |L1.1656|
+;;;398                framePixelValue |= (list->hasFrame) ? 1 : 0;
+000678  f8942020          LDRB     r2,[r4,#0x20]
+00067c  f3c20500          UBFX     r5,r2,#0,#1
+000680  430d              ORRS     r5,r5,r1
+;;;399                LCD_SetLineStyle(frameStyle);
+000682  f7fffffe          BL       LCD_SetLineStyle
+;;;400                if (!((list->redrawForced) && (framePixelValue == 0)))
+000686  7a20              LDRB     r0,[r4,#8]
+000688  f04f31ff          MOV      r1,#0xffffffff
+00068c  eb0110d0          ADD      r0,r1,r0,LSR #7
+000690  4328              ORRS     r0,r0,r5
+000692  d00c              BEQ      |L1.1710|
+;;;401                    LCD_DrawRect(wx,wy,list->width,list->height,framePixelValue);
+000694  9500              STR      r5,[sp,#0]
+000696  8a60              LDRH     r0,[r4,#0x12]
+000698  b2c3              UXTB     r3,r0
+00069a  8a20              LDRH     r0,[r4,#0x10]
+00069c  b2c2              UXTB     r2,r0
+00069e  f8b80002          LDRH     r0,[r8,#2]  ; wy
+0006a2  b2c1              UXTB     r1,r0
+0006a4  f8b80000          LDRH     r0,[r8,#0]  ; wx
+0006a8  b2c0              UXTB     r0,r0
+0006aa  f7fffffe          BL       LCD_DrawRect
+                  |L1.1710|
+;;;402            }
+;;;403        }
+;;;404    }
+0006ae  e628              B        |L1.770|
+;;;405    
+                          ENDP
+
+                  |L1.1712|
                           DCD      ||.data||
 
                           AREA ||.data||, DATA, ALIGN=1

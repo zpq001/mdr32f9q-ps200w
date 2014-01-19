@@ -81,7 +81,7 @@
 ;;;46     		
 ;;;47     		// Send notification to GUI
 ;;;48     		gui_msg = GUI_TASK_UPDATE_TEMPERATURE_INDICATOR;
-00006a  2012              MOVS     r0,#0x12
+00006a  200a              MOVS     r0,#0xa
 00006c  6060              STR      r0,[r4,#4]  ; gui_msg
 ;;;49     		xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 00006e  480a              LDR      r0,|L1.152|

@@ -57,7 +57,7 @@
 ;;;59     					//vTaskDelay(2);
 ;;;60     				xSemaphoreTake(xSemaphoreADC, portMAX_DELAY);
 00002e  f04f35ff          MOV      r5,#0xffffffff
-000032  e02b              B        |L1.140|
+000032  e031              B        |L1.152|
                   |L1.52|
 000034  e7fe              B        |L1.52|
                   |L1.54|
@@ -84,53 +84,54 @@
 000054  8960              LDRH     r0,[r4,#0xa]  ; adc_current_counts
 000056  0880              LSRS     r0,r0,#2
 000058  80e0              STRH     r0,[r4,#6]
-;;;67     				if (regulation_setting_p -> current_limit == CURRENT_LIM_HIGH)
+;;;67     				if (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH)
 00005a  4a4c              LDR      r2,|L1.396|
 00005c  6812              LDR      r2,[r2,#0]  ; regulation_setting_p
-00005e  7c52              LDRB     r2,[r2,#0x11]
-000060  2a01              CMP      r2,#1
-000062  d01d              BEQ      |L1.160|
+00005e  6b52              LDR      r2,[r2,#0x34]
+000060  7b92              LDRB     r2,[r2,#0xe]
+000062  0752              LSLS     r2,r2,#29
+000064  d504              BPL      |L1.112|
 ;;;68     					current_adc *= 10;
+000066  eb000080          ADD      r0,r0,r0,LSL #2
+00006a  0040              LSLS     r0,r0,#1
+00006c  80e0              STRH     r0,[r4,#6]
+00006e  e002              B        |L1.118|
+                  |L1.112|
 ;;;69     				else
 ;;;70     					current_adc *= 5;
-000064  eb000080          ADD      r0,r0,r0,LSL #2
-000068  80e0              STRH     r0,[r4,#6]
-                  |L1.106|
+000070  eb000080          ADD      r0,r0,r0,LSL #2
+000074  80e0              STRH     r0,[r4,#6]
+                  |L1.118|
 ;;;71     				
 ;;;72     				power_adc = voltage_adc * current_adc / 1000;
-00006a  88e0              LDRH     r0,[r4,#6]  ; current_adc
-00006c  4341              MULS     r1,r0,r1
-00006e  f44f707a          MOV      r0,#0x3e8
-000072  fb91f0f0          SDIV     r0,r1,r0
-000076  60e0              STR      r0,[r4,#0xc]  ; power_adc
+000076  88e0              LDRH     r0,[r4,#6]  ; current_adc
+000078  4341              MULS     r1,r0,r1
+00007a  f44f707a          MOV      r0,#0x3e8
+00007e  fb91f0f0          SDIV     r0,r1,r0
+000082  60e0              STR      r0,[r4,#0xc]  ; power_adc
 ;;;73     				
 ;;;74     				// Send notification to GUI
 ;;;75     				gui_msg = GUI_TASK_UPDATE_VOLTAGE_CURRENT;
-000078  2010              MOVS     r0,#0x10
-00007a  6120              STR      r0,[r4,#0x10]  ; gui_msg
+000084  2005              MOVS     r0,#5
+000086  6120              STR      r0,[r4,#0x10]  ; gui_msg
 ;;;76     				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-00007c  4844              LDR      r0,|L1.400|
-00007e  4942              LDR      r1,|L1.392|
-000080  2300              MOVS     r3,#0
-000082  461a              MOV      r2,r3
-000084  3110              ADDS     r1,r1,#0x10
-000086  6800              LDR      r0,[r0,#0]  ; xQueueGUI
-000088  f7fffffe          BL       xQueueGenericSend
-                  |L1.140|
-00008c  2300              MOVS     r3,#0                 ;51
-00008e  462a              MOV      r2,r5                 ;51
-000090  4669              MOV      r1,sp                 ;51
-000092  6960              LDR      r0,[r4,#0x14]         ;51  ; xQueueADC
-000094  f7fffffe          BL       xQueueGenericReceive
-000098  9800              LDR      r0,[sp,#0]            ;52
-00009a  2801              CMP      r0,#1                 ;52
-00009c  d1f6              BNE      |L1.140|
-00009e  e7cb              B        |L1.56|
-                  |L1.160|
-0000a0  eb000080          ADD      r0,r0,r0,LSL #2       ;68
-0000a4  0040              LSLS     r0,r0,#1              ;68
-0000a6  80e0              STRH     r0,[r4,#6]            ;68
-0000a8  e7df              B        |L1.106|
+000088  4841              LDR      r0,|L1.400|
+00008a  493f              LDR      r1,|L1.392|
+00008c  2300              MOVS     r3,#0
+00008e  461a              MOV      r2,r3
+000090  3110              ADDS     r1,r1,#0x10
+000092  6800              LDR      r0,[r0,#0]  ; xQueueGUI
+000094  f7fffffe          BL       xQueueGenericSend
+                  |L1.152|
+000098  2300              MOVS     r3,#0                 ;51
+00009a  462a              MOV      r2,r5                 ;51
+00009c  4669              MOV      r1,sp                 ;51
+00009e  6960              LDR      r0,[r4,#0x14]         ;51  ; xQueueADC
+0000a0  f7fffffe          BL       xQueueGenericReceive
+0000a4  9800              LDR      r0,[sp,#0]            ;52
+0000a6  2801              CMP      r0,#1                 ;52
+0000a8  d1f6              BNE      |L1.152|
+0000aa  e7c5              B        |L1.56|
 ;;;77     			
 ;;;78     				break;
 ;;;79     			
@@ -146,7 +147,7 @@
                   Converter_HW_ADCProcess PROC
 ;;;97     //---------------------------------------------//
 ;;;98     void Converter_HW_ADCProcess(void)
-0000aa  b570              PUSH     {r4-r6,lr}
+0000ac  b570              PUSH     {r4-r6,lr}
 ;;;99     {
 ;;;100    	static uint8_t state_ADCProcess = STATE_ADC_IDLE;
 ;;;101    	static uint8_t adc_cmd;
@@ -155,16 +156,16 @@
 ;;;104    	
 ;;;105    	// Process ADC FSM-based controller
 ;;;106    	switch (state_ADCProcess)
-0000ac  4c36              LDR      r4,|L1.392|
-0000ae  2200              MOVS     r2,#0
-0000b0  4621              MOV      r1,r4
-0000b2  7860              LDRB     r0,[r4,#1]  ; state_ADCProcess
+0000ae  4c36              LDR      r4,|L1.392|
+0000b0  2200              MOVS     r2,#0
+0000b2  4621              MOV      r1,r4
+0000b4  7860              LDRB     r0,[r4,#1]  ; state_ADCProcess
 ;;;107    	{
 ;;;108    		case STATE_ADC_IDLE:
 ;;;109    			adc_cmd = ctrl_ADCProcess;
 ;;;110    			if (adc_cmd)
 ;;;111    				state_ADCProcess = STATE_ADC_DISPATCH;
-0000b4  2501              MOVS     r5,#1
+0000b6  2501              MOVS     r5,#1
 ;;;112    			break;
 ;;;113    		case STATE_ADC_DISPATCH:
 ;;;114    			if ((adc_cmd & (CMD_ADC_START_VOLTAGE | CMD_ADC_START_DISCON)) == CMD_ADC_START_VOLTAGE)
@@ -191,23 +192,23 @@
 ;;;135    		case STATE_ADC_NORMAL_START_U:
 ;;;136    			// TODO: use DMA for this purpose
 ;;;137    			ADC1_SetChannel(ADC_CHANNEL_VOLTAGE);
-0000b6  2604              MOVS     r6,#4
-0000b8  78c9              LDRB     r1,[r1,#3]            ;106
-0000ba  2803              CMP      r0,#3                 ;106
-0000bc  d038              BEQ      |L1.304|
-0000be  dc05              BGT      |L1.204|
-0000c0  b150              CBZ      r0,|L1.216|
-0000c2  2801              CMP      r0,#1                 ;106
-0000c4  d00e              BEQ      |L1.228|
-0000c6  2802              CMP      r0,#2                 ;106
-0000c8  d104              BNE      |L1.212|
-0000ca  e02a              B        |L1.290|
-                  |L1.204|
-0000cc  2810              CMP      r0,#0x10              ;106
-0000ce  d040              BEQ      |L1.338|
-0000d0  2811              CMP      r0,#0x11              ;106
-0000d2  d045              BEQ      |L1.352|
-                  |L1.212|
+0000b8  2604              MOVS     r6,#4
+0000ba  78c9              LDRB     r1,[r1,#3]            ;106
+0000bc  2803              CMP      r0,#3                 ;106
+0000be  d038              BEQ      |L1.306|
+0000c0  dc05              BGT      |L1.206|
+0000c2  b150              CBZ      r0,|L1.218|
+0000c4  2801              CMP      r0,#1                 ;106
+0000c6  d00e              BEQ      |L1.230|
+0000c8  2802              CMP      r0,#2                 ;106
+0000ca  d104              BNE      |L1.214|
+0000cc  e02a              B        |L1.292|
+                  |L1.206|
+0000ce  2810              CMP      r0,#0x10              ;106
+0000d0  d040              BEQ      |L1.340|
+0000d2  2811              CMP      r0,#0x11              ;106
+0000d4  d045              BEQ      |L1.354|
+                  |L1.214|
 ;;;138    			adc_counter = 4;
 ;;;139    			state_ADCProcess = STATE_ADC_NORMAL_REPEAT_U;
 ;;;140    			break;
@@ -246,8 +247,8 @@
 ;;;173    			break;
 ;;;174    		default:
 ;;;175    			state_ADCProcess = STATE_ADC_IDLE;
-0000d4  7062              STRB     r2,[r4,#1]
-                  |L1.214|
+0000d6  7062              STRB     r2,[r4,#1]
+                  |L1.216|
 ;;;176    			break;
 ;;;177    	}
 ;;;178    	
@@ -267,98 +268,97 @@
 ;;;192    	
 ;;;193    
 ;;;194    }
-0000d6  bd70              POP      {r4-r6,pc}
-                  |L1.216|
-0000d8  7820              LDRB     r0,[r4,#0]            ;109  ; ctrl_ADCProcess
-0000da  70a0              STRB     r0,[r4,#2]            ;109
-0000dc  2800              CMP      r0,#0                 ;110
-0000de  d0fa              BEQ      |L1.214|
-0000e0  7065              STRB     r5,[r4,#1]            ;111
-0000e2  bd70              POP      {r4-r6,pc}
-                  |L1.228|
-0000e4  78a0              LDRB     r0,[r4,#2]            ;114  ; adc_cmd
-0000e6  f0000105          AND      r1,r0,#5              ;114
-0000ea  2901              CMP      r1,#1                 ;114
-0000ec  d008              BEQ      |L1.256|
-0000ee  0781              LSLS     r1,r0,#30             ;121
-0000f0  d50d              BPL      |L1.270|
-0000f2  f0200002          BIC      r0,r0,#2              ;124
-0000f6  70a0              STRB     r0,[r4,#2]            ;124
-0000f8  2010              MOVS     r0,#0x10              ;125
-0000fa  7060              STRB     r0,[r4,#1]            ;125
-0000fc  8162              STRH     r2,[r4,#0xa]          ;126
-0000fe  bd70              POP      {r4-r6,pc}
-                  |L1.256|
-000100  f0200005          BIC      r0,r0,#5              ;117
-000104  70a0              STRB     r0,[r4,#2]            ;117
-000106  2002              MOVS     r0,#2                 ;118
-000108  7060              STRB     r0,[r4,#1]            ;118
-00010a  8122              STRH     r2,[r4,#8]            ;119
-00010c  bd70              POP      {r4-r6,pc}
-                  |L1.270|
-00010e  7062              STRB     r2,[r4,#1]            ;130
-000110  7022              STRB     r2,[r4,#0]            ;131
-000112  69a0              LDR      r0,[r4,#0x18]         ;132  ; xSemaphoreADC
-000114  e8bd4070          POP      {r4-r6,lr}            ;132
-000118  2300              MOVS     r3,#0                 ;132
-00011a  461a              MOV      r2,r3                 ;132
-00011c  4619              MOV      r1,r3                 ;132
-00011e  f7ffbffe          B.W      xQueueGenericSendFromISR
-                  |L1.290|
-000122  2004              MOVS     r0,#4                 ;137
-000124  f7fffffe          BL       ADC1_SetChannel
-000128  70e6              STRB     r6,[r4,#3]            ;138
-00012a  2003              MOVS     r0,#3                 ;139
-00012c  7060              STRB     r0,[r4,#1]            ;139
-00012e  bd70              POP      {r4-r6,pc}
-                  |L1.304|
-000130  2904              CMP      r1,#4                 ;142
-000132  d204              BCS      |L1.318|
-000134  f7fffffe          BL       ADC1_GetResult
-000138  8921              LDRH     r1,[r4,#8]            ;143  ; adc_voltage_counts
-00013a  4408              ADD      r0,r0,r1              ;143
-00013c  8120              STRH     r0,[r4,#8]            ;143
-                  |L1.318|
-00013e  78e0              LDRB     r0,[r4,#3]            ;144  ; adc_counter
-000140  b128              CBZ      r0,|L1.334|
-000142  f7fffffe          BL       ADC1_Start
-000146  78e0              LDRB     r0,[r4,#3]            ;147  ; adc_counter
-000148  1e40              SUBS     r0,r0,#1              ;147
-00014a  70e0              STRB     r0,[r4,#3]            ;147
-00014c  bd70              POP      {r4-r6,pc}
-                  |L1.334|
-00014e  7065              STRB     r5,[r4,#1]            ;151
-000150  bd70              POP      {r4-r6,pc}
-                  |L1.338|
-000152  2007              MOVS     r0,#7                 ;156
-000154  f7fffffe          BL       ADC1_SetChannel
-000158  70e6              STRB     r6,[r4,#3]            ;157
-00015a  2011              MOVS     r0,#0x11              ;158
-00015c  7060              STRB     r0,[r4,#1]            ;158
-00015e  bd70              POP      {r4-r6,pc}
-                  |L1.352|
-000160  2904              CMP      r1,#4                 ;161
-000162  d204              BCS      |L1.366|
-000164  f7fffffe          BL       ADC1_GetResult
-000168  8961              LDRH     r1,[r4,#0xa]          ;162  ; adc_current_counts
-00016a  4408              ADD      r0,r0,r1              ;162
-00016c  8160              STRH     r0,[r4,#0xa]          ;162
-                  |L1.366|
-00016e  f7fffffe          BL       ADC1_Start
-000172  78e0              LDRB     r0,[r4,#3]            ;164  ; adc_counter
-000174  b128              CBZ      r0,|L1.386|
-000176  f7fffffe          BL       ADC1_Start
-00017a  78e0              LDRB     r0,[r4,#3]            ;167  ; adc_counter
-00017c  1e40              SUBS     r0,r0,#1              ;167
-00017e  70e0              STRB     r0,[r4,#3]            ;167
-000180  bd70              POP      {r4-r6,pc}
-                  |L1.386|
-000182  7065              STRB     r5,[r4,#1]            ;171
-000184  bd70              POP      {r4-r6,pc}
+0000d8  bd70              POP      {r4-r6,pc}
+                  |L1.218|
+0000da  7820              LDRB     r0,[r4,#0]            ;109  ; ctrl_ADCProcess
+0000dc  70a0              STRB     r0,[r4,#2]            ;109
+0000de  2800              CMP      r0,#0                 ;110
+0000e0  d0fa              BEQ      |L1.216|
+0000e2  7065              STRB     r5,[r4,#1]            ;111
+0000e4  bd70              POP      {r4-r6,pc}
+                  |L1.230|
+0000e6  78a0              LDRB     r0,[r4,#2]            ;114  ; adc_cmd
+0000e8  f0000105          AND      r1,r0,#5              ;114
+0000ec  2901              CMP      r1,#1                 ;114
+0000ee  d008              BEQ      |L1.258|
+0000f0  0781              LSLS     r1,r0,#30             ;121
+0000f2  d50d              BPL      |L1.272|
+0000f4  f0200002          BIC      r0,r0,#2              ;124
+0000f8  70a0              STRB     r0,[r4,#2]            ;124
+0000fa  2010              MOVS     r0,#0x10              ;125
+0000fc  7060              STRB     r0,[r4,#1]            ;125
+0000fe  8162              STRH     r2,[r4,#0xa]          ;126
+000100  bd70              POP      {r4-r6,pc}
+                  |L1.258|
+000102  f0200005          BIC      r0,r0,#5              ;117
+000106  70a0              STRB     r0,[r4,#2]            ;117
+000108  2002              MOVS     r0,#2                 ;118
+00010a  7060              STRB     r0,[r4,#1]            ;118
+00010c  8122              STRH     r2,[r4,#8]            ;119
+00010e  bd70              POP      {r4-r6,pc}
+                  |L1.272|
+000110  7062              STRB     r2,[r4,#1]            ;130
+000112  7022              STRB     r2,[r4,#0]            ;131
+000114  69a0              LDR      r0,[r4,#0x18]         ;132  ; xSemaphoreADC
+000116  e8bd4070          POP      {r4-r6,lr}            ;132
+00011a  2300              MOVS     r3,#0                 ;132
+00011c  461a              MOV      r2,r3                 ;132
+00011e  4619              MOV      r1,r3                 ;132
+000120  f7ffbffe          B.W      xQueueGenericSendFromISR
+                  |L1.292|
+000124  2004              MOVS     r0,#4                 ;137
+000126  f7fffffe          BL       ADC1_SetChannel
+00012a  70e6              STRB     r6,[r4,#3]            ;138
+00012c  2003              MOVS     r0,#3                 ;139
+00012e  7060              STRB     r0,[r4,#1]            ;139
+000130  bd70              POP      {r4-r6,pc}
+                  |L1.306|
+000132  2904              CMP      r1,#4                 ;142
+000134  d204              BCS      |L1.320|
+000136  f7fffffe          BL       ADC1_GetResult
+00013a  8921              LDRH     r1,[r4,#8]            ;143  ; adc_voltage_counts
+00013c  4408              ADD      r0,r0,r1              ;143
+00013e  8120              STRH     r0,[r4,#8]            ;143
+                  |L1.320|
+000140  78e0              LDRB     r0,[r4,#3]            ;144  ; adc_counter
+000142  b128              CBZ      r0,|L1.336|
+000144  f7fffffe          BL       ADC1_Start
+000148  78e0              LDRB     r0,[r4,#3]            ;147  ; adc_counter
+00014a  1e40              SUBS     r0,r0,#1              ;147
+00014c  70e0              STRB     r0,[r4,#3]            ;147
+00014e  bd70              POP      {r4-r6,pc}
+                  |L1.336|
+000150  7065              STRB     r5,[r4,#1]            ;151
+000152  bd70              POP      {r4-r6,pc}
+                  |L1.340|
+000154  2007              MOVS     r0,#7                 ;156
+000156  f7fffffe          BL       ADC1_SetChannel
+00015a  70e6              STRB     r6,[r4,#3]            ;157
+00015c  2011              MOVS     r0,#0x11              ;158
+00015e  7060              STRB     r0,[r4,#1]            ;158
+000160  bd70              POP      {r4-r6,pc}
+                  |L1.354|
+000162  2904              CMP      r1,#4                 ;161
+000164  d204              BCS      |L1.368|
+000166  f7fffffe          BL       ADC1_GetResult
+00016a  8961              LDRH     r1,[r4,#0xa]          ;162  ; adc_current_counts
+00016c  4408              ADD      r0,r0,r1              ;162
+00016e  8160              STRH     r0,[r4,#0xa]          ;162
+                  |L1.368|
+000170  f7fffffe          BL       ADC1_Start
+000174  78e0              LDRB     r0,[r4,#3]            ;164  ; adc_counter
+000176  b128              CBZ      r0,|L1.388|
+000178  f7fffffe          BL       ADC1_Start
+00017c  78e0              LDRB     r0,[r4,#3]            ;167  ; adc_counter
+00017e  1e40              SUBS     r0,r0,#1              ;167
+000180  70e0              STRB     r0,[r4,#3]            ;167
+000182  bd70              POP      {r4-r6,pc}
+                  |L1.388|
+000184  7065              STRB     r5,[r4,#1]            ;171
+000186  bd70              POP      {r4-r6,pc}
 ;;;195    
                           ENDP
 
-000186  0000              DCW      0x0000
                   |L1.392|
                           DCD      ||.data||
                   |L1.396|

@@ -394,11 +394,11 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
         case GUI_EVENT_ENCODER:
             if ((int16_t)event->lparam < 0)
             {
-                applyGuiCurrentLimit(GUI_CURRENT_LIM_LOW);
+                applyGuiCurrentRange(GUI_CURRENT_RANGE_LOW);
             }
             else if ((int16_t)event->lparam > 0)
             {
-                applyGuiCurrentLimit(GUI_CURRENT_LIM_HIGH);
+                applyGuiCurrentRange(GUI_CURRENT_RANGE_HIGH);
             }
             break;
         default:
@@ -459,7 +459,7 @@ void setFeedbackChannelIndicator(uint8_t channel)
 
 void setCurrentLimitIndicator(uint8_t current_limit)
 {
-    if (current_limit == GUI_CURRENT_LIM_LOW)
+    if (current_limit == GUI_CURRENT_RANGE_LOW)
         sprintf(textLabel_currLimit.text, "20A");
     else
         sprintf(textLabel_currLimit.text, "40A");

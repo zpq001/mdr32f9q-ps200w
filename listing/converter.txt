@@ -7,1490 +7,1621 @@
                   CheckSetVoltageRange PROC
 ;;;73     
 ;;;74     static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
-000000  b510              PUSH     {r4,lr}
+000000  b530              PUSH     {r4,r5,lr}
 ;;;75     {
 ;;;76     	uint8_t error = VCHECK_OK;
 000002  2201              MOVS     r2,#1
 ;;;77     
 ;;;78     	// First check soft limits
-;;;79     	if (regulation_setting_p->soft_voltage_range_enable)
-000004  4bf8              LDR      r3,|L1.1000|
+;;;79     	if ((regulation_setting_p->voltage.enable_low_limit) && 
+000004  4bfa              LDR      r3,|L1.1008|
 000006  699b              LDR      r3,[r3,#0x18]  ; regulation_setting_p
-000008  7c1c              LDRB     r4,[r3,#0x10]
-00000a  b154              CBZ      r4,|L1.34|
-;;;80     	{
-;;;81     		if (new_set_voltage <= (int32_t)regulation_setting_p->soft_min_voltage)
-00000c  895c              LDRH     r4,[r3,#0xa]
-00000e  4284              CMP      r4,r0
-000010  db02              BLT      |L1.24|
-;;;82     		{
-;;;83     			new_set_voltage = (int32_t)regulation_setting_p->soft_min_voltage;
-000012  4620              MOV      r0,r4
-;;;84     			error = VCHECK_SOFT_MIN;
-000014  2205              MOVS     r2,#5
-000016  e004              B        |L1.34|
+000008  7c1d              LDRB     r5,[r3,#0x10]
+00000a  07ec              LSLS     r4,r5,#31
+00000c  d004              BEQ      |L1.24|
+;;;80     		(new_set_voltage <= (int32_t)regulation_setting_p->voltage.limit_low))
+00000e  891c              LDRH     r4,[r3,#8]
+000010  4284              CMP      r4,r0
+000012  db01              BLT      |L1.24|
+;;;81     	{
+;;;82     		new_set_voltage = (int32_t)regulation_setting_p->voltage.limit_low;
+000014  4620              MOV      r0,r4
+;;;83     		error = VCHECK_SOFT_MIN;
+000016  2205              MOVS     r2,#5
                   |L1.24|
-;;;85     		}
-;;;86     		else if (new_set_voltage >= (int32_t)regulation_setting_p->soft_max_voltage)
-000018  891c              LDRH     r4,[r3,#8]
-00001a  4284              CMP      r4,r0
-00001c  dc01              BGT      |L1.34|
-;;;87     		{
-;;;88     			new_set_voltage = (int32_t)regulation_setting_p->soft_max_voltage;
-00001e  4620              MOV      r0,r4
-;;;89     			error = VCHECK_SOFT_MAX;
-000020  2204              MOVS     r2,#4
-                  |L1.34|
-;;;90     		}
+;;;84     	}
+;;;85     	
+;;;86     	if ((regulation_setting_p->voltage.enable_high_limit) && 
+000018  07ac              LSLS     r4,r5,#30
+00001a  d504              BPL      |L1.38|
+;;;87     		(new_set_voltage >= (int32_t)regulation_setting_p->voltage.limit_high))
+00001c  895c              LDRH     r4,[r3,#0xa]
+00001e  4284              CMP      r4,r0
+000020  dc01              BGT      |L1.38|
+;;;88     	{
+;;;89     			new_set_voltage = (int32_t)regulation_setting_p->voltage.limit_high;
+000022  4620              MOV      r0,r4
+;;;90     			error = VCHECK_SOFT_MAX;
+000024  2204              MOVS     r2,#4
+                  |L1.38|
 ;;;91     	}
 ;;;92     	
 ;;;93     	// Check absolute limits
-;;;94     	if (new_set_voltage <= (int32_t)regulation_setting_p->MIN_VOLTAGE)
-000022  88dc              LDRH     r4,[r3,#6]
-000024  4284              CMP      r4,r0
-000026  db02              BLT      |L1.46|
+;;;94     	if (new_set_voltage <= (int32_t)regulation_setting_p->voltage.MINIMUM)
+000026  889c              LDRH     r4,[r3,#4]
+000028  4284              CMP      r4,r0
+00002a  db02              BLT      |L1.50|
 ;;;95     	{
-;;;96     		new_set_voltage = (int32_t)regulation_setting_p->MIN_VOLTAGE;
-000028  4620              MOV      r0,r4
+;;;96     		new_set_voltage = (int32_t)regulation_setting_p->voltage.MINIMUM;
+00002c  4620              MOV      r0,r4
 ;;;97     		error = VCHECK_ABS_MIN;
-00002a  2203              MOVS     r2,#3
-00002c  e004              B        |L1.56|
-                  |L1.46|
+00002e  2203              MOVS     r2,#3
+000030  e004              B        |L1.60|
+                  |L1.50|
 ;;;98     	}
-;;;99     	else if (new_set_voltage >= (int32_t)regulation_setting_p->MAX_VOLTAGE)
-00002e  889b              LDRH     r3,[r3,#4]
-000030  4283              CMP      r3,r0
-000032  dc01              BGT      |L1.56|
+;;;99     	else if (new_set_voltage >= (int32_t)regulation_setting_p->voltage.MAXIMUM)
+000032  88db              LDRH     r3,[r3,#6]
+000034  4283              CMP      r3,r0
+000036  dc01              BGT      |L1.60|
 ;;;100    	{
-;;;101    		new_set_voltage = (int32_t)regulation_setting_p->MAX_VOLTAGE;
-000034  4618              MOV      r0,r3
+;;;101    		new_set_voltage = (int32_t)regulation_setting_p->voltage.MAXIMUM;
+000038  4618              MOV      r0,r3
 ;;;102    		error = VCHECK_ABS_MAX;
-000036  2202              MOVS     r2,#2
-                  |L1.56|
+00003a  2202              MOVS     r2,#2
+                  |L1.60|
 ;;;103    	}
 ;;;104    	
-;;;105    	*err_code = error;
-000038  700a              STRB     r2,[r1,#0]
-;;;106    	return (uint16_t)new_set_voltage;
-00003a  b280              UXTH     r0,r0
-;;;107    }
-00003c  bd10              POP      {r4,pc}
-;;;108    
+;;;105    	if (err_code)
+00003c  b101              CBZ      r1,|L1.64|
+;;;106    		*err_code = error;
+00003e  700a              STRB     r2,[r1,#0]
+                  |L1.64|
+;;;107    	return (uint16_t)new_set_voltage;
+000040  b280              UXTH     r0,r0
+;;;108    }
+000042  bd30              POP      {r4,r5,pc}
+;;;109    
                           ENDP
 
                   CheckSetCurrentRange PROC
-;;;109    
-;;;110    static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
-00003e  b570              PUSH     {r4-r6,lr}
-;;;111    {
-;;;112    	int32_t max_current;
-;;;113    	int32_t min_current;	
-;;;114    	uint8_t error = CCHECK_OK;
-000040  2308              MOVS     r3,#8
-;;;115    	
-;;;116    	if (regulation_setting_p->current_limit == CURRENT_LIM_HIGH)
-000042  4ae9              LDR      r2,|L1.1000|
-000044  6992              LDR      r2,[r2,#0x18]  ; regulation_setting_p
-000046  7c54              LDRB     r4,[r2,#0x11]
-000048  2c01              CMP      r4,#1
-00004a  d00a              BEQ      |L1.98|
-;;;117    	{
-;;;118    		max_current = regulation_setting_p->HIGH_LIM_MAX_CURRENT;
-;;;119    		min_current = regulation_setting_p->HIGH_LIM_MIN_CURRENT;
-;;;120    	}
-;;;121    	else
-;;;122    	{
-;;;123    		max_current = regulation_setting_p->LOW_LIM_MAX_CURRENT;
-00004c  8a94              LDRH     r4,[r2,#0x14]
-;;;124    		min_current = regulation_setting_p->LOW_LIM_MIN_CURRENT;
-00004e  8ad5              LDRH     r5,[r2,#0x16]
-                  |L1.80|
-;;;125    	}
-;;;126    	
-;;;127    	// First check soft limits
-;;;128    	if (regulation_setting_p->soft_current_range_enable)
-000050  f8926024          LDRB     r6,[r2,#0x24]
-000054  b16e              CBZ      r6,|L1.114|
-;;;129    	{
-;;;130    		if (new_set_current <= (int32_t)regulation_setting_p->soft_min_current)
-000056  8bd6              LDRH     r6,[r2,#0x1e]
-000058  4286              CMP      r6,r0
-00005a  db05              BLT      |L1.104|
-;;;131    		{
-;;;132    			new_set_current = (int32_t)regulation_setting_p->soft_min_current;
-00005c  4630              MOV      r0,r6
-;;;133    			error = CCHECK_SOFT_MIN;
-00005e  230c              MOVS     r3,#0xc
-000060  e007              B        |L1.114|
-                  |L1.98|
-000062  8b14              LDRH     r4,[r2,#0x18]         ;118
-000064  8b55              LDRH     r5,[r2,#0x1a]         ;119
-000066  e7f3              B        |L1.80|
-                  |L1.104|
-;;;134    		}
-;;;135    		else if (new_set_current >= (int32_t)regulation_setting_p->soft_max_current)
-000068  8b92              LDRH     r2,[r2,#0x1c]
-00006a  4282              CMP      r2,r0
-00006c  dc01              BGT      |L1.114|
-;;;136    		{
-;;;137    			new_set_current = (int32_t)regulation_setting_p->soft_max_current;
-00006e  4610              MOV      r0,r2
-;;;138    			error = CCHECK_SOFT_MAX;
-000070  230b              MOVS     r3,#0xb
-                  |L1.114|
-;;;139    		}	
+;;;110    
+;;;111    static uint16_t CheckSetCurrentRange(int32_t new_set_current, uint8_t *err_code)
+000044  b530              PUSH     {r4,r5,lr}
+;;;112    {
+;;;113    	uint8_t error = CCHECK_OK;
+000046  2208              MOVS     r2,#8
+;;;114    	
+;;;115    	// First check soft limits
+;;;116    	if ((regulation_setting_p->current->enable_low_limit) && 
+000048  4be9              LDR      r3,|L1.1008|
+00004a  699b              LDR      r3,[r3,#0x18]  ; regulation_setting_p
+00004c  6b5b              LDR      r3,[r3,#0x34]
+00004e  7b9d              LDRB     r5,[r3,#0xe]
+000050  07ec              LSLS     r4,r5,#31
+000052  d004              BEQ      |L1.94|
+;;;117    		(new_set_current <= (int32_t)regulation_setting_p->current->limit_low))
+000054  88dc              LDRH     r4,[r3,#6]
+000056  4284              CMP      r4,r0
+000058  db01              BLT      |L1.94|
+;;;118    	{
+;;;119    		new_set_current = (int32_t)regulation_setting_p->current->limit_low;
+00005a  4620              MOV      r0,r4
+;;;120    		error = CCHECK_SOFT_MIN;
+00005c  220c              MOVS     r2,#0xc
+                  |L1.94|
+;;;121    	}
+;;;122    	
+;;;123    	if ((regulation_setting_p->current->enable_high_limit) && 
+00005e  07ac              LSLS     r4,r5,#30
+000060  d504              BPL      |L1.108|
+;;;124    		(new_set_current >= (int32_t)regulation_setting_p->current->limit_high))
+000062  891c              LDRH     r4,[r3,#8]
+000064  4284              CMP      r4,r0
+000066  dc01              BGT      |L1.108|
+;;;125    	{
+;;;126    		new_set_current = (int32_t)regulation_setting_p->current->limit_high;
+000068  4620              MOV      r0,r4
+;;;127    		error = CCHECK_SOFT_MAX;
+00006a  220b              MOVS     r2,#0xb
+                  |L1.108|
+;;;128    	}
+;;;129    	
+;;;130    	// Check absolute limits
+;;;131    	if (new_set_current <= (int32_t)regulation_setting_p->current->MINIMUM)
+00006c  885c              LDRH     r4,[r3,#2]
+00006e  4284              CMP      r4,r0
+000070  db02              BLT      |L1.120|
+;;;132    	{
+;;;133    		new_set_current = (int32_t)regulation_setting_p->current->MINIMUM;
+000072  4620              MOV      r0,r4
+;;;134    		error = CCHECK_ABS_MIN;
+000074  220a              MOVS     r2,#0xa
+000076  e004              B        |L1.130|
+                  |L1.120|
+;;;135    	}
+;;;136    	else if (new_set_current >= (int32_t)regulation_setting_p->current->MAXIMUM)
+000078  889b              LDRH     r3,[r3,#4]
+00007a  4283              CMP      r3,r0
+00007c  dc01              BGT      |L1.130|
+;;;137    	{
+;;;138    		new_set_current = (int32_t)regulation_setting_p->current->MAXIMUM;
+00007e  4618              MOV      r0,r3
+;;;139    		error = CCHECK_ABS_MAX;
+000080  2209              MOVS     r2,#9
+                  |L1.130|
 ;;;140    	}
 ;;;141    	
-;;;142    	// Check absolute limits - this will overwrite possibly incorrect soft limits
-;;;143    	// This can happen for exapmle, if soft_min = 35A and current limit is switched to 20A
-;;;144    	if (new_set_current <= min_current)
-000072  42a8              CMP      r0,r5
-000074  dc02              BGT      |L1.124|
-;;;145    	{
-;;;146    		new_set_current = min_current;
-000076  4628              MOV      r0,r5
-;;;147    		error = CCHECK_ABS_MIN;
-000078  230a              MOVS     r3,#0xa
-00007a  e003              B        |L1.132|
-                  |L1.124|
-;;;148    	}
-;;;149    	else if (new_set_current >= max_current)
-00007c  42a0              CMP      r0,r4
-00007e  db01              BLT      |L1.132|
-;;;150    	{
-;;;151    		new_set_current = max_current;
-000080  4620              MOV      r0,r4
-;;;152    		error = CCHECK_ABS_MAX;
-000082  2309              MOVS     r3,#9
-                  |L1.132|
-;;;153    	}
-;;;154    	
-;;;155    	*err_code = error;
-000084  700b              STRB     r3,[r1,#0]
-;;;156    	return (uint16_t)new_set_current;
+;;;142    	
+;;;143    	
+;;;144    	if (err_code)
+000082  b101              CBZ      r1,|L1.134|
+;;;145    		*err_code = error;
+000084  700a              STRB     r2,[r1,#0]
+                  |L1.134|
+;;;146    	return (uint16_t)new_set_current;
 000086  b280              UXTH     r0,r0
-;;;157    }
-000088  bd70              POP      {r4-r6,pc}
-;;;158    
+;;;147    }
+000088  bd30              POP      {r4,r5,pc}
+;;;148    
                           ENDP
 
-                  Converter_SetSoftLimit PROC
-;;;159    
-;;;160    uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p, uint8_t mode)
+                  Converter_SetVoltageLimit PROC
+;;;152    
+;;;153    uint8_t Converter_SetVoltageLimit(uint8_t type, int32_t value, uint8_t enable)
 00008a  b530              PUSH     {r4,r5,lr}
-;;;161    {
-;;;162    	uint8_t err_code = SLIM_OK;
-00008c  2510              MOVS     r5,#0x10
-;;;163    	uint16_t *lim_p;
-;;;164    	int32_t minimum;
-;;;165    	int32_t maximum;
-;;;166    	
-;;;167    	switch (mode)
-00008e  2a01              CMP      r2,#1
-000090  d016              BEQ      |L1.192|
-000092  2a03              CMP      r2,#3
-000094  d00a              BEQ      |L1.172|
-000096  2a04              CMP      r2,#4
-000098  d00d              BEQ      |L1.182|
-;;;168    	{
-;;;169    		case SET_LOW_CURRENT_SOFT_LIMIT:
-;;;170    			lim_p = &reg_p->soft_min_current;
-;;;171    			minimum = reg_p->SOFT_MIN_CURRENT_LIMIT;
-;;;172    			maximum = reg_p->soft_max_current;
-;;;173    			break;
-;;;174    		case SET_HIGH_CURRENT_SOFT_LIMIT:
-;;;175    			lim_p = &reg_p->soft_max_current;
-;;;176    			minimum = reg_p->soft_min_current;
-;;;177    			maximum = reg_p->SOFT_MAX_CURRENT_LIMIT;
-;;;178    			break;
-;;;179    		case SET_LOW_VOLTAGE_SOFT_LIMIT:
-;;;180    			lim_p = &reg_p->soft_min_voltage;
-;;;181    			minimum = reg_p->SOFT_MIN_VOLTAGE_LIMIT;
-;;;182    			maximum = reg_p->soft_max_voltage;
-;;;183    			break;
-;;;184    		default: // SET_HIGH_VOLTAGE_SOFT_LIMIT:
-;;;185    			lim_p = &reg_p->soft_max_voltage;
-00009a  f1010208          ADD      r2,r1,#8
-;;;186    			minimum = reg_p->soft_min_voltage;
-00009e  894b              LDRH     r3,[r1,#0xa]
-;;;187    			maximum = reg_p->SOFT_MAX_VOLTAGE_LIMIT;
-0000a0  898c              LDRH     r4,[r1,#0xc]
-                  |L1.162|
-;;;188    			break;
-;;;189    	}
-;;;190    	
-;;;191    	if (new_limit < minimum)
-0000a2  4298              CMP      r0,r3
-0000a4  da11              BGE      |L1.202|
-;;;192    	{
-;;;193    		new_limit = minimum;
-0000a6  4618              MOV      r0,r3
-;;;194    		err_code = SLIM_MIN;
-0000a8  2511              MOVS     r5,#0x11
-0000aa  e012              B        |L1.210|
-                  |L1.172|
-0000ac  f101021e          ADD      r2,r1,#0x1e           ;170
-0000b0  8c4b              LDRH     r3,[r1,#0x22]         ;171
-0000b2  8b8c              LDRH     r4,[r1,#0x1c]         ;172
-0000b4  e7f5              B        |L1.162|
-                  |L1.182|
-0000b6  f101021c          ADD      r2,r1,#0x1c           ;175
-0000ba  8bcb              LDRH     r3,[r1,#0x1e]         ;176
-0000bc  8c0c              LDRH     r4,[r1,#0x20]         ;177
-0000be  e7f0              B        |L1.162|
-                  |L1.192|
-0000c0  f101020a          ADD      r2,r1,#0xa            ;180
-0000c4  89cb              LDRH     r3,[r1,#0xe]          ;181
-0000c6  890c              LDRH     r4,[r1,#8]            ;182
-0000c8  e7eb              B        |L1.162|
-                  |L1.202|
-;;;195    	}
-;;;196    	else if (new_limit > maximum)
-0000ca  42a0              CMP      r0,r4
-0000cc  dd01              BLE      |L1.210|
-;;;197    	{
-;;;198    		new_limit = maximum;
-0000ce  4620              MOV      r0,r4
-;;;199    		err_code = SLIM_MAX;
-0000d0  2512              MOVS     r5,#0x12
-                  |L1.210|
-;;;200    	}
-;;;201    	*lim_p = (uint16_t)new_limit;
-0000d2  8010              STRH     r0,[r2,#0]
-;;;202    	
-;;;203    	return err_code;
-0000d4  4628              MOV      r0,r5
-;;;204    }
-0000d6  bd30              POP      {r4,r5,pc}
-;;;205    
+;;;154    {
+00008c  4605              MOV      r5,r0
+;;;155    	uint8_t error = 0;
+00008e  2000              MOVS     r0,#0
+;;;156    	
+;;;157    	// Bound limit
+;;;158    	if (value <= regulation_setting_p->voltage.LIMIT_MIN)
+000090  4bd7              LDR      r3,|L1.1008|
+000092  699b              LDR      r3,[r3,#0x18]  ; regulation_setting_p
+000094  899c              LDRH     r4,[r3,#0xc]
+000096  428c              CMP      r4,r1
+000098  db01              BLT      |L1.158|
+;;;159    	{
+;;;160    		value = regulation_setting_p->voltage.LIMIT_MIN;
+00009a  4621              MOV      r1,r4
+;;;161    		error = 1;
+00009c  2001              MOVS     r0,#1
+                  |L1.158|
+;;;162    	}
+;;;163    	if (value >= regulation_setting_p->voltage.LIMIT_MAX)
+00009e  89dc              LDRH     r4,[r3,#0xe]
+0000a0  428c              CMP      r4,r1
+0000a2  dc01              BGT      |L1.168|
+;;;164    	{
+;;;165    		value = regulation_setting_p->voltage.LIMIT_MAX;
+0000a4  4621              MOV      r1,r4
+;;;166    		error = 1;
+0000a6  2001              MOVS     r0,#1
+                  |L1.168|
+0000a8  4cd1              LDR      r4,|L1.1008|
+0000aa  69a4              LDR      r4,[r4,#0x18]         ;158
+;;;167    	}
+;;;168    	
+;;;169    	if (type == 0)
+;;;170    	{
+;;;171    		// Low limit
+;;;172    		regulation_setting_p->voltage.limit_low = (uint16_t) value;
+;;;173    		regulation_setting_p->voltage.enable_low_limit = enable;
+0000ac  7c24              LDRB     r4,[r4,#0x10]
+0000ae  b125              CBZ      r5,|L1.186|
+;;;174    	}
+;;;175    	else
+;;;176    	{
+;;;177    		// High limit
+;;;178    		regulation_setting_p->voltage.limit_high = (uint16_t) value;
+0000b0  8159              STRH     r1,[r3,#0xa]
+;;;179    		regulation_setting_p->voltage.enable_high_limit = enable;
+0000b2  f3620441          BFI      r4,r2,#1,#1
+0000b6  741c              STRB     r4,[r3,#0x10]
+;;;180    	}
+;;;181    	return error;
+;;;182    }
+0000b8  bd30              POP      {r4,r5,pc}
+                  |L1.186|
+0000ba  8119              STRH     r1,[r3,#8]            ;172
+0000bc  f3620400          BFI      r4,r2,#0,#1           ;173
+0000c0  741c              STRB     r4,[r3,#0x10]         ;173
+0000c2  bd30              POP      {r4,r5,pc}
+;;;183    
                           ENDP
 
                   apply_regulation PROC
-;;;206    
-;;;207    static void apply_regulation(void)
-0000d8  b570              PUSH     {r4-r6,lr}
-;;;208    {
-;;;209    	uint16_t temp;
-;;;210    	
-;;;211    	// Apply voltage - same for both 5V and 12V channels
-;;;212    	temp = regulation_setting_p -> set_voltage;
-0000da  4dc3              LDR      r5,|L1.1000|
-0000dc  69a8              LDR      r0,[r5,#0x18]  ; regulation_setting_p
-0000de  8840              LDRH     r0,[r0,#2]
-;;;213    	temp /= 5;
-0000e0  2405              MOVS     r4,#5
-0000e2  fbb0f0f4          UDIV     r0,r0,r4
-;;;214    	SetVoltagePWMPeriod(temp);		// FIXME - we are setting not period but duty
-0000e6  f7fffffe          BL       SetVoltagePWMPeriod
-;;;215    	
-;;;216    	// Apply current different for 20A and 40A limits
-;;;217    	temp = regulation_setting_p -> set_current;
-0000ea  69a9              LDR      r1,[r5,#0x18]  ; regulation_setting_p
-0000ec  8a48              LDRH     r0,[r1,#0x12]
-;;;218    	temp = (regulation_setting_p -> current_limit == CURRENT_LIM_HIGH) ? temp / 2 : temp;
-0000ee  7c49              LDRB     r1,[r1,#0x11]
-0000f0  2901              CMP      r1,#1
-0000f2  d100              BNE      |L1.246|
-0000f4  0840              LSRS     r0,r0,#1
-                  |L1.246|
-;;;219    	temp /= 5;
-0000f6  fbb0f0f4          UDIV     r0,r0,r4
-;;;220    	SetCurrentPWMPeriod(temp);		// FIXME - we are setting not period but duty
-0000fa  e8bd4070          POP      {r4-r6,lr}
-0000fe  f7ffbffe          B.W      SetCurrentPWMPeriod
-;;;221    }
-;;;222    
+;;;232    
+;;;233    static void apply_regulation(void)
+0000c4  b570              PUSH     {r4-r6,lr}
+;;;234    {
+;;;235    	uint16_t temp;
+;;;236    	
+;;;237    	// Apply voltage - same for both 5V and 12V channels
+;;;238    	temp = regulation_setting_p->voltage.setting;
+0000c6  4dca              LDR      r5,|L1.1008|
+0000c8  69a8              LDR      r0,[r5,#0x18]  ; regulation_setting_p
+0000ca  8840              LDRH     r0,[r0,#2]
+;;;239    	temp /= 5;
+0000cc  2405              MOVS     r4,#5
+0000ce  fbb0f0f4          UDIV     r0,r0,r4
+;;;240    	SetVoltagePWMPeriod(temp);		// FIXME - we are setting not period but duty
+0000d2  f7fffffe          BL       SetVoltagePWMPeriod
+;;;241    	
+;;;242    	// Apply current different for 20A and 40A limits
+;;;243    	temp = regulation_setting_p->current->setting;
+0000d6  69a8              LDR      r0,[r5,#0x18]  ; regulation_setting_p
+0000d8  6b41              LDR      r1,[r0,#0x34]
+0000da  8808              LDRH     r0,[r1,#0]
+;;;244    	temp = (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH) ? temp / 2 : temp;
+0000dc  7b89              LDRB     r1,[r1,#0xe]
+0000de  0749              LSLS     r1,r1,#29
+0000e0  d500              BPL      |L1.228|
+0000e2  0840              LSRS     r0,r0,#1
+                  |L1.228|
+;;;245    	temp /= 5;
+0000e4  fbb0f0f4          UDIV     r0,r0,r4
+;;;246    	SetCurrentPWMPeriod(temp);		// FIXME - we are setting not period but duty
+0000e8  e8bd4070          POP      {r4-r6,lr}
+0000ec  f7ffbffe          B.W      SetCurrentPWMPeriod
+;;;247    }
+;;;248    
                           ENDP
 
                   Converter_Init PROC
-;;;229    
-;;;230    void Converter_Init(uint8_t default_channel)
-000102  b570              PUSH     {r4-r6,lr}
-;;;231    {
-;;;232    	// Converter is powered off.
-;;;233    	// TODO: add restore from EEPROM
-;;;234    	
-;;;235    	// Common
-;;;236    	channel_5v_setting.CHANNEL = CHANNEL_5V;
-000104  49b9              LDR      r1,|L1.1004|
-000106  2201              MOVS     r2,#1
-000108  700a              STRB     r2,[r1,#0]
-;;;237    	channel_5v_setting.load_state = LOAD_ENABLE;							// dummy - load at 5V channel can not be disabled
-00010a  2300              MOVS     r3,#0
-00010c  704b              STRB     r3,[r1,#1]
-;;;238    	// Voltage
-;;;239    	channel_5v_setting.set_voltage = 5000;
-00010e  f2413288          MOV      r2,#0x1388
-000112  804a              STRH     r2,[r1,#2]
-;;;240    	channel_5v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_5V_CHANNEL;			// Maximum voltage setting for channel
-000114  0052              LSLS     r2,r2,#1
-000116  808a              STRH     r2,[r1,#4]
-;;;241    	channel_5v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_5V_CHANNEL;			// Minimum voltage setting for channel
-000118  80cb              STRH     r3,[r1,#6]
-;;;242    	channel_5v_setting.soft_max_voltage = 8000;
-00011a  f44f54fa          MOV      r4,#0x1f40
-00011e  810c              STRH     r4,[r1,#8]
-;;;243    	channel_5v_setting.soft_min_voltage = 3000;
-000120  f64034b8          MOV      r4,#0xbb8
-000124  814c              STRH     r4,[r1,#0xa]
-;;;244    	channel_5v_setting.SOFT_MAX_VOLTAGE_LIMIT = 10000;						// Maximum soft voltage limit
-000126  818a              STRH     r2,[r1,#0xc]
-;;;245    	channel_5v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-000128  81cb              STRH     r3,[r1,#0xe]
-;;;246    	channel_5v_setting.soft_voltage_range_enable = 0;
-00012a  740b              STRB     r3,[r1,#0x10]
-;;;247    	// Current
-;;;248    	channel_5v_setting.current_limit = CURRENT_LIM_LOW;
-00012c  744b              STRB     r3,[r1,#0x11]
-;;;249    	channel_5v_setting.set_current = 4000;
-00012e  f44f627a          MOV      r2,#0xfa0
-000132  824a              STRH     r2,[r1,#0x12]
-;;;250    	channel_5v_setting.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
-000134  f6446420          MOV      r4,#0x4e20
-000138  828c              STRH     r4,[r1,#0x14]
-;;;251    	channel_5v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
-00013a  82cb              STRH     r3,[r1,#0x16]
-;;;252    	channel_5v_setting.HIGH_LIM_MAX_CURRENT = CONV_HIGH_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
-00013c  0062              LSLS     r2,r4,#1
-00013e  830a              STRH     r2,[r1,#0x18]
-;;;253    	channel_5v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// High limit (40A) min current setting
-000140  834b              STRH     r3,[r1,#0x1a]
-;;;254    	channel_5v_setting.soft_max_current = 37000;
-000142  f2490588          MOV      r5,#0x9088
-000146  838d              STRH     r5,[r1,#0x1c]
-;;;255    	channel_5v_setting.soft_min_current = 30000;
-000148  f2475530          MOV      r5,#0x7530
-00014c  83cd              STRH     r5,[r1,#0x1e]
-;;;256    	channel_5v_setting.SOFT_MAX_CURRENT_LIMIT = 40000;						// Maximum soft current limit
-00014e  840a              STRH     r2,[r1,#0x20]
-;;;257    	channel_5v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-000150  844b              STRH     r3,[r1,#0x22]
-;;;258    	channel_5v_setting.soft_current_range_enable = 0;
-000152  f8813024          STRB     r3,[r1,#0x24]
+;;;254    
+;;;255    void Converter_Init(uint8_t default_channel)
+0000f0  e92d41f0          PUSH     {r4-r8,lr}
+;;;256    {
+;;;257    	// Converter is powered off.
+;;;258    	// TODO: add restore from EEPROM
 ;;;259    	
-;;;260    	
+;;;260    	//---------- Channel 5V ------------//
 ;;;261    	
 ;;;262    	// Common
-;;;263    	channel_12v_setting.CHANNEL = CHANNEL_12V;
-000156  f1010226          ADD      r2,r1,#0x26
-00015a  7013              STRB     r3,[r2,#0]
-;;;264    	channel_12v_setting.load_state = LOAD_ENABLE;
-00015c  7053              STRB     r3,[r2,#1]
-;;;265    	// Voltage
-;;;266    	channel_12v_setting.set_voltage = 12000;
-00015e  f64265e0          MOV      r5,#0x2ee0
-000162  8055              STRH     r5,[r2,#2]
-;;;267    	channel_12v_setting.MAX_VOLTAGE = CONV_MAX_VOLTAGE_12V_CHANNEL;			// Maximum voltage setting for channel
-000164  8094              STRH     r4,[r2,#4]
-;;;268    	channel_12v_setting.MIN_VOLTAGE = CONV_MIN_VOLTAGE_12V_CHANNEL;			// Minimum voltage setting for channel
-000166  80d3              STRH     r3,[r2,#6]
-;;;269    	channel_12v_setting.soft_max_voltage = 16000;
-000168  f44f557a          MOV      r5,#0x3e80
-00016c  8115              STRH     r5,[r2,#8]
-;;;270    	channel_12v_setting.soft_min_voltage = 1500;
-00016e  f24055dc          MOV      r5,#0x5dc
-000172  8155              STRH     r5,[r2,#0xa]
-;;;271    	channel_12v_setting.SOFT_MAX_VOLTAGE_LIMIT = 20000;						// Maximum soft voltage limit
-000174  8194              STRH     r4,[r2,#0xc]
-;;;272    	channel_12v_setting.SOFT_MIN_VOLTAGE_LIMIT = 0;							// Minimum soft voltage limit
-000176  81d3              STRH     r3,[r2,#0xe]
-;;;273    	channel_12v_setting.soft_voltage_range_enable = 0;
-000178  7413              STRB     r3,[r2,#0x10]
-;;;274    	// Current
-;;;275    	channel_12v_setting.current_limit = CURRENT_LIM_LOW;
-00017a  7453              STRB     r3,[r2,#0x11]
-;;;276    	channel_12v_setting.set_current = 2000;
-00017c  f44f65fa          MOV      r5,#0x7d0
-000180  8255              STRH     r5,[r2,#0x12]
-;;;277    	channel_12v_setting.LOW_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;		// Low limit (20A) maximum current setting
-000182  8294              STRH     r4,[r2,#0x14]
-;;;278    	channel_12v_setting.LOW_LIM_MIN_CURRENT = CONV_MIN_CURRENT;				// Low limit (20A) min current setting
-000184  82d3              STRH     r3,[r2,#0x16]
-;;;279    	channel_12v_setting.HIGH_LIM_MAX_CURRENT = CONV_LOW_LIM_MAX_CURRENT;	// High limit (40A) maximum current setting
-000186  8314              STRH     r4,[r2,#0x18]
-;;;280    	channel_12v_setting.HIGH_LIM_MIN_CURRENT = CONV_MIN_CURRENT;			// High limit (40A) min current setting
-000188  8353              STRH     r3,[r2,#0x1a]
-;;;281    	channel_12v_setting.soft_max_current = 18000;
-00018a  f2446550          MOV      r5,#0x4650
-00018e  8395              STRH     r5,[r2,#0x1c]
-;;;282    	channel_12v_setting.soft_min_current = 6000;
-000190  f2417570          MOV      r5,#0x1770
-000194  83d5              STRH     r5,[r2,#0x1e]
-;;;283    	channel_12v_setting.SOFT_MAX_CURRENT_LIMIT = 20000;						// Maximum soft current limit
-000196  8414              STRH     r4,[r2,#0x20]
-;;;284    	channel_12v_setting.SOFT_MIN_CURRENT_LIMIT = 0;							// Minimum soft current limit
-000198  8453              STRH     r3,[r2,#0x22]
-;;;285    	channel_12v_setting.soft_current_range_enable = 0;
-00019a  f8823024          STRB     r3,[r2,#0x24]
-;;;286    	
-;;;287    	// Select default channel
-;;;288    	if (default_channel == CHANNEL_12V)
-;;;289    		regulation_setting_p = &channel_12v_setting;
-00019e  4c92              LDR      r4,|L1.1000|
-0001a0  b188              CBZ      r0,|L1.454|
-;;;290    	else
-;;;291    		regulation_setting_p = &channel_5v_setting;
-0001a2  61a1              STR      r1,[r4,#0x18]  ; regulation_setting_p
-                  |L1.420|
-;;;292    	
-;;;293    	
-;;;294    	// Apply controls
-;;;295    	__disable_irq();
-0001a4  b672              CPSID    i
-;;;296    	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
-0001a6  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0001a8  7800              LDRB     r0,[r0,#0]
-0001aa  f7fffffe          BL       SetFeedbackChannel
-;;;297    	__enable_irq();
-0001ae  b662              CPSIE    i
-;;;298    	SetCurrentLimit(regulation_setting_p->current_limit);
-0001b0  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0001b2  7c40              LDRB     r0,[r0,#0x11]
-0001b4  f7fffffe          BL       SetCurrentLimit
-;;;299    	SetOutputLoad(regulation_setting_p->load_state);
-0001b8  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0001ba  7840              LDRB     r0,[r0,#1]
-0001bc  f7fffffe          BL       SetOutputLoad
-;;;300    	apply_regulation();										// Apply voltage and current settings
-0001c0  e8bd4070          POP      {r4-r6,lr}
-0001c4  e7fe              B        apply_regulation
-                  |L1.454|
-0001c6  61a2              STR      r2,[r4,#0x18]         ;289  ; regulation_setting_p
-0001c8  e7ec              B        |L1.420|
-;;;301    }
-;;;302    
+;;;263    	channel_5v.CHANNEL = CHANNEL_5V;
+0000f4  49bf              LDR      r1,|L1.1012|
+0000f6  780a              LDRB     r2,[r1,#0]  ; channel_5v
+0000f8  f0420201          ORR      r2,r2,#1
+;;;264    	channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
+0000fc  f0220202          BIC      r2,r2,#2
+;;;265    	channel_5v.overload_protection_enable = 1;									// TODO: EEPROM
+000100  f0420204          ORR      r2,r2,#4
+000104  700a              STRB     r2,[r1,#0]
+;;;266    	channel_5v.overload_timeout = 1;											// TODO: EEPROM
+000106  2701              MOVS     r7,#1
+000108  704f              STRB     r7,[r1,#1]
+;;;267    	
+;;;268    	// Voltage
+;;;269    	channel_5v.voltage.setting = 5000;											// TODO: EEPROM
+00010a  f2413288          MOV      r2,#0x1388
+00010e  804a              STRH     r2,[r1,#2]
+;;;270    	channel_5v.voltage.MINIMUM = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage setting for channel
+000110  2300              MOVS     r3,#0
+000112  808b              STRH     r3,[r1,#4]
+;;;271    	channel_5v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage setting for channel
+000114  0052              LSLS     r2,r2,#1
+000116  80ca              STRH     r2,[r1,#6]
+;;;272    	channel_5v.voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;					// TODO: EEPROM
+000118  810b              STRH     r3,[r1,#8]
+;;;273    	channel_5v.voltage.limit_high = CONV_MAX_VOLTAGE_5V_CHANNEL;				// TODO: EEPROM
+00011a  814a              STRH     r2,[r1,#0xa]
+;;;274    	channel_5v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage limit setting
+00011c  818b              STRH     r3,[r1,#0xc]
+;;;275    	channel_5v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage limit setting
+00011e  81ca              STRH     r2,[r1,#0xe]
+;;;276    	channel_5v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+000120  7c0a              LDRB     r2,[r1,#0x10]  ; channel_5v
+000122  f0220201          BIC      r2,r2,#1
+;;;277    	channel_5v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+000126  f0220202          BIC      r2,r2,#2
+00012a  740a              STRB     r2,[r1,#0x10]
+;;;278    	
+;;;279    	// Current
+;;;280    	channel_5v.current_low_range.RANGE = 0;										// LOW current range
+00012c  f8912020          LDRB     r2,[r1,#0x20]  ; channel_5v
+000130  f0220204          BIC      r2,r2,#4
+;;;281    	channel_5v.current_low_range.setting = 4000;								// TODO: EEPROM
+000134  f44f657a          MOV      r5,#0xfa0
+000138  824d              STRH     r5,[r1,#0x12]
+;;;282    	channel_5v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+00013a  828b              STRH     r3,[r1,#0x14]
+;;;283    	channel_5v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+00013c  f6446420          MOV      r4,#0x4e20
+000140  82cc              STRH     r4,[r1,#0x16]
+;;;284    	channel_5v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+000142  830b              STRH     r3,[r1,#0x18]
+;;;285    	channel_5v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+000144  834c              STRH     r4,[r1,#0x1a]
+;;;286    	channel_5v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+000146  838b              STRH     r3,[r1,#0x1c]
+;;;287    	channel_5v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+000148  83cc              STRH     r4,[r1,#0x1e]
+;;;288    	channel_5v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+00014a  f0220201          BIC      r2,r2,#1
+;;;289    	channel_5v.current_low_range.enable_high_limit = 0;							// TODO: EEPROM
+00014e  f0220202          BIC      r2,r2,#2
+000152  f8812020          STRB     r2,[r1,#0x20]
+;;;290    	
+;;;291    	channel_5v.current_high_range.RANGE = 1;									// HIGH current range
+000156  f8912030          LDRB     r2,[r1,#0x30]  ; channel_5v
+00015a  f0420604          ORR      r6,r2,#4
+;;;292    	channel_5v.current_high_range.setting = 4000;								// TODO: EEPROM
+00015e  844d              STRH     r5,[r1,#0x22]
+;;;293    	channel_5v.current_high_range.MINIMUM = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+000160  848b              STRH     r3,[r1,#0x24]
+;;;294    	channel_5v.current_high_range.MAXIMUM = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+000162  0062              LSLS     r2,r4,#1
+000164  84ca              STRH     r2,[r1,#0x26]
+;;;295    	channel_5v.current_high_range.limit_low = CONV_HIGH_CURRENT_RANGE_MIN;		// TODO: EEPROM
+000166  850b              STRH     r3,[r1,#0x28]
+;;;296    	channel_5v.current_high_range.limit_high = CONV_HIGH_CURRENT_RANGE_MAX;		// TODO: EEPROM
+000168  854a              STRH     r2,[r1,#0x2a]
+;;;297    	channel_5v.current_high_range.LIMIT_MIN = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current limit setting
+00016a  858b              STRH     r3,[r1,#0x2c]
+;;;298    	channel_5v.current_high_range.LIMIT_MAX = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current limit setting
+00016c  85ca              STRH     r2,[r1,#0x2e]
+;;;299    	channel_5v.current_high_range.enable_low_limit = 0;							// TODO: EEPROM
+00016e  f0260201          BIC      r2,r6,#1
+;;;300    	channel_5v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
+000172  f0220202          BIC      r2,r2,#2
+000176  f8812030          STRB     r2,[r1,#0x30]
+;;;301    
+;;;302    	channel_5v.current = &channel_5v.current_low_range;
+00017a  f1010212          ADD      r2,r1,#0x12
+00017e  634a              STR      r2,[r1,#0x34]  ; channel_5v
+;;;303    	
+;;;304    	//---------- Channel 12V -----------//
+;;;305    	
+;;;306    	// Common
+;;;307    	channel_12v.CHANNEL = CHANNEL_12V;
+000180  3226              ADDS     r2,r2,#0x26
+000182  7816              LDRB     r6,[r2,#0]  ; channel_12v
+000184  f0260601          BIC      r6,r6,#1
+;;;308    	channel_12v.load_state = LOAD_ENABLE;										
+000188  f0260602          BIC      r6,r6,#2
+;;;309    	channel_12v.overload_protection_enable = 1;									// TODO: EEPROM
+00018c  f0460604          ORR      r6,r6,#4
+000190  7016              STRB     r6,[r2,#0]
+;;;310    	channel_12v.overload_timeout = 1;											// TODO: EEPROM
+000192  7057              STRB     r7,[r2,#1]
+;;;311    	
+;;;312    	// Voltage
+;;;313    	channel_12v.voltage.setting = 12000;										// TODO: EEPROM
+000194  f64266e0          MOV      r6,#0x2ee0
+000198  8056              STRH     r6,[r2,#2]
+;;;314    	channel_12v.voltage.MINIMUM = CONV_MIN_VOLTAGE_12V_CHANNEL;					// Minimum voltage setting for channel
+00019a  8093              STRH     r3,[r2,#4]
+;;;315    	channel_12v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_12V_CHANNEL;					// Maximum voltage setting for channel
+00019c  80d4              STRH     r4,[r2,#6]
+;;;316    	channel_12v.voltage.limit_low = CONV_MIN_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+00019e  8113              STRH     r3,[r2,#8]
+;;;317    	channel_12v.voltage.limit_high = CONV_MAX_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+0001a0  8154              STRH     r4,[r2,#0xa]
+;;;318    	channel_12v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_12V_CHANNEL;				// Minimum voltage limit setting
+0001a2  8193              STRH     r3,[r2,#0xc]
+;;;319    	channel_12v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting
+0001a4  81d4              STRH     r4,[r2,#0xe]
+;;;320    	channel_12v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+0001a6  7c16              LDRB     r6,[r2,#0x10]  ; channel_12v
+0001a8  f0260601          BIC      r6,r6,#1
+;;;321    	channel_12v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+0001ac  f0260602          BIC      r6,r6,#2
+0001b0  7416              STRB     r6,[r2,#0x10]
+;;;322    	
+;;;323    	// Current
+;;;324    	channel_12v.current_low_range.RANGE = 0;									// LOW current range
+0001b2  f8926020          LDRB     r6,[r2,#0x20]  ; channel_12v
+0001b6  f0260604          BIC      r6,r6,#4
+;;;325    	channel_12v.current_low_range.setting = 2000;								// TODO: EEPROM
+0001ba  106f              ASRS     r7,r5,#1
+0001bc  8257              STRH     r7,[r2,#0x12]
+;;;326    	channel_12v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+0001be  8293              STRH     r3,[r2,#0x14]
+;;;327    	channel_12v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+0001c0  82d4              STRH     r4,[r2,#0x16]
+;;;328    	channel_12v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+0001c2  8313              STRH     r3,[r2,#0x18]
+;;;329    	channel_12v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+0001c4  8354              STRH     r4,[r2,#0x1a]
+;;;330    	channel_12v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+0001c6  8393              STRH     r3,[r2,#0x1c]
+;;;331    	channel_12v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+0001c8  83d4              STRH     r4,[r2,#0x1e]
+;;;332    	channel_12v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+0001ca  f0260601          BIC      r6,r6,#1
+;;;333    	channel_12v.current_low_range.enable_high_limit = 0;						// TODO: EEPROM
+0001ce  f0260602          BIC      r6,r6,#2
+0001d2  f8826020          STRB     r6,[r2,#0x20]
+;;;334    	
+;;;335    	// 12V channel cannot provide currents > 20A (low range)
+;;;336    	channel_12v.current_high_range.RANGE = 1;									// HIGH current range
+0001d6  f8926030          LDRB     r6,[r2,#0x30]  ; channel_12v
+0001da  f0460604          ORR      r6,r6,#4
+;;;337    	channel_12v.current_high_range.setting = 4000;								// TODO: EEPROM
+0001de  8455              STRH     r5,[r2,#0x22]
+;;;338    	channel_12v.current_high_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+0001e0  8493              STRH     r3,[r2,#0x24]
+;;;339    	channel_12v.current_high_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+0001e2  84d4              STRH     r4,[r2,#0x26]
+;;;340    	channel_12v.current_high_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+0001e4  8513              STRH     r3,[r2,#0x28]
+;;;341    	channel_12v.current_high_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+0001e6  8554              STRH     r4,[r2,#0x2a]
+;;;342    	channel_12v.current_high_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+0001e8  8593              STRH     r3,[r2,#0x2c]
+;;;343    	channel_12v.current_high_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+0001ea  85d4              STRH     r4,[r2,#0x2e]
+;;;344    	channel_12v.current_high_range.enable_low_limit = 0;						// TODO: EEPROM
+0001ec  f0260301          BIC      r3,r6,#1
+;;;345    	channel_12v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
+0001f0  f0230302          BIC      r3,r3,#2
+0001f4  f8823030          STRB     r3,[r2,#0x30]
+;;;346    
+;;;347    	channel_12v.current = &channel_12v.current_low_range;
+0001f8  f101034a          ADD      r3,r1,#0x4a
+0001fc  6353              STR      r3,[r2,#0x34]  ; channel_12v
+;;;348    	
+;;;349    	
+;;;350    	// Select default channel
+;;;351    	if (default_channel == CHANNEL_12V)
+;;;352    		regulation_setting_p = &channel_12v;
+0001fe  4c7c              LDR      r4,|L1.1008|
+000200  b1c0              CBZ      r0,|L1.564|
+;;;353    	else
+;;;354    		regulation_setting_p = &channel_5v;
+000202  61a1              STR      r1,[r4,#0x18]  ; regulation_setting_p
+                  |L1.516|
+;;;355    	
+;;;356    	
+;;;357    	// Apply controls
+;;;358    	__disable_irq();
+000204  b672              CPSID    i
+;;;359    	SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+000206  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+000208  7800              LDRB     r0,[r0,#0]
+00020a  f3c00000          UBFX     r0,r0,#0,#1
+00020e  f7fffffe          BL       SetFeedbackChannel
+;;;360    	__enable_irq();
+000212  b662              CPSIE    i
+;;;361    	SetCurrentRange(regulation_setting_p->current->RANGE);
+000214  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+000216  6b40              LDR      r0,[r0,#0x34]
+000218  7b80              LDRB     r0,[r0,#0xe]
+00021a  f3c00080          UBFX     r0,r0,#2,#1
+00021e  f7fffffe          BL       SetCurrentRange
+;;;362    	SetOutputLoad(regulation_setting_p->load_state);
+000222  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+000224  7800              LDRB     r0,[r0,#0]
+000226  f3c00040          UBFX     r0,r0,#1,#1
+00022a  f7fffffe          BL       SetOutputLoad
+;;;363    	apply_regulation();										// Apply voltage and current settings
+00022e  e8bd41f0          POP      {r4-r8,lr}
+000232  e7fe              B        apply_regulation
+                  |L1.564|
+000234  61a2              STR      r2,[r4,#0x18]         ;352  ; regulation_setting_p
+000236  e7e5              B        |L1.516|
+;;;364    }
+;;;365    
                           ENDP
 
                   analyzeAndResetHWErrorState PROC
-;;;306    
-;;;307    static uint32_t analyzeAndResetHWErrorState(void)
-0001ca  4887              LDR      r0,|L1.1000|
-;;;308    {
-;;;309    	uint32_t state_flags;
-;;;310    	if (state_HWProcess & STATE_HW_OVERLOADED)		
-0001cc  7801              LDRB     r1,[r0,#0]  ; state_HWProcess
-0001ce  0749              LSLS     r1,r1,#29
-0001d0  d506              BPL      |L1.480|
-;;;311    	{
-;;;312    		ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;		
-0001d2  2104              MOVS     r1,#4
-0001d4  7041              STRB     r1,[r0,#1]
-                  |L1.470|
-;;;313    		while(ctrl_HWProcess);
-0001d6  7841              LDRB     r1,[r0,#1]  ; ctrl_HWProcess
-0001d8  2900              CMP      r1,#0
-0001da  d1fc              BNE      |L1.470|
-;;;314    		state_flags = CONV_OVERLOAD;	
-0001dc  2010              MOVS     r0,#0x10
-;;;315    	}
-;;;316    	// Add more if necessary
-;;;317    	else
-;;;318    	{
-;;;319    		state_flags = 0;
-;;;320    	}
-;;;321    	return state_flags;
-;;;322    }
-0001de  4770              BX       lr
-                  |L1.480|
-0001e0  2000              MOVS     r0,#0                 ;319
-0001e2  4770              BX       lr
-;;;323    
+;;;444    
+;;;445    static uint32_t analyzeAndResetHWErrorState(void)
+000238  486d              LDR      r0,|L1.1008|
+;;;446    {
+;;;447    	uint32_t state_flags;
+;;;448    	if (state_HWProcess & STATE_HW_OVERLOADED)		
+00023a  7801              LDRB     r1,[r0,#0]  ; state_HWProcess
+00023c  0749              LSLS     r1,r1,#29
+00023e  d506              BPL      |L1.590|
+;;;449    	{
+;;;450    		ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;		
+000240  2104              MOVS     r1,#4
+000242  7041              STRB     r1,[r0,#1]
+                  |L1.580|
+;;;451    		while(ctrl_HWProcess);
+000244  7841              LDRB     r1,[r0,#1]  ; ctrl_HWProcess
+000246  2900              CMP      r1,#0
+000248  d1fc              BNE      |L1.580|
+;;;452    		state_flags = CONV_OVERLOAD;	
+00024a  2010              MOVS     r0,#0x10
+;;;453    	}
+;;;454    	// Add more if necessary
+;;;455    	else
+;;;456    	{
+;;;457    		state_flags = 0;
+;;;458    	}
+;;;459    	return state_flags;
+;;;460    }
+00024c  4770              BX       lr
+                  |L1.590|
+00024e  2000              MOVS     r0,#0                 ;457
+000250  4770              BX       lr
+;;;461    
                           ENDP
 
                   disableConverterAndCheckHWState PROC
-;;;324    static uint32_t disableConverterAndCheckHWState(void)
-0001e4  4880              LDR      r0,|L1.1000|
-;;;325    {
-;;;326    	uint32_t new_state;
-;;;327    	
-;;;328    #if CMD_HAS_PRIORITY == 1
-;;;329    	// If error status is generated simultaneously with OFF command,
-;;;330    	// converter will be turned off and no error status will be shown
-;;;331    	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
-0001e6  2106              MOVS     r1,#6
-0001e8  7041              STRB     r1,[r0,#1]
-                  |L1.490|
-;;;332    	while(ctrl_HWProcess);
-0001ea  7841              LDRB     r1,[r0,#1]  ; ctrl_HWProcess
-0001ec  2900              CMP      r1,#0
-0001ee  d1fc              BNE      |L1.490|
-;;;333    	new_state = CONV_OFF;		
-0001f0  2001              MOVS     r0,#1
-;;;334    	
-;;;335    #elif ERROR_HAS_PRIORITY == 1
-;;;336    	// If error status is generated simultaneously with OFF command,
-;;;337    	// converter will be turned off, but error status will be indicated
-;;;338    	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
-;;;339    	while(ctrl_HWProcess);
-;;;340    	new_state = CONV_OFF;	
-;;;341    	new_state |= analyzeAndResetHWErrorState();	
-;;;342    						
-;;;343    #endif
-;;;344    	return new_state;
-;;;345    }
-0001f2  4770              BX       lr
-;;;346    
+;;;462    static uint32_t disableConverterAndCheckHWState(void)
+000252  4867              LDR      r0,|L1.1008|
+;;;463    {
+;;;464    	uint32_t new_state;
+;;;465    	
+;;;466    #if CMD_HAS_PRIORITY == 1
+;;;467    	// If error status is generated simultaneously with OFF command,
+;;;468    	// converter will be turned off and no error status will be shown
+;;;469    	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
+000254  2106              MOVS     r1,#6
+000256  7041              STRB     r1,[r0,#1]
+                  |L1.600|
+;;;470    	while(ctrl_HWProcess);
+000258  7841              LDRB     r1,[r0,#1]  ; ctrl_HWProcess
+00025a  2900              CMP      r1,#0
+00025c  d1fc              BNE      |L1.600|
+;;;471    	new_state = CONV_OFF;		
+00025e  2001              MOVS     r0,#1
+;;;472    	
+;;;473    #elif ERROR_HAS_PRIORITY == 1
+;;;474    	// If error status is generated simultaneously with OFF command,
+;;;475    	// converter will be turned off, but error status will be indicated
+;;;476    	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
+;;;477    	while(ctrl_HWProcess);
+;;;478    	new_state = CONV_OFF;	
+;;;479    	new_state |= analyzeAndResetHWErrorState();	
+;;;480    						
+;;;481    #endif
+;;;482    	return new_state;
+;;;483    }
+000260  4770              BX       lr
+;;;484    
                           ENDP
 
                   vTaskConverter PROC
-;;;353    //---------------------------------------------//
-;;;354    void vTaskConverter(void *pvParameters) 
-0001f4  b086              SUB      sp,sp,#0x18
-;;;355    {
-;;;356    	conveter_message_t msg;
-;;;357    	
-;;;358    	uint8_t err_code;
-;;;359    	uint32_t adc_msg;
-;;;360    	uint32_t sound_msg;
-;;;361    	
-;;;362    	// Initialize
-;;;363    	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
-0001f6  2200              MOVS     r2,#0
-0001f8  210c              MOVS     r1,#0xc
-0001fa  2005              MOVS     r0,#5
-0001fc  f7fffffe          BL       xQueueGenericCreate
-000200  4c79              LDR      r4,|L1.1000|
-000202  61e0              STR      r0,[r4,#0x1c]  ; xQueueConverter
-;;;364    	if( xQueueConverter == 0 )
-000204  b918              CBNZ     r0,|L1.526|
-                  |L1.518|
-;;;365    	{
-;;;366    		// Queue was not created and must not be used.
-;;;367    		while(1);
-000206  e7fe              B        |L1.518|
-                  |L1.520|
-;;;368    	}
-;;;369    	
-;;;370    	// Wait until task is started by dispatcher
-;;;371    	//vTaskSuspend(vTaskConverter);			
-;;;372    	
-;;;373    	while (taskConverter_Enable == 0)
-;;;374    		vTaskDelay(5);
-000208  2005              MOVS     r0,#5
-00020a  f7fffffe          BL       vTaskDelay
-                  |L1.526|
-00020e  78e0              LDRB     r0,[r4,#3]            ;373  ; taskConverter_Enable
-000210  2800              CMP      r0,#0                 ;373
-000212  d0f9              BEQ      |L1.520|
-;;;375    	
-;;;376    	xQueueReset(xQueueConverter);
-000214  2100              MOVS     r1,#0
-000216  69e0              LDR      r0,[r4,#0x1c]  ; xQueueConverter
-000218  f7fffffe          BL       xQueueGenericReset
-;;;377    	
-;;;378    	
-;;;379    	while(1)
-;;;380    	{
-;;;381    		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-;;;382    	
-;;;383    		// CHECKME - Possibly need to add a mechanism to protect against illegal messages ?
-;;;384    		// For example, GUI sends message to set new voltage, but converter has switched channel by comand from UART.
-;;;385    		// In this case, command from GUI is old and bad and should be ignored somehow.
-;;;386    
-;;;387    		switch (msg.type)
-00021c  2608              MOVS     r6,#8
-;;;388    		{
-;;;389    			case CONVERTER_SET_VOLTAGE:
-;;;390    				regulation_setting_p->set_voltage = CheckSetVoltageRange(msg.data_a, &err_code);
-;;;391    				//----- Send notification to GUI -----//
-;;;392    				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
-;;;393    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-00021e  4d74              LDR      r5,|L1.1008|
-;;;394    				//------------------------------------//
-;;;395    				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
-;;;396    					sound_msg = SND_CONV_SETTING_ILLEGAL;
-;;;397    				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MIN))
-;;;398    					sound_msg = SND_CONV_SETTING_ILLEGAL;
-;;;399    				else
-;;;400    					sound_msg = SND_CONV_SETTING_OK;
-;;;401    				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
-;;;402    				xQueueSendToBack(xQueueSound, &sound_msg, 0);
-;;;403    				break;
-;;;404    			case CONVERTER_SET_CURRENT:
-;;;405    				regulation_setting_p->set_current = CheckSetCurrentRange(msg.data_a, &err_code);
-;;;406    				//----- Send notification to GUI -----//
-;;;407    				gui_msg = GUI_TASK_UPDATE_CURRENT_SETTING;
-;;;408    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-;;;409    				//------------------------------------//
-;;;410    				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
-;;;411    					sound_msg = SND_CONV_SETTING_ILLEGAL;
-;;;412    				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
-;;;413    					sound_msg = SND_CONV_SETTING_ILLEGAL;
-;;;414    				else
-;;;415    					sound_msg = SND_CONV_SETTING_OK;
-;;;416    				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
-;;;417    				xQueueSendToBack(xQueueSound, &sound_msg, 0);
-;;;418    				break;
-;;;419    		}
-;;;420    		
-;;;421    
-;;;422    		
-;;;423    		switch(conv_state & CONV_STATE_MASK)
-;;;424    		{
-;;;425    			case CONV_OFF:
-;;;426    				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
-;;;427    				{
-;;;428    					regulation_setting_p = &channel_5v_setting;
-000220  f8dfa1c8          LDR      r10,|L1.1004|
-000224  f8dfb1cc          LDR      r11,|L1.1012|
-000228  f44f3800          MOV      r8,#0x20000           ;396
-;;;429    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-;;;430    					//----- Send notification to GUI -----//
-;;;431    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
-00022c  f04f0911          MOV      r9,#0x11
-000230  2701              MOVS     r7,#1                 ;393
-                  |L1.562|
-000232  2300              MOVS     r3,#0                 ;381
-000234  1e5a              SUBS     r2,r3,#1              ;381
-000236  a903              ADD      r1,sp,#0xc            ;381
-000238  69e0              LDR      r0,[r4,#0x1c]         ;381  ; xQueueConverter
-00023a  f7fffffe          BL       xQueueGenericReceive
-00023e  9803              LDR      r0,[sp,#0xc]          ;387
-000240  2807              CMP      r0,#7                 ;387
-000242  d002              BEQ      |L1.586|
-000244  2808              CMP      r0,#8                 ;387
-000246  d155              BNE      |L1.756|
-000248  e02d              B        |L1.678|
-                  |L1.586|
-00024a  a902              ADD      r1,sp,#8              ;390
-00024c  9804              LDR      r0,[sp,#0x10]         ;390
-00024e  f7fffffe          BL       CheckSetVoltageRange
-000252  69a1              LDR      r1,[r4,#0x18]         ;390  ; regulation_setting_p
-000254  8048              STRH     r0,[r1,#2]            ;390
-000256  2014              MOVS     r0,#0x14              ;392
-000258  6160              STR      r0,[r4,#0x14]         ;392  ; gui_msg
-00025a  4963              LDR      r1,|L1.1000|
-00025c  2301              MOVS     r3,#1                 ;393
-00025e  2200              MOVS     r2,#0                 ;393
-000260  3114              ADDS     r1,r1,#0x14           ;393
-000262  6828              LDR      r0,[r5,#0]            ;393  ; xQueueGUI
-000264  f7fffffe          BL       xQueueGenericSend
-000268  f89d0008          LDRB     r0,[sp,#8]            ;395
-00026c  2802              CMP      r0,#2                 ;395
-00026e  d014              BEQ      |L1.666|
-000270  2803              CMP      r0,#3                 ;395
-000272  d012              BEQ      |L1.666|
-000274  2804              CMP      r0,#4                 ;397
-000276  d013              BEQ      |L1.672|
-000278  2805              CMP      r0,#5                 ;397
-00027a  d011              BEQ      |L1.672|
-00027c  f44f3080          MOV      r0,#0x10000           ;400
-000280  9000              STR      r0,[sp,#0]            ;400
-                  |L1.642|
-000282  9800              LDR      r0,[sp,#0]            ;401
-000284  f0400032          ORR      r0,r0,#0x32           ;401
-000288  9000              STR      r0,[sp,#0]            ;401
-00028a  2300              MOVS     r3,#0                 ;402
-00028c  461a              MOV      r2,r3                 ;402
-00028e  4669              MOV      r1,sp                 ;402
-000290  f8db0000          LDR      r0,[r11,#0]           ;402  ; xQueueSound
-000294  f7fffffe          BL       xQueueGenericSend
-000298  e02c              B        |L1.756|
-                  |L1.666|
-00029a  f8cd8000          STR      r8,[sp,#0]            ;396
-00029e  e7f0              B        |L1.642|
-                  |L1.672|
-0002a0  f8cd8000          STR      r8,[sp,#0]            ;398
-0002a4  e7ed              B        |L1.642|
-                  |L1.678|
-0002a6  a902              ADD      r1,sp,#8              ;405
-0002a8  9804              LDR      r0,[sp,#0x10]         ;405
-0002aa  f7fffffe          BL       CheckSetCurrentRange
-0002ae  69a1              LDR      r1,[r4,#0x18]         ;405  ; regulation_setting_p
-0002b0  8248              STRH     r0,[r1,#0x12]         ;405
-0002b2  2015              MOVS     r0,#0x15              ;407
-0002b4  6160              STR      r0,[r4,#0x14]         ;407  ; gui_msg
-0002b6  494c              LDR      r1,|L1.1000|
-0002b8  2301              MOVS     r3,#1                 ;408
-0002ba  2200              MOVS     r2,#0                 ;408
-0002bc  3114              ADDS     r1,r1,#0x14           ;408
-0002be  6828              LDR      r0,[r5,#0]            ;408  ; xQueueGUI
-0002c0  f7fffffe          BL       xQueueGenericSend
-0002c4  f89d0008          LDRB     r0,[sp,#8]            ;410
-0002c8  2809              CMP      r0,#9                 ;410
-0002ca  d01b              BEQ      |L1.772|
-0002cc  280a              CMP      r0,#0xa               ;410
-0002ce  d019              BEQ      |L1.772|
-0002d0  280b              CMP      r0,#0xb               ;412
-0002d2  d01a              BEQ      |L1.778|
-0002d4  280c              CMP      r0,#0xc               ;412
-0002d6  d018              BEQ      |L1.778|
-0002d8  f44f3080          MOV      r0,#0x10000           ;415
-0002dc  9000              STR      r0,[sp,#0]            ;415
-                  |L1.734|
-0002de  9800              LDR      r0,[sp,#0]            ;416
-0002e0  f0400032          ORR      r0,r0,#0x32           ;416
-0002e4  9000              STR      r0,[sp,#0]            ;416
-0002e6  2300              MOVS     r3,#0                 ;417
-0002e8  461a              MOV      r2,r3                 ;417
-0002ea  4669              MOV      r1,sp                 ;417
-0002ec  f8db0000          LDR      r0,[r11,#0]           ;417  ; xQueueSound
-0002f0  f7fffffe          BL       xQueueGenericSend
-                  |L1.756|
-0002f4  6920              LDR      r0,[r4,#0x10]         ;423  ; conv_state
-0002f6  f000000f          AND      r0,r0,#0xf            ;423
-0002fa  2801              CMP      r0,#1                 ;423
-0002fc  d008              BEQ      |L1.784|
-0002fe  2802              CMP      r0,#2                 ;423
-000300  d118              BNE      |L1.820|
-000302  e069              B        |L1.984|
-                  |L1.772|
-000304  f8cd8000          STR      r8,[sp,#0]            ;411
-000308  e7e9              B        |L1.734|
+;;;491    //---------------------------------------------//
+;;;492    void vTaskConverter(void *pvParameters) 
+000262  b086              SUB      sp,sp,#0x18
+;;;493    {
+;;;494    	conveter_message_t msg;
+;;;495    	
+;;;496    	uint8_t err_code;
+;;;497    	uint32_t adc_msg;
+;;;498    	uint32_t sound_msg;
+;;;499    	
+;;;500    	// Initialize
+;;;501    	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
+000264  2200              MOVS     r2,#0
+000266  210c              MOVS     r1,#0xc
+000268  2005              MOVS     r0,#5
+00026a  f7fffffe          BL       xQueueGenericCreate
+00026e  4c60              LDR      r4,|L1.1008|
+000270  61e0              STR      r0,[r4,#0x1c]  ; xQueueConverter
+;;;502    	if( xQueueConverter == 0 )
+000272  b918              CBNZ     r0,|L1.636|
+                  |L1.628|
+;;;503    	{
+;;;504    		// Queue was not created and must not be used.
+;;;505    		while(1);
+000274  e7fe              B        |L1.628|
+                  |L1.630|
+;;;506    	}
+;;;507    	
+;;;508    	// Wait until task is started by dispatcher
+;;;509    	//vTaskSuspend(vTaskConverter);			
+;;;510    	
+;;;511    	while (taskConverter_Enable == 0)
+;;;512    		vTaskDelay(5);
+000276  2005              MOVS     r0,#5
+000278  f7fffffe          BL       vTaskDelay
+                  |L1.636|
+00027c  78e0              LDRB     r0,[r4,#3]            ;511  ; taskConverter_Enable
+00027e  2800              CMP      r0,#0                 ;511
+000280  d0f9              BEQ      |L1.630|
+;;;513    	
+;;;514    	xQueueReset(xQueueConverter);
+000282  2100              MOVS     r1,#0
+000284  69e0              LDR      r0,[r4,#0x1c]  ; xQueueConverter
+000286  f7fffffe          BL       xQueueGenericReset
+;;;515    	
+;;;516    	
+;;;517    	while(1)
+;;;518    	{
+;;;519    		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
+;;;520    	
+;;;521    		// CHECKME - Possibly need to add a mechanism to protect against illegal messages ?
+;;;522    		// For example, GUI sends message to set new voltage, but converter has switched channel by comand from UART.
+;;;523    		// In this case, command from GUI is old and bad and should be ignored somehow.
+;;;524    
+;;;525    		switch (msg.type)
+;;;526    		{
+;;;527    			case CONVERTER_SET_VOLTAGE:
+;;;528    				regulation_setting_p->voltage.setting = CheckSetVoltageRange(msg.data.a, &err_code);
+;;;529    				//----- Send notification to GUI -----//
+;;;530    				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
+;;;531    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+00028a  4d5b              LDR      r5,|L1.1016|
+;;;532    				//------------------------------------//
+;;;533    				if ((err_code == VCHECK_ABS_MAX) || (err_code == VCHECK_ABS_MIN))
+;;;534    					sound_msg = SND_CONV_SETTING_ILLEGAL;
+;;;535    				else if ((err_code == VCHECK_SOFT_MAX) || (err_code == VCHECK_SOFT_MIN))
+;;;536    					sound_msg = SND_CONV_SETTING_ILLEGAL;
+;;;537    				else
+;;;538    					sound_msg = SND_CONV_SETTING_OK;
+;;;539    				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+;;;540    				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+00028c  f8df916c          LDR      r9,|L1.1020|
+000290  f44f3700          MOV      r7,#0x20000           ;534
+000294  2608              MOVS     r6,#8                 ;525
+000296  f04f0809          MOV      r8,#9                 ;525
+00029a  f04f0a01          MOV      r10,#1                ;531
+                  |L1.670|
+00029e  2300              MOVS     r3,#0                 ;519
+0002a0  1e5a              SUBS     r2,r3,#1              ;519
+0002a2  a903              ADD      r1,sp,#0xc            ;519
+0002a4  69e0              LDR      r0,[r4,#0x1c]         ;519  ; xQueueConverter
+0002a6  f7fffffe          BL       xQueueGenericReceive
+0002aa  9803              LDR      r0,[sp,#0xc]          ;525
+0002ac  2807              CMP      r0,#7                 ;525
+0002ae  d004              BEQ      |L1.698|
+0002b0  2808              CMP      r0,#8                 ;525
+0002b2  d05b              BEQ      |L1.876|
+0002b4  2809              CMP      r0,#9                 ;525
+0002b6  d127              BNE      |L1.776|
+0002b8  e02b              B        |L1.786|
+                  |L1.698|
+0002ba  a902              ADD      r1,sp,#8              ;528
+0002bc  9804              LDR      r0,[sp,#0x10]         ;528
+0002be  f7fffffe          BL       CheckSetVoltageRange
+0002c2  69a1              LDR      r1,[r4,#0x18]         ;528  ; regulation_setting_p
+0002c4  8048              STRH     r0,[r1,#2]            ;528
+0002c6  2006              MOVS     r0,#6                 ;530
+0002c8  6160              STR      r0,[r4,#0x14]         ;530  ; gui_msg
+0002ca  4949              LDR      r1,|L1.1008|
+0002cc  2301              MOVS     r3,#1                 ;531
+0002ce  2200              MOVS     r2,#0                 ;531
+0002d0  3114              ADDS     r1,r1,#0x14           ;531
+0002d2  6828              LDR      r0,[r5,#0]            ;531  ; xQueueGUI
+0002d4  f7fffffe          BL       xQueueGenericSend
+0002d8  f89d0008          LDRB     r0,[sp,#8]            ;533
+0002dc  2802              CMP      r0,#2                 ;533
+0002de  d014              BEQ      |L1.778|
+0002e0  2803              CMP      r0,#3                 ;533
+0002e2  d012              BEQ      |L1.778|
+0002e4  2804              CMP      r0,#4                 ;535
+0002e6  d012              BEQ      |L1.782|
+0002e8  2805              CMP      r0,#5                 ;535
+0002ea  d010              BEQ      |L1.782|
+0002ec  f44f3080          MOV      r0,#0x10000           ;538
+0002f0  9000              STR      r0,[sp,#0]            ;538
+                  |L1.754|
+0002f2  9800              LDR      r0,[sp,#0]            ;539
+0002f4  f0400032          ORR      r0,r0,#0x32           ;539
+0002f8  9000              STR      r0,[sp,#0]            ;539
+0002fa  2300              MOVS     r3,#0
+0002fc  461a              MOV      r2,r3
+0002fe  4669              MOV      r1,sp
+000300  f8d90000          LDR      r0,[r9,#0]  ; xQueueSound
+000304  f7fffffe          BL       xQueueGenericSend
+                  |L1.776|
+;;;541    				break;
+000308  e069              B        |L1.990|
                   |L1.778|
-00030a  f8cd8000          STR      r8,[sp,#0]            ;413
-00030e  e7e6              B        |L1.734|
-                  |L1.784|
-000310  9803              LDR      r0,[sp,#0xc]          ;426
-000312  2803              CMP      r0,#3                 ;426
-000314  d00f              BEQ      |L1.822|
-;;;432    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-;;;433    					//------------------------------------//
-;;;434    					while(ctrl_HWProcess);
-;;;435    					break;
-;;;436    				}
-;;;437    				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
-000316  9803              LDR      r0,[sp,#0xc]
-000318  2804              CMP      r0,#4
-00031a  d01c              BEQ      |L1.854|
-;;;438    				{
-;;;439    					regulation_setting_p = &channel_12v_setting;
-;;;440    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-;;;441    					//----- Send notification to GUI -----//
-;;;442    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
-;;;443    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-;;;444    					//------------------------------------//
-;;;445    					while(ctrl_HWProcess);
-;;;446    					break;
-;;;447    				}
-;;;448    				if (msg.type == SET_CURRENT_LIMIT_20A)
-00031c  9803              LDR      r0,[sp,#0xc]
-00031e  2805              CMP      r0,#5
-000320  d02a              BEQ      |L1.888|
-;;;449    				{
-;;;450    					regulation_setting_p -> current_limit = CURRENT_LIM_LOW;
-;;;451    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-;;;452    					//----- Send notification to GUI -----//
-;;;453    					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
-;;;454    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-;;;455    					//------------------------------------//
-;;;456    					while(ctrl_HWProcess);
-;;;457    					break;
-;;;458    				}
-;;;459    				if (msg.type == SET_CURRENT_LIMIT_40A)
-000322  9803              LDR      r0,[sp,#0xc]
-000324  2806              CMP      r0,#6
-000326  d038              BEQ      |L1.922|
-;;;460    				{
-;;;461    					regulation_setting_p -> current_limit = CURRENT_LIM_HIGH;
-;;;462    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-;;;463    					//----- Send notification to GUI -----//
-;;;464    					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
-;;;465    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-;;;466    					//------------------------------------//
-;;;467    					while(ctrl_HWProcess);
-;;;468    					break;
-;;;469    				}
-;;;470    				if (msg.type == CONVERTER_TURN_OFF)
-000328  9803              LDR      r0,[sp,#0xc]
-00032a  2802              CMP      r0,#2
-00032c  d045              BEQ      |L1.954|
-;;;471    				{
-;;;472    					conv_state = CONV_OFF;			// Reset overload flag
-;;;473    					break;
-;;;474    				}
-;;;475    				if (msg.type == CONVERTER_TURN_ON)
-00032e  9803              LDR      r0,[sp,#0xc]
-000330  2801              CMP      r0,#1
-000332  d044              BEQ      |L1.958|
-                  |L1.820|
-000334  e0ac              B        |L1.1168|
-                  |L1.822|
-000336  f8c4a018          STR      r10,[r4,#0x18]        ;428  ; regulation_setting_p
-00033a  7066              STRB     r6,[r4,#1]            ;429
-00033c  f8c49014          STR      r9,[r4,#0x14]         ;431  ; gui_msg
-000340  4929              LDR      r1,|L1.1000|
-000342  2301              MOVS     r3,#1                 ;432
-000344  2200              MOVS     r2,#0                 ;432
-000346  3114              ADDS     r1,r1,#0x14           ;432
-000348  6828              LDR      r0,[r5,#0]            ;432  ; xQueueGUI
-00034a  f7fffffe          BL       xQueueGenericSend
-                  |L1.846|
-00034e  7860              LDRB     r0,[r4,#1]            ;434  ; ctrl_HWProcess
-000350  2800              CMP      r0,#0                 ;434
-000352  d1fc              BNE      |L1.846|
-000354  e09c              B        |L1.1168|
-                  |L1.854|
-000356  4825              LDR      r0,|L1.1004|
-000358  3026              ADDS     r0,r0,#0x26           ;439
-00035a  61a0              STR      r0,[r4,#0x18]         ;439  ; regulation_setting_p
-00035c  7066              STRB     r6,[r4,#1]            ;440
-00035e  f8c49014          STR      r9,[r4,#0x14]         ;442  ; gui_msg
-000362  4921              LDR      r1,|L1.1000|
-000364  2301              MOVS     r3,#1                 ;443
-000366  2200              MOVS     r2,#0                 ;443
-000368  3114              ADDS     r1,r1,#0x14           ;443
-00036a  6828              LDR      r0,[r5,#0]            ;443  ; xQueueGUI
-00036c  f7fffffe          BL       xQueueGenericSend
-                  |L1.880|
-000370  7860              LDRB     r0,[r4,#1]            ;445  ; ctrl_HWProcess
-000372  2800              CMP      r0,#0                 ;445
-000374  d1fc              BNE      |L1.880|
-000376  e08b              B        |L1.1168|
-                  |L1.888|
-000378  69a1              LDR      r1,[r4,#0x18]         ;450  ; regulation_setting_p
-00037a  2000              MOVS     r0,#0                 ;450
-00037c  7448              STRB     r0,[r1,#0x11]         ;450
-00037e  7066              STRB     r6,[r4,#1]            ;451
-000380  2013              MOVS     r0,#0x13              ;453
-000382  6160              STR      r0,[r4,#0x14]         ;453  ; gui_msg
-000384  4918              LDR      r1,|L1.1000|
-000386  2301              MOVS     r3,#1                 ;454
-000388  2200              MOVS     r2,#0                 ;454
-00038a  3114              ADDS     r1,r1,#0x14           ;454
-00038c  6828              LDR      r0,[r5,#0]            ;454  ; xQueueGUI
+00030a  9700              STR      r7,[sp,#0]            ;534
+00030c  e7f1              B        |L1.754|
+                  |L1.782|
+00030e  9700              STR      r7,[sp,#0]            ;536
+000310  e7ef              B        |L1.754|
+                  |L1.786|
+;;;542    			case CONVERTER_SET_CURRENT:
+;;;543    				regulation_setting_p->current->setting = CheckSetCurrentRange(msg.data.a, &err_code);
+000312  a902              ADD      r1,sp,#8
+000314  9804              LDR      r0,[sp,#0x10]
+000316  f7fffffe          BL       CheckSetCurrentRange
+00031a  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
+00031c  6b49              LDR      r1,[r1,#0x34]
+00031e  8008              STRH     r0,[r1,#0]
+;;;544    				//----- Send notification to GUI -----//
+;;;545    				gui_msg = GUI_TASK_UPDATE_CURRENT_SETTING;
+000320  2007              MOVS     r0,#7
+000322  6160              STR      r0,[r4,#0x14]  ; gui_msg
+;;;546    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+000324  4932              LDR      r1,|L1.1008|
+000326  2301              MOVS     r3,#1
+000328  2200              MOVS     r2,#0
+00032a  3114              ADDS     r1,r1,#0x14
+00032c  6828              LDR      r0,[r5,#0]  ; xQueueGUI
+00032e  f7fffffe          BL       xQueueGenericSend
+;;;547    				//------------------------------------//
+;;;548    				if ((err_code == CCHECK_ABS_MAX) || (err_code == CCHECK_ABS_MIN))
+000332  f89d0008          LDRB     r0,[sp,#8]
+000336  2809              CMP      r0,#9
+000338  d014              BEQ      |L1.868|
+00033a  280a              CMP      r0,#0xa
+00033c  d012              BEQ      |L1.868|
+;;;549    					sound_msg = SND_CONV_SETTING_ILLEGAL;
+;;;550    				else if ((err_code == CCHECK_SOFT_MAX) || (err_code == CCHECK_SOFT_MIN))
+00033e  280b              CMP      r0,#0xb
+000340  d012              BEQ      |L1.872|
+000342  280c              CMP      r0,#0xc
+000344  d010              BEQ      |L1.872|
+;;;551    					sound_msg = SND_CONV_SETTING_ILLEGAL;
+;;;552    				else
+;;;553    					sound_msg = SND_CONV_SETTING_OK;
+000346  f44f3080          MOV      r0,#0x10000
+00034a  9000              STR      r0,[sp,#0]
+                  |L1.844|
+;;;554    				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+00034c  9800              LDR      r0,[sp,#0]
+00034e  f0400032          ORR      r0,r0,#0x32
+000352  9000              STR      r0,[sp,#0]
+;;;555    				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+000354  2300              MOVS     r3,#0
+000356  461a              MOV      r2,r3
+000358  4669              MOV      r1,sp
+00035a  f8d90000          LDR      r0,[r9,#0]  ; xQueueSound
+00035e  f7fffffe          BL       xQueueGenericSend
+;;;556    				break;
+000362  e03c              B        |L1.990|
+                  |L1.868|
+000364  9700              STR      r7,[sp,#0]            ;549
+000366  e7f1              B        |L1.844|
+                  |L1.872|
+000368  9700              STR      r7,[sp,#0]            ;551
+00036a  e7ef              B        |L1.844|
+                  |L1.876|
+;;;557    			case CONVERTER_SET_VOLTAGE_LIMIT:
+;;;558    				// Apply new voltage limit
+;;;559    				
+;;;560    				//msg.voltage_limit_setting.mode
+;;;561    				//msg.voltage_limit_setting.enable
+;;;562    				//msg.voltage_limit_setting.value
+;;;563    				
+;;;564    				err_code =  Converter_SetVoltageLimit( msg.voltage_limit_setting.mode, 
+00036c  f8bd0012          LDRH     r0,[sp,#0x12]
+000370  9905              LDR      r1,[sp,#0x14]
+000372  b2c2              UXTB     r2,r0
+000374  f8bd0010          LDRH     r0,[sp,#0x10]
+000378  b2c0              UXTB     r0,r0
+00037a  f7fffffe          BL       Converter_SetVoltageLimit
+00037e  9002              STR      r0,[sp,#8]
+;;;565    													  (int32_t)msg.voltage_limit_setting.value, 
+;;;566    												      msg.voltage_limit_setting.enable);
+;;;567    				
+;;;568    		
+;;;569    				/*
+;;;570    				errCode = Converter_SetSoftLimit((int32_t)msg.data.b, regulation_setting_p, (uint8_t)msg.data.a);
+;;;571    				if (msg.data.a & 0x80000000)	// if limit enabled
+;;;572    				{
+;;;573    					regulation_setting_p.soft_voltage_limits_enable |= ((uint8_t)msg.data.a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+;;;574    				}
+;;;575    				else
+;;;576    				{
+;;;577    					regulation_setting_p.soft_voltage_limits_enable &= ~((uint8_t)msg.data.a == 0x00) ? ENABLE_LOW_LIMIT : ENABLE_HIGH_LIMIT;
+;;;578    				} */
+;;;579    				//----- Send notification to GUI -----//
+;;;580    				gui_msg = GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS;
+000380  200b              MOVS     r0,#0xb
+000382  6160              STR      r0,[r4,#0x14]  ; gui_msg
+;;;581    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+000384  491a              LDR      r1,|L1.1008|
+000386  2301              MOVS     r3,#1
+000388  2200              MOVS     r2,#0
+00038a  3114              ADDS     r1,r1,#0x14
+00038c  6828              LDR      r0,[r5,#0]  ; xQueueGUI
 00038e  f7fffffe          BL       xQueueGenericSend
-                  |L1.914|
-000392  7860              LDRB     r0,[r4,#1]            ;456  ; ctrl_HWProcess
-000394  2800              CMP      r0,#0                 ;456
-000396  d1fc              BNE      |L1.914|
-000398  e07a              B        |L1.1168|
-                  |L1.922|
-00039a  69a0              LDR      r0,[r4,#0x18]         ;461  ; regulation_setting_p
-00039c  7447              STRB     r7,[r0,#0x11]         ;461
-00039e  7066              STRB     r6,[r4,#1]            ;462
-0003a0  2013              MOVS     r0,#0x13              ;464
-0003a2  6160              STR      r0,[r4,#0x14]         ;464  ; gui_msg
-0003a4  4910              LDR      r1,|L1.1000|
-0003a6  2301              MOVS     r3,#1                 ;465
-0003a8  2200              MOVS     r2,#0                 ;465
-0003aa  3114              ADDS     r1,r1,#0x14           ;465
-0003ac  6828              LDR      r0,[r5,#0]            ;465  ; xQueueGUI
+;;;582    				//------------------------------------//
+;;;583    				
+;;;584    				// Apply limit settings to voltage
+;;;585    				regulation_setting_p->voltage.setting = CheckSetVoltageRange(regulation_setting_p->voltage.setting, 0);
+000392  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+000394  2100              MOVS     r1,#0
+000396  8840              LDRH     r0,[r0,#2]
+000398  f7fffffe          BL       CheckSetVoltageRange
+00039c  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
+00039e  8048              STRH     r0,[r1,#2]
+;;;586    				//----- Send notification to GUI -----//
+;;;587    				gui_msg = GUI_TASK_UPDATE_VOLTAGE_SETTING;
+0003a0  2006              MOVS     r0,#6
+0003a2  6160              STR      r0,[r4,#0x14]  ; gui_msg
+;;;588    				xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+0003a4  4912              LDR      r1,|L1.1008|
+0003a6  2301              MOVS     r3,#1
+0003a8  2200              MOVS     r2,#0
+0003aa  3114              ADDS     r1,r1,#0x14
+0003ac  6828              LDR      r0,[r5,#0]  ; xQueueGUI
 0003ae  f7fffffe          BL       xQueueGenericSend
-                  |L1.946|
-0003b2  7860              LDRB     r0,[r4,#1]            ;467  ; ctrl_HWProcess
-0003b4  2800              CMP      r0,#0                 ;467
-0003b6  d1fc              BNE      |L1.946|
-0003b8  e06a              B        |L1.1168|
-                  |L1.954|
-0003ba  6127              STR      r7,[r4,#0x10]         ;472  ; conv_state
-0003bc  e068              B        |L1.1168|
-                  |L1.958|
-;;;476    				{
-;;;477    					// Message to turn on converter is received
-;;;478    					if ((state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED) || (!(state_HWProcess & STATE_HW_USER_TIMER_EXPIRED)))
-0003be  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
-0003c0  06c0              LSLS     r0,r0,#27
-0003c2  d465              BMI      |L1.1168|
-0003c4  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
-0003c6  0680              LSLS     r0,r0,#26
-0003c8  d562              BPL      |L1.1168|
-;;;479    					{
-;;;480    						// Safe timeout is not expired
-;;;481    						break;
-;;;482    					}
-;;;483    					ctrl_HWProcess = CMD_HW_ON;
-0003ca  7067              STRB     r7,[r4,#1]
-                  |L1.972|
-;;;484    					while(ctrl_HWProcess);
-0003cc  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
-0003ce  2800              CMP      r0,#0
-0003d0  d1fc              BNE      |L1.972|
-;;;485    					conv_state = CONV_ON;			// Switch to new state and reset overload flag
-0003d2  2002              MOVS     r0,#2
-0003d4  6120              STR      r0,[r4,#0x10]  ; conv_state
-;;;486    					break;
-0003d6  e05b              B        |L1.1168|
-                  |L1.984|
-;;;487    				}
-;;;488    				break;
-;;;489    			case CONV_ON:
-;;;490    				if (msg.type == CONVERTER_TURN_OFF)
-0003d8  9803              LDR      r0,[sp,#0xc]
-0003da  2802              CMP      r0,#2
-0003dc  d00c              BEQ      |L1.1016|
-;;;491    				{
-;;;492    					conv_state = disableConverterAndCheckHWState();
-;;;493    					break;
-;;;494    				}
-;;;495    				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) && (regulation_setting_p != &channel_5v_setting) )
-0003de  9803              LDR      r0,[sp,#0xc]
-0003e0  2803              CMP      r0,#3
-0003e2  d00d              BEQ      |L1.1024|
-0003e4  e024              B        |L1.1072|
-0003e6  0000              DCW      0x0000
-                  |L1.1000|
-                          DCD      ||.data||
-                  |L1.1004|
-                          DCD      ||.bss||
+;;;589    				//------------------------------------//
+;;;590    				
+;;;591    				// Apply voltage and current settings
+;;;592    				apply_regulation();		
+0003b2  f7fffffe          BL       apply_regulation
+;;;593    				
+;;;594    				if ((err_code == SLIM_MAX) || (err_code == SLIM_MIN))
+0003b6  f89d0008          LDRB     r0,[sp,#8]
+0003ba  2812              CMP      r0,#0x12
+0003bc  d020              BEQ      |L1.1024|
+0003be  2811              CMP      r0,#0x11
+0003c0  d01e              BEQ      |L1.1024|
+;;;595    					sound_msg = SND_CONV_SETTING_ILLEGAL;
+;;;596    				else
+;;;597    					sound_msg = SND_CONV_SETTING_OK;
+0003c2  f44f3080          MOV      r0,#0x10000
+0003c6  9000              STR      r0,[sp,#0]
+                  |L1.968|
+;;;598    				sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+0003c8  9800              LDR      r0,[sp,#0]
+0003ca  f0400032          ORR      r0,r0,#0x32
+0003ce  9000              STR      r0,[sp,#0]
+;;;599    				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+0003d0  2300              MOVS     r3,#0
+0003d2  461a              MOV      r2,r3
+0003d4  4669              MOV      r1,sp
+0003d6  f8d90000          LDR      r0,[r9,#0]  ; xQueueSound
+0003da  f7fffffe          BL       xQueueGenericSend
+                  |L1.990|
+;;;600    				break;
+;;;601    		}
+;;;602    		
+;;;603    
+;;;604    		
+;;;605    		switch(conv_state & CONV_STATE_MASK)
+0003de  6920              LDR      r0,[r4,#0x10]  ; conv_state
+0003e0  f000000f          AND      r0,r0,#0xf
+0003e4  2801              CMP      r0,#1
+0003e6  d00d              BEQ      |L1.1028|
+0003e8  2802              CMP      r0,#2
+0003ea  d11a              BNE      |L1.1058|
+0003ec  e062              B        |L1.1204|
+0003ee  0000              DCW      0x0000
                   |L1.1008|
-                          DCD      xQueueGUI
+                          DCD      ||.data||
                   |L1.1012|
-                          DCD      xQueueSound
+                          DCD      ||.bss||
                   |L1.1016|
-0003f8  f7fffffe          BL       disableConverterAndCheckHWState
-0003fc  6120              STR      r0,[r4,#0x10]         ;492  ; conv_state
-0003fe  e047              B        |L1.1168|
+                          DCD      xQueueGUI
+                  |L1.1020|
+                          DCD      xQueueSound
                   |L1.1024|
-000400  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-000402  4550              CMP      r0,r10
-000404  d014              BEQ      |L1.1072|
-;;;496    				{
-;;;497    					conv_state = disableConverterAndCheckHWState();
-000406  f7fffffe          BL       disableConverterAndCheckHWState
-00040a  6120              STR      r0,[r4,#0x10]  ; conv_state
-;;;498    					vTaskDelay(4);
-00040c  2004              MOVS     r0,#4
-00040e  f7fffffe          BL       vTaskDelay
-;;;499    					regulation_setting_p = &channel_5v_setting;
-000412  f8c4a018          STR      r10,[r4,#0x18]  ; regulation_setting_p
-;;;500    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-000416  7066              STRB     r6,[r4,#1]
-;;;501    					//----- Send notification to GUI -----//
-;;;502    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
-000418  f8c49014          STR      r9,[r4,#0x14]  ; gui_msg
-;;;503    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-00041c  2301              MOVS     r3,#1
-00041e  2200              MOVS     r2,#0
-000420  4992              LDR      r1,|L1.1644|
-000422  6828              LDR      r0,[r5,#0]  ; xQueueGUI
-000424  f7fffffe          BL       xQueueGenericSend
-                  |L1.1064|
-;;;504    					//------------------------------------//
-;;;505    					while(ctrl_HWProcess);
-000428  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
-00042a  2800              CMP      r0,#0
-00042c  d1fc              BNE      |L1.1064|
-00042e  e02f              B        |L1.1168|
-                  |L1.1072|
-;;;506    					break;
-;;;507    				}
-;;;508    				if ( (msg.type == CONVERTER_SWITCH_TO_12VCH) && (regulation_setting_p != &channel_12v_setting) )
-000430  9803              LDR      r0,[sp,#0xc]
-000432  2804              CMP      r0,#4
-000434  d118              BNE      |L1.1128|
-000436  488e              LDR      r0,|L1.1648|
-000438  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
-00043a  4281              CMP      r1,r0
-00043c  d014              BEQ      |L1.1128|
-;;;509    				{
-;;;510    					conv_state = disableConverterAndCheckHWState();
-00043e  f7fffffe          BL       disableConverterAndCheckHWState
-000442  6120              STR      r0,[r4,#0x10]  ; conv_state
-;;;511    					vTaskDelay(4);
-000444  2004              MOVS     r0,#4
-000446  f7fffffe          BL       vTaskDelay
-;;;512    					regulation_setting_p = &channel_5v_setting;
-00044a  f8c4a018          STR      r10,[r4,#0x18]  ; regulation_setting_p
-;;;513    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-00044e  7066              STRB     r6,[r4,#1]
-;;;514    					//----- Send notification to GUI -----//
-;;;515    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
-000450  f8c49014          STR      r9,[r4,#0x14]  ; gui_msg
-;;;516    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
-000454  2301              MOVS     r3,#1
-000456  2200              MOVS     r2,#0
-000458  4984              LDR      r1,|L1.1644|
-00045a  6828              LDR      r0,[r5,#0]  ; xQueueGUI
-00045c  f7fffffe          BL       xQueueGenericSend
-                  |L1.1120|
-;;;517    					//------------------------------------//
-;;;518    					while(ctrl_HWProcess);
-000460  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
-000462  2800              CMP      r0,#0
-000464  d1fc              BNE      |L1.1120|
-000466  e013              B        |L1.1168|
-                  |L1.1128|
-;;;519    					break;
-;;;520    				}
-;;;521    				if (state_HWProcess & STATE_HW_OFF)
-000468  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
-00046a  0780              LSLS     r0,r0,#30
-00046c  d510              BPL      |L1.1168|
-;;;522    				{
-;;;523    					// Some hardware error has happened and converter had been switched off
-;;;524    					conv_state = CONV_OFF;
-00046e  6127              STR      r7,[r4,#0x10]  ; conv_state
-;;;525    					conv_state |= analyzeAndResetHWErrorState();
-000470  f7fffffe          BL       analyzeAndResetHWErrorState
-000474  6921              LDR      r1,[r4,#0x10]  ; conv_state
-000476  4308              ORRS     r0,r0,r1
-000478  6120              STR      r0,[r4,#0x10]  ; conv_state
-;;;526    					if (conv_state & CONV_OVERLOAD)
-00047a  06c0              LSLS     r0,r0,#27
-00047c  d508              BPL      |L1.1168|
-;;;527    					{
-;;;528    						// Send message to sound driver
-;;;529    						// TODO: send this message in other cases (when overload is detected simultaneously with button)
-;;;530    						sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
-00047e  487d              LDR      r0,|L1.1652|
-000480  9000              STR      r0,[sp,#0]
-;;;531    						xQueueSendToBack(xQueueSound, &sound_msg, 0);
-000482  2300              MOVS     r3,#0
-000484  461a              MOV      r2,r3
-000486  4669              MOV      r1,sp
-000488  f8db0000          LDR      r0,[r11,#0]  ; xQueueSound
-00048c  f7fffffe          BL       xQueueGenericSend
-                  |L1.1168|
-;;;532    					}
-;;;533    					break;
-;;;534    				}
-;;;535    				break;
-;;;536    		}
-;;;537    		
-;;;538    		
-;;;539    		// Will be special for charging mode - TODO
-;;;540    		if (msg.type == CONVERTER_TICK)
-000490  9803              LDR      r0,[sp,#0xc]
-000492  28ff              CMP      r0,#0xff
-000494  d107              BNE      |L1.1190|
-;;;541    		{
-;;;542    			// ADC task is responsible for sampling and filtering voltage and current
-;;;543    			adc_msg = ADC_GET_ALL_NORMAL;
-000496  9701              STR      r7,[sp,#4]
-;;;544    			xQueueSendToBack(xQueueADC, &adc_msg, 0);
-000498  4877              LDR      r0,|L1.1656|
-00049a  2300              MOVS     r3,#0
-00049c  461a              MOV      r2,r3
-00049e  a901              ADD      r1,sp,#4
-0004a0  6800              LDR      r0,[r0,#0]  ; xQueueADC
-0004a2  f7fffffe          BL       xQueueGenericSend
-                  |L1.1190|
-;;;545    		}			
-;;;546    		
-;;;547    		// Apply controls
-;;;548    		__disable_irq();
-0004a6  b672              CPSID    i
-;;;549    		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
-0004a8  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0004aa  7800              LDRB     r0,[r0,#0]
-0004ac  f7fffffe          BL       SetFeedbackChannel
-;;;550    		__enable_irq();
-0004b0  b662              CPSIE    i
-;;;551    		SetCurrentLimit(regulation_setting_p->current_limit);
-0004b2  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0004b4  7c40              LDRB     r0,[r0,#0x11]
-0004b6  f7fffffe          BL       SetCurrentLimit
-;;;552    		SetOutputLoad(channel_12v_setting.load_state);
-0004ba  486d              LDR      r0,|L1.1648|
-0004bc  7840              LDRB     r0,[r0,#1]  ; channel_12v_setting
-0004be  f7fffffe          BL       SetOutputLoad
-;;;553    	
-;;;554    		// Always make sure settings are within allowed range
-;;;555    		regulation_setting_p->set_current = CheckSetCurrentRange((int32_t)regulation_setting_p->set_current, &err_code);
-0004c2  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
-0004c4  a902              ADD      r1,sp,#8
-0004c6  8a40              LDRH     r0,[r0,#0x12]
-0004c8  f7fffffe          BL       CheckSetCurrentRange
-0004cc  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
-0004ce  8248              STRH     r0,[r1,#0x12]
-;;;556    		regulation_setting_p->set_voltage = CheckSetVoltageRange((int32_t)regulation_setting_p->set_voltage, &err_code);
-0004d0  8848              LDRH     r0,[r1,#2]
-0004d2  a902              ADD      r1,sp,#8
-0004d4  f7fffffe          BL       CheckSetVoltageRange
-0004d8  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
-0004da  8048              STRH     r0,[r1,#2]
-;;;557    
-;;;558    		// Apply voltage and current settings
-;;;559    		apply_regulation();		
-0004dc  f7fffffe          BL       apply_regulation
-0004e0  e6a7              B        |L1.562|
-;;;560    		
-;;;561    	
-;;;562    		// LED indication
-;;;563    
-;;;564    	}
-;;;565    	
-;;;566    }
-;;;567    
+000400  9700              STR      r7,[sp,#0]            ;595
+000402  e7e1              B        |L1.968|
+                  |L1.1028|
+;;;606    		{
+;;;607    			case CONV_OFF:
+;;;608    				if (msg.type == CONVERTER_SWITCH_TO_5VCH)
+000404  9803              LDR      r0,[sp,#0xc]
+000406  2804              CMP      r0,#4
+000408  d00c              BEQ      |L1.1060|
+;;;609    				{
+;;;610    					regulation_setting_p = &channel_5v;
+;;;611    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+;;;612    					//----- Send notification to GUI -----//
+;;;613    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+;;;614    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+;;;615    					//------------------------------------//
+;;;616    					while(ctrl_HWProcess);
+;;;617    					break;
+;;;618    				}
+;;;619    				if (msg.type == CONVERTER_SWITCH_TO_12VCH)
+00040a  9803              LDR      r0,[sp,#0xc]
+00040c  2805              CMP      r0,#5
+00040e  d018              BEQ      |L1.1090|
+;;;620    				{
+;;;621    					regulation_setting_p = &channel_12v;
+;;;622    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+;;;623    					//----- Send notification to GUI -----//
+;;;624    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+;;;625    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+;;;626    					//------------------------------------//
+;;;627    					while(ctrl_HWProcess);
+;;;628    					break;
+;;;629    				}
+;;;630    				if (msg.type == CONVERTER_SET_CURRENT_RANGE)
+000410  9803              LDR      r0,[sp,#0xc]
+000412  2806              CMP      r0,#6
+000414  d025              BEQ      |L1.1122|
+;;;631    				{
+;;;632    					if (msg.data.a == CURRENT_RANGE_HIGH)
+;;;633    						regulation_setting_p->current = &regulation_setting_p->current_high_range;
+;;;634    					else
+;;;635    						regulation_setting_p->current = &regulation_setting_p->current_low_range;
+;;;636    					
+;;;637    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+;;;638    					//----- Send notification to GUI -----//
+;;;639    					gui_msg = GUI_TASK_UPDATE_CURRENT_LIMIT;
+;;;640    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+;;;641    					//------------------------------------//
+;;;642    					while(ctrl_HWProcess);
+;;;643    					break;
+;;;644    				}
+;;;645    
+;;;646    				if (msg.type == CONVERTER_TURN_OFF)
+000416  9803              LDR      r0,[sp,#0xc]
+000418  2803              CMP      r0,#3
+00041a  d03a              BEQ      |L1.1170|
+;;;647    				{
+;;;648    					conv_state = CONV_OFF;			// Reset overload flag
+;;;649    					break;
+;;;650    				}
+;;;651    				if (msg.type == CONVERTER_TURN_ON)
+00041c  9803              LDR      r0,[sp,#0xc]
+00041e  2802              CMP      r0,#2
+000420  d03a              BEQ      |L1.1176|
+                  |L1.1058|
+000422  e0a0              B        |L1.1382|
+                  |L1.1060|
+000424  48cc              LDR      r0,|L1.1880|
+000426  61a0              STR      r0,[r4,#0x18]         ;610  ; regulation_setting_p
+000428  7066              STRB     r6,[r4,#1]            ;611
+00042a  f8c48014          STR      r8,[r4,#0x14]         ;613  ; gui_msg
+00042e  2301              MOVS     r3,#1                 ;614
+000430  2200              MOVS     r2,#0                 ;614
+000432  49ca              LDR      r1,|L1.1884|
+000434  6828              LDR      r0,[r5,#0]            ;614  ; xQueueGUI
+000436  f7fffffe          BL       xQueueGenericSend
+                  |L1.1082|
+00043a  7860              LDRB     r0,[r4,#1]            ;616  ; ctrl_HWProcess
+00043c  2800              CMP      r0,#0                 ;616
+00043e  d1fc              BNE      |L1.1082|
+000440  e091              B        |L1.1382|
+                  |L1.1090|
+000442  48c5              LDR      r0,|L1.1880|
+000444  3038              ADDS     r0,r0,#0x38           ;621
+000446  61a0              STR      r0,[r4,#0x18]         ;621  ; regulation_setting_p
+000448  7066              STRB     r6,[r4,#1]            ;622
+00044a  f8c48014          STR      r8,[r4,#0x14]         ;624  ; gui_msg
+00044e  2301              MOVS     r3,#1                 ;625
+000450  2200              MOVS     r2,#0                 ;625
+000452  49c2              LDR      r1,|L1.1884|
+000454  6828              LDR      r0,[r5,#0]            ;625  ; xQueueGUI
+000456  f7fffffe          BL       xQueueGenericSend
+                  |L1.1114|
+00045a  7860              LDRB     r0,[r4,#1]            ;627  ; ctrl_HWProcess
+00045c  2800              CMP      r0,#0                 ;627
+00045e  d1fc              BNE      |L1.1114|
+000460  e081              B        |L1.1382|
+                  |L1.1122|
+000462  9804              LDR      r0,[sp,#0x10]         ;632
+000464  2801              CMP      r0,#1                 ;632
+000466  d00f              BEQ      |L1.1160|
+000468  69a0              LDR      r0,[r4,#0x18]         ;635  ; regulation_setting_p
+00046a  f1000112          ADD      r1,r0,#0x12           ;635
+00046e  6341              STR      r1,[r0,#0x34]         ;635
+                  |L1.1136|
+000470  7066              STRB     r6,[r4,#1]            ;637
+000472  6166              STR      r6,[r4,#0x14]         ;639  ; gui_msg
+000474  2301              MOVS     r3,#1                 ;640
+000476  2200              MOVS     r2,#0                 ;640
+000478  49b8              LDR      r1,|L1.1884|
+00047a  6828              LDR      r0,[r5,#0]            ;640  ; xQueueGUI
+00047c  f7fffffe          BL       xQueueGenericSend
+                  |L1.1152|
+000480  7860              LDRB     r0,[r4,#1]            ;642  ; ctrl_HWProcess
+000482  2800              CMP      r0,#0                 ;642
+000484  d1fc              BNE      |L1.1152|
+000486  e06e              B        |L1.1382|
+                  |L1.1160|
+000488  69a0              LDR      r0,[r4,#0x18]         ;633  ; regulation_setting_p
+00048a  f1000122          ADD      r1,r0,#0x22           ;633
+00048e  6341              STR      r1,[r0,#0x34]         ;633
+000490  e7ee              B        |L1.1136|
+                  |L1.1170|
+000492  f8c4a010          STR      r10,[r4,#0x10]        ;648  ; conv_state
+000496  e066              B        |L1.1382|
+                  |L1.1176|
+;;;652    				{
+;;;653    					// Message to turn on converter is received
+;;;654    					if ((state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED) || (!(state_HWProcess & STATE_HW_USER_TIMER_EXPIRED)))
+000498  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
+00049a  06c0              LSLS     r0,r0,#27
+00049c  d463              BMI      |L1.1382|
+00049e  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
+0004a0  0680              LSLS     r0,r0,#26
+0004a2  d560              BPL      |L1.1382|
+;;;655    					{
+;;;656    						// Safe timeout is not expired
+;;;657    						break;
+;;;658    					}
+;;;659    					ctrl_HWProcess = CMD_HW_ON;
+0004a4  f884a001          STRB     r10,[r4,#1]
+                  |L1.1192|
+;;;660    					while(ctrl_HWProcess);
+0004a8  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
+0004aa  2800              CMP      r0,#0
+0004ac  d1fc              BNE      |L1.1192|
+;;;661    					conv_state = CONV_ON;			// Switch to new state and reset overload flag
+0004ae  2002              MOVS     r0,#2
+0004b0  6120              STR      r0,[r4,#0x10]  ; conv_state
+;;;662    					break;
+0004b2  e058              B        |L1.1382|
+                  |L1.1204|
+;;;663    				}
+;;;664    				break;
+;;;665    			case CONV_ON:
+;;;666    				if (msg.type == CONVERTER_TURN_OFF)
+0004b4  9803              LDR      r0,[sp,#0xc]
+0004b6  2803              CMP      r0,#3
+0004b8  d003              BEQ      |L1.1218|
+;;;667    				{
+;;;668    					conv_state = disableConverterAndCheckHWState();
+;;;669    					break;
+;;;670    				}
+;;;671    				if ( (msg.type == CONVERTER_SWITCH_TO_5VCH) && (regulation_setting_p != &channel_5v) )
+0004ba  9803              LDR      r0,[sp,#0xc]
+0004bc  2804              CMP      r0,#4
+0004be  d004              BEQ      |L1.1226|
+0004c0  e01d              B        |L1.1278|
+                  |L1.1218|
+0004c2  f7fffffe          BL       disableConverterAndCheckHWState
+0004c6  6120              STR      r0,[r4,#0x10]         ;668  ; conv_state
+0004c8  e04d              B        |L1.1382|
+                  |L1.1226|
+0004ca  f8dfb28c          LDR      r11,|L1.1880|
+0004ce  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+0004d0  4558              CMP      r0,r11
+0004d2  d014              BEQ      |L1.1278|
+;;;672    				{
+;;;673    					conv_state = disableConverterAndCheckHWState();
+0004d4  f7fffffe          BL       disableConverterAndCheckHWState
+0004d8  6120              STR      r0,[r4,#0x10]  ; conv_state
+;;;674    					vTaskDelay(4);
+0004da  2004              MOVS     r0,#4
+0004dc  f7fffffe          BL       vTaskDelay
+;;;675    					regulation_setting_p = &channel_5v;
+0004e0  f8c4b018          STR      r11,[r4,#0x18]  ; regulation_setting_p
+;;;676    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+0004e4  7066              STRB     r6,[r4,#1]
+;;;677    					//----- Send notification to GUI -----//
+;;;678    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+0004e6  f8c48014          STR      r8,[r4,#0x14]  ; gui_msg
+;;;679    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+0004ea  2301              MOVS     r3,#1
+0004ec  2200              MOVS     r2,#0
+0004ee  499b              LDR      r1,|L1.1884|
+0004f0  6828              LDR      r0,[r5,#0]  ; xQueueGUI
+0004f2  f7fffffe          BL       xQueueGenericSend
+                  |L1.1270|
+;;;680    					//------------------------------------//
+;;;681    					while(ctrl_HWProcess);
+0004f6  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
+0004f8  2800              CMP      r0,#0
+0004fa  d1fc              BNE      |L1.1270|
+0004fc  e033              B        |L1.1382|
+                  |L1.1278|
+;;;682    					break;
+;;;683    				}
+;;;684    				if ( (msg.type == CONVERTER_SWITCH_TO_12VCH) && (regulation_setting_p != &channel_12v) )
+0004fe  9803              LDR      r0,[sp,#0xc]
+000500  2805              CMP      r0,#5
+000502  d11b              BNE      |L1.1340|
+000504  f8dfb250          LDR      r11,|L1.1880|
+000508  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+00050a  f10b0b38          ADD      r11,r11,#0x38
+00050e  4558              CMP      r0,r11
+000510  d014              BEQ      |L1.1340|
+;;;685    				{
+;;;686    					conv_state = disableConverterAndCheckHWState();
+000512  f7fffffe          BL       disableConverterAndCheckHWState
+000516  6120              STR      r0,[r4,#0x10]  ; conv_state
+;;;687    					vTaskDelay(4);
+000518  2004              MOVS     r0,#4
+00051a  f7fffffe          BL       vTaskDelay
+;;;688    					regulation_setting_p = &channel_12v;
+00051e  f8c4b018          STR      r11,[r4,#0x18]  ; regulation_setting_p
+;;;689    					ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+000522  7066              STRB     r6,[r4,#1]
+;;;690    					//----- Send notification to GUI -----//
+;;;691    					gui_msg = GUI_TASK_UPDATE_FEEDBACK_CHANNEL;
+000524  f8c48014          STR      r8,[r4,#0x14]  ; gui_msg
+;;;692    					xQueueSendToFront(xQueueGUI, &gui_msg, 0);
+000528  2301              MOVS     r3,#1
+00052a  2200              MOVS     r2,#0
+00052c  498b              LDR      r1,|L1.1884|
+00052e  6828              LDR      r0,[r5,#0]  ; xQueueGUI
+000530  f7fffffe          BL       xQueueGenericSend
+                  |L1.1332|
+;;;693    					//------------------------------------//
+;;;694    					while(ctrl_HWProcess);
+000534  7860              LDRB     r0,[r4,#1]  ; ctrl_HWProcess
+000536  2800              CMP      r0,#0
+000538  d1fc              BNE      |L1.1332|
+00053a  e014              B        |L1.1382|
+                  |L1.1340|
+;;;695    					break;
+;;;696    				}
+;;;697    				if (state_HWProcess & STATE_HW_OFF)
+00053c  7820              LDRB     r0,[r4,#0]  ; state_HWProcess
+00053e  0780              LSLS     r0,r0,#30
+000540  d511              BPL      |L1.1382|
+;;;698    				{
+;;;699    					// Some hardware error has happened and converter had been switched off
+;;;700    					conv_state = CONV_OFF;
+000542  f8c4a010          STR      r10,[r4,#0x10]  ; conv_state
+;;;701    					conv_state |= analyzeAndResetHWErrorState();
+000546  f7fffffe          BL       analyzeAndResetHWErrorState
+00054a  6921              LDR      r1,[r4,#0x10]  ; conv_state
+00054c  4308              ORRS     r0,r0,r1
+00054e  6120              STR      r0,[r4,#0x10]  ; conv_state
+;;;702    					if (conv_state & CONV_OVERLOAD)
+000550  06c0              LSLS     r0,r0,#27
+000552  d508              BPL      |L1.1382|
+;;;703    					{
+;;;704    						// Send message to sound driver
+;;;705    						// TODO: send this message in other cases (when overload is detected simultaneously with button)
+;;;706    						sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+000554  4882              LDR      r0,|L1.1888|
+000556  9000              STR      r0,[sp,#0]
+;;;707    						xQueueSendToBack(xQueueSound, &sound_msg, 0);
+000558  2300              MOVS     r3,#0
+00055a  461a              MOV      r2,r3
+00055c  4669              MOV      r1,sp
+00055e  f8d90000          LDR      r0,[r9,#0]  ; xQueueSound
+000562  f7fffffe          BL       xQueueGenericSend
+                  |L1.1382|
+;;;708    					}
+;;;709    					break;
+;;;710    				}
+;;;711    				break;
+;;;712    		}
+;;;713    		
+;;;714    		
+;;;715    		// Will be special for charging mode - TODO
+;;;716    		if (msg.type == CONVERTER_TICK)
+000566  9803              LDR      r0,[sp,#0xc]
+000568  b940              CBNZ     r0,|L1.1404|
+;;;717    		{
+;;;718    			// ADC task is responsible for sampling and filtering voltage and current
+;;;719    			adc_msg = ADC_GET_ALL_NORMAL;
+00056a  f8cda004          STR      r10,[sp,#4]
+;;;720    			xQueueSendToBack(xQueueADC, &adc_msg, 0);
+00056e  487d              LDR      r0,|L1.1892|
+000570  2300              MOVS     r3,#0
+000572  461a              MOV      r2,r3
+000574  a901              ADD      r1,sp,#4
+000576  6800              LDR      r0,[r0,#0]  ; xQueueADC
+000578  f7fffffe          BL       xQueueGenericSend
+                  |L1.1404|
+;;;721    		}			
+;;;722    		
+;;;723    		// Apply controls
+;;;724    		__disable_irq();
+00057c  b672              CPSID    i
+;;;725    		SetFeedbackChannel(regulation_setting_p->CHANNEL);		// PORTF can be accessed from ISR
+00057e  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+000580  7800              LDRB     r0,[r0,#0]
+000582  f3c00000          UBFX     r0,r0,#0,#1
+000586  f7fffffe          BL       SetFeedbackChannel
+;;;726    		__enable_irq();
+00058a  b662              CPSIE    i
+;;;727    		SetCurrentRange(regulation_setting_p->current->RANGE);
+00058c  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+00058e  6b40              LDR      r0,[r0,#0x34]
+000590  7b80              LDRB     r0,[r0,#0xe]
+000592  f3c00080          UBFX     r0,r0,#2,#1
+000596  f7fffffe          BL       SetCurrentRange
+;;;728    		SetOutputLoad(channel_12v.load_state);
+00059a  486f              LDR      r0,|L1.1880|
+00059c  3038              ADDS     r0,r0,#0x38
+00059e  7800              LDRB     r0,[r0,#0]  ; channel_12v
+0005a0  f3c00040          UBFX     r0,r0,#1,#1
+0005a4  f7fffffe          BL       SetOutputLoad
+;;;729    	
+;;;730    		// Always make sure settings are within allowed range
+;;;731    		regulation_setting_p->current->setting = CheckSetCurrentRange((int32_t)regulation_setting_p->current->setting, &err_code);
+0005a8  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+0005aa  a902              ADD      r1,sp,#8
+0005ac  6b40              LDR      r0,[r0,#0x34]
+0005ae  8800              LDRH     r0,[r0,#0]
+0005b0  f7fffffe          BL       CheckSetCurrentRange
+0005b4  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
+0005b6  6b49              LDR      r1,[r1,#0x34]
+0005b8  8008              STRH     r0,[r1,#0]
+;;;732    		regulation_setting_p->voltage.setting = CheckSetVoltageRange((int32_t)regulation_setting_p->voltage.setting, &err_code);
+0005ba  69a0              LDR      r0,[r4,#0x18]  ; regulation_setting_p
+0005bc  a902              ADD      r1,sp,#8
+0005be  8840              LDRH     r0,[r0,#2]
+0005c0  f7fffffe          BL       CheckSetVoltageRange
+0005c4  69a1              LDR      r1,[r4,#0x18]  ; regulation_setting_p
+0005c6  8048              STRH     r0,[r1,#2]
+;;;733    
+;;;734    		// Apply voltage and current settings
+;;;735    		apply_regulation();		
+0005c8  f7fffffe          BL       apply_regulation
+0005cc  e667              B        |L1.670|
+;;;736    		
+;;;737    	
+;;;738    		// LED indication
+;;;739    
+;;;740    	}
+;;;741    	
+;;;742    }
+;;;743    
                           ENDP
 
                   Converter_HWProcess PROC
-;;;587    //---------------------------------------------//
-;;;588    void Converter_HWProcess(void) 
-0004e2  e92d41f0          PUSH     {r4-r8,lr}
-;;;589    {
-;;;590    	static uint16_t overload_ignore_counter;
-;;;591    	static uint16_t overload_counter;
-;;;592    	static uint16_t safe_counter = 0;
-;;;593    	static uint16_t user_counter = 0;
-;;;594    	static uint16_t led_blink_counter = 0;
-;;;595    	static uint16_t overload_warning_counter = 0;
-;;;596    	uint8_t overload_check_enable;
-;;;597    	uint8_t raw_overload_flag;
-;;;598    	uint8_t led_state;
-;;;599    
-;;;600    	//-------------------------------//
-;;;601    	// Get converter status and process overload timers
-;;;602    	
-;;;603    	// Due to hardware specialty overload input is active when converter is powered off
-;;;604    	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
-;;;605    	overload_check_enable = 0;
-0004e6  2000              MOVS     r0,#0
-;;;606    	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
-0004e8  4d60              LDR      r5,|L1.1644|
-0004ea  3d14              SUBS     r5,r5,#0x14
-0004ec  7829              LDRB     r1,[r5,#0]  ; state_HWProcess
-;;;607    		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
-0004ee  f44f76fa          MOV      r6,#0x1f4
-0004f2  f0110f0a          TST      r1,#0xa               ;606
-0004f6  d001              BEQ      |L1.1276|
-0004f8  80ae              STRH     r6,[r5,#4]
-0004fa  e005              B        |L1.1288|
-                  |L1.1276|
-;;;608    	else if (overload_ignore_counter != 0)
-0004fc  88a9              LDRH     r1,[r5,#4]  ; overload_ignore_counter
-0004fe  b111              CBZ      r1,|L1.1286|
-;;;609    		overload_ignore_counter--;
-000500  1e49              SUBS     r1,r1,#1
-000502  80a9              STRH     r1,[r5,#4]
-000504  e000              B        |L1.1288|
-                  |L1.1286|
-;;;610    	else
-;;;611    		overload_check_enable = 1;
-000506  2001              MOVS     r0,#1
-                  |L1.1288|
-;;;612    	
-;;;613    	// Apply top-level overload check control
-;;;614    	//if (__overload_functions_disabled__)
-;;;615    	//	overload_check_enable = 0;
-;;;616    	
-;;;617    	if (overload_check_enable)
-000508  b118              CBZ      r0,|L1.1298|
-;;;618    		raw_overload_flag = GetOverloadStatus();
-00050a  f7fffffe          BL       GetOverloadStatus
-00050e  4604              MOV      r4,r0
-000510  e000              B        |L1.1300|
-                  |L1.1298|
-;;;619    	else
-;;;620    		raw_overload_flag = NORMAL;
-000512  2400              MOVS     r4,#0
-                  |L1.1300|
-;;;621    	
-;;;622    	if (raw_overload_flag == NORMAL)
-000514  b13c              CBZ      r4,|L1.1318|
-;;;623    		overload_counter = OVERLOAD_TIMEOUT;
-;;;624    	else if (overload_counter != 0)
-000516  88e8              LDRH     r0,[r5,#6]  ; overload_counter
-000518  b108              CBZ      r0,|L1.1310|
-;;;625    		overload_counter--;
-00051a  1e40              SUBS     r0,r0,#1
-00051c  80e8              STRH     r0,[r5,#6]
-                  |L1.1310|
-;;;626    	
-;;;627    
-;;;628    	//-------------------------------//
-;;;629    	// Check overload 	
-;;;630    	if (overload_counter == 0)
-00051e  88e8              LDRH     r0,[r5,#6]  ; overload_counter
-;;;631    	{
-;;;632    		// Converter is overloaded
-;;;633    		state_HWProcess &= ~STATE_HW_ON;
-;;;634    		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
-;;;635    		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
-000520  27c8              MOVS     r7,#0xc8
-000522  b118              CBZ      r0,|L1.1324|
-000524  e011              B        |L1.1354|
-                  |L1.1318|
-000526  2005              MOVS     r0,#5                 ;623
-000528  80e8              STRH     r0,[r5,#6]            ;623
-00052a  e7f8              B        |L1.1310|
-                  |L1.1324|
-00052c  7828              LDRB     r0,[r5,#0]            ;633  ; state_HWProcess
-00052e  f0200001          BIC      r0,r0,#1              ;633
-000532  7028              STRB     r0,[r5,#0]            ;633
-000534  7828              LDRB     r0,[r5,#0]            ;634  ; state_HWProcess
-000536  f0400006          ORR      r0,r0,#6              ;634
-00053a  7028              STRB     r0,[r5,#0]            ;634
-00053c  812f              STRH     r7,[r5,#8]
-;;;636    		xQueueSendToFrontFromISR(xQueueConverter, &converter_update_message, 0);	// No need for exact timing
-00053e  2301              MOVS     r3,#1
-000540  2200              MOVS     r2,#0
-000542  494e              LDR      r1,|L1.1660|
-000544  69e8              LDR      r0,[r5,#0x1c]  ; xQueueConverter
-000546  f7fffffe          BL       xQueueGenericSendFromISR
-                  |L1.1354|
-;;;637    	}
-;;;638    	
-;;;639    	//-------------------------------//
-;;;640    	// Process commands from top-level converter controller
-;;;641    	if (ctrl_HWProcess & CMD_HW_RESET_OVERLOAD)
-00054a  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
-00054c  0740              LSLS     r0,r0,#29
-00054e  d503              BPL      |L1.1368|
-;;;642    	{
-;;;643    		state_HWProcess &= ~STATE_HW_OVERLOADED;
-000550  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000552  f0200004          BIC      r0,r0,#4
-000556  7028              STRB     r0,[r5,#0]
-                  |L1.1368|
-;;;644    	}
-;;;645    	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OFF)) )
-000558  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
-00055a  0780              LSLS     r0,r0,#30
-00055c  d50c              BPL      |L1.1400|
-00055e  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000560  0780              LSLS     r0,r0,#30
-000562  d409              BMI      |L1.1400|
-;;;646    	{
-;;;647    		state_HWProcess &= ~STATE_HW_ON;
-000564  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000566  f0200001          BIC      r0,r0,#1
-00056a  7028              STRB     r0,[r5,#0]
-;;;648    		state_HWProcess |= STATE_HW_OFF;		
-00056c  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-00056e  f0400002          ORR      r0,r0,#2
-000572  7028              STRB     r0,[r5,#0]
-;;;649    		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
-000574  812f              STRH     r7,[r5,#8]
-000576  e00d              B        |L1.1428|
-                  |L1.1400|
-;;;650    	}
-;;;651    	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_ON)) )
-000578  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
-00057a  07c0              LSLS     r0,r0,#31
-00057c  d00a              BEQ      |L1.1428|
-00057e  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000580  07c0              LSLS     r0,r0,#31
-000582  d107              BNE      |L1.1428|
-;;;652    	{
-;;;653    		state_HWProcess &= ~STATE_HW_OFF;
-000584  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000586  f0200002          BIC      r0,r0,#2
-00058a  7028              STRB     r0,[r5,#0]
-;;;654    		state_HWProcess |= STATE_HW_ON;								
-00058c  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-00058e  f0400001          ORR      r0,r0,#1
-000592  7028              STRB     r0,[r5,#0]
-                  |L1.1428|
-;;;655    	}
-;;;656    	if (ctrl_HWProcess & CMD_HW_RESTART_USER_TIMER)
-000594  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
-000596  0700              LSLS     r0,r0,#28
-000598  d501              BPL      |L1.1438|
-;;;657    	{
-;;;658    		user_counter = USER_TIMEOUT;
-00059a  2064              MOVS     r0,#0x64
-00059c  8168              STRH     r0,[r5,#0xa]
-                  |L1.1438|
-;;;659    	}
-;;;660    	if (ctrl_HWProcess & CMD_HW_RESTART_LED_BLINK_TIMER)
-00059e  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
-0005a0  06c0              LSLS     r0,r0,#27
-0005a2  d500              BPL      |L1.1446|
-;;;661    	{
-;;;662    		user_counter = LED_BLINK_TIMEOUT;
-0005a4  816e              STRH     r6,[r5,#0xa]
-                  |L1.1446|
-;;;663    	}
-;;;664    	
-;;;665    	//-------------------------------//
-;;;666    	// Process commands from top-level ADC controller
-;;;667    	if (cmd_ADC_to_HWProcess & CMD_HW_OFF_BY_ADC)
-0005a6  78a8              LDRB     r0,[r5,#2]  ; cmd_ADC_to_HWProcess
-0005a8  07c0              LSLS     r0,r0,#31
-0005aa  d004              BEQ      |L1.1462|
-;;;668    	{
-;;;669    		state_HWProcess |= STATE_HW_OFF_BY_ADC;
-0005ac  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-0005ae  f0400008          ORR      r0,r0,#8
-0005b2  7028              STRB     r0,[r5,#0]
-0005b4  e006              B        |L1.1476|
-                  |L1.1462|
-;;;670    	}
-;;;671    	else if (cmd_ADC_to_HWProcess & CMD_HW_ON_BY_ADC)
-0005b6  78a8              LDRB     r0,[r5,#2]  ; cmd_ADC_to_HWProcess
-0005b8  0780              LSLS     r0,r0,#30
-0005ba  d503              BPL      |L1.1476|
-;;;672    	{
-;;;673    		state_HWProcess &= ~STATE_HW_OFF_BY_ADC;
-0005bc  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-0005be  f0200008          BIC      r0,r0,#8
-0005c2  7028              STRB     r0,[r5,#0]
-                  |L1.1476|
-;;;674    	}
-;;;675    	
-;;;676    	// Reset commands
-;;;677    	ctrl_HWProcess = 0;
-0005c4  2000              MOVS     r0,#0
-0005c6  7068              STRB     r0,[r5,#1]
-;;;678    	cmd_ADC_to_HWProcess = 0;
-0005c8  70a8              STRB     r0,[r5,#2]
-;;;679    
-;;;680    	//-------------------------------//
-;;;681    	// Apply converter state
-;;;682    	// TODO - check IRQ disable while accessing converter control port (MDR_PORTF) for write
-;;;683    	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
-0005ca  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-0005cc  f0100f0a          TST      r0,#0xa
-0005d0  d003              BEQ      |L1.1498|
-;;;684    		SetConverterState(CONVERTER_OFF);
+;;;763    //---------------------------------------------//
+;;;764    void Converter_HWProcess(void) 
+0005ce  e92d41f0          PUSH     {r4-r8,lr}
+;;;765    {
+;;;766    	static uint16_t overload_ignore_counter;
+;;;767    	static uint16_t overload_counter;
+;;;768    	static uint16_t safe_counter = 0;
+;;;769    	static uint16_t user_counter = 0;
+;;;770    	static uint16_t led_blink_counter = 0;
+;;;771    	static uint16_t overload_warning_counter = 0;
+;;;772    	uint8_t overload_check_enable;
+;;;773    	uint8_t raw_overload_flag;
+;;;774    	uint8_t led_state;
+;;;775    
+;;;776    	//-------------------------------//
+;;;777    	// Get converter status and process overload timers
+;;;778    	
+;;;779    	// Due to hardware specialty overload input is active when converter is powered off
+;;;780    	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
+;;;781    	overload_check_enable = 0;
 0005d2  2000              MOVS     r0,#0
-0005d4  f7fffffe          BL       SetConverterState
-0005d8  e005              B        |L1.1510|
-                  |L1.1498|
-;;;685    	else if (state_HWProcess & STATE_HW_ON)
-0005da  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-0005dc  07c0              LSLS     r0,r0,#31
-0005de  d002              BEQ      |L1.1510|
-;;;686    		SetConverterState(CONVERTER_ON);
-0005e0  2001              MOVS     r0,#1
-0005e2  f7fffffe          BL       SetConverterState
-                  |L1.1510|
-;;;687    		
-;;;688    	//-------------------------------//
-;;;689    	// LED indication
-;;;690    	// Uses raw converter state and top-level conveter status
-;;;691    	// TODO - check IRQ disable while accessing LED port (MDR_PORTB) for write
-;;;692    	led_state = 0;
-0005e6  2000              MOVS     r0,#0
-;;;693    	if ((state_HWProcess & STATE_HW_ON) && (led_blink_counter == 0))
-0005e8  7829              LDRB     r1,[r5,#0]  ; state_HWProcess
-0005ea  07c9              LSLS     r1,r1,#31
-0005ec  d002              BEQ      |L1.1524|
-0005ee  89a9              LDRH     r1,[r5,#0xc]  ; led_blink_counter
-0005f0  b901              CBNZ     r1,|L1.1524|
-;;;694    		led_state |= LED_GREEN;
+;;;782    	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+0005d4  4d61              LDR      r5,|L1.1884|
+0005d6  3d14              SUBS     r5,r5,#0x14
+0005d8  7829              LDRB     r1,[r5,#0]  ; state_HWProcess
+;;;783    		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
+0005da  f44f76fa          MOV      r6,#0x1f4
+0005de  f0110f0a          TST      r1,#0xa               ;782
+0005e2  d001              BEQ      |L1.1512|
+0005e4  80ae              STRH     r6,[r5,#4]
+0005e6  e005              B        |L1.1524|
+                  |L1.1512|
+;;;784    	else if (overload_ignore_counter != 0)
+0005e8  88a9              LDRH     r1,[r5,#4]  ; overload_ignore_counter
+0005ea  b111              CBZ      r1,|L1.1522|
+;;;785    		overload_ignore_counter--;
+0005ec  1e49              SUBS     r1,r1,#1
+0005ee  80a9              STRH     r1,[r5,#4]
+0005f0  e000              B        |L1.1524|
+                  |L1.1522|
+;;;786    	else
+;;;787    		overload_check_enable = 1;
 0005f2  2001              MOVS     r0,#1
                   |L1.1524|
-;;;695    	if ((raw_overload_flag == OVERLOAD) || (conv_state & CONV_OVERLOAD))
-0005f4  2c01              CMP      r4,#1
-0005f6  d002              BEQ      |L1.1534|
-0005f8  6929              LDR      r1,[r5,#0x10]  ; conv_state
-0005fa  06c9              LSLS     r1,r1,#27
-0005fc  d501              BPL      |L1.1538|
+;;;788    	
+;;;789    	// Apply top-level overload check control
+;;;790    	//if (__overload_functions_disabled__)
+;;;791    	//	overload_check_enable = 0;
+;;;792    	
+;;;793    	if (overload_check_enable)
+0005f4  b118              CBZ      r0,|L1.1534|
+;;;794    		raw_overload_flag = GetOverloadStatus();
+0005f6  f7fffffe          BL       GetOverloadStatus
+0005fa  4604              MOV      r4,r0
+0005fc  e000              B        |L1.1536|
                   |L1.1534|
-;;;696    		led_state |= LED_RED;
-0005fe  f0400002          ORR      r0,r0,#2
-                  |L1.1538|
-;;;697    	UpdateLEDs(led_state);
-000602  f7fffffe          BL       UpdateLEDs
-;;;698    	
-;;;699    	//-------------------------------//
-;;;700    	// Overload sound warning
-;;;701    	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
-000606  2c01              CMP      r4,#1
-000608  d10b              BNE      |L1.1570|
-00060a  89e8              LDRH     r0,[r5,#0xe]  ; overload_warning_counter
-00060c  b948              CBNZ     r0,|L1.1570|
-;;;702    	{
-;;;703    		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
-00060e  481d              LDR      r0,|L1.1668|
-000610  2301              MOVS     r3,#1
-000612  2200              MOVS     r2,#0
-000614  491a              LDR      r1,|L1.1664|
-000616  6800              LDR      r0,[r0,#0]  ; xQueueSound
-000618  f7fffffe          BL       xQueueGenericSendFromISR
-;;;704    		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
-00061c  f44f707a          MOV      r0,#0x3e8
-000620  81e8              STRH     r0,[r5,#0xe]
-                  |L1.1570|
-;;;705    	}
-;;;706    	
-;;;707    	//-------------------------------//
-;;;708    	// Process timers
-;;;709    	
-;;;710    	// Process safe timer - used by top-level controller to provide a safe minimal OFF timeout
-;;;711    	if (safe_counter != 0)
-000622  8928              LDRH     r0,[r5,#8]  ; safe_counter
-000624  b130              CBZ      r0,|L1.1588|
-;;;712    	{
-;;;713    		safe_counter--;
-000626  1e40              SUBS     r0,r0,#1
-000628  8128              STRH     r0,[r5,#8]
-;;;714    		state_HWProcess |= STATE_HW_TIMER_NOT_EXPIRED;
-00062a  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-00062c  f0400010          ORR      r0,r0,#0x10
-000630  7028              STRB     r0,[r5,#0]
-000632  e003              B        |L1.1596|
-                  |L1.1588|
-;;;715    	}
-;;;716    	else
-;;;717    	{
-;;;718    		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
-000634  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000636  f0200010          BIC      r0,r0,#0x10
-00063a  7028              STRB     r0,[r5,#0]
-                  |L1.1596|
-;;;719    	}
-;;;720    	
-;;;721    	// Process user timer - used by top-level controller to provide a safe interval after switching channels
-;;;722    	if (user_counter != 0)
-00063c  8968              LDRH     r0,[r5,#0xa]  ; user_counter
-00063e  b130              CBZ      r0,|L1.1614|
-;;;723    	{
-;;;724    		user_counter--;
-000640  1e40              SUBS     r0,r0,#1
-000642  8168              STRH     r0,[r5,#0xa]
-;;;725    		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
-000644  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000646  f0200020          BIC      r0,r0,#0x20
-00064a  7028              STRB     r0,[r5,#0]
-00064c  e003              B        |L1.1622|
-                  |L1.1614|
-;;;726    	}
-;;;727    	else
-;;;728    	{
-;;;729    		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
-00064e  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
-000650  f0400020          ORR      r0,r0,#0x20
-000654  7028              STRB     r0,[r5,#0]
-                  |L1.1622|
-;;;730    	}
-;;;731    	
-;;;732    	// Process LED blink timer
-;;;733    	if (led_blink_counter != 0)
-000656  89a8              LDRH     r0,[r5,#0xc]  ; led_blink_counter
-000658  b108              CBZ      r0,|L1.1630|
-;;;734    	{
-;;;735    		led_blink_counter--;
-00065a  1e40              SUBS     r0,r0,#1
-00065c  81a8              STRH     r0,[r5,#0xc]
-                  |L1.1630|
-;;;736    	}
-;;;737    	
-;;;738    	// Process overload sound warning timer
-;;;739    	if (overload_warning_counter != 0)
-00065e  89e8              LDRH     r0,[r5,#0xe]  ; overload_warning_counter
-000660  2800              CMP      r0,#0
-000662  d001              BEQ      |L1.1640|
-;;;740    	{
-;;;741    		overload_warning_counter--;
-000664  1e40              SUBS     r0,r0,#1
-000666  81e8              STRH     r0,[r5,#0xe]
-                  |L1.1640|
-;;;742    	}
-;;;743    }
-000668  e8bd81f0          POP      {r4-r8,pc}
-;;;744    
+;;;795    	else
+;;;796    		raw_overload_flag = NORMAL;
+0005fe  2400              MOVS     r4,#0
+                  |L1.1536|
+;;;797    	
+;;;798    	if (raw_overload_flag == NORMAL)
+000600  b13c              CBZ      r4,|L1.1554|
+;;;799    		overload_counter = OVERLOAD_TIMEOUT;
+;;;800    	else if (overload_counter != 0)
+000602  88e8              LDRH     r0,[r5,#6]  ; overload_counter
+000604  b108              CBZ      r0,|L1.1546|
+;;;801    		overload_counter--;
+000606  1e40              SUBS     r0,r0,#1
+000608  80e8              STRH     r0,[r5,#6]
+                  |L1.1546|
+;;;802    	
+;;;803    
+;;;804    	//-------------------------------//
+;;;805    	// Check overload 	
+;;;806    	if (overload_counter == 0)
+00060a  88e8              LDRH     r0,[r5,#6]  ; overload_counter
+;;;807    	{
+;;;808    		// Converter is overloaded
+;;;809    		state_HWProcess &= ~STATE_HW_ON;
+;;;810    		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
+;;;811    		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+00060c  27c8              MOVS     r7,#0xc8
+00060e  b118              CBZ      r0,|L1.1560|
+000610  e011              B        |L1.1590|
+                  |L1.1554|
+000612  2005              MOVS     r0,#5                 ;799
+000614  80e8              STRH     r0,[r5,#6]            ;799
+000616  e7f8              B        |L1.1546|
+                  |L1.1560|
+000618  7828              LDRB     r0,[r5,#0]            ;809  ; state_HWProcess
+00061a  f0200001          BIC      r0,r0,#1              ;809
+00061e  7028              STRB     r0,[r5,#0]            ;809
+000620  7828              LDRB     r0,[r5,#0]            ;810  ; state_HWProcess
+000622  f0400006          ORR      r0,r0,#6              ;810
+000626  7028              STRB     r0,[r5,#0]            ;810
+000628  812f              STRH     r7,[r5,#8]
+;;;812    		xQueueSendToFrontFromISR(xQueueConverter, &converter_update_message, 0);	// No need for exact timing
+00062a  2301              MOVS     r3,#1
+00062c  2200              MOVS     r2,#0
+00062e  494e              LDR      r1,|L1.1896|
+000630  69e8              LDR      r0,[r5,#0x1c]  ; xQueueConverter
+000632  f7fffffe          BL       xQueueGenericSendFromISR
+                  |L1.1590|
+;;;813    	}
+;;;814    	
+;;;815    	//-------------------------------//
+;;;816    	// Process commands from top-level converter controller
+;;;817    	if (ctrl_HWProcess & CMD_HW_RESET_OVERLOAD)
+000636  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
+000638  0740              LSLS     r0,r0,#29
+00063a  d503              BPL      |L1.1604|
+;;;818    	{
+;;;819    		state_HWProcess &= ~STATE_HW_OVERLOADED;
+00063c  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00063e  f0200004          BIC      r0,r0,#4
+000642  7028              STRB     r0,[r5,#0]
+                  |L1.1604|
+;;;820    	}
+;;;821    	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OFF)) )
+000644  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
+000646  0780              LSLS     r0,r0,#30
+000648  d50c              BPL      |L1.1636|
+00064a  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00064c  0780              LSLS     r0,r0,#30
+00064e  d409              BMI      |L1.1636|
+;;;822    	{
+;;;823    		state_HWProcess &= ~STATE_HW_ON;
+000650  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+000652  f0200001          BIC      r0,r0,#1
+000656  7028              STRB     r0,[r5,#0]
+;;;824    		state_HWProcess |= STATE_HW_OFF;		
+000658  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00065a  f0400002          ORR      r0,r0,#2
+00065e  7028              STRB     r0,[r5,#0]
+;;;825    		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+000660  812f              STRH     r7,[r5,#8]
+000662  e00d              B        |L1.1664|
+                  |L1.1636|
+;;;826    	}
+;;;827    	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_ON)) )
+000664  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
+000666  07c0              LSLS     r0,r0,#31
+000668  d00a              BEQ      |L1.1664|
+00066a  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00066c  07c0              LSLS     r0,r0,#31
+00066e  d107              BNE      |L1.1664|
+;;;828    	{
+;;;829    		state_HWProcess &= ~STATE_HW_OFF;
+000670  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+000672  f0200002          BIC      r0,r0,#2
+000676  7028              STRB     r0,[r5,#0]
+;;;830    		state_HWProcess |= STATE_HW_ON;								
+000678  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00067a  f0400001          ORR      r0,r0,#1
+00067e  7028              STRB     r0,[r5,#0]
+                  |L1.1664|
+;;;831    	}
+;;;832    	if (ctrl_HWProcess & CMD_HW_RESTART_USER_TIMER)
+000680  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
+000682  0700              LSLS     r0,r0,#28
+000684  d501              BPL      |L1.1674|
+;;;833    	{
+;;;834    		user_counter = USER_TIMEOUT;
+000686  2064              MOVS     r0,#0x64
+000688  8168              STRH     r0,[r5,#0xa]
+                  |L1.1674|
+;;;835    	}
+;;;836    	if (ctrl_HWProcess & CMD_HW_RESTART_LED_BLINK_TIMER)
+00068a  7868              LDRB     r0,[r5,#1]  ; ctrl_HWProcess
+00068c  06c0              LSLS     r0,r0,#27
+00068e  d500              BPL      |L1.1682|
+;;;837    	{
+;;;838    		user_counter = LED_BLINK_TIMEOUT;
+000690  816e              STRH     r6,[r5,#0xa]
+                  |L1.1682|
+;;;839    	}
+;;;840    	
+;;;841    	//-------------------------------//
+;;;842    	// Process commands from top-level ADC controller
+;;;843    	if (cmd_ADC_to_HWProcess & CMD_HW_OFF_BY_ADC)
+000692  78a8              LDRB     r0,[r5,#2]  ; cmd_ADC_to_HWProcess
+000694  07c0              LSLS     r0,r0,#31
+000696  d004              BEQ      |L1.1698|
+;;;844    	{
+;;;845    		state_HWProcess |= STATE_HW_OFF_BY_ADC;
+000698  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00069a  f0400008          ORR      r0,r0,#8
+00069e  7028              STRB     r0,[r5,#0]
+0006a0  e006              B        |L1.1712|
+                  |L1.1698|
+;;;846    	}
+;;;847    	else if (cmd_ADC_to_HWProcess & CMD_HW_ON_BY_ADC)
+0006a2  78a8              LDRB     r0,[r5,#2]  ; cmd_ADC_to_HWProcess
+0006a4  0780              LSLS     r0,r0,#30
+0006a6  d503              BPL      |L1.1712|
+;;;848    	{
+;;;849    		state_HWProcess &= ~STATE_HW_OFF_BY_ADC;
+0006a8  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+0006aa  f0200008          BIC      r0,r0,#8
+0006ae  7028              STRB     r0,[r5,#0]
+                  |L1.1712|
+;;;850    	}
+;;;851    	
+;;;852    	// Reset commands
+;;;853    	ctrl_HWProcess = 0;
+0006b0  2000              MOVS     r0,#0
+0006b2  7068              STRB     r0,[r5,#1]
+;;;854    	cmd_ADC_to_HWProcess = 0;
+0006b4  70a8              STRB     r0,[r5,#2]
+;;;855    
+;;;856    	//-------------------------------//
+;;;857    	// Apply converter state
+;;;858    	// TODO - check IRQ disable while accessing converter control port (MDR_PORTF) for write
+;;;859    	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+0006b6  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+0006b8  f0100f0a          TST      r0,#0xa
+0006bc  d003              BEQ      |L1.1734|
+;;;860    		SetConverterState(CONVERTER_OFF);
+0006be  2000              MOVS     r0,#0
+0006c0  f7fffffe          BL       SetConverterState
+0006c4  e005              B        |L1.1746|
+                  |L1.1734|
+;;;861    	else if (state_HWProcess & STATE_HW_ON)
+0006c6  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+0006c8  07c0              LSLS     r0,r0,#31
+0006ca  d002              BEQ      |L1.1746|
+;;;862    		SetConverterState(CONVERTER_ON);
+0006cc  2001              MOVS     r0,#1
+0006ce  f7fffffe          BL       SetConverterState
+                  |L1.1746|
+;;;863    		
+;;;864    	//-------------------------------//
+;;;865    	// LED indication
+;;;866    	// Uses raw converter state and top-level conveter status
+;;;867    	// TODO - check IRQ disable while accessing LED port (MDR_PORTB) for write
+;;;868    	led_state = 0;
+0006d2  2000              MOVS     r0,#0
+;;;869    	if ((state_HWProcess & STATE_HW_ON) && (led_blink_counter == 0))
+0006d4  7829              LDRB     r1,[r5,#0]  ; state_HWProcess
+0006d6  07c9              LSLS     r1,r1,#31
+0006d8  d002              BEQ      |L1.1760|
+0006da  89a9              LDRH     r1,[r5,#0xc]  ; led_blink_counter
+0006dc  b901              CBNZ     r1,|L1.1760|
+;;;870    		led_state |= LED_GREEN;
+0006de  2001              MOVS     r0,#1
+                  |L1.1760|
+;;;871    	if ((raw_overload_flag == OVERLOAD) || (conv_state & CONV_OVERLOAD))
+0006e0  2c01              CMP      r4,#1
+0006e2  d002              BEQ      |L1.1770|
+0006e4  6929              LDR      r1,[r5,#0x10]  ; conv_state
+0006e6  06c9              LSLS     r1,r1,#27
+0006e8  d501              BPL      |L1.1774|
+                  |L1.1770|
+;;;872    		led_state |= LED_RED;
+0006ea  f0400002          ORR      r0,r0,#2
+                  |L1.1774|
+;;;873    	UpdateLEDs(led_state);
+0006ee  f7fffffe          BL       UpdateLEDs
+;;;874    	
+;;;875    	//-------------------------------//
+;;;876    	// Overload sound warning
+;;;877    	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
+0006f2  2c01              CMP      r4,#1
+0006f4  d10b              BNE      |L1.1806|
+0006f6  89e8              LDRH     r0,[r5,#0xe]  ; overload_warning_counter
+0006f8  b948              CBNZ     r0,|L1.1806|
+;;;878    	{
+;;;879    		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+0006fa  481d              LDR      r0,|L1.1904|
+0006fc  2301              MOVS     r3,#1
+0006fe  2200              MOVS     r2,#0
+000700  491a              LDR      r1,|L1.1900|
+000702  6800              LDR      r0,[r0,#0]  ; xQueueSound
+000704  f7fffffe          BL       xQueueGenericSendFromISR
+;;;880    		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
+000708  f44f707a          MOV      r0,#0x3e8
+00070c  81e8              STRH     r0,[r5,#0xe]
+                  |L1.1806|
+;;;881    	}
+;;;882    	
+;;;883    	//-------------------------------//
+;;;884    	// Process timers
+;;;885    	
+;;;886    	// Process safe timer - used by top-level controller to provide a safe minimal OFF timeout
+;;;887    	if (safe_counter != 0)
+00070e  8928              LDRH     r0,[r5,#8]  ; safe_counter
+000710  b130              CBZ      r0,|L1.1824|
+;;;888    	{
+;;;889    		safe_counter--;
+000712  1e40              SUBS     r0,r0,#1
+000714  8128              STRH     r0,[r5,#8]
+;;;890    		state_HWProcess |= STATE_HW_TIMER_NOT_EXPIRED;
+000716  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+000718  f0400010          ORR      r0,r0,#0x10
+00071c  7028              STRB     r0,[r5,#0]
+00071e  e003              B        |L1.1832|
+                  |L1.1824|
+;;;891    	}
+;;;892    	else
+;;;893    	{
+;;;894    		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
+000720  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+000722  f0200010          BIC      r0,r0,#0x10
+000726  7028              STRB     r0,[r5,#0]
+                  |L1.1832|
+;;;895    	}
+;;;896    	
+;;;897    	// Process user timer - used by top-level controller to provide a safe interval after switching channels
+;;;898    	if (user_counter != 0)
+000728  8968              LDRH     r0,[r5,#0xa]  ; user_counter
+00072a  b130              CBZ      r0,|L1.1850|
+;;;899    	{
+;;;900    		user_counter--;
+00072c  1e40              SUBS     r0,r0,#1
+00072e  8168              STRH     r0,[r5,#0xa]
+;;;901    		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
+000730  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+000732  f0200020          BIC      r0,r0,#0x20
+000736  7028              STRB     r0,[r5,#0]
+000738  e003              B        |L1.1858|
+                  |L1.1850|
+;;;902    	}
+;;;903    	else
+;;;904    	{
+;;;905    		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
+00073a  7828              LDRB     r0,[r5,#0]  ; state_HWProcess
+00073c  f0400020          ORR      r0,r0,#0x20
+000740  7028              STRB     r0,[r5,#0]
+                  |L1.1858|
+;;;906    	}
+;;;907    	
+;;;908    	// Process LED blink timer
+;;;909    	if (led_blink_counter != 0)
+000742  89a8              LDRH     r0,[r5,#0xc]  ; led_blink_counter
+000744  b108              CBZ      r0,|L1.1866|
+;;;910    	{
+;;;911    		led_blink_counter--;
+000746  1e40              SUBS     r0,r0,#1
+000748  81a8              STRH     r0,[r5,#0xc]
+                  |L1.1866|
+;;;912    	}
+;;;913    	
+;;;914    	// Process overload sound warning timer
+;;;915    	if (overload_warning_counter != 0)
+00074a  89e8              LDRH     r0,[r5,#0xe]  ; overload_warning_counter
+00074c  2800              CMP      r0,#0
+00074e  d001              BEQ      |L1.1876|
+;;;916    	{
+;;;917    		overload_warning_counter--;
+000750  1e40              SUBS     r0,r0,#1
+000752  81e8              STRH     r0,[r5,#0xe]
+                  |L1.1876|
+;;;918    	}
+;;;919    }
+000754  e8bd81f0          POP      {r4-r8,pc}
+;;;920    
                           ENDP
 
-                  |L1.1644|
+                  |L1.1880|
+                          DCD      ||.bss||
+                  |L1.1884|
                           DCD      ||.data||+0x14
-                  |L1.1648|
-                          DCD      ||.bss||+0x26
-                  |L1.1652|
+                  |L1.1888|
                           DCD      0x00030034
-                  |L1.1656|
+                  |L1.1892|
                           DCD      xQueueADC
-                  |L1.1660|
+                  |L1.1896|
                           DCD      ||area_number.6||
-                  |L1.1664|
+                  |L1.1900|
                           DCD      sound_instant_overload_msg
-                  |L1.1668|
+                  |L1.1904|
                           DCD      xQueueSound
 
-                          AREA ||.bss||, DATA, NOINIT, ALIGN=1
+                          AREA ||.bss||, DATA, NOINIT, ALIGN=2
 
-                  channel_5v_setting
-                          %        38
-                  channel_12v_setting
-                          %        38
+                  channel_5v
+                          %        56
+                  channel_12v
+                          %        56
 
                           AREA ||.constdata||, DATA, READONLY, ALIGN=2
 
                   converter_tick_message
-                          DCD      0x000000ff
+                          DCD      0x00000000
                           DCD      0x00000000
                           DCD      0x00000000
 
@@ -1498,7 +1629,7 @@
 
                           EXPORTAS ||area_number.6||, ||.constdata||
                   converter_update_message
-                          DCD      0x000000fe
+                          DCD      0x00000001
                           DCD      0x00000000
                           DCD      0x00000000
 

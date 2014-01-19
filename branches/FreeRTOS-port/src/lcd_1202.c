@@ -205,7 +205,7 @@ void LcdUpdateBothByCore(uint8_t* lcd_buffer)
     {
         for (i=0; i<LCD_PHY_XSIZE; i++)
 			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
-			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+			LcdWrite(lcd_buffer[--lcd_buf_index],DATA);
 		//lcd_buf_index += LCD_PHY_XSIZE;
 		lcd_buf_index += 3*LCD_PHY_XSIZE;
     }
@@ -222,7 +222,7 @@ void LcdUpdateBothByCore(uint8_t* lcd_buffer)
     {
         for (i=0; i<LCD_PHY_XSIZE; i++)
 			//LcdWrite(lcd_buffer[lcd_buf_index++],DATA);
-			LcdWrite(lcd_buffer[lcd_buf_index--],DATA);
+			LcdWrite(lcd_buffer[--lcd_buf_index],DATA);
 		//lcd_buf_index += LCD_PHY_XSIZE;
 		lcd_buf_index += 3*LCD_PHY_XSIZE;
     }

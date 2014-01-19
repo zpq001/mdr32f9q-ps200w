@@ -1526,28 +1526,28 @@
                           ENDP
 
                   guiCore_CallEventHandler PROC
-;;;1045   //-------------------------------------------------------//
-;;;1046   uint8_t guiCore_CallEventHandler(guiGenericWidget_t *widget, guiEvent_t *event)
+;;;1046   //-------------------------------------------------------//
+;;;1047   uint8_t guiCore_CallEventHandler(guiGenericWidget_t *widget, guiEvent_t *event)
 00068a  e92d41f0          PUSH     {r4-r8,lr}
-;;;1047   {
+;;;1048   {
 00068e  4605              MOV      r5,r0
 000690  460e              MOV      r6,r1
-;;;1048       uint8_t i;
-;;;1049       uint8_t handlerResult = GUI_EVENT_DECLINE;
+;;;1049       uint8_t i;
+;;;1050       uint8_t handlerResult = GUI_EVENT_DECLINE;
 000692  2000              MOVS     r0,#0
-;;;1050       for(i=0; i<widget->handlers.count; i++)
+;;;1051       for(i=0; i<widget->handlers.count; i++)
 000694  2400              MOVS     r4,#0
-;;;1051       {
-;;;1052           if (widget->handlers.elements[i].eventType == event->type)
-;;;1053           {
-;;;1054               handlerResult = widget->handlers.elements[i].handler(widget, event);
+;;;1052       {
+;;;1053           if (widget->handlers.elements[i].eventType == event->type)
+;;;1054           {
+;;;1055               handlerResult = widget->handlers.elements[i].handler(widget, event);
 000696  2704              MOVS     r7,#4
 000698  e00d              B        |L1.1718|
                   |L1.1690|
-00069a  69ea              LDR      r2,[r5,#0x1c]         ;1052
-00069c  7833              LDRB     r3,[r6,#0]            ;1052
-00069e  f8121034          LDRB     r1,[r2,r4,LSL #3]     ;1052
-0006a2  4299              CMP      r1,r3                 ;1052
+00069a  69ea              LDR      r2,[r5,#0x1c]         ;1053
+00069c  7833              LDRB     r3,[r6,#0]            ;1053
+00069e  f8121034          LDRB     r1,[r2,r4,LSL #3]     ;1053
+0006a2  4299              CMP      r1,r3                 ;1053
 0006a4  d105              BNE      |L1.1714|
 0006a6  eb0700c4          ADD      r0,r7,r4,LSL #3
 0006aa  4631              MOV      r1,r6
@@ -1555,18 +1555,18 @@
 0006ae  4628              MOV      r0,r5
 0006b0  4790              BLX      r2
                   |L1.1714|
-0006b2  1c64              ADDS     r4,r4,#1              ;1050
-0006b4  b2e4              UXTB     r4,r4                 ;1050
+0006b2  1c64              ADDS     r4,r4,#1              ;1051
+0006b4  b2e4              UXTB     r4,r4                 ;1051
                   |L1.1718|
-0006b6  7e29              LDRB     r1,[r5,#0x18]         ;1050
-0006b8  42a1              CMP      r1,r4                 ;1050
+0006b6  7e29              LDRB     r1,[r5,#0x18]         ;1051
+0006b8  42a1              CMP      r1,r4                 ;1051
 0006ba  d8ee              BHI      |L1.1690|
-;;;1055           }
-;;;1056       }
-;;;1057       return handlerResult;
-;;;1058   }
+;;;1056           }
+;;;1057       }
+;;;1058       return handlerResult;
+;;;1059   }
 0006bc  e7c3              B        |L1.1606|
-;;;1059   
+;;;1060   
                           ENDP
 
                   guiCore_SetVisible PROC
@@ -1579,7 +1579,7 @@
 ;;;930        if (widget == 0) return 0;
 0006c2  b12c              CBZ      r4,|L1.1744|
 ;;;931        if (newVisibleState)
-0006c4  b161              CBZ      r1,|L1.1760|
+0006c4  b171              CBZ      r1,|L1.1764|
 ;;;932        {
 ;;;933            // Show widget
 ;;;934            if (widget->isVisible) return 0;
@@ -1588,323 +1588,325 @@
 0006ca  d503              BPL      |L1.1748|
 0006cc  2000              MOVS     r0,#0
 ;;;935            widget->isVisible = 1;
-;;;936            widget->redrawForced = 1;
-;;;937        }
-;;;938        else
-;;;939        {
-;;;940            // Hide widget
-;;;941            if (widget->isVisible == 0) return 0;
-;;;942            widget->isVisible = 0;
-;;;943            guiCore_InvalidateRect(widget, widget->x, widget->y,
-;;;944                  widget->x + widget->width - 1, widget->y + widget->height - 1);
-;;;945        }
-;;;946        // Visible state changed - call handler
-;;;947        if (widget->handlers.count != 0)
-;;;948        {
-;;;949            event.type = GUI_ON_VISIBLE_CHANGED;
-;;;950            guiCore_CallEventHandler(widget, &event);
-;;;951        }
-;;;952        return 1;
-;;;953    }
+;;;936            widget->redrawRequired = 1;
+;;;937            widget->redrawForced = 1;
+;;;938        }
+;;;939        else
+;;;940        {
+;;;941            // Hide widget
+;;;942            if (widget->isVisible == 0) return 0;
+;;;943            widget->isVisible = 0;
+;;;944            guiCore_InvalidateRect(widget, widget->x, widget->y,
+;;;945                  widget->x + widget->width - 1, widget->y + widget->height - 1);
+;;;946        }
+;;;947        // Visible state changed - call handler
+;;;948        if (widget->handlers.count != 0)
+;;;949        {
+;;;950            event.type = GUI_ON_VISIBLE_CHANGED;
+;;;951            guiCore_CallEventHandler(widget, &event);
+;;;952        }
+;;;953        return 1;
+;;;954    }
 0006ce  bd3e              POP      {r1-r5,pc}
                   |L1.1744|
 0006d0  2000              MOVS     r0,#0                 ;930
 0006d2  bd3e              POP      {r1-r5,pc}
                   |L1.1748|
 0006d4  f0400010          ORR      r0,r0,#0x10           ;935
-0006d8  f0400080          ORR      r0,r0,#0x80           ;936
-0006dc  7220              STRB     r0,[r4,#8]            ;936
-0006de  e017              B        |L1.1808|
-                  |L1.1760|
-0006e0  7a20              LDRB     r0,[r4,#8]            ;941
-0006e2  06c1              LSLS     r1,r0,#27             ;941
-0006e4  d401              BMI      |L1.1770|
-0006e6  2000              MOVS     r0,#0                 ;941
-0006e8  bd3e              POP      {r1-r5,pc}
-                  |L1.1770|
-0006ea  f0200010          BIC      r0,r0,#0x10           ;942
-0006ee  7220              STRB     r0,[r4,#8]            ;942
-0006f0  f9b4200e          LDRSH    r2,[r4,#0xe]          ;943
-0006f4  8a60              LDRH     r0,[r4,#0x12]         ;943
-0006f6  4410              ADD      r0,r0,r2              ;943
-0006f8  1e40              SUBS     r0,r0,#1              ;943
-0006fa  b280              UXTH     r0,r0                 ;943
-0006fc  9000              STR      r0,[sp,#0]            ;943
-0006fe  f9b4100c          LDRSH    r1,[r4,#0xc]          ;943
-000702  8a20              LDRH     r0,[r4,#0x10]         ;943
-000704  4408              ADD      r0,r0,r1              ;943
-000706  1e40              SUBS     r0,r0,#1              ;943
-000708  b283              UXTH     r3,r0                 ;943
-00070a  4620              MOV      r0,r4                 ;943
-00070c  f7fffffe          BL       guiCore_InvalidateRect
-                  |L1.1808|
-000710  7e20              LDRB     r0,[r4,#0x18]         ;947
-000712  b130              CBZ      r0,|L1.1826|
-000714  2082              MOVS     r0,#0x82              ;949
-000716  f88d0004          STRB     r0,[sp,#4]            ;949
-00071a  a901              ADD      r1,sp,#4              ;950
-00071c  4620              MOV      r0,r4                 ;950
-00071e  f7fffffe          BL       guiCore_CallEventHandler
-                  |L1.1826|
-000722  2001              MOVS     r0,#1                 ;952
-000724  bd3e              POP      {r1-r5,pc}
-;;;954    
+0006d8  f0400040          ORR      r0,r0,#0x40           ;936
+0006dc  f0400080          ORR      r0,r0,#0x80           ;937
+0006e0  7220              STRB     r0,[r4,#8]            ;937
+0006e2  e017              B        |L1.1812|
+                  |L1.1764|
+0006e4  7a20              LDRB     r0,[r4,#8]            ;942
+0006e6  06c1              LSLS     r1,r0,#27             ;942
+0006e8  d401              BMI      |L1.1774|
+0006ea  2000              MOVS     r0,#0                 ;942
+0006ec  bd3e              POP      {r1-r5,pc}
+                  |L1.1774|
+0006ee  f0200010          BIC      r0,r0,#0x10           ;943
+0006f2  7220              STRB     r0,[r4,#8]            ;943
+0006f4  f9b4200e          LDRSH    r2,[r4,#0xe]          ;944
+0006f8  8a60              LDRH     r0,[r4,#0x12]         ;944
+0006fa  4410              ADD      r0,r0,r2              ;944
+0006fc  1e40              SUBS     r0,r0,#1              ;944
+0006fe  b280              UXTH     r0,r0                 ;944
+000700  9000              STR      r0,[sp,#0]            ;944
+000702  f9b4100c          LDRSH    r1,[r4,#0xc]          ;944
+000706  8a20              LDRH     r0,[r4,#0x10]         ;944
+000708  4408              ADD      r0,r0,r1              ;944
+00070a  1e40              SUBS     r0,r0,#1              ;944
+00070c  b283              UXTH     r3,r0                 ;944
+00070e  4620              MOV      r0,r4                 ;944
+000710  f7fffffe          BL       guiCore_InvalidateRect
+                  |L1.1812|
+000714  7e20              LDRB     r0,[r4,#0x18]         ;948
+000716  b130              CBZ      r0,|L1.1830|
+000718  2082              MOVS     r0,#0x82              ;950
+00071a  f88d0004          STRB     r0,[sp,#4]            ;950
+00071e  a901              ADD      r1,sp,#4              ;951
+000720  4620              MOV      r0,r4                 ;951
+000722  f7fffffe          BL       guiCore_CallEventHandler
+                  |L1.1830|
+000726  2001              MOVS     r0,#1                 ;953
+000728  bd3e              POP      {r1-r5,pc}
+;;;955    
                           ENDP
 
                   guiCore_SetFocused PROC
-;;;965    //-------------------------------------------------------//
-;;;966    uint8_t guiCore_SetFocused(guiGenericWidget_t *widget, uint8_t newFocusedState)
-000726  b51c              PUSH     {r2-r4,lr}
-;;;967    {
-000728  4604              MOV      r4,r0
-;;;968        guiEvent_t event;
-;;;969        if (widget == 0) return 0;
-00072a  b12c              CBZ      r4,|L1.1848|
-;;;970    
-;;;971        if (newFocusedState)
-00072c  b169              CBZ      r1,|L1.1866|
-;;;972        {
-;;;973            // Set focus on widget
-;;;974            if (widget->isFocused) return 0;
-00072e  7a20              LDRB     r0,[r4,#8]
-000730  0701              LSLS     r1,r0,#28
-000732  d503              BPL      |L1.1852|
-000734  2000              MOVS     r0,#0
-;;;975            widget->isFocused = 1;
-;;;976            guiCore_AcceptFocus(widget);
-;;;977        }
-;;;978        else
-;;;979        {
-;;;980            // Focus was removed
-;;;981            if (widget->isFocused == 0) return 0;
-;;;982            widget->isFocused = 0;
-;;;983        }
-;;;984        // Focused state changed - call handler
-;;;985        //if (widget->showFocus)        // CHECKME
-;;;986        //{
-;;;987            widget->redrawFocus = 1;
-;;;988            widget->redrawRequired = 1;
-;;;989        //}
-;;;990        // Focus state changed - call handler
-;;;991        if (widget->handlers.count != 0)
-;;;992        {
-;;;993            event.type = GUI_ON_FOCUS_CHANGED;
-;;;994            guiCore_CallEventHandler(widget, &event);
-;;;995        }
-;;;996        return 1;
-;;;997    }
-000736  bd1c              POP      {r2-r4,pc}
-                  |L1.1848|
-000738  2000              MOVS     r0,#0                 ;969
+;;;966    //-------------------------------------------------------//
+;;;967    uint8_t guiCore_SetFocused(guiGenericWidget_t *widget, uint8_t newFocusedState)
+00072a  b51c              PUSH     {r2-r4,lr}
+;;;968    {
+00072c  4604              MOV      r4,r0
+;;;969        guiEvent_t event;
+;;;970        if (widget == 0) return 0;
+00072e  b12c              CBZ      r4,|L1.1852|
+;;;971    
+;;;972        if (newFocusedState)
+000730  b169              CBZ      r1,|L1.1870|
+;;;973        {
+;;;974            // Set focus on widget
+;;;975            if (widget->isFocused) return 0;
+000732  7a20              LDRB     r0,[r4,#8]
+000734  0701              LSLS     r1,r0,#28
+000736  d503              BPL      |L1.1856|
+000738  2000              MOVS     r0,#0
+;;;976            widget->isFocused = 1;
+;;;977            guiCore_AcceptFocus(widget);
+;;;978        }
+;;;979        else
+;;;980        {
+;;;981            // Focus was removed
+;;;982            if (widget->isFocused == 0) return 0;
+;;;983            widget->isFocused = 0;
+;;;984        }
+;;;985        // Focused state changed - call handler
+;;;986        //if (widget->showFocus)        // CHECKME
+;;;987        //{
+;;;988            widget->redrawFocus = 1;
+;;;989            widget->redrawRequired = 1;
+;;;990        //}
+;;;991        // Focus state changed - call handler
+;;;992        if (widget->handlers.count != 0)
+;;;993        {
+;;;994            event.type = GUI_ON_FOCUS_CHANGED;
+;;;995            guiCore_CallEventHandler(widget, &event);
+;;;996        }
+;;;997        return 1;
+;;;998    }
 00073a  bd1c              POP      {r2-r4,pc}
                   |L1.1852|
-00073c  f0400008          ORR      r0,r0,#8              ;975
-000740  7220              STRB     r0,[r4,#8]            ;975
-000742  4620              MOV      r0,r4                 ;976
-000744  f7fffffe          BL       guiCore_AcceptFocus
-000748  e007              B        |L1.1882|
-                  |L1.1866|
-00074a  7a20              LDRB     r0,[r4,#8]            ;981
-00074c  0701              LSLS     r1,r0,#28             ;981
-00074e  d401              BMI      |L1.1876|
-000750  2000              MOVS     r0,#0                 ;981
-000752  bd1c              POP      {r2-r4,pc}
-                  |L1.1876|
-000754  f0200008          BIC      r0,r0,#8              ;982
-000758  7220              STRB     r0,[r4,#8]            ;982
-                  |L1.1882|
-00075a  7a60              LDRB     r0,[r4,#9]            ;987
-00075c  f0400001          ORR      r0,r0,#1              ;987
-000760  7260              STRB     r0,[r4,#9]            ;987
-000762  7a20              LDRB     r0,[r4,#8]            ;988
-000764  f0400040          ORR      r0,r0,#0x40           ;988
-000768  7220              STRB     r0,[r4,#8]            ;988
-00076a  7e20              LDRB     r0,[r4,#0x18]         ;991
-00076c  b130              CBZ      r0,|L1.1916|
-00076e  2080              MOVS     r0,#0x80              ;993
-000770  f88d0000          STRB     r0,[sp,#0]            ;993
-000774  4669              MOV      r1,sp                 ;994
-000776  4620              MOV      r0,r4                 ;994
-000778  f7fffffe          BL       guiCore_CallEventHandler
-                  |L1.1916|
-00077c  2001              MOVS     r0,#1                 ;996
-00077e  bd1c              POP      {r2-r4,pc}
-;;;998    
+00073c  2000              MOVS     r0,#0                 ;970
+00073e  bd1c              POP      {r2-r4,pc}
+                  |L1.1856|
+000740  f0400008          ORR      r0,r0,#8              ;976
+000744  7220              STRB     r0,[r4,#8]            ;976
+000746  4620              MOV      r0,r4                 ;977
+000748  f7fffffe          BL       guiCore_AcceptFocus
+00074c  e007              B        |L1.1886|
+                  |L1.1870|
+00074e  7a20              LDRB     r0,[r4,#8]            ;982
+000750  0701              LSLS     r1,r0,#28             ;982
+000752  d401              BMI      |L1.1880|
+000754  2000              MOVS     r0,#0                 ;982
+000756  bd1c              POP      {r2-r4,pc}
+                  |L1.1880|
+000758  f0200008          BIC      r0,r0,#8              ;983
+00075c  7220              STRB     r0,[r4,#8]            ;983
+                  |L1.1886|
+00075e  7a60              LDRB     r0,[r4,#9]            ;988
+000760  f0400001          ORR      r0,r0,#1              ;988
+000764  7260              STRB     r0,[r4,#9]            ;988
+000766  7a20              LDRB     r0,[r4,#8]            ;989
+000768  f0400040          ORR      r0,r0,#0x40           ;989
+00076c  7220              STRB     r0,[r4,#8]            ;989
+00076e  7e20              LDRB     r0,[r4,#0x18]         ;992
+000770  b130              CBZ      r0,|L1.1920|
+000772  2080              MOVS     r0,#0x80              ;994
+000774  f88d0000          STRB     r0,[sp,#0]            ;994
+000778  4669              MOV      r1,sp                 ;995
+00077a  4620              MOV      r0,r4                 ;995
+00077c  f7fffffe          BL       guiCore_CallEventHandler
+                  |L1.1920|
+000780  2001              MOVS     r0,#1                 ;997
+000782  bd1c              POP      {r2-r4,pc}
+;;;999    
                           ENDP
 
                   guiCore_SetVisibleByTag PROC
-;;;1012   //-------------------------------------------------------//
-;;;1013   void guiCore_SetVisibleByTag(guiWidgetCollection_t *collection, uint8_t minTag, uint8_t maxTag, uint8_t mode)
-000780  e92d47fc          PUSH     {r2-r10,lr}
-;;;1014   {
-000784  4606              MOV      r6,r0
-000786  4689              MOV      r9,r1
-000788  4692              MOV      r10,r2
-00078a  461f              MOV      r7,r3
-;;;1015       uint8_t i;
-;;;1016       uint8_t tagInRange;
-;;;1017       guiGenericWidget_t *widget;
-;;;1018       for(i=0; i<collection->count; i++)
-00078c  2500              MOVS     r5,#0
-;;;1019       {
-;;;1020           widget = (guiGenericWidget_t *)collection->elements[i];
-;;;1021           if (widget == 0)
-;;;1022               continue;
-;;;1023           tagInRange = ((widget->tag >= minTag) && (widget->tag <= maxTag)) ? mode & 0x3 : mode & 0xC;
-;;;1024           if ((tagInRange == ITEMS_IN_RANGE_ARE_VISIBLE) || (tagInRange == ITEMS_OUT_OF_RANGE_ARE_VISIBLE))
-;;;1025           {
-;;;1026               if (widget->isVisible == 0)
-;;;1027                   widget->processEvent(widget, guiEvent_SHOW);
-00078e  f8df80a8          LDR      r8,|L1.2104|
-000792  e035              B        |L1.2048|
-                  |L1.1940|
-000794  6870              LDR      r0,[r6,#4]            ;1020
-000796  f8500025          LDR      r0,[r0,r5,LSL #2]     ;1020
-00079a  b300              CBZ      r0,|L1.2014|
-00079c  7a81              LDRB     r1,[r0,#0xa]          ;1023
-00079e  4549              CMP      r1,r9                 ;1023
-0007a0  d304              BCC      |L1.1964|
-0007a2  4551              CMP      r1,r10                ;1023
-0007a4  d802              BHI      |L1.1964|
-0007a6  f0070403          AND      r4,r7,#3              ;1023
-0007aa  e001              B        |L1.1968|
-                  |L1.1964|
-0007ac  f007040c          AND      r4,r7,#0xc            ;1023
+;;;1013   //-------------------------------------------------------//
+;;;1014   void guiCore_SetVisibleByTag(guiWidgetCollection_t *collection, uint8_t minTag, uint8_t maxTag, uint8_t mode)
+000784  e92d47fc          PUSH     {r2-r10,lr}
+;;;1015   {
+000788  4606              MOV      r6,r0
+00078a  4689              MOV      r9,r1
+00078c  4692              MOV      r10,r2
+00078e  461f              MOV      r7,r3
+;;;1016       uint8_t i;
+;;;1017       uint8_t tagInRange;
+;;;1018       guiGenericWidget_t *widget;
+;;;1019       for(i=0; i<collection->count; i++)
+000790  2500              MOVS     r5,#0
+;;;1020       {
+;;;1021           widget = (guiGenericWidget_t *)collection->elements[i];
+;;;1022           if (widget == 0)
+;;;1023               continue;
+;;;1024           tagInRange = ((widget->tag >= minTag) && (widget->tag <= maxTag)) ? mode & 0x3 : mode & 0xC;
+;;;1025           if ((tagInRange == ITEMS_IN_RANGE_ARE_VISIBLE) || (tagInRange == ITEMS_OUT_OF_RANGE_ARE_VISIBLE))
+;;;1026           {
+;;;1027               if (widget->isVisible == 0)
+;;;1028                   widget->processEvent(widget, guiEvent_SHOW);
+000792  f8df80a4          LDR      r8,|L1.2104|
+000796  e035              B        |L1.2052|
+                  |L1.1944|
+000798  6870              LDR      r0,[r6,#4]            ;1021
+00079a  f8500025          LDR      r0,[r0,r5,LSL #2]     ;1021
+00079e  b300              CBZ      r0,|L1.2018|
+0007a0  7a81              LDRB     r1,[r0,#0xa]          ;1024
+0007a2  4549              CMP      r1,r9                 ;1024
+0007a4  d304              BCC      |L1.1968|
+0007a6  4551              CMP      r1,r10                ;1024
+0007a8  d802              BHI      |L1.1968|
+0007aa  f0070403          AND      r4,r7,#3              ;1024
+0007ae  e001              B        |L1.1972|
                   |L1.1968|
-0007b0  2c01              CMP      r4,#1                 ;1024
-0007b2  d006              BEQ      |L1.1986|
-0007b4  2c04              CMP      r4,#4                 ;1024
-0007b6  d004              BEQ      |L1.1986|
-;;;1028                   //guiCore_AddMessageToQueue(widget, &guiEvent_SHOW);
-;;;1029           }
-;;;1030           else if ((tagInRange == ITEMS_IN_RANGE_ARE_INVISIBLE) || (tagInRange == ITEMS_OUT_OF_RANGE_ARE_INVISIBLE))
-0007b8  2c02              CMP      r4,#2
-0007ba  d011              BEQ      |L1.2016|
-0007bc  2c08              CMP      r4,#8
-0007be  d00f              BEQ      |L1.2016|
-0007c0  e01c              B        |L1.2044|
-                  |L1.1986|
-0007c2  7a01              LDRB     r1,[r0,#8]            ;1026
-0007c4  06c9              LSLS     r1,r1,#27             ;1026
-0007c6  d419              BMI      |L1.2044|
-0007c8  6943              LDR      r3,[r0,#0x14]         ;1027
-0007ca  f8d81018          LDR      r1,[r8,#0x18]         ;1027  ; guiEvent_SHOW
-0007ce  9100              STR      r1,[sp,#0]            ;1027
-0007d0  f8b8101c          LDRH     r1,[r8,#0x1c]         ;1027  ; guiEvent_SHOW
-0007d4  f8ad1004          STRH     r1,[sp,#4]            ;1027
-0007d8  e9dd1200          LDRD     r1,r2,[sp,#0]         ;1027
-0007dc  4798              BLX      r3                    ;1027
-                  |L1.2014|
-0007de  e00d              B        |L1.2044|
-                  |L1.2016|
-;;;1031           {
-;;;1032               if (widget->isVisible)
-0007e0  7a01              LDRB     r1,[r0,#8]
-0007e2  06c9              LSLS     r1,r1,#27
-0007e4  d50a              BPL      |L1.2044|
-;;;1033                   widget->processEvent(widget, guiEvent_HIDE);
-0007e6  6943              LDR      r3,[r0,#0x14]
-0007e8  f8d81012          LDR      r1,[r8,#0x12]  ; guiEvent_HIDE
-0007ec  9100              STR      r1,[sp,#0]
-0007ee  f8b81016          LDRH     r1,[r8,#0x16]  ; guiEvent_HIDE
-0007f2  f8ad1004          STRH     r1,[sp,#4]
-0007f6  e9dd1200          LDRD     r1,r2,[sp,#0]
-0007fa  4798              BLX      r3
-                  |L1.2044|
-0007fc  1c6d              ADDS     r5,r5,#1              ;1018
-0007fe  b2ed              UXTB     r5,r5                 ;1018
+0007b0  f007040c          AND      r4,r7,#0xc            ;1024
+                  |L1.1972|
+0007b4  2c01              CMP      r4,#1                 ;1025
+0007b6  d006              BEQ      |L1.1990|
+0007b8  2c04              CMP      r4,#4                 ;1025
+0007ba  d004              BEQ      |L1.1990|
+;;;1029                   //guiCore_AddMessageToQueue(widget, &guiEvent_SHOW);
+;;;1030           }
+;;;1031           else if ((tagInRange == ITEMS_IN_RANGE_ARE_INVISIBLE) || (tagInRange == ITEMS_OUT_OF_RANGE_ARE_INVISIBLE))
+0007bc  2c02              CMP      r4,#2
+0007be  d011              BEQ      |L1.2020|
+0007c0  2c08              CMP      r4,#8
+0007c2  d00f              BEQ      |L1.2020|
+0007c4  e01c              B        |L1.2048|
+                  |L1.1990|
+0007c6  7a01              LDRB     r1,[r0,#8]            ;1027
+0007c8  06c9              LSLS     r1,r1,#27             ;1027
+0007ca  d419              BMI      |L1.2048|
+0007cc  6943              LDR      r3,[r0,#0x14]         ;1028
+0007ce  f8d81018          LDR      r1,[r8,#0x18]         ;1028  ; guiEvent_SHOW
+0007d2  9100              STR      r1,[sp,#0]            ;1028
+0007d4  f8b8101c          LDRH     r1,[r8,#0x1c]         ;1028  ; guiEvent_SHOW
+0007d8  f8ad1004          STRH     r1,[sp,#4]            ;1028
+0007dc  e9dd1200          LDRD     r1,r2,[sp,#0]         ;1028
+0007e0  4798              BLX      r3                    ;1028
+                  |L1.2018|
+0007e2  e00d              B        |L1.2048|
+                  |L1.2020|
+;;;1032           {
+;;;1033               if (widget->isVisible)
+0007e4  7a01              LDRB     r1,[r0,#8]
+0007e6  06c9              LSLS     r1,r1,#27
+0007e8  d50a              BPL      |L1.2048|
+;;;1034                   widget->processEvent(widget, guiEvent_HIDE);
+0007ea  6943              LDR      r3,[r0,#0x14]
+0007ec  f8d81012          LDR      r1,[r8,#0x12]  ; guiEvent_HIDE
+0007f0  9100              STR      r1,[sp,#0]
+0007f2  f8b81016          LDRH     r1,[r8,#0x16]  ; guiEvent_HIDE
+0007f6  f8ad1004          STRH     r1,[sp,#4]
+0007fa  e9dd1200          LDRD     r1,r2,[sp,#0]
+0007fe  4798              BLX      r3
                   |L1.2048|
-000800  7830              LDRB     r0,[r6,#0]            ;1018
-000802  42a8              CMP      r0,r5                 ;1018
-000804  d8c6              BHI      |L1.1940|
-;;;1034                   //guiCore_AddMessageToQueue(widget, &guiEvent_HIDE);
-;;;1035           }
-;;;1036       }
-;;;1037   }
-000806  e8bd87fc          POP      {r2-r10,pc}
-;;;1038   
+000800  1c6d              ADDS     r5,r5,#1              ;1019
+000802  b2ed              UXTB     r5,r5                 ;1019
+                  |L1.2052|
+000804  7830              LDRB     r0,[r6,#0]            ;1019
+000806  42a8              CMP      r0,r5                 ;1019
+000808  d8c6              BHI      |L1.1944|
+;;;1035                   //guiCore_AddMessageToQueue(widget, &guiEvent_HIDE);
+;;;1036           }
+;;;1037       }
+;;;1038   }
+00080a  e8bd87fc          POP      {r2-r10,pc}
+;;;1039   
                           ENDP
 
                   guiCore_DecodeWidgetTouchEvent PROC
-;;;1061   
-;;;1062   void guiCore_DecodeWidgetTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, widgetTouchState_t *decodedTouchState)
-00080a  b570              PUSH     {r4-r6,lr}
-;;;1063   {
-00080c  4606              MOV      r6,r0
-00080e  460d              MOV      r5,r1
-000810  4614              MOV      r4,r2
-;;;1064       // Convert coordinates to widget's relative
-;;;1065       decodedTouchState->x = (int16_t)touchEvent->lparam;
-000812  8868              LDRH     r0,[r5,#2]
-000814  8020              STRH     r0,[r4,#0]
-;;;1066       decodedTouchState->y = (int16_t)touchEvent->hparam;
-000816  88a8              LDRH     r0,[r5,#4]
-000818  8060              STRH     r0,[r4,#2]
-;;;1067       guiCore_ConvertToRelativeXY(widget,&decodedTouchState->x, &decodedTouchState->y);
-00081a  1ca2              ADDS     r2,r4,#2
-00081c  4621              MOV      r1,r4
-00081e  4630              MOV      r0,r6
-000820  f7fffffe          BL       guiCore_ConvertToRelativeXY
-;;;1068       decodedTouchState->state = touchEvent->spec;
-000824  7868              LDRB     r0,[r5,#1]
-000826  7120              STRB     r0,[r4,#4]
-;;;1069       // Determine if touch point lies inside the widget
-;;;1070       decodedTouchState->isInsideWidget = (guiCore_GetTouchedWidgetAtXY(widget,decodedTouchState->x, decodedTouchState->y)) ? 1 : 0;
-000828  f9b42002          LDRSH    r2,[r4,#2]
-00082c  f9b41000          LDRSH    r1,[r4,#0]
-000830  4630              MOV      r0,r6
-000832  f7fffffe          BL       guiCore_GetTouchedWidgetAtXY
+;;;1062   
+;;;1063   void guiCore_DecodeWidgetTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, widgetTouchState_t *decodedTouchState)
+00080e  b570              PUSH     {r4-r6,lr}
+;;;1064   {
+000810  4606              MOV      r6,r0
+000812  460d              MOV      r5,r1
+000814  4614              MOV      r4,r2
+;;;1065       // Convert coordinates to widget's relative
+;;;1066       decodedTouchState->x = (int16_t)touchEvent->lparam;
+000816  8868              LDRH     r0,[r5,#2]
+000818  8020              STRH     r0,[r4,#0]
+;;;1067       decodedTouchState->y = (int16_t)touchEvent->hparam;
+00081a  88a8              LDRH     r0,[r5,#4]
+00081c  8060              STRH     r0,[r4,#2]
+;;;1068       guiCore_ConvertToRelativeXY(widget,&decodedTouchState->x, &decodedTouchState->y);
+00081e  1ca2              ADDS     r2,r4,#2
+000820  4621              MOV      r1,r4
+000822  4630              MOV      r0,r6
+000824  f7fffffe          BL       guiCore_ConvertToRelativeXY
+;;;1069       decodedTouchState->state = touchEvent->spec;
+000828  7868              LDRB     r0,[r5,#1]
+00082a  7120              STRB     r0,[r4,#4]
+;;;1070       // Determine if touch point lies inside the widget
+;;;1071       decodedTouchState->isInsideWidget = (guiCore_GetTouchedWidgetAtXY(widget,decodedTouchState->x, decodedTouchState->y)) ? 1 : 0;
+00082c  f9b42002          LDRSH    r2,[r4,#2]
+000830  f9b41000          LDRSH    r1,[r4,#0]
+000834  4630              MOV      r0,r6
 000836  e003              B        |L1.2112|
                   |L1.2104|
                           DCD      ||.constdata||
                   |L1.2108|
                           DCD      ||.data||
                   |L1.2112|
-000840  b108              CBZ      r0,|L1.2118|
-000842  2001              MOVS     r0,#1
-000844  e000              B        |L1.2120|
-                  |L1.2118|
-000846  2000              MOVS     r0,#0
-                  |L1.2120|
-000848  7160              STRB     r0,[r4,#5]
-;;;1071   }
-00084a  bd70              POP      {r4-r6,pc}
-;;;1072   
+000840  f7fffffe          BL       guiCore_GetTouchedWidgetAtXY
+000844  b108              CBZ      r0,|L1.2122|
+000846  2001              MOVS     r0,#1
+000848  e000              B        |L1.2124|
+                  |L1.2122|
+00084a  2000              MOVS     r0,#0
+                  |L1.2124|
+00084c  7160              STRB     r0,[r4,#5]
+;;;1072   }
+00084e  bd70              POP      {r4-r6,pc}
+;;;1073   
                           ENDP
 
                   guiCore_DecodeContainerTouchEvent PROC
-;;;1073   
-;;;1074   void guiCore_DecodeContainerTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, containerTouchState_t *decodedTouchState)
-00084c  b570              PUSH     {r4-r6,lr}
-;;;1075   {
-00084e  4606              MOV      r6,r0
-000850  460d              MOV      r5,r1
-000852  4614              MOV      r4,r2
-;;;1076       // Convert coordinates to widget's relative
-;;;1077       decodedTouchState->x = (int16_t)touchEvent->lparam;
-000854  8868              LDRH     r0,[r5,#2]
-000856  8020              STRH     r0,[r4,#0]
-;;;1078       decodedTouchState->y = (int16_t)touchEvent->hparam;
-000858  88a8              LDRH     r0,[r5,#4]
-00085a  8060              STRH     r0,[r4,#2]
-;;;1079       guiCore_ConvertToRelativeXY(widget,&decodedTouchState->x, &decodedTouchState->y);
-00085c  1ca2              ADDS     r2,r4,#2
-00085e  4621              MOV      r1,r4
-000860  4630              MOV      r0,r6
-000862  f7fffffe          BL       guiCore_ConvertToRelativeXY
-;;;1080       decodedTouchState->state = touchEvent->spec;
-000866  7868              LDRB     r0,[r5,#1]
-000868  7120              STRB     r0,[r4,#4]
-;;;1081       // Determine if touch point lies inside the widget
-;;;1082       decodedTouchState->widgetAtXY = guiCore_GetTouchedWidgetAtXY(widget,decodedTouchState->x, decodedTouchState->y);
-00086a  f9b42002          LDRSH    r2,[r4,#2]
-00086e  f9b41000          LDRSH    r1,[r4,#0]
-000872  4630              MOV      r0,r6
-000874  f7fffffe          BL       guiCore_GetTouchedWidgetAtXY
-000878  60a0              STR      r0,[r4,#8]
-;;;1083   }
-00087a  bd70              POP      {r4-r6,pc}
-;;;1084   
+;;;1074   
+;;;1075   void guiCore_DecodeContainerTouchEvent(guiGenericWidget_t *widget, guiEvent_t *touchEvent, containerTouchState_t *decodedTouchState)
+000850  b570              PUSH     {r4-r6,lr}
+;;;1076   {
+000852  4606              MOV      r6,r0
+000854  460d              MOV      r5,r1
+000856  4614              MOV      r4,r2
+;;;1077       // Convert coordinates to widget's relative
+;;;1078       decodedTouchState->x = (int16_t)touchEvent->lparam;
+000858  8868              LDRH     r0,[r5,#2]
+00085a  8020              STRH     r0,[r4,#0]
+;;;1079       decodedTouchState->y = (int16_t)touchEvent->hparam;
+00085c  88a8              LDRH     r0,[r5,#4]
+00085e  8060              STRH     r0,[r4,#2]
+;;;1080       guiCore_ConvertToRelativeXY(widget,&decodedTouchState->x, &decodedTouchState->y);
+000860  1ca2              ADDS     r2,r4,#2
+000862  4621              MOV      r1,r4
+000864  4630              MOV      r0,r6
+000866  f7fffffe          BL       guiCore_ConvertToRelativeXY
+;;;1081       decodedTouchState->state = touchEvent->spec;
+00086a  7868              LDRB     r0,[r5,#1]
+00086c  7120              STRB     r0,[r4,#4]
+;;;1082       // Determine if touch point lies inside the widget
+;;;1083       decodedTouchState->widgetAtXY = guiCore_GetTouchedWidgetAtXY(widget,decodedTouchState->x, decodedTouchState->y);
+00086e  f9b42002          LDRSH    r2,[r4,#2]
+000872  f9b41000          LDRSH    r1,[r4,#0]
+000876  4630              MOV      r0,r6
+000878  f7fffffe          BL       guiCore_GetTouchedWidgetAtXY
+00087c  60a0              STR      r0,[r4,#8]
+;;;1084   }
+00087e  bd70              POP      {r4-r6,pc}
+;;;1085   
                           ENDP
 
 

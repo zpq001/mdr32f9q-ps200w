@@ -933,6 +933,7 @@ uint8_t guiCore_SetVisible(guiGenericWidget_t *widget, uint8_t newVisibleState)
         // Show widget
         if (widget->isVisible) return 0;
         widget->isVisible = 1;
+        widget->redrawRequired = 1;
         widget->redrawForced = 1;
     }
     else

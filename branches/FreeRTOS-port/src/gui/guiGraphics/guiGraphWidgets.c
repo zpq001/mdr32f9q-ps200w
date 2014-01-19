@@ -156,7 +156,11 @@ void guiGraph_DrawTextLabel(guiTextLabel_t *textLabel)
 }
 
 
-
+//-------------------------------------------------------//
+// Draw checkbox
+//
+//
+//-------------------------------------------------------//
 void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox)
 {
     int8_t y_aligned;
@@ -228,7 +232,11 @@ void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox)
 
 
 
-
+//-------------------------------------------------------//
+// Draw spinBox
+//
+//
+//-------------------------------------------------------//
 void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox)
 {
     uint8_t frameStyle;
@@ -304,8 +312,94 @@ void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox)
                 LCD_DrawRect(wx,wy,spinBox->width,spinBox->height,framePixelValue);
         }
     }
-
-
 }
 
+
+uint8_t guiGraph_GetStringListVisibleItemCount(guiStringList_t * list)
+{
+    uint8_t count;
+    count = (list->height - STRINGLIST_V_FRAME_MARGIN * 1) / (list->font->height + STRINGLIST_INTERVAL);
+    return count;
+}
+
+
+//-------------------------------------------------------//
+// Draw stringList
+//
+//
+//-------------------------------------------------------//
+void guiGraph_DrawStringList(guiStringList_t * list)
+{
+    uint8_t frameStyle;
+    uint8_t framePixelValue;
+    uint8_t elementHeight;
+    rect_t rect;
+    uint8_t index;
+    uint8_t itemsToDisplay;
+
+    LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+
+    //-----------------------------------------//
+    // Draw background
+    if ((list->redrawForced) || (0))
+    {
+        // Erase rectangle
+        LCD_FillRect(wx+1,wy+1,list->width-2,list->height-2,FILL_WITH_WHITE);
+    }
+
+    //-----------------------------------------//
+    // Draw strings
+    if (list->redrawForced)
+    {
+        elementHeight = list->font->height + STRINGLIST_INTERVAL;
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        LCD_SetFont(list->font);
+
+        index = list->firstIndexToDisplay;
+        itemsToDisplay = guiGraph_GetStringListVisibleItemCount(list);
+
+        rect.x1 = wx + STRINGLIST_H_FRAME_MARGIN;
+        rect.y1 = wy + STRINGLIST_V_FRAME_MARGIN;
+        rect.x2 = wx + list->width - STRINGLIST_H_FRAME_MARGIN - 1;
+        rect.y2 = wy + elementHeight;
+
+        while (itemsToDisplay--)
+        {
+            LCD_PrintStringAligned(list->strings[index], &rect, list->textAlignment, IMAGE_MODE_NORMAL);
+            if (index == list->selectedIndex)
+            {
+                // Draw selection
+                LCD_SetPixelOutputMode(PIXEL_MODE_XOR);
+                LCD_FillRect(rect.x1, rect.y1, rect.x2 - rect.x1 + 1, rect.y2 - rect.y1 + 1,FILL_WITH_BLACK);
+                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+                if (list->isActive && list->showStringFocus)
+                {
+                    LCD_SetLineStyle(LINE_STYLE_DOTTED);
+                    LCD_DrawRect(rect.x1, rect.y1, rect.x2 - rect.x1 + 1, rect.y2 - rect.y1 + 1, 1);
+                }
+            }
+            index = (index >= list->stringCount - 1) ? 0 : index + 1;
+            rect.y1 += elementHeight;
+            rect.y2 += elementHeight;
+        }
+    }
+
+
+
+    //-----------------------------------------//
+    // Draw focus / frame
+    if ((list->redrawForced) || (list->redrawFocus))
+    {
+        if ((list->hasFrame) || (list->showFocus))
+        {
+            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+            frameStyle = ((list->showFocus) && (list->isFocused) && (list->isActive == 0)) ? LINE_STYLE_DOTTED : LINE_STYLE_SOLID;
+            framePixelValue = ((list->showFocus) && (list->isFocused) && (list->isActive == 0)) ? 1 : 0;
+            framePixelValue |= (list->hasFrame) ? 1 : 0;
+            LCD_SetLineStyle(frameStyle);
+            if (!((list->redrawForced) && (framePixelValue == 0)))
+                LCD_DrawRect(wx,wy,list->width,list->height,framePixelValue);
+        }
+    }
+}
 

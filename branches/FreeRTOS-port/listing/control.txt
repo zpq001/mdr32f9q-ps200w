@@ -76,12 +76,12 @@
 ;;;56     
                           ENDP
 
-                  SetCurrentLimit PROC
+                  SetCurrentRange PROC
 ;;;59     //-------------------------------------------------------//
-;;;60     void SetCurrentLimit(uint8_t newLimit)
+;;;60     void SetCurrentRange(uint8_t newRange)
 000044  4a0a              LDR      r2,|L1.112|
 ;;;61     {
-;;;62     	if (newLimit == CURRENT_LIM_HIGH)
+;;;62     	if (newRange == CURRENT_RANGE_HIGH)
 000046  2801              CMP      r0,#1
 000048  d003              BEQ      |L1.82|
 ;;;63     		PORT_SetBits(MDR_PORTA, 1<<CLIM_SEL);

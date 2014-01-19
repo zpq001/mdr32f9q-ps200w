@@ -21,8 +21,9 @@
 #define WT_RADIOBUTTON 0x04
 #define WT_TEXTLABEL   0x05
 #define WT_SPINBOX     0x06
+#define WT_STRINGLIST	0x07
 
-
+// CHECKME - enum?
 
 
 // Event handler record
@@ -393,7 +394,55 @@ typedef struct guiSpinBox_t {
 } guiSpinBox_t;
 
 
+typedef struct guiStringList_t {
+    //----- Inherited from generic widget -----//
+    // Widget type (starting with WT_)
+    uint8_t type;
+    // Pointer to parent widget
+    struct guiGenericWidget_t *parent;
+    // Bit properties:
+    uint8_t acceptFocusByTab : 1;
+    uint8_t acceptTouch : 1;
+    uint8_t isContainer : 1;
+    // Bit state flags:
+    uint8_t isFocused : 1;
+    uint8_t isVisible : 1;
+    uint8_t updateRequired : 1;
+    uint8_t redrawRequired : 1;
+    uint8_t redrawForced : 1;
+    uint8_t redrawFocus : 1;
+    uint8_t showFocus : 1;
+    uint8_t keepTouch : 1;
+    // Properties
+    uint8_t tag;
+    uint8_t tabIndex;
+    int16_t x;
+    int16_t y;
+    uint16_t width;
+    uint16_t height;
+    // Event processing function
+    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+    // Handler table
+    guiHandlerTable_t handlers;
+    //-----------------------------------------//
 
+    uint8_t hasFrame : 1;
+    uint8_t isActive : 1;
+    uint8_t canWrap : 1;
+    uint8_t showStringFocus : 1;
+    uint8_t restoreIndexOnEscape : 1;
+    uint8_t newIndexAccepted : 1;
+
+    uint8_t stringCount;
+    uint8_t selectedIndex;
+    uint8_t savedIndex;
+    uint8_t firstIndexToDisplay;
+    char **strings;
+	const tFont *font;
+    uint8_t textAlignment;
+
+
+} guiStringList_t;
 
 
 #endif

@@ -773,6 +773,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\gui\guiGraphics\widget_images.c</FilePath>
             </File>
+            <File>
+              <FileName>other_images.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\other_images.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1558,6 +1563,11 @@
               <FileName>widget_images.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\gui\guiGraphics\widget_images.c</FilePath>
+            </File>
+            <File>
+              <FileName>other_images.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\gui\guiGraphics\other_images.c</FilePath>
             </File>
           </Files>
         </Group>

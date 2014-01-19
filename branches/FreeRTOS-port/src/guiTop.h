@@ -55,11 +55,11 @@ enum guiTaskCmd {
 */
 
 // SelectedChannel
-#define	GUI_CHANNEL_5V			0x1		// ??? remove TODO
-#define	GUI_CHANNEL_12V			0x0
+#define	GUI_CHANNEL_5V				0x1		// Actualy a copy of definitions in common.h
+#define	GUI_CHANNEL_12V				0x0		// CHECKME - possibly gather all definitions that are common to hardware and GUI into separate file?
 // CurrentLimit
-#define	GUI_CURRENT_LIM_HIGH	0x1
-#define	GUI_CURRENT_LIM_LOW	 	0x0
+#define	GUI_CURRENT_RANGE_HIGH		0x1
+#define	GUI_CURRENT_RANGE_LOW	 	0x0
 
 
 

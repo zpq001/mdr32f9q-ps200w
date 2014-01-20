@@ -126,14 +126,35 @@ typedef struct {
             uint32_t a;
             uint32_t b;
         } data;
+		//----- voltage -----//
+		struct {
+			uint8_t channel;
+			int32_t value;
+		} voltage_setting;
         struct {
-            uint16_t mode;
-            uint16_t enable;
-            uint32_t value;
+			uint8_t channel;
+            uint8_t mode;
+            uint8_t enable;
+            int32_t value;
         } voltage_limit_setting;
+		//----- current -----//
+		struct {
+			uint8_t channel;
+			uint8_t range;
+			int32_t value;
+		} current_setting;
+		struct {
+			uint8_t channel;		// channel to affect
+			uint8_t range;			// 20A (low) or 40A (high)
+			uint8_t mode;			// min or max limit
+			uint8_t enable;			// enable/disable limit check
+			int32_t value;			// new value
+		} current_limit_setting;
+		struct {
+			uint8_t channel;
+			uint8_t new_range;
+		} current_range_setting;
     };
-    //	uint32_t data_a;
-    //	uint32_t data_b;
 } conveter_message_t;
 
 
@@ -147,11 +168,14 @@ enum converterTaskCmd {
 	
 	CONVERTER_SWITCH_TO_5VCH,	
 	CONVERTER_SWITCH_TO_12VCH,
-	CONVERTER_SET_CURRENT_RANGE,		
+			
 	CONVERTER_SET_VOLTAGE,		
 	CONVERTER_SET_VOLTAGE_LIMIT,
 	
 	CONVERTER_SET_CURRENT,		
+	CONVERTER_SET_CURRENT_RANGE,
+	CONVERTER_SET_CURRENT_LIMIT,
+	
 	CONVERTER_INITIALIZE
 };
 
@@ -177,6 +201,8 @@ enum converterTaskCmd {
 	has related limitations and settings, so if current range is changed, current setting is changed too.
 */
 
+
+/*
 typedef struct {
 	uint16_t setting;	
 	uint16_t MINIMUM;					// const, minimum avaliable current setting 
@@ -200,7 +226,7 @@ typedef struct {
 	uint16_t LIMIT_MAX;					// const, maximum current limit setting
 	uint8_t enable_low_limit : 1;		
 	uint8_t enable_high_limit : 1;
-} voltage_setting_t;
+} voltage_setting_t; 
 
 typedef struct {
 	uint8_t CHANNEL : 1;						// const
@@ -213,6 +239,33 @@ typedef struct {
 	current_setting_t current_low_range;
 	current_setting_t current_high_range;
 	current_setting_t *current;
+} converter_regulation_t;
+*/
+
+typedef struct {
+	uint16_t setting;	
+	uint16_t MINIMUM;					// const, minimum avaliable setting 
+	uint16_t MAXIMUM;					// const, maximum avaliable setting 
+	uint16_t limit_low;
+	uint16_t limit_high;
+	uint16_t LIMIT_MIN;					// const, minimum current setting
+	uint16_t LIMIT_MAX;					// const, maximum current setting
+	uint8_t enable_low_limit : 1;		
+	uint8_t enable_high_limit : 1;
+} reg_setting_t;
+
+typedef struct {
+	uint8_t CHANNEL : 1;						// const
+	uint8_t load_state : 1;	
+	uint8_t current_range : 1;
+	uint8_t overload_protection_enable : 1;
+	uint8_t overload_timeout;
+	// Voltage
+	voltage_setting_t voltage;
+	// Current
+	reg_setting_t current_low_range;
+	reg_setting_t current_high_range;
+	
 } converter_regulation_t;
 
 

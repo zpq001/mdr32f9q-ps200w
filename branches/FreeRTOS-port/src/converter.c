@@ -70,6 +70,42 @@ uint32_t conv_state = CONV_OFF;
 
 
 
+#define VALUE_OK					0x00
+#define VALUE_BOUND_BY_SOFT_MAX		0x01
+#define VALUE_BOUND_BY_SOFT_MIN		0x02
+#define VALUE_BOUND_BY_ABS_MAX		0x04
+#define VALUE_BOUND_BY_ABS_MIN		0x08
+
+
+static uint8_t SetRegulationValue(reg_setting_t *r, int32_t new_value)
+{
+	r->
+
+}
+
+
+
+
+//---------------------------------------------------------------------------//
+// 	Set converter output voltage
+//	input:
+//		channel - converter channel to affect
+//		new_voltage - new value to check and set
+//		*err_code - return code providing information about 
+//			limiting new value by absolute and software limits
+//	output:
+//		non-zero if current channel is affected
+//---------------------------------------------------------------------------//
+static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_voltage, uint8_t *err_code)
+{
+	
+
+}
+
+
+
+
+
 
 static uint16_t CheckSetVoltageRange(int32_t new_set_voltage, uint8_t *err_code)
 {

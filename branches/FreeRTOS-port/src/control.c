@@ -43,6 +43,12 @@ void SetConverterState(uint8_t newState)
 		PORT_ResetBits(MDR_PORTF, 1<<EN);
 }
 
+uint8_t GetConverterState(void)
+{
+	//return PORT_CheckBits(MDR_PORTF, 1<<EN);
+	return (MDR_PORTF->RXTX & (1<<EN)) ? CONVERTER_ON : CONVERTER_OFF;
+}
+
 //-------------------------------------------------------//
 // Feedback channel select (5V or 12V)
 //-------------------------------------------------------//

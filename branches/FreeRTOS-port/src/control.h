@@ -60,6 +60,7 @@ typedef struct
 uint8_t GetOverloadStatus(void);
 uint8_t GetACLineStatus(void);
 
+uint8_t GetConverterState(void);
 
 void SetConverterState(uint8_t newState);
 void SetFeedbackChannel(uint8_t newChannel);

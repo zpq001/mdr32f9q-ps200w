@@ -11,7 +11,7 @@
 #define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
 #define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
-
+/*
 // CheckSetVoltageRange error codes			// TODO: bring into *.c file
 #define VCHECK_OK				0x01
 #define VCHECK_ABS_MAX			0x02	// ABS limits have greater priority
@@ -36,7 +36,14 @@
 #define SET_HIGH_VOLTAGE_LIMIT	0x02
 #define SET_LOW_CURRENT_LIMIT	0x03
 #define SET_HIGH_CURRENT_LIMIT	0x04
+*/
+#define LIMIT_TYPE_LOW			0x00
+#define LIMIT_TYPE_HIGH			0x01
 
+
+//TODO - move it to some common for all tasks header
+#define TID_UART		0x01
+#define TID_GUI			0x02
 
 //---------------------------------------------//
 // Converter_HWProcess
@@ -79,6 +86,17 @@
 //---------------------------------------------//
 // Other
 
+// Extended converter channel definition - used when
+// currently operating channel should be updated
+#define OPERATING_CHANNEL 2
+
+// Extended converter current range definition - used when
+// currently operating range should be updated
+#define OPERATING_CURRENT_RANGE 2
+
+
+
+
 #define HW_IRQ_PERIOD				(16*200)		// in units of 62.5ns, must be <= timer period
 #define HW_ADC_CALL_PERIOD			5				// in units of HW_IRQ period
 #define HW_UART2_RX_CALL_PERIOD		5				// in units of HW_IRQ period
@@ -98,12 +116,15 @@
 #define CMD_ON				0x0010
 #define CMD_OFF				0x0020
 
-#define OVERLOAD_IGNORE_TIMEOUT		(5*100)		// 100 ms
-#define OVERLOAD_TIMEOUT			5			// 1 ms
+#define OVERLOAD_IGNORE_TIMEOUT		(5*100)		// 100 ms	- delay after converter turn ON and first overload check
+//#define OVERLOAD_TIMEOUT			5			// 1 ms
 #define MINIMAL_OFF_TIME			(5*40)		// 40 ms
 #define USER_TIMEOUT				(5*20)		// 20 ms	- used for delay between channel switch and ON command
 #define LED_BLINK_TIMEOUT			(5*100)		// 100ms	- used for charging indication
 #define OVERLOAD_WARNING_TIMEOUT	(5*200)		// 200ms	- used for sound overload warning
+
+#define MIN_OVERLOAD_TIMEOUT		0
+#define MAX_OVERLOAD_TIMEOUT		(5*10)
 
 // These defines set behavior of controller in case when 
 // error status is generated simultaneously with processing OFF command
@@ -120,7 +141,8 @@
 
 
 typedef struct {
-    uint32_t type;
+    uint16_t type;
+	uint16_t sender;
     union {
         struct {
             uint32_t a;
@@ -133,7 +155,7 @@ typedef struct {
 		} voltage_setting;
         struct {
 			uint8_t channel;
-            uint8_t mode;
+            uint8_t type;
             uint8_t enable;
             int32_t value;
         } voltage_limit_setting;
@@ -154,6 +176,9 @@ typedef struct {
 			uint8_t channel;
 			uint8_t new_range;
 		} current_range_setting;
+		struct {
+			uint8_t new_channel;
+		} channel_setting;
     };
 } conveter_message_t;
 
@@ -168,6 +193,8 @@ enum converterTaskCmd {
 	
 	CONVERTER_SWITCH_TO_5VCH,	
 	CONVERTER_SWITCH_TO_12VCH,
+	
+	CONVERTER_SWITCH_CHANNEL,
 			
 	CONVERTER_SET_VOLTAGE,		
 	CONVERTER_SET_VOLTAGE_LIMIT,
@@ -179,21 +206,6 @@ enum converterTaskCmd {
 	CONVERTER_INITIALIZE
 };
 
-/*
-#define CONVERTER_TICK				0xFF
-#define CONVERTER_UPDATE			0xFE
-#define CONVERTER_TURN_ON			0x01
-#define CONVERTER_TURN_OFF			0x02
-#define CONVERTER_SWITCH_TO_5VCH	0x03
-#define CONVERTER_SWITCH_TO_12VCH	0x04
-#define SET_CURRENT_LIMIT_20A		0x05
-#define SET_CURRENT_LIMIT_40A		0x06
-#define CONVERTER_SET_VOLTAGE		0x07
-#define CONVERTER_SET_CURRENT		0x08
-#define CONVERTER_INITIALIZE		0x09
-#define CONVETER_SET_VOLTAGE_LIMIT	0x0A
-*/
-
 
 /*
 	There are two channels in the power supply. Every channel has it's own voltage and current settings.
@@ -202,45 +214,6 @@ enum converterTaskCmd {
 */
 
 
-/*
-typedef struct {
-	uint16_t setting;	
-	uint16_t MINIMUM;					// const, minimum avaliable current setting 
-	uint16_t MAXIMUM;					// const, maximum avaliable current setting 
-	uint16_t limit_low;
-	uint16_t limit_high;
-	uint16_t LIMIT_MIN;					// const, minimum current limit setting
-	uint16_t LIMIT_MAX;					// const, maximum current limit setting
-	uint8_t enable_low_limit : 1;		
-	uint8_t enable_high_limit : 1;
-	uint8_t RANGE : 1;					// const, used for current range distinction
-} current_setting_t;
-
-typedef struct {
-	uint16_t setting;	
-	uint16_t MINIMUM;					// const, minimum avaliable current setting 
-	uint16_t MAXIMUM;					// const, maximum avaliable current setting 
-	uint16_t limit_low;
-	uint16_t limit_high;
-	uint16_t LIMIT_MIN;					// const, minimum current limit setting
-	uint16_t LIMIT_MAX;					// const, maximum current limit setting
-	uint8_t enable_low_limit : 1;		
-	uint8_t enable_high_limit : 1;
-} voltage_setting_t; 
-
-typedef struct {
-	uint8_t CHANNEL : 1;						// const
-	uint8_t load_state : 1;	
-	uint8_t overload_protection_enable : 1;
-	uint8_t overload_timeout;
-	// Voltage
-	voltage_setting_t voltage;
-	// Current
-	current_setting_t current_low_range;
-	current_setting_t current_high_range;
-	current_setting_t *current;
-} converter_regulation_t;
-*/
 
 typedef struct {
 	uint16_t setting;	
@@ -252,19 +225,21 @@ typedef struct {
 	uint16_t LIMIT_MAX;					// const, maximum current setting
 	uint8_t enable_low_limit : 1;		
 	uint8_t enable_high_limit : 1;
+	uint8_t RANGE : 1;					// used only for current
 } reg_setting_t;
 
 typedef struct {
 	uint8_t CHANNEL : 1;						// const
 	uint8_t load_state : 1;	
-	uint8_t current_range : 1;
+	//uint8_t current_range : 1;
 	uint8_t overload_protection_enable : 1;
-	uint8_t overload_timeout;
+	uint16_t overload_timeout;
 	// Voltage
-	voltage_setting_t voltage;
+	reg_setting_t voltage;
 	// Current
 	reg_setting_t current_low_range;
 	reg_setting_t current_high_range;
+	reg_setting_t* current;
 	
 } converter_regulation_t;
 

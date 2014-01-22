@@ -14,10 +14,25 @@
 
 
 
+
+
+
+
 typedef struct {
 	uint32_t type;
-	uint32_t data;
-} gui_incoming_msg_t;
+	union {
+        struct {
+            uint32_t a;
+        } data;
+		//----- voltage/current -----//
+		struct {
+			uint8_t spec;
+			uint8_t channel;
+			uint8_t type;
+			uint8_t current_range;
+		} converter_event;
+	};
+} gui_msg_t;
 
 
 enum guiTaskCmd {
@@ -27,6 +42,8 @@ enum guiTaskCmd {
 	GUI_TASK_RESTORE_ALL,
 	GUI_TASK_EEPROM_STATE,
 	
+	GUI_TASK_UPDATE_CONVERTER_STATE,
+	
 	GUI_TASK_UPDATE_VOLTAGE_CURRENT,
 	GUI_TASK_UPDATE_VOLTAGE_SETTING,
 	GUI_TASK_UPDATE_CURRENT_SETTING,	
@@ -35,6 +52,15 @@ enum guiTaskCmd {
 	GUI_TASK_UPDATE_TEMPERATURE_INDICATOR,
 	GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS
 };
+
+
+
+#define	VOLTAGE_SETTING_CHANGED			(1<<0)
+#define CURRENT_SETTING_CHANGED			(1<<1)
+#define VOLTAGE_LIMIT_CHANGED			(1<<2)
+#define CURRENT_LIMIT_CHANGED			(1<<3)
+#define CURRENT_RANGE_CHANGED			(1<<4)
+#define CHANNEL_CHANGED					(1<<5)
 
 /*
 #define GUI_TASK_REDRAW				0		// draw

@@ -79,18 +79,65 @@ void GUI_Init(void)
 
 }
 
+static uint8_t converter_channel;
+static uint8_t converter_current_range;
+
+
+static void UpdateConverterChannel(uint8_t channel)
+{
+	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+	converter_channel = channel;
+	setFeedbackChannelIndicator(channel);
+	converter_current_range = r->current->RANGE;
+	setCurrentLimitIndicator(range);
+	setVoltageSetting(r->voltage.setting);
+	setCurrentSetting(r->current->setting);
+}
+
+static void UpdateConverterCurrentRange(uint8_t range)
+{
+	converter_current_range = range;
+	setCurrentLimitIndicator(range);
+}
+
+
+static void UpdateVoltageSetting(uint8_t channel)
+{
+	if (channel == converter_channel)
+	{
+		converter_regulation_t *r = (converter_channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+		setVoltageSetting(r->voltage.setting);
+	}
+} 
+
+static void UpdateCurrentSetting(uint8_t channel, uint8_t current_range)
+{
+	if ((channel == converter_channel) && (converter_current_range == current_range))
+	{
+		converter_regulation_t *r = (converter_channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+		reg_setting_t *s = (converter_current_range == CURRENT_RANGE_LOW) ? r->current_low_range : r->current_high_range;
+		setCurrentSetting(s->setting);
+	}
+} 
+
+
+
+
+
+
+// TODO: set proper min and max for voltage and current spinboxes
 
 
 void vTaskGUI(void *pvParameters) 
 {
-	gui_incoming_msg_t msg;
+	gui_msg_t msg;
 	uint8_t guiKeyCode;
 	uint8_t guiKeyEvent;
 	int16_t encoder_delta;
 	guiEvent_t guiEvent;
 	
 	// Initialize
-	xQueueGUI = xQueueCreate( 10, sizeof( gui_incoming_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
+	xQueueGUI = xQueueCreate( 10, sizeof( gui_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
 	if( xQueueGUI == 0 )
 	{
 		// Queue was not created and must not be used.
@@ -132,25 +179,39 @@ void vTaskGUI(void *pvParameters)
 				break;
 			case GUI_TASK_EEPROM_STATE:
 				guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
-				guiEvent.spec = (uint8_t)msg.data;
+				guiEvent.spec = (uint8_t)msg.data.a;
 				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
 				guiCore_ProcessMessageQueue();
 				break;
 			case GUI_TASK_PROCESS_BUTTONS:
 				// msg.data[31:16] = key code, 	msg.data[15:0] = key event type
-				guiKeyCode = encodeGuiKey((uint16_t)msg.data);
+				guiKeyCode = encodeGuiKey((uint16_t)msg.data.a);
 				if (guiKeyCode == 0)
 					break;
-				guiKeyEvent = encodeGuiKeyEvent((uint16_t)(msg.data >> 16));
+				guiKeyEvent = encodeGuiKeyEvent((uint16_t)(msg.data.a >> 16));
 				if (guiKeyEvent == 0)
 					break;
 				guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
 				break;
 			case GUI_TASK_PROCESS_ENCODER:
-				encoder_delta = (int16_t)msg.data;
+				encoder_delta = (int16_t)msg.data.a;
 				if (encoder_delta)
 					guiCore_ProcessEncoderEvent(encoder_delta);
 				break;
+			case GUI_TASK_UPDATE_CONVERTER_STATE:
+				if (msg.converter_event.spec = VOLTAGE_SETTING_CHANGED)
+					UpdateVoltageSetting(msg.converter_event.channel);
+				else if (msg.converter_event.spec = CURRENT_SETTING_CHANGED)
+					UpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+				else if (msg.converter_event.spec = CHANNEL_CHANGED)
+				{
+					UpdateConverterChannel(msg.converter_event.channel);
+					
+				}
+					
+				break;
+			
+			/*	
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
 				setVoltageIndicator(voltage_adc);
 				setCurrentIndicator(current_adc);
@@ -180,6 +241,7 @@ void vTaskGUI(void *pvParameters)
 				setLowVoltageLimitSetting(regulation_setting_p->voltage.enable_low_limit, regulation_setting_p->voltage.limit_low);
 				setHighVoltageLimitSetting(regulation_setting_p->voltage.enable_high_limit, regulation_setting_p->voltage.limit_high);
 				break;
+				*/
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
 				setTemperatureIndicator(converter_temp_celsius);
 				break;

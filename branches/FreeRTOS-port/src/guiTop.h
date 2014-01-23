@@ -24,7 +24,15 @@ typedef struct {
         struct {
             uint32_t a;
         } data;
-		//----- voltage/current -----//
+		//----- key driver ----//
+		struct {
+			uint16_t event;
+			uint16_t code;
+		} key_event;
+		struct {
+            int16_t delta;
+        } encoder_event;
+		//----- converter -----//
 		struct {
 			uint8_t spec;
 			uint8_t channel;
@@ -97,7 +105,6 @@ void vTaskGUI(void *pvParameters);
 void applyGuiVoltageSetting(uint16_t new_set_voltage);
 void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value);
 void applyGuiCurrentSetting(uint16_t new_set_current);
-
 void applyGuiCurrentRange(uint8_t new_range);
 
 

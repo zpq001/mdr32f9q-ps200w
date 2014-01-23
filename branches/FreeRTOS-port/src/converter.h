@@ -168,7 +168,7 @@ typedef struct {
 		struct {
 			uint8_t channel;		// channel to affect
 			uint8_t range;			// 20A (low) or 40A (high)
-			uint8_t mode;			// min or max limit
+			uint8_t type;			// min or max limit
 			uint8_t enable;			// enable/disable limit check
 			int32_t value;			// new value
 		} current_limit_setting;
@@ -225,11 +225,11 @@ typedef struct {
 	uint16_t LIMIT_MAX;					// const, maximum current setting
 	uint8_t enable_low_limit : 1;		
 	uint8_t enable_high_limit : 1;
-	uint8_t RANGE : 1;					// used only for current
+	uint8_t RANGE : 1;					// used as const, only for current
 } reg_setting_t;
 
 typedef struct {
-	uint8_t CHANNEL : 1;						// const
+	uint8_t CHANNEL : 1;						// used as const
 	uint8_t load_state : 1;	
 	//uint8_t current_range : 1;
 	uint8_t overload_protection_enable : 1;
@@ -258,18 +258,8 @@ extern uint32_t power_adc;		// [mW]
 
 extern uint8_t taskConverter_Enable;
 
-void Converter_ProcessADC(void);
-uint8_t Converter_SetVoltage(int32_t new_voltage);
-uint8_t Converter_SetCurrent(int32_t new_current);
-uint8_t Converter_SetSoftLimit(int32_t new_limit, converter_regulation_t *reg_p, uint8_t mode);
-void Converter_SetFeedbackChannel(uint8_t new_channel);
-void Converter_SetCurrentLimit(uint8_t new_limit);
-void Converter_Enable(void);
-void Converter_Disable(void);
+
 void Converter_Init(uint8_t default_channel);
-void Converter_Process(void);
-
-
 void vTaskConverter(void *pvParameters);
 
 void Converter_HWProcess(void);

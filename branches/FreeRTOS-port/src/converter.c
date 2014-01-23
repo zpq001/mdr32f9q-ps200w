@@ -49,8 +49,8 @@ converter_regulation_t *regulation_setting_p;
 
 
 
-const conveter_message_t converter_tick_message = 	{	CONVERTER_TICK, 0, 0 };
-const conveter_message_t converter_update_message = {	CONVERTER_UPDATE, 0, 0 };
+const conveter_message_t converter_tick_message = 	{	CONVERTER_TICK, 0	};
+const conveter_message_t converter_update_message = {	CONVERTER_UPDATE, 0 };
 //const conveter_message_t converter_init_message = {	CONVERTER_INITIALIZE, 0, 0 };
 
 
@@ -70,8 +70,9 @@ static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int3
 static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code);
 static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code);
 static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protection_enable, int16_t overload_timeout, uint8_t *err_code = 0);
-// SetChannel
-// SetCurrentRange
+static uint8_t Converter_SetChannel(uint8_t new_value);
+static uint8_t Converter_SetCurrentRange(uint8_t channel, uint8_t new_value);
+
 
 uint32_t conv_state = CONV_OFF;
 
@@ -361,7 +362,10 @@ static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protectio
 
 //---------------------------------------------------------------------------//
 // 	Set converter channel
-//	CHECKME
+//	input:
+//		new_value - converter channel to select
+//	output:
+//		non-zero if channel setting has been applied
 //---------------------------------------------------------------------------//
 static uint8_t Converter_SetChannel(uint8_t new_value)
 {
@@ -391,7 +395,11 @@ static uint8_t Converter_SetChannel(uint8_t new_value)
 
 //---------------------------------------------------------------------------//
 // 	Set converter current range
-//	CHECKME
+//	input:
+//		channel - converter channel to affect
+//		new_value - new current range 
+//	output:
+//		non-zero if channel setting has been applied
 //---------------------------------------------------------------------------//
 static uint8_t Converter_SetCurrentRange(uint8_t channel, uint8_t new_value)
 {
@@ -417,6 +425,25 @@ static uint8_t Converter_SetCurrentRange(uint8_t channel, uint8_t new_value)
 		return 0;
 }
 
+
+
+static uint8_t ValidateNewChannel(uint8_t channel)
+{
+	if ( ((channel == CHANNEL_5V) || (channel == CHANNEL_12V)) && (channel != regulation_setting_p->CHANNEL) )
+		return 1;
+	else
+		return 0;
+}
+
+
+static uint8_t ValidateNewCurrentRange(uint8_t channel, uint8_t current_range)
+{
+	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+	if (r->current->RANGE != current_range)
+		return 1;
+	else
+		return 0;
+}
 
 
 
@@ -516,7 +543,7 @@ void Converter_Init(uint8_t default_channel)
 	
 	
 	// Select default channel
-	Converter_SetChannel(CHANNEL_12V);
+	Converter_SetChannel(CHANNEL_12V);	// will apply other settings
 
 	/*
 	if (default_channel == CHANNEL_12V)
@@ -638,6 +665,7 @@ void vTaskConverter(void *pvParameters)
 		switch (msg.type)
 		{
 			case CONVERTER_SET_VOLTAGE:
+				if (msg.voltage_setting.channel == OPERATING_CHANNEL) msg.voltage_setting.channel = regulation_setting_p->CHANNEL;
 				Converter_SetVoltage(msg.voltage_setting.channel, msg.voltage_setting.value, &err_code);
 				//----- Send notification to GUI -----//
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
@@ -650,6 +678,8 @@ void vTaskConverter(void *pvParameters)
 				msg.type = 0;
 				break;
 			case CONVERTER_SET_CURRENT:
+				if (msg.current_setting.channel == OPERATING_CHANNEL) msg.current_setting.channel = regulation_setting_p->CHANNEL;
+				if (msg.current_setting.range == OPERATING_CURRENT_RANGE) msg.current_setting.range = regulation_setting_p->current->RANGE;
 				Converter_SetCurrent(msg.current_setting.channel, msg.current_setting.range, msg.current_setting.value, &err_code);
 				//----- Send notification to GUI -----//
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
@@ -663,6 +693,7 @@ void vTaskConverter(void *pvParameters)
 				msg.type = 0;
 				break;
 			case CONVERTER_SET_VOLTAGE_LIMIT:
+				if (msg.voltage_limit_setting.channel == OPERATING_CHANNEL) msg.voltage_limit_setting.channel = regulation_setting_p->CHANNEL;
 				Converter_SetVoltageLimit(msg.voltage_limit_setting.channel, msg.voltage_limit_setting.type, 
 									msg.voltage_limit_setting.value, msg.voltage_limit_setting.enable, &err_code);
 				//----- Send notification to GUI -----//					
@@ -677,7 +708,8 @@ void vTaskConverter(void *pvParameters)
 				msg.type = 0;
 				break;
 			case CONVERTER_SET_CURRENT_LIMIT:
-				// static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code);
+				if (msg.current_limit_setting.channel == OPERATING_CHANNEL) msg.current_limit_setting.channel = regulation_setting_p->CHANNEL;
+				if (msg.current_limit_setting.range == OPERATING_CURRENT_RANGE) msg.current_limit_setting.range = regulation_setting_p->current->RANGE;
 				Converter_SetCurrentLimit(msg.current_limit_setting.channel, msg.current_limit_setting.range, msg.current_limit_setting.type, 
 									msg.current_limit_setting.value, msg.current_limit_setting.enable, &err_code);
 				//----- Send notification to GUI -----//					
@@ -704,7 +736,7 @@ void vTaskConverter(void *pvParameters)
 				break;
 		}
 		
-		// Other messages should get processing depending on converter state
+		// Other messages get processing depending on converter state
 
 		while(msg.type)
 		{
@@ -715,31 +747,40 @@ void vTaskConverter(void *pvParameters)
 				case CONV_OFF:
 					if (msg.type == CONVERTER_SWITCH_CHANNEL)
 					{
-						Converter_SetChannel(msg.channel_setting.new_channel);
-						ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-						//----- Send notification to GUI -----//
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = CHANNEL_CHANGED;
-						gui_msg.converter_event.channel = msg.channel_setting.new_channel;
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-						//------------------------------------//
+						if (ValidateNewChannel(msg.channel_setting.new_channel))
+						{
+							Converter_SetChannel(msg.channel_setting.new_channel);
+							ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+							//----- Send notification to GUI -----//
+							gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+							gui_msg.converter_event.spec = CHANNEL_CHANGED;
+							gui_msg.converter_event.channel = msg.channel_setting.new_channel;
+							gui_msg.converter_event.current_range = regulation_setting_p->current->RANGE;
+							xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+							//------------------------------------//
+							while(ctrl_HWProcess);
+						}
 						msg.type = 0;
-						while(ctrl_HWProcess);
 						break;
 					}
 					if (msg.type == CONVERTER_SET_CURRENT_RANGE)
 					{
-						Converter_SetCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.new_range);
-						ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
-						//----- Send notification to GUI -----//
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
-						gui_msg.converter_event.channel = msg.current_range_setting.channel;
-						gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-						//------------------------------------//
+						if (msg.current_range_setting.channel == OPERATING_CHANNEL) msg.current_range_setting.channel = regulation_setting_p->CHANNEL;
+						if (msg.current_range_setting.range == OPERATING_CURRENT_RANGE) msg.current_range_setting.range = regulation_setting_p->current->RANGE;
+						if (ValidateNewCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.range)
+						{
+							Converter_SetCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.new_range);
+							ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
+							//----- Send notification to GUI -----//
+							gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+							gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
+							gui_msg.converter_event.channel = msg.current_range_setting.channel;
+							gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
+							xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+							//------------------------------------//
+							while(ctrl_HWProcess);
+						}
 						msg.type = 0;
-						while(ctrl_HWProcess);
 						break;
 					}
 
@@ -770,11 +811,22 @@ void vTaskConverter(void *pvParameters)
 					}
 					if (msg.type == CONVERTER_SWITCH_CHANNEL)
 					{
-						conv_state = disableConverterAndCheckHWState();
-						vTaskDelay(4);
+						if (ValidateNewChannel(msg.channel_setting.new_channel))
+						{
+							conv_state = disableConverterAndCheckHWState();
+							vTaskDelay(4);
+						}
+						else
+						{
+							msg.type = 0;
+						}
 						break;
 					}
-					// CONVERTER_SET_CURRENT_RANGE is ignored when converter is ON
+					
+					if (msg.type == CONVERTER_SET_CURRENT_RANGE)
+					{
+						// CONVERTER_SET_CURRENT_RANGE is ignored when converter is ON
+					}
 					
 					if (state_HWProcess & STATE_HW_OFF)
 					{

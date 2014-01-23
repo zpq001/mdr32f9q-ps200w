@@ -30,7 +30,7 @@
 
 xQueueHandle xQueueDispatcher;
 
-const dispatch_incoming_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
+const dispatch_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
 
 
 
@@ -92,7 +92,6 @@ void vTaskDispatcher(void *pvParameters)
 	while(1)
 	{
 		xQueueReceive(xQueueDispatcher, &income_msg, portMAX_DELAY);
-		converter_msg.type = 0;
 		
 		switch (income_msg.type)
 		{
@@ -107,13 +106,15 @@ void vTaskDispatcher(void *pvParameters)
 				if (buttons.action_down & SW_CHANNEL)
 				{
 					// Send switch channel to 5V message
-					converter_msg.type = CONVERTER_SWITCH_TO_5VCH;
+					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+					converter_msg.channel_setting.new_channel = CHANNEL_5V;
 					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
 				else if (buttons.action_up & SW_CHANNEL)
 				{
 					// Send switch channel to 12V message
-					converter_msg.type = CONVERTER_SWITCH_TO_12VCH;
+					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+					converter_msg.channel_setting.new_channel = CHANNEL_12V;
 					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
 				
@@ -130,7 +131,6 @@ void vTaskDispatcher(void *pvParameters)
 					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				}
 				
-				converter_msg.type  = 0;
 				
 				//------------- GUI control --------------//
 				
@@ -139,19 +139,21 @@ void vTaskDispatcher(void *pvParameters)
 				mask = 0x0001;
 				while(mask)
 				{
+					gui_msg.key_event.code = mask;
+					
 					if (buttons.action_down & mask)
 					{
-						gui_msg.data = mask | (BTN_EVENT_DOWN << 16);
+						gui_msg.key_event.event = BTN_EVENT_DOWN;
 						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					if (buttons.action_up & mask)
 					{
-						gui_msg.data = mask | (BTN_EVENT_UP << 16);
+						gui_msg.key_event.event = BTN_EVENT_UP;
 						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					if (buttons.action_hold & mask)
 					{
-						gui_msg.data = mask | (BTN_EVENT_HOLD << 16);
+						gui_msg.key_event.event = BTN_EVENT_HOLD;
 						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					mask <<= 1;
@@ -161,7 +163,7 @@ void vTaskDispatcher(void *pvParameters)
 				if (encoder_delta)
 				{
 					gui_msg.type = GUI_TASK_PROCESS_ENCODER;
-					gui_msg.data = (uint32_t)encoder_delta;
+					gui_msg.encoder_event.delta = encoder_delta;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				}
 				
@@ -170,42 +172,47 @@ void vTaskDispatcher(void *pvParameters)
 			//----- button and encoder emulation -----//
 			case DISPATCHER_EMULATE_BUTTON:
 				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
-				gui_msg.data = income_msg.data;
+				gui_msg.key_event.event = (uint16_t)income_msg.data;
+				gui_msg.key_event.code = (uint16_t)(income_msg.data >> 16);
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				break;
 			case DP_EMU_ENC_DELTA:
 				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
-				gui_msg.data = income_msg.data;
+				gui_msg.encoder_event.delta = (int16_t)income_msg.data;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				break;
 			
 			//----- converter control -----//
 			case DP_CONVERTER_TURN_ON:
 				converter_msg.type = CONVERTER_TURN_ON;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			case DP_CONVERTER_TURN_OFF:
 				converter_msg.type = CONVERTER_TURN_OFF;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			case DP_CONVERTER_SET_VOLTAGE:
 				converter_msg.type = CONVERTER_SET_VOLTAGE;
-				converter_msg.data.a = income_msg.data;
+				converter_msg.voltage_setting.channel = OPERATING_CHANNEL;		// TODO - move channel specifier to UART parser
+				converter_msg.voltage_setting.value = income_msg.data;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			case DP_CONVERTER_SET_CURRENT:
 				converter_msg.type = CONVERTER_SET_CURRENT;
-				converter_msg.data.a = income_msg.data;
+				converter_msg.current_setting.channel = OPERATING_CHANNEL;		
+				converter_msg.current_setting.range = OPERATING_CURRENT_RANGE;
+				converter_msg.current_setting.value = income_msg.data;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			case DP_CONVERTER_SET_CURRENT_LIMIT:
 				converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
-				if (income_msg.data == 20)
-					converter_msg.data.a = CURRENT_RANGE_LOW;
-				else if (income_msg.data == 40)
-					converter_msg.data.a = CURRENT_RANGE_HIGH;
+				converter_msg.current_range_setting.channel = OPERATING_CHANNEL;		
+				converter_msg.current_range_setting.new_range = (income_msg.data == 20) ? CURRENT_RANGE_LOW : CURRENT_RANGE_HIGH;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 		}
 		
 		
-		if (converter_msg.type)
-			xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 	}
 	
 }

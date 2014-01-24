@@ -7,7 +7,24 @@
 	Globals used:
 
 		
-	Operation: FIXME
+	Operation: 
+	
+ ___________________________________
+|          CONVERTER TASK           |       <- top layer
+|___________________________________|          provides interface to other system components
+                  |
+                  v
+ ___________________________________
+|   Converter HW control funtions   |       <- middle layer
+|___________________________________|		   stores settings of voltage, current, overload
+                  |
+                  v
+ ___________________________________
+|   ISR - based low level control   |       <- low layer
+|___________________________________|	
+
+
+
 
 ********************************************************************/
 

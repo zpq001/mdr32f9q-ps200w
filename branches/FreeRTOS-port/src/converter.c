@@ -86,7 +86,7 @@ static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t 
 static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int32_t new_value, uint8_t *err_code);
 static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code);
 static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code);
-static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protection_enable, int16_t overload_timeout, uint8_t *err_code = 0);
+static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protection_enable, int16_t overload_timeout, uint8_t *err_code);
 static uint8_t Converter_SetChannel(uint8_t new_value);
 static uint8_t Converter_SetCurrentRange(uint8_t channel, uint8_t new_value);
 
@@ -228,7 +228,7 @@ static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t 
 //	output:
 //		non-zero if operating channel has been affected
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t *err_code = 0)
+static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t *err_code)
 {
 	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : 
 								((channel == CHANNEL_12V) ? &channel_12v : regulation_setting_p);
@@ -240,7 +240,7 @@ static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t 
 	// Update hardware
 	if (r == regulation_setting_p)
 	{
-		ApplyAnalogRegultaion(APPLY_VOLTAGE);
+		ApplyAnalogRegulation(APPLY_VOLTAGE);
 		operating_channel_affected = 1;
 	}
 	return operating_channel_affected;
@@ -258,12 +258,12 @@ static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t 
 //	output:
 //		non-zero if operating channel has been affected
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int32_t new_value, uint8_t *err_code = 0)
+static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int32_t new_value, uint8_t *err_code)
 {
 	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : 
 								((channel == CHANNEL_12V) ? &channel_12v : regulation_setting_p);
-	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? r->current_low_range : 
-					   ((current_range == CURRENT_RANGE_HIGH) ? r->current_high_range : r->current);
+	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &r->current_low_range : 
+					   ((current_range == CURRENT_RANGE_HIGH) ? &r->current_high_range : r->current);
 	uint8_t operating_channel_affected = 0;
 	
 	uint8_t result = SetRegulationValue(s, new_value);
@@ -272,7 +272,7 @@ static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int3
 	// Update hanrdware
 	if (s == regulation_setting_p->current)
 	{
-		ApplyAnalogRegultaion(APPLY_CURRENT);
+		ApplyAnalogRegulation(APPLY_CURRENT);
 		operating_channel_affected = 1;
 	}
 	return 	operating_channel_affected;			   
@@ -291,7 +291,7 @@ static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int3
 //	output:
 //		non-zero if operating channel has been affected
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code = 0)
+static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code)
 {
 	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : 
 								((channel == CHANNEL_12V) ? &channel_12v : regulation_setting_p);
@@ -300,7 +300,7 @@ static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, in
 	if (err_code) *err_code = result;
 	
 	// Ensure that voltage setting lies inside new limits
-	return Converter_SetVoltage(channel, r->voltage.setting);
+	return Converter_SetVoltage(channel, r->voltage.setting, 0);
 }
 
 //---------------------------------------------------------------------------//
@@ -316,18 +316,18 @@ static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, in
 //	output:
 //		non-zero if operating channel has been affected
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code = 0)
+static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code)
 {
 	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : 
 								((channel == CHANNEL_12V) ? &channel_12v : regulation_setting_p);
-	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? r->current_low_range : 
-					   ((current_range == CURRENT_RANGE_HIGH) ? r->current_high_range : r->current);
+	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &r->current_low_range : 
+					   ((current_range == CURRENT_RANGE_HIGH) ? &r->current_high_range : r->current);
 	
 	uint8_t result = SetRegulationLimit(s, limit_type, new_value, enable);
 	if (err_code) *err_code = result;
 	
 	// Ensure that current setting lies inside new limits
-	return Converter_SetCurrent(channel, current_range, s->setting);
+	return Converter_SetCurrent(channel, current_range, s->setting, 0);
 }
 
 
@@ -340,7 +340,7 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 //	output:
 //		non-zero if operating channel has been affected
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protection_enable, int16_t overload_timeout, uint8_t *err_code = 0)
+static uint8_t Converter_SetProtectionControl(uint8_t channel, uint8_t protection_enable, int16_t overload_timeout, uint8_t *err_code)
 {
 	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : 
 								((channel == CHANNEL_12V) ? &channel_12v : regulation_setting_p);
@@ -393,7 +393,7 @@ static uint8_t Converter_SetChannel(uint8_t new_value)
 	if ( (new_value != CHANNEL_5V) && (new_value != CHANNEL_12V) )
 		return 0;
 	
-	regulation_setting_p = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+	regulation_setting_p = (new_value == CHANNEL_5V) ? &channel_5v : &channel_12v;
 	
 	// Apply controls
 	__disable_irq();
@@ -625,7 +625,7 @@ static uint32_t disableConverterAndCheckHWState(void)
 
 
 
-static void SoundEvent_OnSettingChanged(uint8_t code)
+static void SoundEvent_OnSettingChanged(uint8_t err_code)
 {
 	uint32_t sound_msg;
 	if ((err_code == VALUE_BOUND_BY_SOFT_MAX) || (err_code == VALUE_BOUND_BY_SOFT_MIN))
@@ -635,6 +635,13 @@ static void SoundEvent_OnSettingChanged(uint8_t code)
 	else
 		sound_msg = SND_CONV_SETTING_OK;
 	sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+	xQueueSendToBack(xQueueSound, &sound_msg, 0);
+}
+
+static void SoundEvent_OnOverload(void)
+{
+	uint32_t sound_msg;
+	sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 }
 
@@ -783,8 +790,8 @@ void vTaskConverter(void *pvParameters)
 					if (msg.type == CONVERTER_SET_CURRENT_RANGE)
 					{
 						if (msg.current_range_setting.channel == OPERATING_CHANNEL) msg.current_range_setting.channel = regulation_setting_p->CHANNEL;
-						if (msg.current_range_setting.range == OPERATING_CURRENT_RANGE) msg.current_range_setting.range = regulation_setting_p->current->RANGE;
-						if (ValidateNewCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.range)
+						if (msg.current_range_setting.new_range == OPERATING_CURRENT_RANGE) msg.current_range_setting.new_range = regulation_setting_p->current->RANGE;
+						if (ValidateNewCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.new_range))
 						{
 							Converter_SetCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.new_range);
 							ctrl_HWProcess = CMD_HW_RESTART_USER_TIMER;
@@ -804,6 +811,7 @@ void vTaskConverter(void *pvParameters)
 					if (msg.type == CONVERTER_TURN_OFF)
 					{
 						conv_state = CONV_OFF;			// Reset overload flag
+						msg.type = 0;
 						break;
 					}
 					if (msg.type == CONVERTER_TURN_ON)
@@ -817,6 +825,7 @@ void vTaskConverter(void *pvParameters)
 						ctrl_HWProcess = CMD_HW_ON;
 						while(ctrl_HWProcess);
 						conv_state = CONV_ON;			// Switch to new state and reset overload flag
+						msg.type = 0;
 						break;
 					}
 					break;
@@ -854,8 +863,7 @@ void vTaskConverter(void *pvParameters)
 						{
 							// Send message to sound driver
 							// TODO: send this message in other cases (when overload is detected simultaneously with button)
-							sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
-							xQueueSendToBack(xQueueSound, &sound_msg, 0);
+							SoundEvent_OnOverload();
 						}
 						break;
 					}

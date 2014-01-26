@@ -112,7 +112,7 @@ static void UpdateCurrentSetting(uint8_t channel, uint8_t current_range)
 {
 	if ((channel == r->CHANNEL) && (converter_current_range == current_range))
 	{
-		reg_setting_t *s = (converter_current_range == CURRENT_RANGE_LOW) ? r->current_low_range : r->current_high_range;
+		reg_setting_t *s = (converter_current_range == CURRENT_RANGE_LOW) ? &r->current_low_range : &r->current_high_range;
 		setCurrentSetting(s->setting);
 	}
 } 
@@ -143,6 +143,7 @@ static void UpdateConverterCurrentRange(uint8_t channel, uint8_t current_range)
 static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
 {
 	r = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+	setFeedbackChannelIndicator( (r->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
 	UpdateConverterCurrentRange(channel, current_range);
 	setVoltageSetting(r->voltage.setting);
 }
@@ -213,26 +214,27 @@ void vTaskGUI(void *pvParameters)
 					guiCore_ProcessEncoderEvent(msg.encoder_event.delta);
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
-				if (msg.converter_event.spec = VOLTAGE_SETTING_CHANGED)
+				if (msg.converter_event.spec == VOLTAGE_SETTING_CHANGED)
 					UpdateVoltageSetting(msg.converter_event.channel);
-				else if (msg.converter_event.spec = CURRENT_SETTING_CHANGED)
+				else if (msg.converter_event.spec == CURRENT_SETTING_CHANGED)
 					UpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
-				else if (msg.converter_event.spec = VOLTAGE_LIMIT_CHANGED)
+				else if (msg.converter_event.spec == VOLTAGE_LIMIT_CHANGED)
 					UpdateVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
-				else if (msg.converter_event.spec = CURRENT_LIMIT_CHANGED)
+				else if (msg.converter_event.spec == CURRENT_LIMIT_CHANGED)
 					UpdateCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);	
-				else if (msg.converter_event.spec = CURRENT_RANGE_CHANGED)
+				else if (msg.converter_event.spec == CURRENT_RANGE_CHANGED)
 					UpdateConverterCurrentRange(msg.converter_event.channel, msg.converter_event.current_range);
-				else if (msg.converter_event.spec = CHANNEL_CHANGED)
+				else if (msg.converter_event.spec == CHANNEL_CHANGED)
 					UpdateConverterChannel(msg.converter_event.channel, msg.converter_event.current_range);
 				break;
 			
-			/*	
+				
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
 				setVoltageIndicator(voltage_adc);
 				setCurrentIndicator(current_adc);
 				setPowerIndicator(power_adc);
 				break;
+			/*
 			case GUI_TASK_UPDATE_VOLTAGE_SETTING:
 				setVoltageSetting(regulation_setting_p->voltage.setting);
 				break;

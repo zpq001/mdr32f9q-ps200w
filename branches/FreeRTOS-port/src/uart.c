@@ -218,7 +218,7 @@ void vTaskUARTReceiver(void *pvParameters)
 	char temp_str[50];
 	
 	portTickType lastExecutionTime = xTaskGetTickCount();
-	dispatch_incoming_msg_t dispatcher_msg;
+	dispatch_msg_t dispatcher_msg;
 	uart_transmiter_msg_t transmitter_msg;
 	
 	// Setup and init receiver buffer
@@ -354,7 +354,7 @@ void vTaskUARTReceiver(void *pvParameters)
 						}
 						else
 						{
-							keyCmdCode = parseKeyType(argv[1]);
+							keyCmdType = parseKeyType(argv[1]);
 							if (keyCmdCode == 0)
 							{
 								transmitter_msg.type = SEND_STRING;
@@ -362,7 +362,7 @@ void vTaskUARTReceiver(void *pvParameters)
 							}
 							else
 							{
-								keyCmdType = parseKeyCode(argv[2]);
+								keyCmdCode = parseKeyCode(argv[2]);
 								if (keyCmdType == 0)
 								{
 									transmitter_msg.type = SEND_STRING;

@@ -37,14 +37,14 @@ const dispatch_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
 
 void vTaskDispatcher(void *pvParameters) 
 {
-	dispatch_incoming_msg_t income_msg;
+	dispatch_msg_t income_msg;
 	conveter_message_t converter_msg;
-	gui_incoming_msg_t gui_msg;
+	gui_msg_t gui_msg;
 	uint16_t mask;
 	uint32_t sound_msg;
 	
 	// Initialize
-	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_incoming_msg_t ) );		// Queue can contain 5 elements of type uint32_t
+	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_msg_t ) );		// Queue can contain 5 elements of type uint32_t
 	if( xQueueDispatcher == 0 )
 	{
 		// Queue was not created and must not be used.
@@ -61,7 +61,7 @@ void vTaskDispatcher(void *pvParameters)
 	
 	// EEPROM status (fake for now)
 	gui_msg.type = GUI_TASK_EEPROM_STATE;
-	gui_msg.data = 1;	// 1 = OK, 0 = FAIL
+	gui_msg.data.a = 1;	// 1 = OK, 0 = FAIL
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	
 	// Init and start converter

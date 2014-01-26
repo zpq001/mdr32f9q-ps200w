@@ -1,4 +1,10 @@
 
+#include "MDR32Fx.h"
+
+#include "FreeRTOS.h"
+#include "queue.h"
+
+
 typedef struct {
 	uint32_t type;
 	uint32_t data;
@@ -21,7 +27,7 @@ enum dispatcher_msg_type_t {
 
 
 extern xQueueHandle xQueueDispatcher;
-extern const dispatch_incoming_msg_t dispatcher_tick_msg;
+extern const dispatch_msg_t dispatcher_tick_msg;
 
 void vTaskDispatcher(void *pvParameters);
 

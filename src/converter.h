@@ -1,5 +1,11 @@
 
 
+#include "MDR32Fx.h"
+
+#include "FreeRTOS.h"
+#include "queue.h"
+
+
 #define CONV_MAX_VOLTAGE_5V_CHANNEL		10000	// [mV]
 #define CONV_MAX_VOLTAGE_12V_CHANNEL	20000	// [mV]
 #define CONV_MIN_VOLTAGE_5V_CHANNEL		0		// [mV]
@@ -140,6 +146,8 @@
 // Task queue messages
 
 
+#pragma anon_unions
+
 typedef struct {
     uint16_t type;
 	uint16_t sender;
@@ -228,6 +236,8 @@ typedef struct {
 	uint8_t RANGE : 1;					// used as const, only for current
 } reg_setting_t;
 
+
+
 typedef struct {
 	uint8_t CHANNEL : 1;						// used as const
 	uint8_t load_state : 1;	
@@ -248,6 +258,8 @@ extern xQueueHandle xQueueConverter;
 
 extern const conveter_message_t converter_tick_message;
 
+extern converter_regulation_t channel_5v;
+extern converter_regulation_t channel_12v;
 extern converter_regulation_t *regulation_setting_p;
 
 extern volatile uint8_t cmd_ADC_to_HWProcess;

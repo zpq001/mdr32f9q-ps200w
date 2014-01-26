@@ -12,10 +12,7 @@
 #define BTN_EVENT_HOLD      GUI_KEY_EVENT_HOLD
 #define BTN_EVENT_REPEAT    GUI_KEY_EVENT_REPEAT
 
-
-
-
-
+#pragma anon_unions
 
 
 typedef struct {
@@ -102,9 +99,9 @@ void GUI_Init(void);
 extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);
 
-void applyGuiVoltageSetting(uint16_t new_set_voltage);
-void applyGuiVoltageLimit(uint8_t type, uint8_t enable, uint16_t value);
-void applyGuiCurrentSetting(uint16_t new_set_current);
+void applyGuiVoltageSetting(int32_t new_set_voltage);
+void applyGuiVoltageLimit(uint8_t type, uint8_t enable, int32_t value);
+void applyGuiCurrentSetting(int32_t new_set_current);
 void applyGuiCurrentRange(uint8_t new_range);
 
 

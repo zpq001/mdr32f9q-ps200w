@@ -8,7 +8,8 @@
 #include "semphr.h"
 
 #include "defines.h"
-#include "converter.h"		// 
+#include "converter2.h"		// 
+#include "converter2_hw.h"		// 
 #include "control.h"
 #include "adc.h"
 
@@ -64,7 +65,8 @@ void vTaskADC(void *pvParameters)
 				voltage_adc *= 5;
 				
 				current_adc = adc_current_counts>>2;
-				if (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH)
+				//if (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH)
+				if (converter_state.channel->current->RANGE == CURRENT_RANGE_HIGH)
 					current_adc *= 10;
 				else
 					current_adc *= 5;

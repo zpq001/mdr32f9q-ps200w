@@ -20,7 +20,10 @@
 
 #include "MDR32Fx.h" 
 
-
+#define HW_IRQ_PERIOD				(16*200)		// in units of 62.5ns, must be <= timer period
+#define HW_ADC_CALL_PERIOD			5				// in units of HW_IRQ period
+#define HW_UART2_RX_CALL_PERIOD		5				// in units of HW_IRQ period
+#define HW_UART2_TX_CALL_PERIOD		5				// in units of HW_IRQ period
 
 #define GUI_UPDATE_INTERVAL			25		// OS ticks
 #define CONVERTER_TICK_INTERVAL		50		// OS ticks

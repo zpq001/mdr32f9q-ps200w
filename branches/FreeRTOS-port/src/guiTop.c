@@ -28,6 +28,8 @@
 //----------------------------//
 
 #include "converter.h"	// voltage, current, etc
+#include "converter_hw.h"
+
 #include "service.h"	// temperature
 #include "control.h"	// some defines
 

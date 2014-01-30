@@ -20,7 +20,7 @@
 
 #include "buttons.h"
 #include "encoder.h"
-#include "converter.h"
+#include "converter2.h"
 #include "control.h"
 //#include "gui_top.h"
 #include "guiTop.h"
@@ -38,7 +38,7 @@ const dispatch_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
 void vTaskDispatcher(void *pvParameters) 
 {
 	dispatch_msg_t income_msg;
-	conveter_message_t converter_msg;
+	converter_message_t converter_msg;
 	gui_msg_t gui_msg;
 	uint16_t mask;
 	uint32_t sound_msg;

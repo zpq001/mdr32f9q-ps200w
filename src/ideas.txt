@@ -1,0 +1,29 @@
+
+
+converter_state;
+
+channel_5v_setup;
+channel_12v_setup;
+
+charge_setup;
+
+-----------------------------------
+
+Messages to converter (top-level):
+
+turn ON
+turn OFF
+start charge
+stop charge
+set voltage (channel)
+set voltage limit (channel, ...)
+set current (channel, range)
+set current limit (channel, range, ...)
+set channel
+set current range
+set charging current (current)
+set charging mode (mode)
+set charging time (time)
+set chanrging delta (delta)
+
+

@@ -1,0 +1,321 @@
+
+#include "MDR32Fx.h" 
+
+
+#include "systemfunc.h"
+#include "control.h"
+#include "led.h"
+#include "sound_driver.h"
+#include "converter2_hw.h"
+
+
+
+
+//---------------------------------------------//
+// Converter_HWProcess
+
+// state_HWProcess bits 
+#define STATE_HW_ON				0x01
+#define STATE_HW_OFF			0x02
+#define STATE_HW_OVERLOADED		0x04
+#define STATE_HW_OFF_BY_ADC		0x08
+#define STATE_HW_TIMER_NOT_EXPIRED	0x10
+#define STATE_HW_USER_TIMER_EXPIRED	0x20
+
+// ctrl_HWProcess bits
+#define CMD_HW_ON				0x01
+#define CMD_HW_OFF				0x02
+#define CMD_HW_RESET_OVERLOAD	0x04
+#define CMD_HW_RESTART_USER_TIMER	0x08
+#define CMD_HW_RESTART_LED_BLINK_TIMER 0x10
+
+// cmd_ADC_to_HWProcess bits
+#define CMD_HW_OFF_BY_ADC		0x01
+#define CMD_HW_ON_BY_ADC		0x02
+
+
+
+volatile uint8_t state_HWProcess = STATE_HW_OFF;
+volatile static uint8_t ctrl_HWProcess = 0;
+// Globals used for communicating with converter control task called from ISR
+volatile uint8_t cmd_ADC_to_HWProcess = 0;
+
+
+
+
+void SetVoltageDAC(uint16_t val)
+{
+	val /= 5;
+	SetVoltagePWMPeriod(val);		// FIXME - we are setting not period but duty
+}
+
+
+void SetCurrentDAC(uint16_t val, uint8_t current_range)
+{
+	if (current_range == CURRENT_RANGE_HIGH)
+		val /= 2;
+	val /= 5;
+	SetCurrentPWMPeriod(val);		// FIXME - we are setting not period but duty
+}
+
+
+
+
+//===============================================================================================//
+//===============================================================================================//
+// These functions that affect ON/OFF state of the converter should be called from 
+//	single thread only!
+//===============================================================================================//
+
+uint8_t Converter_TurnOn(void)
+{
+	if (state_HWProcess & STATE_HW_ON)
+	{
+		// Converter is already ON
+		return CONVERTER_CMD_OK;
+	}
+	// Converter is OFF. It is either OFF state by command or OFF state by overload.
+	// Check if converter was not overloaded
+	if (state_HWProcess & STATE_HW_OVERLOADED)
+	{
+		// Converter is overloaded - top level should call ClearOverloadFlag() function
+		return CONVERTER_IS_OVERLOADED;
+	}
+	// Check timeout from jump into OFF state
+	if (state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED)
+	{
+		// Minimum timeout between turning OFF and ON is not reached yet.
+		return CONVERTER_IS_NOT_READY;
+	}
+	// Converter is ON and can be safely turned ON.
+	
+	ctrl_HWProcess = CMD_HW_ON;
+	while(ctrl_HWProcess);
+	return CONVERTER_CMD_OK;
+}
+
+uint8_t Converter_TurnOff(void)
+{
+	if (state_HWProcess & STATE_HW_OFF)
+	{
+		// Converter is already OFF
+		return CONVERTER_CMD_OK;
+	}
+	// Converter is ON. Send command to turn OFF. 
+	// This command can be processed just after overload detection in a normal way - it does not clear overload flag.
+	ctrl_HWProcess = CMD_HW_OFF;
+	while(ctrl_HWProcess);
+	return CONVERTER_CMD_OK;
+}
+
+uint8_t Converter_ClearOverloadFlag(void)
+{
+	if (state_HWProcess & STATE_HW_ON)
+	{
+		// Converter is already ON and this function should not have been called.
+		return CONVERTER_IS_NOT_READY;
+	}
+	// Converter is OFF. Clear overload flag in case it is set.
+	ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;		
+	while(ctrl_HWProcess);
+	
+	return CONVERTER_CMD_OK;
+}
+
+
+// Called from ISR
+void Converter_OnOverloadCallback(void)
+{
+	// Notify TOP-level thread
+
+}
+
+
+
+
+
+
+
+//=================================================================//
+//=================================================================//
+//          L O W  -  L E V E L   P R O C E S S I N G              //
+//=================================================================//
+//=================================================================//
+
+
+
+
+//---------------------------------------------//
+//	Converter hardware Enable/Disable control task
+//	
+//	Low-level task for accessing Enbale/Disable functions.
+//	There may be an output overload which has to be correctly handled - converter should be disabled
+//	The routine takes care for overload and enable/disable control coming from top-level controllers
+//	
+// TODO: ensure that ISR is non-interruptable
+//---------------------------------------------//
+void Converter_HWProcess(void) 
+{
+	static uint16_t overload_ignore_counter;
+	static uint16_t overload_counter;
+	static uint16_t safe_counter = 0;
+	static uint16_t user_counter = 0;
+	static uint16_t led_blink_counter = 0;
+	static uint16_t overload_warning_counter = 0;
+	uint8_t overload_check_enable;
+	uint8_t raw_overload_flag;
+	uint8_t led_state;
+
+	//-------------------------------//
+	// Get converter status and process overload timers
+	
+	// Due to hardware specialty overload input is active when converter is powered off
+	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
+	overload_check_enable = 0;
+	if ((state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || 0/*(converter_regulation->overload_protection_enable == 0)*/)
+		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
+	else if (overload_ignore_counter != 0)
+		overload_ignore_counter--;
+	else
+		overload_check_enable = 1;
+		
+	
+	if (overload_check_enable)
+		raw_overload_flag = GetOverloadStatus();
+	else
+		raw_overload_flag = NORMAL;
+	
+	if (raw_overload_flag == NORMAL)
+		overload_counter = OVERLOAD_TIMEOUT;
+		//overload_counter = converter_regulation->overload_timeout;
+	else if (overload_counter != 0)
+		overload_counter--;
+	
+
+	//-------------------------------//
+	// Check overload 	
+	if (overload_counter == 0)
+	{
+		// Converter is overloaded
+		state_HWProcess &= ~STATE_HW_ON;
+		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
+		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+//		xQueueSendToFrontFromISR(xQueueConverter, &converter_update_message, 0);	// No need for exact timing
+		//FIXME
+	}
+	
+	//-------------------------------//
+	// Process commands from top-level converter controller
+	if (ctrl_HWProcess & CMD_HW_RESET_OVERLOAD)
+	{
+		state_HWProcess &= ~STATE_HW_OVERLOADED;
+	}
+	if ( (ctrl_HWProcess & CMD_HW_OFF) && (!(state_HWProcess & STATE_HW_OFF)) )
+	{
+		state_HWProcess &= ~STATE_HW_ON;
+		state_HWProcess |= STATE_HW_OFF;		
+		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+	}
+	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_ON)) )	// TODO - analyse STATE_HW_OVERLOADED
+	{
+		state_HWProcess &= ~STATE_HW_OFF;
+		state_HWProcess |= STATE_HW_ON;								
+	}
+	if (ctrl_HWProcess & CMD_HW_RESTART_USER_TIMER)
+	{
+		user_counter = USER_TIMEOUT;
+	}
+	if (ctrl_HWProcess & CMD_HW_RESTART_LED_BLINK_TIMER)
+	{
+		user_counter = LED_BLINK_TIMEOUT;
+	}
+	
+	//-------------------------------//
+	// Process commands from top-level ADC controller
+	if (cmd_ADC_to_HWProcess & CMD_HW_OFF_BY_ADC)
+	{
+		state_HWProcess |= STATE_HW_OFF_BY_ADC;
+	}
+	else if (cmd_ADC_to_HWProcess & CMD_HW_ON_BY_ADC)
+	{
+		state_HWProcess &= ~STATE_HW_OFF_BY_ADC;
+	}
+	
+	// Reset commands
+	ctrl_HWProcess = 0;
+	cmd_ADC_to_HWProcess = 0;
+
+	//-------------------------------//
+	// Apply converter state
+	// TODO - check IRQ disable while accessing converter control port (MDR_PORTF) for write
+	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+		SetConverterState(CONVERTER_OFF);
+	else if (state_HWProcess & STATE_HW_ON)
+		SetConverterState(CONVERTER_ON);
+		
+	//-------------------------------//
+	// LED indication
+	// Uses raw converter state and top-level conveter status
+	// TODO - check IRQ disable while accessing LED port (MDR_PORTB) for write
+	led_state = 0;
+	if ((state_HWProcess & STATE_HW_ON) && (led_blink_counter == 0))
+		led_state |= LED_GREEN;
+	if ((raw_overload_flag == OVERLOAD) || 0/*(conv_state & CONV_OVERLOAD)*/)
+		led_state |= LED_RED;
+	UpdateLEDs(led_state);
+	
+	//-------------------------------//
+	// Overload sound warning
+	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
+	{
+		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
+	}
+	
+	//-------------------------------//
+	// Process timers
+	
+	// Process safe timer - used by top-level controller to provide a safe minimal OFF timeout
+	if (safe_counter != 0)
+	{
+		safe_counter--;
+		state_HWProcess |= STATE_HW_TIMER_NOT_EXPIRED;
+	}
+	else
+	{
+		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
+	}
+	
+	// Process user timer - used by top-level controller to provide a safe interval after switching channels
+	if (user_counter != 0)
+	{
+		user_counter--;
+		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
+	}
+	else
+	{
+		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
+	}
+	
+	// Process LED blink timer
+	if (led_blink_counter != 0)
+	{
+		led_blink_counter--;
+	}
+	
+	// Process overload sound warning timer
+	if (overload_warning_counter != 0)
+	{
+		overload_warning_counter--;
+	}
+}
+
+
+
+
+
+
+
+
+
+

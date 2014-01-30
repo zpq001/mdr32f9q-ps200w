@@ -509,11 +509,6 @@
               <FilePath>.\src\control.c</FilePath>
             </File>
             <File>
-              <FileName>converter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\converter.c</FilePath>
-            </File>
-            <File>
               <FileName>service.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\service.c</FilePath>
@@ -542,6 +537,26 @@
               <FileName>sound_samples.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\sound_samples.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter2.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2_hw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter2_hw.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\converter2.h</FilePath>
+            </File>
+            <File>
+              <FileName>converter2_hw.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\converter2_hw.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1330,11 +1345,6 @@
               <FilePath>.\src\control.c</FilePath>
             </File>
             <File>
-              <FileName>converter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\converter.c</FilePath>
-            </File>
-            <File>
               <FileName>service.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\service.c</FilePath>
@@ -1363,6 +1373,26 @@
               <FileName>sound_samples.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\sound_samples.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter2.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2_hw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\converter2_hw.c</FilePath>
+            </File>
+            <File>
+              <FileName>converter2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\converter2.h</FilePath>
+            </File>
+            <File>
+              <FileName>converter2_hw.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\converter2_hw.h</FilePath>
             </File>
           </Files>
         </Group>

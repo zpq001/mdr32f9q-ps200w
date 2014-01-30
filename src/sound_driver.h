@@ -1,4 +1,9 @@
 
+#include "MDR32Fx.h"
+
+#include "FreeRTOS.h"
+#include "queue.h"
+
 //---------------------------------------------//
 // Sound driver message codes
 #define SYNC 								0xFFFF0000

@@ -1,9 +1,9 @@
 
-
 #include "MDR32Fx.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
+
 
 //-------------------------------------------------------//
 // Global converter constraints
@@ -21,6 +21,20 @@
 
 
 
+//-------------------------------------------------------//
+// Other
+
+// Extended converter channel definition - used when
+// currently operating channel should be updated
+#define OPERATING_CHANNEL 2
+
+// Extended converter current range definition - used when
+// currently operating range should be updated
+#define OPERATING_CURRENT_RANGE 2
+
+// Current limit types
+#define LIMIT_TYPE_LOW			0x00
+#define LIMIT_TYPE_HIGH			0x01
 
 
 //TODO - move it to some common for all tasks header
@@ -28,31 +42,34 @@
 #define TID_GUI			0x02
 
 
-
-
-
-#define CONV_OFF				0x01
-#define CONV_ON					0x02
-#define CONV_OVERLOAD			0x10
-#define CONV_STATE_MASK			0x0F
-
-
-
-
-
-
-// These defines set behavior of controller in case when 
-// error status is generated simultaneously with processing OFF command
-// Either must be set
-#define CMD_HAS_PRIORITY 	1		// - no error will be shown
-#define ERROR_HAS_PRIORITY	0		// - error will be shown
-
-#if ((CMD_HAS_PRIORITY && ERROR_HAS_PRIORITY) || (!CMD_HAS_PRIORITY && !ERROR_HAS_PRIORITY))
-#error "Either CMD_HAS_PRIORITY or ERROR_HAS_PRIORITY options must be set"
-#endif 
-
 //---------------------------------------------//
 // Task queue messages
+
+
+
+
+enum converterTaskCmd {
+	CONVERTER_TICK,				
+	CONVERTER_UPDATE,			
+	CONVERTER_TURN_ON,			
+	CONVERTER_TURN_OFF,			
+	
+	CONVERTER_SWITCH_CHANNEL,
+			
+	CONVERTER_SET_VOLTAGE,		
+	CONVERTER_SET_VOLTAGE_LIMIT,
+	
+	CONVERTER_SET_CURRENT,		
+	CONVERTER_SET_CURRENT_RANGE,
+	CONVERTER_SET_CURRENT_LIMIT,
+	
+	CONVERTER_OVERLOADED,
+	
+	CONVERTER_INITIALIZE
+};
+
+
+
 
 
 #pragma anon_unions
@@ -97,57 +114,61 @@ typedef struct {
 			uint8_t new_channel;
 		} channel_setting;
     };
-} conveter_message_t;
-
-
-
-
-enum converterTaskCmd {
-	CONVERTER_TICK,				
-	CONVERTER_UPDATE,			
-	CONVERTER_TURN_ON,			
-	CONVERTER_TURN_OFF,			
-	
-	CONVERTER_SWITCH_TO_5VCH,	
-	CONVERTER_SWITCH_TO_12VCH,
-	
-	CONVERTER_SWITCH_CHANNEL,
-			
-	CONVERTER_SET_VOLTAGE,		
-	CONVERTER_SET_VOLTAGE_LIMIT,
-	
-	CONVERTER_SET_CURRENT,		
-	CONVERTER_SET_CURRENT_RANGE,
-	CONVERTER_SET_CURRENT_LIMIT,
-	
-	CONVERTER_INITIALIZE
-};
+} converter_message_t;
 
 
 
 
 
+typedef struct {
+	uint16_t setting;	
+	uint16_t MINIMUM;					// const, minimum avaliable setting 
+	uint16_t MAXIMUM;					// const, maximum avaliable setting 
+	uint16_t limit_low;
+	uint16_t limit_high;
+	uint16_t LIMIT_MIN;					// const, minimum current setting
+	uint16_t LIMIT_MAX;					// const, maximum current setting
+	uint8_t enable_low_limit : 1;		
+	uint8_t enable_high_limit : 1;
+	uint8_t RANGE : 1;					// used as const, only for current
+} reg_setting_t;
+
+
+typedef struct {
+	uint8_t CHANNEL : 1;						// used as const
+	uint8_t load_state : 1;	
+	uint8_t overload_protection_enable : 1;
+	uint16_t overload_timeout;
+	// Voltage
+	reg_setting_t voltage;
+	// Current
+	reg_setting_t current_low_range;
+	reg_setting_t current_high_range;
+	reg_setting_t* current;
+} channel_state_t;
 
 
 
+typedef struct {
+	channel_state_t channel_5v;
+	channel_state_t channel_12v;
+	channel_state_t *channel;
+	uint8_t state;
+} converter_state_t;
 
+
+
+#define CONVERTER_STATE_OFF			0x00
+#define CONVERTER_STATE_ON			0x01
+#define CONVERTER_STATE_OVERLOADED	0x02
+
+
+
+extern converter_state_t converter_state;		// main converter control
 extern xQueueHandle xQueueConverter;
-
-extern const conveter_message_t converter_tick_message;
-
-
-
-
-
-extern uint16_t voltage_adc;	// [mV]
-extern uint16_t current_adc;	// [mA]
-extern uint32_t power_adc;		// [mW]
-
 extern uint8_t taskConverter_Enable;
 
-
 void Converter_Init(uint8_t default_channel);
-void vTaskConverter(void *pvParameters);
 
 
 

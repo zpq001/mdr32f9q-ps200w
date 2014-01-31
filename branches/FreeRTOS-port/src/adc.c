@@ -8,8 +8,8 @@
 #include "semphr.h"
 
 #include "defines.h"
-#include "converter2.h"		// 
-#include "converter2_hw.h"		// 
+#include "converter.h"		// 
+#include "converter_hw.h"		// 
 #include "control.h"
 #include "adc.h"
 

@@ -1,242 +1,293 @@
-/********************************************************************
-	Module		Converter
-	
-	Purpose:
-		
-					
-	Globals used:
 
-		
-	Operation: 
-	
- ___________________________________
-|          CONVERTER TASK           |       <- top layer
-|___________________________________|          provides interface to other system components
-                  |
-                  v
- ___________________________________
-|   Converter HW control funtions   |       <- middle layer
-|___________________________________|		   stores settings of voltage, current, overload
-                  |
-                  v
- ___________________________________
-|   ISR - based low level control   |       <- low layer
-|___________________________________|	
-
-
-
-
-********************************************************************/
 
 #include "MDR32Fx.h" 
-#include "MDR32F9Qx_port.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 
-#include "systemfunc.h"
-#include "led.h"
-#include "adc.h"
-#include "defines.h"
+
+#include "sound_driver.h"
 #include "control.h"
 #include "converter.h"
 #include "converter_hw.h"
-#include "sound_driver.h"
-
 
 #include "guiTop.h"
 
+//-------------------------------------------------------//
+// Voltage and current setting return codes
+#define VALUE_OK					0x00
+#define VALUE_BOUND_BY_SOFT_MAX		0x01
+#define VALUE_BOUND_BY_SOFT_MIN		0x02
+#define VALUE_BOUND_BY_ABS_MAX		0x04
+#define VALUE_BOUND_BY_ABS_MIN		0x08
 
 
-static gui_msg_t gui_msg;
+//-------------------------------------------------------//
+// Converter control functions return values
+
+// these two can be set simultaneously
+#define VOLTAGE_SETTING_APPLIED		0x01	
+#define VOLTAGE_LIMIT_APPLIED		0x02
+// these two can be set simultaneously
+#define CURRENT_SETTING_APPLIED		0x01	
+#define CURRENT_LIMIT_APPLIED		0x02
 
 
-
-
-
-
-
-
-
-
-const conveter_message_t converter_tick_message = 	{	CONVERTER_TICK, 0	};
-const conveter_message_t converter_update_message = {	CONVERTER_UPDATE, 0 };
-//const conveter_message_t converter_init_message = {	CONVERTER_INITIALIZE, 0, 0 };
+//-------------------------------------------------------//
+// Arguments of Converter_ApplyControls
+#define APPLY_CHANNEL			0x01
+#define APPLY_CURRENT_RANGE		0x02
+#define APPLY_OUTPUT_LOAD		0x04
+#define APPLY_VOLTAGE			0x10
+#define APPLY_CURRENT			0x20
 
 
 xQueueHandle xQueueConverter;
+uint8_t taskConverter_Enable = 0;
+
+converter_state_t converter_state;		// main converter control
+
+const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
 
 
-uint32_t conv_state = CONV_OFF;
+gui_msg_t gui_msg;
 
 
-
-
-
-
-
-
-static uint8_t ValidateNewChannel(uint8_t channel)
+//---------------------------------------------------------------------------//
+///	Checks and sets new value in regulation structure
+//---------------------------------------------------------------------------//
+static uint8_t SetRegulationValue(reg_setting_t *s, int32_t new_value, uint8_t *errCode)
 {
-	if ( ((channel == CHANNEL_5V) || (channel == CHANNEL_12V)) && (channel != regulation_setting_p->CHANNEL) )
+	uint8_t result = 0;
+	*errCode = VALUE_OK;
+	// Check software limits
+	if ((s->enable_low_limit) && (new_value <= (int32_t)s->limit_low))
+	{	
+		new_value = (int32_t)s->limit_low;
+		if (errCode) *errCode = VALUE_BOUND_BY_SOFT_MIN;
+	}
+	if ((s->enable_high_limit) && (new_value >= (int32_t)s->limit_high)) 
+	{
+		new_value = (int32_t)s->limit_high;
+		if (errCode) *errCode = VALUE_BOUND_BY_SOFT_MAX;
+	} 
+	// Check absolute limits
+	if (new_value <= (int32_t)s->MINIMUM)
+	{	
+		new_value = (int32_t)s->MINIMUM;
+		if (errCode) *errCode = VALUE_BOUND_BY_ABS_MIN;
+	}
+	if (new_value >= (int32_t)s->MAXIMUM) 
+	{
+		new_value = (int32_t)s->MAXIMUM;
+		if (errCode) *errCode = VALUE_BOUND_BY_ABS_MAX;
+	} 
+	if (s->setting != new_value)
+	{
+		s->setting = new_value;
+		result = 1;
+	}
+	return result;
+}
+
+
+//---------------------------------------------------------------------------//
+///	Checks and sets new value limit in regultaion structure
+//---------------------------------------------------------------------------//
+static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *errCode)
+{
+	uint8_t result = 0;
+	*errCode = VALUE_OK;
+	if (new_value <= (int32_t)s->LIMIT_MIN)
+	{	
+		new_value = (int32_t)s->LIMIT_MIN;
+		if (errCode) *errCode = VALUE_BOUND_BY_ABS_MIN;
+	}
+	if (new_value >= (int32_t)s->LIMIT_MAX) 
+	{
+		new_value = (int32_t)s->LIMIT_MAX;
+		if (errCode) *errCode = VALUE_BOUND_BY_ABS_MAX;
+	} 
+	if (limit_type == LIMIT_TYPE_LOW)
+	{
+		if ((s->limit_low != new_value) || (s->enable_low_limit != enable))
+		{
+			s->limit_low = new_value;
+			s->enable_low_limit = enable;
+			result = 1;
+		}
+	}
+	else if (limit_type == LIMIT_TYPE_HIGH)
+	{
+		if ((s->limit_high != new_value) || (s->enable_high_limit != enable))
+		{
+			s->limit_high = new_value;
+			s->enable_high_limit = enable;
+			result = 1;
+		}
+	}
+	return result;
+}
+
+
+//---------------------------------------------------------------------------//
+///	Set converter output voltage
+//	input:
+//		channel - converter channel to affect: CHANNEL_5V / CHANNEL_12V / OPERATING_CHANNEL
+//		new_value - new value to check and set
+//		*err_code - return code providing information about 
+//			limiting new value by absolute and software limits
+//	output:
+//		VOLTAGE_SETTING_APPLIED 	- if new setting has been set
+//---------------------------------------------------------------------------//
+static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t *err_code)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+						 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
+	uint8_t result = 0x00;		
+	if (SetRegulationValue(&c->voltage, new_value, err_code))
+	{
+		result = VOLTAGE_SETTING_APPLIED;
+	}
+	return result;
+}
+
+
+//---------------------------------------------------------------------------//
+///	Set converter voltage limit
+//	input:
+//		channel - converter channel to affect: CHANNEL_5V / CHANNEL_12V / OPERATING_CHANNEL
+//		limit_type - low or high limit to modify
+//		new_value - new value to check and set
+//		enable - set limit enabled or disabled
+//		*err_code - return code providing information about 
+//			limiting new value by absolute and software limits
+//	output:
+//		VOLTAGE_SETTING_APPLIED - if new voltage setting has been applied
+//		VOLTAGE_LIMIT_APPLIED	- if new limit setting has been applied
+//---------------------------------------------------------------------------//
+static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+					 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
+	uint8_t result = 0;
+	
+	if (SetRegulationLimit(&c->voltage, limit_type, new_value, enable, err_code))
+	{
+		result = VOLTAGE_LIMIT_APPLIED;
+		// Ensure that voltage setting lies inside new limits
+		result |= Converter_SetVoltage(channel, c->voltage.setting, 0);
+	}
+	return result;
+}
+
+
+//---------------------------------------------------------------------------//
+///	Set converter output current
+//	input:
+//		channel - converter channel to affect: CHANNEL_5V / CHANNEL_12V / OPERATING_CHANNEL
+//		current_range - 20A range or 40A range to modify. Can be OPERATING_CURRENT_RANGE.
+//		new_value - new value to check and set
+//		*err_code - return code providing information about 
+//			limiting new value by absolute and software limits
+//	output:
+//		CURRENT_SETTING_APPLIED 	- if new setting has been set
+//---------------------------------------------------------------------------//
+static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int32_t new_value, uint8_t *err_code)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+						 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
+	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : 
+						((current_range == CURRENT_RANGE_HIGH) ? &c->current_high_range : c->current);
+	uint8_t result = 0;
+	if (SetRegulationValue(s, new_value, err_code))
+	{
+		result = CURRENT_SETTING_APPLIED;
+	}
+	return 	result;			   
+}
+
+
+//---------------------------------------------------------------------------//
+// 	Set converter current limit
+//	input:
+//		channel - converter channel to affect: CHANNEL_5V / CHANNEL_12V / OPERATING_CHANNEL
+//		current_range - 20A range or 40A range to modify. Can be OPERATING_CURRENT_RANGE.
+//		limit_type - low or high limit to modify
+//		new_value - new value to check and set
+//		enable - set limit enabled or disabled
+//		*err_code - return code providing information about 
+//			limiting new value by absolute and software limits
+//	output:
+//		CURRENT_SETTING_APPLIED - if new current setting has been applied
+//		CURRENT_LIMIT_APPLIED	- if new limit setting has been applied
+//---------------------------------------------------------------------------//
+static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+						 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
+	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : 
+						((current_range == CURRENT_RANGE_HIGH) ? &c->current_high_range : c->current);
+	uint8_t result = 0;
+	if (SetRegulationLimit(s, limit_type, new_value, enable))
+	{
+		result = CURRENT_LIMIT_APPLIED;
+		// Ensure that current setting lies inside new limits
+		result |= Converter_SetCurrent(channel, current_range, s->setting);
+	}
+	return result;
+}
+
+
+//---------------------------------------------------------------------------//
+/// Checks if channel has a valid value
+// Side-effect: if *channel = OPERATING_CHANNEL (special case), 
+//	functions modifies channel to currently operating.
+//---------------------------------------------------------------------------//
+static uint8_t Converter_ValidateChannel(uint8_t *channel)
+{
+	if (*channel == OPERATING_CHANNEL)
+	{
+		*channel = converter_state.channel->CHANNEL;
+		return 1;
+	}
+	if ((*channel == CHANNEL_5V) || (*channel == CHANNEL_12V))
 		return 1;
 	else
 		return 0;
 }
 
 
-static uint8_t ValidateNewCurrentRange(uint8_t channel, uint8_t current_range)
+//---------------------------------------------------------------------------//
+/// Checks if current range has a valid value
+// Side-effect: if *range = OPERATING_RANGE (special case), 
+//	functions modifies range to currently operating.
+//---------------------------------------------------------------------------//
+static uint8_t Converter_ValidateCurrentRange(uint8_t *range)
 {
-	converter_regulation_t *r = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
-	if (r->current->RANGE != current_range)
+	if (*range == OPERATING_CURRENT_RANGE)
+	{
+		*range = converter_state.channel->current->RANGE;
+		return 1;
+	}
+	if ((*range == CURRENT_RANGE_LOW) || (*range == CURRENT_RANGE_HIGH))
 		return 1;
 	else
 		return 0;
+	
 }
 
 
-
-void Converter_Init(uint8_t default_channel)
+//---------------------------------------------------------------------------//
+/// Checks if limit type has a valid value (LOW or HIGH)
+//---------------------------------------------------------------------------//
+static uint8_t Converter_ValidateLimit(uint8_t limit)
 {
-	// Converter is powered off.
-	// TODO: add restore from EEPROM
-	
-	//---------- Channel 5V ------------//
-	
-	// Common
-	channel_5v.CHANNEL = CHANNEL_5V;
-	channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
-	channel_5v.overload_protection_enable = 1;									// TODO: EEPROM
-	channel_5v.overload_timeout = (5*1);										// TODO: EEPROM
-	
-	// Voltage
-	channel_5v.voltage.setting = 5000;											// TODO: EEPROM
-	channel_5v.voltage.MINIMUM = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage setting for channel
-	channel_5v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage setting for channel
-	channel_5v.voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;					// TODO: EEPROM
-	channel_5v.voltage.limit_high = CONV_MAX_VOLTAGE_5V_CHANNEL;				// TODO: EEPROM
-	channel_5v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage limit setting
-	channel_5v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage limit setting
-	channel_5v.voltage.enable_low_limit = 0;									// TODO: EEPROM
-	channel_5v.voltage.enable_high_limit = 0;									// TODO: EEPROM
-	
-	// Current
-	channel_5v.current_low_range.RANGE = CURRENT_RANGE_LOW;						// LOW current range
-	channel_5v.current_low_range.setting = 4000;								// TODO: EEPROM
-	channel_5v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
-	channel_5v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
-	channel_5v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	channel_5v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
-	channel_5v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
-	channel_5v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	channel_5v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
-	channel_5v.current_low_range.enable_high_limit = 0;							// TODO: EEPROM
-	
-	channel_5v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
-	channel_5v.current_high_range.setting = 4000;								// TODO: EEPROM
-	channel_5v.current_high_range.MINIMUM = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
-	channel_5v.current_high_range.MAXIMUM = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
-	channel_5v.current_high_range.limit_low = CONV_HIGH_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	channel_5v.current_high_range.limit_high = CONV_HIGH_CURRENT_RANGE_MAX;		// TODO: EEPROM
-	channel_5v.current_high_range.LIMIT_MIN = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current limit setting
-	channel_5v.current_high_range.LIMIT_MAX = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	channel_5v.current_high_range.enable_low_limit = 0;							// TODO: EEPROM
-	channel_5v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
-
-	channel_5v.current = &channel_5v.current_low_range;
-	
-	//---------- Channel 12V -----------//
-	
-	// Common
-	channel_12v.CHANNEL = CHANNEL_12V;
-	channel_12v.load_state = LOAD_ENABLE;										
-	channel_12v.overload_protection_enable = 1;									// TODO: EEPROM
-	channel_12v.overload_timeout = (5*1);										// TODO: EEPROM
-	
-	// Voltage
-	channel_12v.voltage.setting = 12000;										// TODO: EEPROM
-	channel_12v.voltage.MINIMUM = CONV_MIN_VOLTAGE_12V_CHANNEL;					// Minimum voltage setting for channel
-	channel_12v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_12V_CHANNEL;					// Maximum voltage setting for channel
-	channel_12v.voltage.limit_low = CONV_MIN_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
-	channel_12v.voltage.limit_high = CONV_MAX_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
-	channel_12v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_12V_CHANNEL;				// Minimum voltage limit setting
-	channel_12v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting
-	channel_12v.voltage.enable_low_limit = 0;									// TODO: EEPROM
-	channel_12v.voltage.enable_high_limit = 0;									// TODO: EEPROM
-	
-	// Current
-	channel_12v.current_low_range.RANGE = CURRENT_RANGE_LOW;					// LOW current range
-	channel_12v.current_low_range.setting = 2000;								// TODO: EEPROM
-	channel_12v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
-	channel_12v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
-	channel_12v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	channel_12v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
-	channel_12v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
-	channel_12v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	channel_12v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
-	channel_12v.current_low_range.enable_high_limit = 0;						// TODO: EEPROM
-	
-	// 12V channel cannot provide currents > 20A (low range)
-	channel_12v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
-	channel_12v.current_high_range.setting = 4000;								// TODO: EEPROM
-	channel_12v.current_high_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
-	channel_12v.current_high_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
-	channel_12v.current_high_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	channel_12v.current_high_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
-	channel_12v.current_high_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
-	channel_12v.current_high_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	channel_12v.current_high_range.enable_low_limit = 0;						// TODO: EEPROM
-	channel_12v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
-
-	channel_12v.current = &channel_12v.current_low_range;
-	
-	
-	// Select default channel
-	Converter_SetChannel(default_channel, 1);	// will also apply other settings
-}
-
-
-
-
-static uint32_t analyzeAndResetHWErrorState(void)
-{
-	uint32_t state_flags;
-	if (state_HWProcess & STATE_HW_OVERLOADED)		
-	{
-		ctrl_HWProcess = CMD_HW_RESET_OVERLOAD;		
-		while(ctrl_HWProcess);
-		state_flags = CONV_OVERLOAD;	
-	}
-	// Add more if necessary
+	if ((limit == LIMIT_TYPE_LOW) || (limit == LIMIT_TYPE_HIGH))
+		return 1;
 	else
-	{
-		state_flags = 0;
-	}
-	return state_flags;
-}
-
-static uint32_t disableConverterAndCheckHWState(void)
-{
-	uint32_t new_state;
-	
-#if CMD_HAS_PRIORITY == 1
-	// If error status is generated simultaneously with OFF command,
-	// converter will be turned off and no error status will be shown
-	ctrl_HWProcess = CMD_HW_OFF | CMD_HW_RESET_OVERLOAD;	// Turn off converter and suppress error status (if any)
-	while(ctrl_HWProcess);
-	new_state = CONV_OFF;		
-	
-#elif ERROR_HAS_PRIORITY == 1
-	// If error status is generated simultaneously with OFF command,
-	// converter will be turned off, but error status will be indicated
-	ctrl_HWProcess = CMD_HW_OFF;					// Turn converter off
-	while(ctrl_HWProcess);
-	new_state = CONV_OFF;	
-	new_state |= analyzeAndResetHWErrorState();	
-						
-#endif
-	return new_state;
+		return 0;
 }
 
 
@@ -252,14 +303,14 @@ static void SoundEvent_OnSettingChanged(uint8_t err_code)
 	else
 		sound_msg = SND_CONV_SETTING_OK;
 	sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
-	xQueueSendToBack(xQueueSound, &sound_msg, 0);
+	xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 }
 
 static void SoundEvent_OnOverload(void)
 {
 	uint32_t sound_msg;
 	sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
-	xQueueSendToBack(xQueueSound, &sound_msg, 0);
+	xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 }
 
 static void SoundEvent_OnGenericError(void)
@@ -270,8 +321,149 @@ static void SoundEvent_OnGenericError(void)
 }
 
 
-uint8_t taskConverter_Enable = 0;
 
+
+
+void Converter_ApplyControls(uint8_t code)
+{
+	if (code & APPLY_CHANNEL)
+	{
+		//__disable_irq();
+		//SetFeedbackChannel(converter_state.channel->CHANNEL);		// PORTF can be accessed from ISR
+		//__enable_irq();
+		Converter_SetFeedBackChannel(converter_state.channel->CHANNEL);
+	}
+	if (code & APPLY_CURRENT_RANGE)
+	{
+		//SetCurrentRange(converter_state.channel->current->RANGE);
+		Converter_SetCurrentRange(converter_state.channel->current->RANGE);
+	}
+	if (code & APPLY_OUTPUT_LOAD)
+	{
+		SetOutputLoad(converter_state.channel->load_state);
+	}
+	if (code & APPLY_VOLTAGE)
+	{
+		SetVoltageDAC(converter_state.channel->voltage.setting);
+	}
+	if (code & APPLY_CURRENT)
+	{
+		SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+	}
+	// Overload protection mechanism uses data from converter_regulation, so no
+	// 	special settings are required.
+}
+
+
+void Converter_Init(uint8_t default_channel)
+{
+	// Converter is powered off.
+	// TODO: add restore from EEPROM
+	
+	//---------- Channel 5V ------------//
+	
+	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
+	converter_state.channel_5v.load_state = LOAD_ENABLE;
+	
+	
+	// Common
+	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
+	converter_state.channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
+	converter_state.channel_5v.overload_protection_enable = 1;									// TODO: EEPROM
+	converter_state.channel_5v.overload_timeout = (5*1);										// TODO: EEPROM
+	
+	// Voltage
+	converter_state.channel_5v.voltage.setting = 5000;											// TODO: EEPROM
+	converter_state.channel_5v.voltage.MINIMUM = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage setting for channel
+	converter_state.channel_5v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage setting for channel
+	converter_state.channel_5v.voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;					// TODO: EEPROM
+	converter_state.channel_5v.voltage.limit_high = CONV_MAX_VOLTAGE_5V_CHANNEL;				// TODO: EEPROM
+	converter_state.channel_5v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage limit setting
+	converter_state.channel_5v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage limit setting
+	converter_state.channel_5v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+	converter_state.channel_5v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+	
+	// Current
+	converter_state.channel_5v.current_low_range.RANGE = CURRENT_RANGE_LOW;						// LOW current range
+	converter_state.channel_5v.current_low_range.setting = 4000;								// TODO: EEPROM
+	converter_state.channel_5v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+	converter_state.channel_5v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+	converter_state.channel_5v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	converter_state.channel_5v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	converter_state.channel_5v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	converter_state.channel_5v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	converter_state.channel_5v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+	converter_state.channel_5v.current_low_range.enable_high_limit = 0;							// TODO: EEPROM
+	
+	converter_state.channel_5v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
+	converter_state.channel_5v.current_high_range.setting = 4000;								// TODO: EEPROM
+	converter_state.channel_5v.current_high_range.MINIMUM = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+	converter_state.channel_5v.current_high_range.MAXIMUM = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+	converter_state.channel_5v.current_high_range.limit_low = CONV_HIGH_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	converter_state.channel_5v.current_high_range.limit_high = CONV_HIGH_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	converter_state.channel_5v.current_high_range.LIMIT_MIN = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	converter_state.channel_5v.current_high_range.LIMIT_MAX = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	converter_state.channel_5v.current_high_range.enable_low_limit = 0;							// TODO: EEPROM
+	converter_state.channel_5v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
+
+	converter_state.channel_5v.current = &converter_state.channel_5v.current_low_range;
+	
+	//---------- Channel 12V -----------//
+	
+	// Common
+	converter_state.channel_12v.CHANNEL = CHANNEL_12V;
+	converter_state.channel_12v.load_state = LOAD_ENABLE;										
+	converter_state.channel_12v.overload_protection_enable = 1;									// TODO: EEPROM
+	converter_state.channel_12v.overload_timeout = (5*1);										// TODO: EEPROM
+	
+	// Voltage
+	converter_state.channel_12v.voltage.setting = 12000;										// TODO: EEPROM
+	converter_state.channel_12v.voltage.MINIMUM = CONV_MIN_VOLTAGE_12V_CHANNEL;					// Minimum voltage setting for channel
+	converter_state.channel_12v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_12V_CHANNEL;					// Maximum voltage setting for channel
+	converter_state.channel_12v.voltage.limit_low = CONV_MIN_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+	converter_state.channel_12v.voltage.limit_high = CONV_MAX_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
+	converter_state.channel_12v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_12V_CHANNEL;				// Minimum voltage limit setting
+	converter_state.channel_12v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting
+	converter_state.channel_12v.voltage.enable_low_limit = 0;									// TODO: EEPROM
+	converter_state.channel_12v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+	
+	// Current
+	converter_state.channel_12v.current_low_range.RANGE = CURRENT_RANGE_LOW;					// LOW current range
+	converter_state.channel_12v.current_low_range.setting = 2000;								// TODO: EEPROM
+	converter_state.channel_12v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
+	converter_state.channel_12v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
+	converter_state.channel_12v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	converter_state.channel_12v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	converter_state.channel_12v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	converter_state.channel_12v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	converter_state.channel_12v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
+	converter_state.channel_12v.current_low_range.enable_high_limit = 0;						// TODO: EEPROM
+	
+	// 12V channel cannot provide currents > 20A (low range)
+	converter_state.channel_12v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
+	converter_state.channel_12v.current_high_range.setting = 4000;								// TODO: EEPROM
+	converter_state.channel_12v.current_high_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
+	converter_state.channel_12v.current_high_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
+	converter_state.channel_12v.current_high_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
+	converter_state.channel_12v.current_high_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
+	converter_state.channel_12v.current_high_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
+	converter_state.channel_12v.current_high_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
+	converter_state.channel_12v.current_high_range.enable_low_limit = 0;						// TODO: EEPROM
+	converter_state.channel_12v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
+
+	converter_state.channel_12v.current = &converter_state.channel_12v.current_low_range;
+	
+	
+	// Select default channel
+	converter_state.channel = (default_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+								&converter_state.channel_12v;
+	
+	// Apply controls
+	Converter_ApplyControls(0xFF);
+	
+	// Overload protection mechanism uses data from converter_regulation, so no
+	// 	special settings are required.
+}
 
 
 //---------------------------------------------//
@@ -280,16 +472,14 @@ uint8_t taskConverter_Enable = 0;
 //---------------------------------------------//
 void vTaskConverter(void *pvParameters) 
 {
-	conveter_message_t msg;
+	converter_message_t msg;
 	
 	uint8_t err_code;
 	uint8_t res;
-	uint8_t upd_gui;
-	uint32_t adc_msg;
 	
 	
 	// Initialize
-	xQueueConverter = xQueueCreate( 5, sizeof( conveter_message_t ) );		// Queue can contain 5 elements of type conveter_message_t
+	xQueueConverter = xQueueCreate( 5, sizeof( converter_message_t ) );		// Queue can contain 5 elements of type converter_message_t
 	if( xQueueConverter == 0 )
 	{
 		// Queue was not created and must not be used.
@@ -305,239 +495,291 @@ void vTaskConverter(void *pvParameters)
 	xQueueReset(xQueueConverter);
 	
 	
-	while(1)
-	{
-		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
 
-		switch (msg.type)
-		{
-			case CONVERTER_SET_VOLTAGE:
+	xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
+
+
+	switch(msg.type)
+	{
+		//=========================================================================//
+		// Setting voltage
+		case CONVERTER_SET_VOLTAGE:
+			if (Converter_ValidateChannel(&msg.voltage_setting.channel))
+			{
 				res = Converter_SetVoltage(msg.voltage_setting.channel, msg.voltage_setting.value, &err_code);
-				// Check result
-				if (res != ERROR_ARGS)
+				if (res & VOLTAGE_SETTING_APPLIED)
 				{
-					// Send notification to GUI
-					if (res & VOLTAGE_SETTING_APPLIED)
+					// Apply new setting to hardware
+					// CHECKME: charge state
+					if (msg.voltage_setting.channel == converter_state.channel->CHANNEL)
 					{
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = VOLTAGE_SETTING_CHANGED;
-						gui_msg.converter_event.channel = GetActualChannel(msg.voltage_setting.channel);
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+						Converter_ApplyControls(APPLY_VOLTAGE);
 					}
-					// Sound response
-					if (msg.sender != TID_UART)
-						SoundEvent_OnSettingChanged(err_code);
-				}	
-				else
-				{
-					SoundEvent_OnGenericError());
+					// Send notification to GUI
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = VOLTAGE_SETTING_CHANGED;
+					gui_msg.converter_event.channel = msg.voltage_setting.channel;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				}
-				msg.type = 0;
-				break;
-			case CONVERTER_SET_VOLTAGE_LIMIT:
+				// Sound feedback
+				if (msg.sender != TID_UART)
+					SoundEvent_OnSettingChanged(err_code);
+			}
+			else
+			{
+				// Wrong argument (channel)
+			}
+			break;
+		//=========================================================================//
+		// Setting voltage limit
+		case CONVERTER_SET_VOLTAGE_LIMIT:
+			if (Converter_ValidateChannel(&msg.voltage_limit_setting.channel) && Converter_ValidateLimit(msg.voltage_limit_setting.type))
+			{
 				res = Converter_SetVoltageLimit(msg.voltage_limit_setting.channel, msg.voltage_limit_setting.type, 
 									msg.voltage_limit_setting.value, msg.voltage_limit_setting.enable, &err_code);
-				// Check result
-				if (res != ERROR_ARGS)
+				if (res & VOLTAGE_SETTING_APPLIED)
+				{
+					// Apply new setting to hardware
+					// CHECKME: charge state
+					if (msg.voltage_limit_setting.channel == converter_state.channel->CHANNEL)
+					{
+						Converter_ApplyControls(APPLY_VOLTAGE);
+					}
+				}
+				if (res & VOLTAGE_LIMIT_APPLIED)
 				{
 					// Send notification to GUI
-					if (res & VOLTAGE_LIMIT_APPLIED)
-					{
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGED;
-						if (res & VOLTAGE_SETTING_APPLIED)
-							gui_msg.converter_event.spec |= VOLTAGE_SETTING_CHANGED;
-						gui_msg.converter_event.channel = = GetActualChannel(msg.voltage_limit_setting.channel);
-						gui_msg.converter_event.type = msg.voltage_limit_setting.type;
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-					}
-					// Sound response
-					if (msg.sender != TID_UART)
-						SoundEvent_OnSettingChanged(err_code);
-				}	
-				else
-				{
-					SoundEvent_OnGenericError());
-				}					
-				msg.type = 0;
-				break;
-			case CONVERTER_SET_CURRENT:
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGED;
+					if (res & VOLTAGE_SETTING_APPLIED)
+						gui_msg.converter_event.spec |= VOLTAGE_SETTING_CHANGED;
+					gui_msg.converter_event.channel = msg.voltage_limit_setting.channel;
+					gui_msg.converter_event.type = msg.voltage_limit_setting.type;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				}
+				// Sound feedback
+				if (msg.sender != TID_UART)
+					SoundEvent_OnSettingChanged(err_code);
+			}
+			else
+			{
+				// Wrong argument (channel or limit type)
+			}
+			break;
+		//=========================================================================//
+		// Setting current
+		case CONVERTER_SET_CURRENT:
+			if (Converter_ValidateChannel(&msg.current_setting.channel) && Converter_ValidateCurrentRange(&msg.current_setting.range))
+			{
 				res = Converter_SetCurrent(msg.current_setting.channel, msg.current_setting.range, msg.current_setting.value, &err_code);
-				// Check result
-				if (res != ERROR_ARGS)
+				if (res & CURRENT_SETTING_APPLIED)
 				{
-					// Send notification to GUI
-					if (res & CURRENT_SETTING_APPLIED)
+					// Apply new setting to hardware
+					// CHECKME: charge state
+					if ((msg.current_setting.channel == converter_state.channel->CHANNEL) && 
+						(msg.current_setting.range == converter_state.channel->current->RANGE))
 					{
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = CURRENT_SETTING_CHANGED;
-						gui_msg.converter_event.channel = GetActualChannel(msg.current_setting.channel);
-						gui_msg.converter_event.current_range = GetActualCurrentRange(msg.current_setting.range);
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+						Converter_ApplyControls(APPLY_CURRENT);
 					}
-					// Sound response
-					if (msg.sender != TID_UART)
-						SoundEvent_OnSettingChanged(err_code);
-				}	
-				else
-				{
-					SoundEvent_OnGenericError());
-				}					
-				msg.type = 0;
-				break;
-			case CONVERTER_SET_CURRENT_LIMIT:
+					// Send notification to GUI
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = CURRENT_SETTING_CHANGED;
+					gui_msg.converter_event.channel = msg.current_setting.channel;
+					gui_msg.converter_event.current_range = msg.current_setting.range;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				}
+				// Sound feedback
+				if (msg.sender != TID_UART)
+					SoundEvent_OnSettingChanged(err_code);
+			}
+			else
+			{
+				// Wrong argument (channel or range)
+			}
+			break;
+		//=========================================================================//
+		// Setting current limit
+		case CONVERTER_SET_CURRENT_LIMIT:
+			if (Converter_ValidateChannel(&msg.current_limit_setting.channel) && Converter_ValidateCurrentRange(&msg.current_limit_setting.range) &&
+				Converter_ValidateLimit(msg.current_limit_setting.type))
+			{
 				res = Converter_SetCurrentLimit(msg.current_limit_setting.channel, msg.current_limit_setting.range, msg.current_limit_setting.type, 
 									msg.current_limit_setting.value, msg.current_limit_setting.enable, &err_code);
-				// Check result
-				if (res != ERROR_ARGS)
+				if (res & CURRENT_SETTING_APPLIED)
 				{
-					// Send notification to GUI
-					if (res & CURRENT_LIMIT_APPLIED)
+					// Apply new setting to hardware
+					// CHECKME: charge state
+					if ((msg.current_limit_setting.channel == converter_state.channel->CHANNEL) && 
+					    (msg.current_setting.range == converter_state.channel->current->RANGE))
 					{
-						gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-						gui_msg.converter_event.spec = CURRENT_LIMIT_CHANGED;
-						if (res & CURRENT_SETTING_APPLIED)
-							gui_msg.converter_event.spec |= CURRENT_SETTING_CHANGED;
-						gui_msg.converter_event.channel = GetActualChannel(msg.current_limit_setting.channel);
-						gui_msg.converter_event.type = msg.current_limit_setting.type;
-						gui_msg.converter_event.current_range = GetActualCurrentRange(msg.current_limit_setting.range);
-						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+						Converter_ApplyControls(APPLY_CURRENT);
 					}
-					// Sound response
-					if (msg.sender != TID_UART)
-						SoundEvent_OnSettingChanged(err_code);
-				}	
+				}
+				// Send notification to GUI
+				if (res & CURRENT_LIMIT_APPLIED)
+				{
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = CURRENT_LIMIT_CHANGED;
+					if (res & CURRENT_SETTING_APPLIED)
+						gui_msg.converter_event.spec |= CURRENT_SETTING_CHANGED;
+					gui_msg.converter_event.channel = msg.current_limit_setting.channel;
+					gui_msg.converter_event.type = msg.current_limit_setting.type;
+					gui_msg.converter_event.current_range = msg.current_limit_setting.range;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				}
+				// Sound feedback
+				if (msg.sender != TID_UART)
+					SoundEvent_OnSettingChanged(err_code);
+			}
+			{
+				// Wrong argument (channel or range or limit type)
+			}
+			break;
+		//=========================================================================//
+		// Setting channel
+		case CONVERTER_SWITCH_CHANNEL:
+			// Check arguments
+			if (! Converter_ValidateChannel(&msg.channel_setting.new_channel) )
+			{
+				break;		// Wrong argument (channel)
+			}
+			if (msg.channel_setting.new_channel == converter_state.channel->CHANNEL)
+			{
+				SoundEvent_OnGenericError();
+				break;		// Trying to set channel that is already selected.
+			}
+			// Disable converter if enabled
+			if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+			{
+				Converter_TurnOff();
+				converter_state.state = CONVERTER_STATE_OFF;
+			}
+			// Do some paranoic checks for unexpected behaviour
+			while(Converter_IsOn())
+			{
+				Converter_TurnOff();
+			}
+			// Wait until voltage feedback switching is allowed
+			while(Converter_IsReady() == 0);	
+			// Now it is safe to apply new channel settings
+			converter_state.channel = (msg.channel_setting.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+										&converter_state.channel_12v;
+			Converter_ApplyControls(0xFF);		// all
+
+			// Send notification to GUI
+			gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+			gui_msg.converter_event.spec = CHANNEL_CHANGED;
+			gui_msg.converter_event.channel = msg.channel_setting.new_channel;
+			gui_msg.converter_event.current_range = converter_state.channel->current->RANGE;
+			xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+			// No sound feeback (a relay is ticking)
+
+			break;
+		//=========================================================================//
+		// Setting current range
+		case CONVERTER_SET_CURRENT_RANGE:
+			if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+			{
+				SoundEvent_OnGenericError();
+				break;			// Ignore this when converter is enabled
+			}
+			if (! Converter_ValidateChannel(&msg.current_range_setting.channel) )
+			{
+				break;			// Wrong argument (channel)
+			}	
+			if (! Converter_ValidateCurrentRange(&msg.current_range_setting.new_range) )
+			{
+				break;			// Wrong argument (new_range)
+			}
+			if ( (msg.current_range_setting.new_range == converter_state.channel->current->RANGE) && 
+				 (msg.current_range_setting.channel == converter_state.channel->CHANNEL) )
+			{
+				SoundEvent_OnSettingChanged(VALUE_BOUND_BY_ABS_MAX);
+				break;			// Trying to set current range that is already selected.
+			}
+			// Do some paranoic checks for unexpected behaviour
+			while(Converter_IsOn())
+			{
+				Converter_TurnOff();
+			}
+			// Wait until current feedback switching is allowed
+			while(Converter_IsReady() == 0);	
+			// Now it is safe to apply new current range settings
+			converter_state.channel->current = (msg.current_range_setting.new_range == CURRENT_RANGE_LOW) ? &converter_state.channel->current_low_range : 
+													&converter_state.channel->current_high_range;
+			Converter_ApplyControls(APPLY_CURRENT_RANGE | APPLY_CURRENT);
+			// Send notification to GUI
+			gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+			gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
+			gui_msg.converter_event.channel = msg.current_range_setting.channel;
+			gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
+			xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+			// Sound feedback
+			SoundEvent_OnSettingChanged(VALUE_OK);
+			msg.type = 0;
+			break;
+		//=========================================================================//
+		// Turn ON
+		case CONVERTER_TURN_ON:
+			if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
+			{
+				res = Converter_TurnOn();
+				if (res == CONVERTER_CMD_OK)
+				{
+					converter_state.state = CONVERTER_STATE_ON;
+				}
 				else
 				{
-					SoundEvent_OnGenericError());
-				}					
-				msg.type = 0;					
-				break;
-				
-			// TODO: add overload and other settings
-				
-			
-			case CONVERTER_TICK:		// Temporary! Will be special for charging mode
-				// ADC task is responsible for sampling and filtering voltage and current
-				adc_msg = ADC_GET_ALL_NORMAL;
-				xQueueSendToBack(xQueueADC, &adc_msg, 0);
-				msg.type = 0;
-				break;
-		}
-		
-		// Other messages get processing depending on converter state
-
-		while(msg.type)
-		{
-			//------------------------------------//
-			//------------------------------------//
-			switch(conv_state & CONV_STATE_MASK)
-			{
-				case CONV_OFF:
-					if (msg.type == CONVERTER_SWITCH_CHANNEL)
-					{
-						while(Converter_IsReady() == 0);
-						res = Converter_SetChannel(msg.channel_setting.new_channel);
-						if (res == CONVERTER_CMD_OK)
-						{
-							// Send notification to GUI
-							gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-							gui_msg.converter_event.spec = CHANNEL_CHANGED;
-							gui_msg.converter_event.channel = msg.channel_setting.new_channel;
-							gui_msg.converter_event.current_range = regulation_setting_p->current->RANGE;
-							xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-						}
-						else
-						{
-							SoundEvent_OnGenericError());
-						}
-						msg.type = 0;
-						break;
-					}
-					if (msg.type == CONVERTER_SET_CURRENT_RANGE)
-					{
-						res = Converter_SetCurrentRange(msg.current_range_setting.channel, msg.current_range_setting.new_range);
-						if (res == CONVERTER_CMD_OK)
-						{
-							// Send notification to GUI
-							gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-							gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
-							gui_msg.converter_event.channel = msg.current_range_setting.channel;
-							gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
-							xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-						}
-						else
-						{
-							SoundEvent_OnGenericError());
-						}
-						msg.type = 0;
-						break;
-					}
-
-					if (msg.type == CONVERTER_TURN_OFF)
-					{
-						conv_state = CONV_OFF;			// Reset overload flag
-						msg.type = 0;
-						break;
-					}
-					if (msg.type == CONVERTER_TURN_ON)
-					{
-						res = Converter_TurnOn();
-						if (res == CONVERTER_CMD_OK)
-						{
-							conv_state = CONV_ON;
-						}
-						else
-						{
-							SoundEvent_OnGenericError());
-						}
-						msg.type = 0;
-						break;
-					}
-					msg.type = 0;
-					break;
-				case CONV_ON:
-					if (msg.type == CONVERTER_TURN_OFF)
-					{
-						Converter_TurnOff();
-						conv_state = CONV_OFF;
-						msg.type = 0;
-						break;
-					}
-					if (msg.type == CONVERTER_SWITCH_CHANNEL)
-					{
-						Converter_TurnOff();
-						conv_state = CONV_OFF;
-						vTaskDelay(4);
-						break;
-					}
-					
-					if (msg.type == CONVERTER_SET_CURRENT_RANGE)
-					{
-						// CONVERTER_SET_CURRENT_RANGE is ignored when converter is ON
-					}
-					/*
-					if (state_HWProcess & STATE_HW_OFF)
-					{
-						// Some hardware error has happened and converter had been switched off
-						conv_state = CONV_OFF;
-						conv_state |= analyzeAndResetHWErrorState();
-						if (conv_state & CONV_OVERLOAD)
-						{
-							// Send message to sound driver
-							// TODO: send this message in other cases (when overload is detected simultaneously with button)
-							SoundEvent_OnOverload();
-						}
-						break;
-					} */
-					msg.type = 0;
-					break;
+					SoundEvent_OnGenericError();
+				}
 			}
-			//------------------------------------//
-			//------------------------------------//
-		}
+			msg.type = 0;
+			break;
+		//=========================================================================//
+		// Turn OFF
+		case CONVERTER_TURN_OFF:
+			if (converter_state.state == CONVERTER_STATE_ON)
+			{
+				Converter_TurnOff();
+			}
+			converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
+			// Do some paranoic checks for unexpected behaviour
+			while(Converter_IsOn())
+			{
+				Converter_TurnOff();
+			}
+			break;
+		//=========================================================================//
+		// Overload
+		case CONVERTER_OVERLOADED:
+			// Converter has been overloaded and disabled by low-level interrupt-driven routine.
+			// Reset that routine FSM flag
+			if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
+			{
+				// OK, flag has been reset.
+				converter_state.state = CONVERTER_STATE_OVERLOADED;
+			}	
+			else
+			{
+				// Error, we should never get here.
+				SoundEvent_OnGenericError();
+				// Kind of restore attempt
+				Converter_TurnOff();
+				Converter_ClearOverloadFlag();
+				converter_state.state = CONVERTER_STATE_OFF;
+			}
+		
+			break;
+			
+			
+		default:
+	}
+	
 
-	}	
 }
+
+
+
+
 
 

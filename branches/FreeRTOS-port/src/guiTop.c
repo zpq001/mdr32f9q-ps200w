@@ -29,6 +29,7 @@
 
 #include "converter.h"	// voltage, current, etc
 //#include "converter_hw.h"
+#include "adc.h"
 
 #include "service.h"	// temperature
 #include "control.h"	// some defines
@@ -39,7 +40,7 @@
 
 xQueueHandle xQueueGUI;
 
-static conveter_message_t converter_msg;	// to save stack
+static converter_message_t converter_msg;	// to save stack
 
 
 // Encode physical buttons into GUI virtual keys
@@ -137,17 +138,19 @@ static void UpdateConverterCurrentRange(uint8_t channel, uint8_t current_range)
 	if (channel == c->CHANNEL)
 	{
 		converter_current_range = current_range;
-		setCurrentLimitIndicator(current_range);
+		setCurrentRangeIndicator(current_range);
 		UpdateCurrentSetting(channel, current_range);
 	}
 }
 
 static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
 {
-	r = (channel == CHANNEL_5V) ? &channel_5v : &channel_12v;
+	c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	setFeedbackChannelIndicator( (c->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
 	UpdateConverterCurrentRange(channel, current_range);
 	setVoltageSetting(c->voltage.setting);
+	setLowVoltageLimitSetting(c->voltage.enable_low_limit, c->voltage.limit_low);
+	setHighVoltageLimitSetting(c->voltage.enable_high_limit, c->voltage.limit_high);
 }
 
 
@@ -161,7 +164,7 @@ void vTaskGUI(void *pvParameters)
 	gui_msg_t msg;
 	uint8_t guiKeyCode;
 	uint8_t guiKeyEvent;
-	int16_t encoder_delta;
+//	int16_t encoder_delta;
 	guiEvent_t guiEvent;
 	
 	// Initialize
@@ -186,7 +189,7 @@ void vTaskGUI(void *pvParameters)
 		switch (msg.type)
 		{
 			case GUI_TASK_RESTORE_ALL:
-				UpdateConverterChannel(regulation_setting_p->CHANNEL, regulation_setting_p->current->RANGE);
+				UpdateConverterChannel(converter_state.channel->CHANNEL, converter_state.channel->current->RANGE);
 				// Retore other values from EEPROM
 				// TODO
 				

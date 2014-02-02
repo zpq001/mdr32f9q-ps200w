@@ -70,8 +70,7 @@ void vTaskDispatcher(void *pvParameters)
 		Converter_Init(CHANNEL_5V);
 	else
 		Converter_Init(CHANNEL_12V);
-	//vTaskResume(vTaskConverter);	
-	taskConverter_Enable = 1;
+	vTaskResume(xTaskHandle_Converter);	
 	
 	// Wait a bit more
 	vTaskDelay( 200 / portTICK_RATE_MS);
@@ -81,6 +80,7 @@ void vTaskDispatcher(void *pvParameters)
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	
 	// Some tasks stay suspended. Start them.  - TODO
+	// UART?
 	
 	// Sound notification
 	sound_msg = SND_CONV_SETTING_OK;

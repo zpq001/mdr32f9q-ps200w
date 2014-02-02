@@ -10,8 +10,8 @@ extern guiPanel_t     guiSetupPanel;
 
 void guiSetupPanel_Initialize(guiGenericWidget_t *parent);
 
-void setLowVoltageLimitSetting(uint8_t isEnabled, uint16_t value);
-void setHighVoltageLimitSetting(uint8_t isEnabled, uint16_t value);
+void setLowVoltageLimitSetting(uint8_t isEnabled, int16_t value);
+void setHighVoltageLimitSetting(uint8_t isEnabled, int16_t value);
 
 
 

@@ -50,7 +50,7 @@ static guiTextLabel_t textLabel_temperature;    // Converter temperature
 static char label_temperature_data[10];
 static guiTextLabel_t textLabel_channel;        // Feedback channel
 static char label_channel_data[10];
-static guiTextLabel_t textLabel_currLimit;      // Current limit
+static guiTextLabel_t textLabel_currRange;      // Current limit
 static char label_currLimit_data[10];
 static guiWidgetHandler_t textLabelHandlers[2];
 
@@ -82,7 +82,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiMasterPanel.widgets.elements[2] = &textLabel_power;
     guiMasterPanel.widgets.elements[3] = &textLabel_temperature;
     guiMasterPanel.widgets.elements[4] = &textLabel_channel;
-    guiMasterPanel.widgets.elements[5] = &textLabel_currLimit;      // focusable!
+    guiMasterPanel.widgets.elements[5] = &textLabel_currRange;      // focusable!
     guiMasterPanel.widgets.elements[6] = &spinBox_voltage;          // focusable
     guiMasterPanel.widgets.elements[7] = &spinBox_current;          // focusable
     guiMasterPanel.x = 0;
@@ -114,9 +114,9 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
 
     // Initialize text label for measured power display
     guiTextLabel_Initialize(&textLabel_power, (guiGenericWidget_t *)&guiMasterPanel);
-    textLabel_power.x = 96 + 45;
+    textLabel_power.x = 96 + 43;
     textLabel_power.y = 57;
-    textLabel_power.width = 50;
+    textLabel_power.width = 52;
     textLabel_power.height = 11;
     textLabel_power.textAlignment = ALIGN_TOP_RIGHT;
     textLabel_power.text = label_power_data;
@@ -143,24 +143,24 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_channel.font = &font_h11;
 
     // Initialize text label for current limit display and control
-    guiTextLabel_Initialize(&textLabel_currLimit, (guiGenericWidget_t *)&guiMasterPanel);
-    textLabel_currLimit.x = 96+1;
-    textLabel_currLimit.y = 57;
-    textLabel_currLimit.width = 25;
-    textLabel_currLimit.height = 11;
-    textLabel_currLimit.textAlignment = ALIGN_TOP_LEFT;
-    textLabel_currLimit.text = label_currLimit_data;
-    textLabel_currLimit.font = &font_h11;
-    textLabel_currLimit.acceptFocusByTab = 1;
-    textLabel_currLimit.tabIndex = 13;
-    textLabel_currLimit.showFocus = 0;
+    guiTextLabel_Initialize(&textLabel_currRange, (guiGenericWidget_t *)&guiMasterPanel);
+    textLabel_currRange.x = 96+1;
+    textLabel_currRange.y = 57;
+    textLabel_currRange.width = 25;
+    textLabel_currRange.height = 11;
+    textLabel_currRange.textAlignment = ALIGN_TOP_LEFT;
+    textLabel_currRange.text = label_currLimit_data;
+    textLabel_currRange.font = &font_h11;
+    textLabel_currRange.acceptFocusByTab = 1;
+    textLabel_currRange.tabIndex = 13;
+    textLabel_currRange.showFocus = 0;
     // Handlers:
     textLabelHandlers[0].eventType = GUI_EVENT_DRAW;
     textLabelHandlers[0].handler = onTextLabelDrawEvent;
     textLabelHandlers[1].eventType = GUI_EVENT_ENCODER;
     textLabelHandlers[1].handler = onTextLabelKeyEncoderEvent;
-    textLabel_currLimit.handlers.count = 2;
-    textLabel_currLimit.handlers.elements = textLabelHandlers;
+    textLabel_currRange.handlers.count = 2;
+    textLabel_currRange.handlers.elements = textLabelHandlers;
 
 
     guiSpinBox_Initialize(&spinBox_voltage, (guiGenericWidget_t *)&guiMasterPanel);
@@ -178,7 +178,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_voltage.minDigitsToDisplay = 3;
     spinBox_voltage.restoreValueOnEscape = 1;
     spinBox_voltage.maxValue = 4100;
-    spinBox_voltage.minValue = 0;
+    spinBox_voltage.minValue = -1;
     spinBox_voltage.showFocus = 0;
 
     guiSpinBox_Initialize(&spinBox_current, (guiGenericWidget_t *)&guiMasterPanel);
@@ -196,7 +196,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_current.minDigitsToDisplay = 3;
     spinBox_current.restoreValueOnEscape = 1;
     spinBox_current.maxValue = 4100;
-    spinBox_current.minValue = 0;
+    spinBox_current.minValue = -1;
     spinBox_current.showFocus = 0;
 
     spinBoxHandlers[0].eventType = GUI_EVENT_DRAW;
@@ -221,8 +221,8 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_temperature.showFocus = 1;
     textLabel_channel.hasFrame = 1;
     textLabel_channel.showFocus = 1;
-    textLabel_currLimit.hasFrame = 1;
-    textLabel_currLimit.showFocus = 1;
+    textLabel_currRange.hasFrame = 1;
+    textLabel_currRange.showFocus = 1;
     spinBox_voltage.hasFrame = 1;
     spinBox_voltage.showFocus = 1;
 #endif
@@ -368,7 +368,7 @@ static uint8_t onSpinBoxValueChanged(void *sender, guiEvent_t *event)
 static uint8_t onTextLabelDrawEvent(void *sender, guiEvent_t *event)
 {
     guiTextLabel_t *label = (guiTextLabel_t *)sender;
-    if ((label->redrawFocus) && (label == &textLabel_currLimit))
+    if ((label->redrawFocus) && (label == &textLabel_currRange))
     {
         if (label->isFocused)
         {
@@ -457,14 +457,14 @@ void setFeedbackChannelIndicator(uint8_t channel)
     textLabel_channel.redrawRequired = 1;
 }
 
-void setCurrentLimitIndicator(uint8_t current_limit)
+void setCurrentRangeIndicator(uint8_t current_range)
 {
-    if (current_limit == GUI_CURRENT_RANGE_LOW)
-        sprintf(textLabel_currLimit.text, "20A");
+    if (current_range == GUI_CURRENT_RANGE_LOW)
+        sprintf(textLabel_currRange.text, "20A");
     else
-        sprintf(textLabel_currLimit.text, "40A");
-    textLabel_currLimit.redrawText = 1;
-    textLabel_currLimit.redrawRequired = 1;
+        sprintf(textLabel_currRange.text, "40A");
+    textLabel_currRange.redrawText = 1;
+    textLabel_currRange.redrawRequired = 1;
 }
 
 

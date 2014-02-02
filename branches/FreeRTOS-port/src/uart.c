@@ -59,7 +59,7 @@ xSemaphoreHandle xSemaphoreUART1TX;
 static uint32_t UART1_RX_saved_TCB[3];
 
 
-static void UART_sendStr(char *str);
+//static void UART_sendStr(char *str);
 static void UART_sendStrAlloc(char *str);
 
 
@@ -212,8 +212,8 @@ void vTaskUARTReceiver(void *pvParameters)
 	uint16_t keyCmdCode;
 	
 	// Debug
-	uint16_t i;
-	uint32_t temp32u;
+//	uint16_t i;
+//	uint32_t temp32u;
 	
 	char temp_str[50];
 	
@@ -355,18 +355,18 @@ void vTaskUARTReceiver(void *pvParameters)
 						else
 						{
 							keyCmdType = parseKeyType(argv[1]);
-							if (keyCmdCode == 0)
+							if (keyCmdType == 0)
 							{
 								transmitter_msg.type = SEND_STRING;
-								transmitter_msg.pdata = "ERR: unknown key code\r";
+								transmitter_msg.pdata = "ERR: unknown key type\r";
 							}
 							else
 							{
 								keyCmdCode = parseKeyCode(argv[2]);
-								if (keyCmdType == 0)
+								if (keyCmdCode == 0)
 								{
 									transmitter_msg.type = SEND_STRING;
-									transmitter_msg.pdata = "ERR: unknown key type\r";
+									transmitter_msg.pdata = "ERR: unknown key code\r";
 								}
 								else
 								{
@@ -436,14 +436,14 @@ void vTaskUARTReceiver(void *pvParameters)
 // 2. Send a string from data memory (make a copy using malloc())
 // 3. Send a string from data memory (constant)
 
-
+/*
 static void UART_sendStr(char *str)
 {
 	uart_transmiter_msg_t msg;
 	msg.type = SEND_STRING;
 	msg.pdata = str;
 	xQueueSendToBack(xQueueUART1TX, &msg, 0); 
-}
+} */
 
 static void UART_sendStrAlloc(char *str)
 {

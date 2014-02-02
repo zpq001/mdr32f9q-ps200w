@@ -3,6 +3,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "task.h"
 
 
 //-------------------------------------------------------//
@@ -19,6 +20,8 @@
 #define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
 #define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
+#define CONV_MIN_OVERLOAD_TIMEOUT		0
+#define CONV_MAX_OVERLOAD_TIMEOUT		(5*10)	// in units of Converter_HWProcess call period
 
 
 //-------------------------------------------------------//
@@ -166,10 +169,11 @@ typedef struct {
 
 extern converter_state_t converter_state;		// main converter control
 extern xQueueHandle xQueueConverter;
-extern uint8_t taskConverter_Enable;
+extern xTaskHandle xTaskHandle_Converter;
+extern const converter_message_t converter_tick_message;
 
 void Converter_Init(uint8_t default_channel);
-
+void vTaskConverter(void *pvParameters);
 
 
 

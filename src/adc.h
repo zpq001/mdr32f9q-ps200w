@@ -1,4 +1,9 @@
 
+#include "MDR32Fx.h"
+
+#include "FreeRTOS.h"
+#include "queue.h"
+
 
 // state_ADCProcess states
 #define STATE_ADC_IDLE				0x00
@@ -12,7 +17,12 @@
 
 extern xQueueHandle xQueueADC;
 
-void vTaskADC(void *pvParameters);
+extern uint16_t voltage_adc;		// [mV]
+extern uint16_t current_adc;		// [mA]
+extern uint32_t power_adc;			// [mW]
 
+
+void vTaskADC(void *pvParameters);
+void Converter_HW_ADCProcess(void);
 
 

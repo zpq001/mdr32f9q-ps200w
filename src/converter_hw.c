@@ -7,45 +7,54 @@
 #include "led.h"
 #include "sound_driver.h"
 #include "converter.h"
-#include "converter2_hw.h"
+#include "converter_hw.h"
 
 
+
+//-------------------------------------------------------//
+// Special time parameters
+#define OVERLOAD_IGNORE_TIMEOUT		(5*100)		// 100 ms	- delay after converter turn ON and first overload check
+//#define OVERLOAD_TIMEOUT			5			// 1 ms		- moved to UI
+
+#define HW_OFF_TIMEOUT				(5*15)		// 15 ms	- delay after switching converter OFF and other actions (channel switch, ON)
+												//			  voltage and current DACs can be modified at any moment
+#define HW_SETUP_TIMEOUT			(5*10)		// 10 ms	- delay after switching channel or current range and other actions
+												
+#define LED_BLINK_TIMEOUT			(5*100)		// 100ms	- used for charging indication
+#define OVERLOAD_WARNING_TIMEOUT	(5*200)		// 200ms	- used for sound overload warning
 
 
 //---------------------------------------------//
 // Converter_HWProcess
 
 // state_HWProcess bits 
-#define STATE_HW_ON				0x01
-#define STATE_HW_OFF			0x02
-#define STATE_HW_OVERLOADED		0x04
-#define STATE_HW_OFF_BY_ADC		0x08
-#define STATE_HW_TIMER_NOT_EXPIRED	0x10
-#define STATE_HW_USER_TIMER_EXPIRED	0x20
+#define STATE_HW_ON						0x01
+#define STATE_HW_OFF					0x02
+#define STATE_HW_OVERLOADED				0x04
+#define STATE_HW_OFF_BY_ADC				0x08
+#define STATE_HW_SAFE_TIMER_EXPIRED		0x10
 
 // ctrl_HWProcess bits
-#define CMD_HW_ON				0x01
-#define CMD_HW_OFF				0x02
-#define CMD_HW_RESET_OVERLOAD	0x04
-#define CMD_HW_RESTART_USER_TIMER	0x08
-#define CMD_HW_RESTART_LED_BLINK_TIMER 0x10
-#define CMD_HW_RESTART_SAFE_TIMER	0x20			// <- new
-
-// cmd_ADC_to_HWProcess bits
-#define CMD_HW_OFF_BY_ADC		0x01
-#define CMD_HW_ON_BY_ADC		0x02
+#define CMD_HW_ON						0x01
+#define CMD_HW_OFF						0x02
+#define CMD_HW_RESET_OVERLOAD			0x04
+#define CMD_HW_RESTART_SETUP_TIMEOUT	0x08
+#define CMD_HW_RESTART_LED_BLINK_TIMER 	0x10
 
 
 
-volatile uint8_t state_HWProcess = STATE_HW_OFF;
+
+
+volatile static uint8_t state_HWProcess = STATE_HW_OFF;
 volatile static uint8_t ctrl_HWProcess = 0;
-// Globals used for communicating with converter control task called from ISR
+// Global used for communicating with converter control task called from ISR
 volatile uint8_t cmd_ADC_to_HWProcess = 0;
 
 // Externs
 extern converter_state_t converter_state;
 extern const converter_message_t converter_overload_msg;
 extern xQueueHandle xQueueConverter;
+
 
 
 void SetVoltageDAC(uint16_t val)
@@ -64,57 +73,81 @@ void SetCurrentDAC(uint16_t val, uint8_t current_range)
 }
 
 
+uint8_t Converter_IsReady(void)
+{
+	return (state_HWProcess & STATE_HW_SAFE_TIMER_EXPIRED);
+}
+
+
+
+
 
 
 //---------------------------------------------------------------------------//
 //
 //---------------------------------------------------------------------------//
-void Converter_SetFeedBackChannel(uint8_t channel)
+uint8_t Converter_SetFeedBackChannel(uint8_t channel)
 {
+	// Check converter state
+	if (state_HWProcess & STATE_HW_ON)
+	{
+		// Converter is ON
+		return CONVERTER_ILLEGAL_ON_STATE;
+	}
+	
+	// Check safe timers
+	if (!(state_HWProcess & STATE_HW_SAFE_TIMER_EXPIRED))
+	{
+		// Minimum timeout is not reached yet.
+		return CONVERTER_IS_NOT_READY;
+	}
+	
 	__disable_irq();
 	SetFeedbackChannel(channel);		// PORTF can be accessed from ISR
 	__enable_irq();
 	
 	// Start safe timer
-	ctrl_HWProcess = CMD_HW_RESTART_SAFE_TIMER;
+	ctrl_HWProcess = CMD_HW_RESTART_SETUP_TIMEOUT;
 	while(ctrl_HWProcess);
+	
+	return CONVERTER_CMD_OK;
 }
 
 
 //---------------------------------------------------------------------------//
 //
 //---------------------------------------------------------------------------//
-void Converter_SetCurrentRange(uint8_t range)
+uint8_t Converter_SetCurrentRange(uint8_t range)
 {
+	// Check converter state
+	if (state_HWProcess & STATE_HW_ON)
+	{
+		// Converter is ON
+		return CONVERTER_ILLEGAL_ON_STATE;
+	}
+	// Check safe timers
+	if (!(state_HWProcess & STATE_HW_SAFE_TIMER_EXPIRED))
+	{
+		// Minimum timeout is not reached yet.
+		return CONVERTER_IS_NOT_READY;
+	}
+	
 	SetCurrentRange(range);
 	
 	// Start safe timer
-	ctrl_HWProcess = CMD_HW_RESTART_SAFE_TIMER;
+	ctrl_HWProcess = CMD_HW_RESTART_SETUP_TIMEOUT;
 	while(ctrl_HWProcess);
+	
+	return CONVERTER_CMD_OK;
 }
 
 
 
 
 
-
-//===============================================================================================//
-//===============================================================================================//
-// These functions that affect ON/OFF state of the converter should be called from 
-//	single thread only!
-//===============================================================================================//
-
-uint8_t Converter_IsReady(void)
-{
-	return (state_HWProcess & STATE_HW_TIMER_EXPIRED);
-}
-
-uint8_t Converter_IsOn(void)
-{
-	return (state_HWProcess & STATE_HW_ON);
-}
-
-
+//---------------------------------------------------------------------------//
+//
+//---------------------------------------------------------------------------//
 uint8_t Converter_TurnOn(void)
 {
 	if (state_HWProcess & STATE_HW_ON)
@@ -129,19 +162,23 @@ uint8_t Converter_TurnOn(void)
 		// Converter is overloaded - top level should call ClearOverloadFlag() function
 		return CONVERTER_IS_OVERLOADED;
 	}
-	// Check timeout from jump into OFF state
-	if (state_HWProcess & STATE_HW_TIMER_NOT_EXPIRED)
+	// Check safe timers
+	if (!(state_HWProcess & STATE_HW_SAFE_TIMER_EXPIRED))
 	{
-		// Minimum timeout between turning OFF and ON is not reached yet.
+		// Minimum timeout is not reached yet.
 		return CONVERTER_IS_NOT_READY;
 	}
-	// Converter is ON and can be safely turned ON.
+	// Converter is OFF and can be safely turned ON.
 	
 	ctrl_HWProcess = CMD_HW_ON;
 	while(ctrl_HWProcess);
 	return CONVERTER_CMD_OK;
 }
 
+
+//---------------------------------------------------------------------------//
+//
+//---------------------------------------------------------------------------//
 uint8_t Converter_TurnOff(void)
 {
 	if (state_HWProcess & STATE_HW_OFF)
@@ -156,6 +193,10 @@ uint8_t Converter_TurnOff(void)
 	return CONVERTER_CMD_OK;
 }
 
+
+//---------------------------------------------------------------------------//
+//
+//---------------------------------------------------------------------------//
 uint8_t Converter_ClearOverloadFlag(void)
 {
 	if (state_HWProcess & STATE_HW_ON)
@@ -168,14 +209,6 @@ uint8_t Converter_ClearOverloadFlag(void)
 	while(ctrl_HWProcess);
 	
 	return CONVERTER_CMD_OK;
-}
-
-
-// Called from ISR
-void Converter_OnOverloadCallback(void)
-{
-	// Notify TOP-level thread
-
 }
 
 
@@ -207,7 +240,6 @@ void Converter_HWProcess(void)
 	static uint16_t overload_ignore_counter;
 	static uint16_t overload_counter;
 	static uint16_t safe_counter = 0;
-	static uint16_t user_counter = 0;
 	static uint16_t led_blink_counter = 0;
 	static uint16_t overload_warning_counter = 0;
 	uint8_t overload_check_enable;
@@ -247,7 +279,7 @@ void Converter_HWProcess(void)
 		// Converter is overloaded
 		state_HWProcess &= ~STATE_HW_ON;
 		state_HWProcess |= STATE_HW_OFF | STATE_HW_OVERLOADED;	// Set status for itself and top-level software
-		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+		safe_counter = HW_OFF_TIMEOUT;							// Start timer to provide minimal OFF timeout
 		xQueueSendToFrontFromISR(xQueueConverter, &converter_overload_msg, 0);	// No need for exact timing
 	}
 	
@@ -261,7 +293,7 @@ void Converter_HWProcess(void)
 	{
 		state_HWProcess &= ~STATE_HW_ON;
 		state_HWProcess |= STATE_HW_OFF;		
-		safe_counter = MINIMAL_OFF_TIME;						// Start timer to provide minimal OFF timeout
+		safe_counter = HW_OFF_TIMEOUT;							// Start timer to provide minimal OFF timeout
 	}
 	else if ( (ctrl_HWProcess & CMD_HW_ON) && (!(state_HWProcess & STATE_HW_ON)) && (!(state_HWProcess & STATE_HW_OVERLOADED)) )
 	{
@@ -269,20 +301,16 @@ void Converter_HWProcess(void)
 		state_HWProcess |= STATE_HW_ON;								
 	}
 	//-----------------------//
-	if (ctrl_HWProcess & CMD_HW_RESTART_SAFE_TIMER)
+	if (ctrl_HWProcess & CMD_HW_RESTART_SETUP_TIMEOUT)
 	{
-		safe_counter = MINIMAL_OFF_TIME;
+		safe_counter = HW_SETUP_TIMEOUT;
 	}
 	
 	//-----------------------//
-	/*if (ctrl_HWProcess & CMD_HW_RESTART_USER_TIMER)
-	{
-		user_counter = USER_TIMEOUT;
-	}
 	if (ctrl_HWProcess & CMD_HW_RESTART_LED_BLINK_TIMER)
 	{
-		user_counter = LED_BLINK_TIMEOUT;
-	} */
+		led_blink_counter = LED_BLINK_TIMEOUT;
+	} 
 	
 	//-------------------------------//
 	// Process commands from top-level ADC controller
@@ -329,29 +357,17 @@ void Converter_HWProcess(void)
 	//-------------------------------//
 	// Process timers
 	
-	// Process safe timer - used by top-level controller to provide a safe minimal OFF timeout
+	// Process safe timer - used by top-level controller to provide a minimal safe OFF timeout
 	if (safe_counter != 0)
 	{
 		safe_counter--;
-		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
-		state_HWProcess |= STATE_HW_TIMER_NOT_EXPIRED;
+		state_HWProcess &= ~STATE_HW_SAFE_TIMER_EXPIRED;
 	}
 	else
 	{
-		state_HWProcess &= ~STATE_HW_TIMER_NOT_EXPIRED;
-		state_HWProcess |= STATE_HW_TIMER_EXPIRED;
+		state_HWProcess |= STATE_HW_SAFE_TIMER_EXPIRED;
 	}
 	
-	// Process user timer - used by top-level controller to provide a safe interval after switching channels
-	/*if (user_counter != 0)
-	{
-		user_counter--;
-		state_HWProcess &= ~STATE_HW_USER_TIMER_EXPIRED;
-	}
-	else
-	{
-		state_HWProcess |= STATE_HW_USER_TIMER_EXPIRED;
-	}*/
 	
 	// Process LED blink timer
 	if (led_blink_counter != 0)

@@ -15,6 +15,16 @@
 
 #include "guiTop.h"
 
+
+// ctrl_ADCProcess bits
+// For ADC task
+#define CMD_ADC_START_VOLTAGE		0x01
+#define CMD_ADC_START_CURRENT		0x02
+#define CMD_ADC_START_DISCON		0x04
+
+
+
+
 uint16_t voltage_adc;		// [mV]
 uint16_t current_adc;		// [mA]
 uint32_t power_adc;			// [mW]

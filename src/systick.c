@@ -15,6 +15,7 @@
 #include "systemfunc.h"
 #include "control.h"
 #include "converter.h"
+#include "converter_hw.h"
 #include "adc.h"
 #include "dispatcher.h"
 #include "uart.h"
@@ -147,8 +148,8 @@ void WaitBeep(void)
 void Timer2_IRQHandler(void) 
 {
 	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
-	static uint16_t hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD - 1;
-	static uint16_t hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD - 2;
+//	static uint16_t hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD - 1;
+//	static uint16_t hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD - 2;
 	uint16_t temp;
 	// Time profiling
 	uint32_t time_mark1 = 0;

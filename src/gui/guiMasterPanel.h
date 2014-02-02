@@ -22,7 +22,7 @@ void setCurrentSetting(uint16_t value);
 void setPowerIndicator(uint32_t value);
 void setTemperatureIndicator(int16_t value);
 void setFeedbackChannelIndicator(uint8_t channel);
-void setCurrentLimitIndicator(uint8_t current_limit);
+void setCurrentRangeIndicator(uint8_t current_range);
 
 
 #endif

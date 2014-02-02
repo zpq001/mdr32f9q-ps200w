@@ -11,6 +11,7 @@
 #include "control.h"
 #include "converter.h"
 #include "converter_hw.h"
+#include "adc.h"
 
 #include "guiTop.h"
 
@@ -26,32 +27,37 @@
 //-------------------------------------------------------//
 // Converter control functions return values
 
-// these two can be set simultaneously
-#define VOLTAGE_SETTING_APPLIED		0x01	
-#define VOLTAGE_LIMIT_APPLIED		0x02
-// these two can be set simultaneously
-#define CURRENT_SETTING_APPLIED		0x01	
-#define CURRENT_LIMIT_APPLIED		0x02
-
+// these can be set simultaneously
+#define VOLTAGE_SETTING_APPLIED			0x01	
+#define VOLTAGE_LIMIT_APPLIED			0x02
+//#define VOLTAGE_SETTING_ARG_MODIFIED	0x04
+//#define VOLTAGE_LIMIT_ARG_MODIFIED		0x08
+// these can be set simultaneously
+#define CURRENT_SETTING_APPLIED			0x01	
+#define CURRENT_LIMIT_APPLIED			0x02
+//#define CURRENT_SETTING_ARG_MODIFIED	0x04
+//#define CURRENT_LIMIT_ARG_MODIFIED		0x08
 
 //-------------------------------------------------------//
 // Arguments of Converter_ApplyControls
-#define APPLY_CHANNEL			0x01
-#define APPLY_CURRENT_RANGE		0x02
-#define APPLY_OUTPUT_LOAD		0x04
-#define APPLY_VOLTAGE			0x10
-#define APPLY_CURRENT			0x20
+//#define APPLY_CHANNEL			0x01
+//#define APPLY_CURRENT_RANGE		0x02
+//#define APPLY_OUTPUT_LOAD		0x04
+//#define APPLY_VOLTAGE			0x10
+//#define APPLY_CURRENT			0x20
 
 
+// OS stuff
 xQueueHandle xQueueConverter;
-uint8_t taskConverter_Enable = 0;
+xTaskHandle xTaskHandle_Converter;
+const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
+const converter_message_t converter_tick_message = {CONVERTER_TICK};
+
+gui_msg_t gui_msg;
+uint32_t adc_msg;
 
 converter_state_t converter_state;		// main converter control
 
-const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
-
-
-gui_msg_t gui_msg;
 
 
 //---------------------------------------------------------------------------//
@@ -148,7 +154,7 @@ static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value, uint8_t 
 	uint8_t result = 0x00;		
 	if (SetRegulationValue(&c->voltage, new_value, err_code))
 	{
-		result = VOLTAGE_SETTING_APPLIED;
+		result |= VOLTAGE_SETTING_APPLIED;
 	}
 	return result;
 }
@@ -172,10 +178,9 @@ static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, in
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
 					 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
 	uint8_t result = 0;
-	
 	if (SetRegulationLimit(&c->voltage, limit_type, new_value, enable, err_code))
 	{
-		result = VOLTAGE_LIMIT_APPLIED;
+		result |= VOLTAGE_LIMIT_APPLIED;
 		// Ensure that voltage setting lies inside new limits
 		result |= Converter_SetVoltage(channel, c->voltage.setting, 0);
 	}
@@ -210,7 +215,7 @@ static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int3
 
 
 //---------------------------------------------------------------------------//
-// 	Set converter current limit
+/// Set converter current limit
 //	input:
 //		channel - converter channel to affect: CHANNEL_5V / CHANNEL_12V / OPERATING_CHANNEL
 //		current_range - 20A range or 40A range to modify. Can be OPERATING_CURRENT_RANGE.
@@ -230,11 +235,11 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : 
 						((current_range == CURRENT_RANGE_HIGH) ? &c->current_high_range : c->current);
 	uint8_t result = 0;
-	if (SetRegulationLimit(s, limit_type, new_value, enable))
+	if (SetRegulationLimit(s, limit_type, new_value, enable, err_code))
 	{
 		result = CURRENT_LIMIT_APPLIED;
 		// Ensure that current setting lies inside new limits
-		result |= Converter_SetCurrent(channel, current_range, s->setting);
+		result |= Converter_SetCurrent(channel, current_range, s->setting, 0);
 	}
 	return result;
 }
@@ -316,43 +321,11 @@ static void SoundEvent_OnOverload(void)
 static void SoundEvent_OnGenericError(void)
 {
 	uint32_t sound_msg;
-	sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;	// FIXME
+	sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_HIGHEST;	// FIXME
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 }
 
 
-
-
-
-void Converter_ApplyControls(uint8_t code)
-{
-	if (code & APPLY_CHANNEL)
-	{
-		//__disable_irq();
-		//SetFeedbackChannel(converter_state.channel->CHANNEL);		// PORTF can be accessed from ISR
-		//__enable_irq();
-		Converter_SetFeedBackChannel(converter_state.channel->CHANNEL);
-	}
-	if (code & APPLY_CURRENT_RANGE)
-	{
-		//SetCurrentRange(converter_state.channel->current->RANGE);
-		Converter_SetCurrentRange(converter_state.channel->current->RANGE);
-	}
-	if (code & APPLY_OUTPUT_LOAD)
-	{
-		SetOutputLoad(converter_state.channel->load_state);
-	}
-	if (code & APPLY_VOLTAGE)
-	{
-		SetVoltageDAC(converter_state.channel->voltage.setting);
-	}
-	if (code & APPLY_CURRENT)
-	{
-		SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
-	}
-	// Overload protection mechanism uses data from converter_regulation, so no
-	// 	special settings are required.
-}
 
 
 void Converter_Init(uint8_t default_channel)
@@ -458,9 +431,14 @@ void Converter_Init(uint8_t default_channel)
 	converter_state.channel = (default_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
 								&converter_state.channel_12v;
 	
-	// Apply controls
-	Converter_ApplyControls(0xFF);
-	
+	Converter_TurnOff();
+	while(Converter_IsReady() == 0);
+	SetFeedbackChannel(converter_state.channel->CHANNEL);
+	SetCurrentRange(converter_state.channel->current->RANGE);
+	SetVoltageDAC(converter_state.channel->voltage.setting);
+	SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+	SetOutputLoad(converter_state.channel->load_state);
+
 	// Overload protection mechanism uses data from converter_regulation, so no
 	// 	special settings are required.
 }
@@ -486,100 +464,93 @@ void vTaskConverter(void *pvParameters)
 		while(1);
 	}
 	
-	// Wait until task is started by dispatcher
-	//vTaskSuspend(vTaskConverter);			
-	
-	while (taskConverter_Enable == 0)
-		vTaskDelay(5);
+	// Wait until task is started by dispatcher		
+	vTaskSuspend(0);			
 	
 	xQueueReset(xQueueConverter);
-	
-	
-
-	xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-
-
-	switch(msg.type)
+	while(1)
 	{
-		//=========================================================================//
-		// Setting voltage
-		case CONVERTER_SET_VOLTAGE:
-			if (Converter_ValidateChannel(&msg.voltage_setting.channel))
-			{
-				res = Converter_SetVoltage(msg.voltage_setting.channel, msg.voltage_setting.value, &err_code);
-				if (res & VOLTAGE_SETTING_APPLIED)
+
+		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
+
+
+		switch(msg.type)
+		{
+			//=========================================================================//
+			// Setting voltage
+			case CONVERTER_SET_VOLTAGE:
+				if (Converter_ValidateChannel(&msg.voltage_setting.channel))
 				{
+					res = Converter_SetVoltage(msg.voltage_setting.channel, msg.voltage_setting.value, &err_code);
 					// Apply new setting to hardware
-					// CHECKME: charge state
-					if (msg.voltage_setting.channel == converter_state.channel->CHANNEL)
+					if (res & VOLTAGE_SETTING_APPLIED)
 					{
-						Converter_ApplyControls(APPLY_VOLTAGE);
+						// CHECKME: charge state
+						if (msg.voltage_setting.channel == converter_state.channel->CHANNEL)
+						{
+							SetVoltageDAC(converter_state.channel->voltage.setting);
+						}
 					}
 					// Send notification to GUI
 					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
 					gui_msg.converter_event.spec = VOLTAGE_SETTING_CHANGED;
 					gui_msg.converter_event.channel = msg.voltage_setting.channel;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				}
-				// Sound feedback
-				if (msg.sender != TID_UART)
+
+					// Sound feedback
 					SoundEvent_OnSettingChanged(err_code);
-			}
-			else
-			{
-				// Wrong argument (channel)
-			}
-			break;
-		//=========================================================================//
-		// Setting voltage limit
-		case CONVERTER_SET_VOLTAGE_LIMIT:
-			if (Converter_ValidateChannel(&msg.voltage_limit_setting.channel) && Converter_ValidateLimit(msg.voltage_limit_setting.type))
-			{
-				res = Converter_SetVoltageLimit(msg.voltage_limit_setting.channel, msg.voltage_limit_setting.type, 
-									msg.voltage_limit_setting.value, msg.voltage_limit_setting.enable, &err_code);
-				if (res & VOLTAGE_SETTING_APPLIED)
-				{
-					// Apply new setting to hardware
-					// CHECKME: charge state
-					if (msg.voltage_limit_setting.channel == converter_state.channel->CHANNEL)
-					{
-						Converter_ApplyControls(APPLY_VOLTAGE);
-					}
 				}
-				if (res & VOLTAGE_LIMIT_APPLIED)
+				else
 				{
+					// Wrong argument (channel)
+				}
+				break;
+			//=========================================================================//
+			// Setting voltage limit
+			case CONVERTER_SET_VOLTAGE_LIMIT:
+				if (Converter_ValidateChannel(&msg.voltage_limit_setting.channel) && Converter_ValidateLimit(msg.voltage_limit_setting.type))
+				{
+					res = Converter_SetVoltageLimit(msg.voltage_limit_setting.channel, msg.voltage_limit_setting.type, 
+										msg.voltage_limit_setting.value, msg.voltage_limit_setting.enable, &err_code);
+					// Apply new setting to hardware
+					if (res & VOLTAGE_SETTING_APPLIED)
+					{
+						// CHECKME: charge state
+						if (msg.voltage_limit_setting.channel == converter_state.channel->CHANNEL)
+						{
+							SetVoltageDAC(converter_state.channel->voltage.setting);
+						}
+					}
 					// Send notification to GUI
 					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-					gui_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGED;
-					if (res & VOLTAGE_SETTING_APPLIED)
-						gui_msg.converter_event.spec |= VOLTAGE_SETTING_CHANGED;
+					gui_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGED | VOLTAGE_SETTING_CHANGED;
 					gui_msg.converter_event.channel = msg.voltage_limit_setting.channel;
 					gui_msg.converter_event.type = msg.voltage_limit_setting.type;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				}
-				// Sound feedback
-				if (msg.sender != TID_UART)
+					
+					// Sound feedback
 					SoundEvent_OnSettingChanged(err_code);
-			}
-			else
-			{
-				// Wrong argument (channel or limit type)
-			}
-			break;
-		//=========================================================================//
-		// Setting current
-		case CONVERTER_SET_CURRENT:
-			if (Converter_ValidateChannel(&msg.current_setting.channel) && Converter_ValidateCurrentRange(&msg.current_setting.range))
-			{
-				res = Converter_SetCurrent(msg.current_setting.channel, msg.current_setting.range, msg.current_setting.value, &err_code);
-				if (res & CURRENT_SETTING_APPLIED)
+				}
+				else
 				{
+					// Wrong argument (channel or limit type)
+				}
+				break;
+			//=========================================================================//
+			// Setting current
+			case CONVERTER_SET_CURRENT:
+				if (Converter_ValidateChannel(&msg.current_setting.channel) && Converter_ValidateCurrentRange(&msg.current_setting.range))
+				{
+					res = Converter_SetCurrent(msg.current_setting.channel, msg.current_setting.range, msg.current_setting.value, &err_code);
 					// Apply new setting to hardware
-					// CHECKME: charge state
-					if ((msg.current_setting.channel == converter_state.channel->CHANNEL) && 
-						(msg.current_setting.range == converter_state.channel->current->RANGE))
+					if (res & CURRENT_SETTING_APPLIED)
 					{
-						Converter_ApplyControls(APPLY_CURRENT);
+						// CHECKME: charge state
+						if ((msg.current_setting.channel == converter_state.channel->CHANNEL) && 
+							(msg.current_setting.range == converter_state.channel->current->RANGE))
+						{
+							SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+						}
 					}
 					// Send notification to GUI
 					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
@@ -587,194 +558,210 @@ void vTaskConverter(void *pvParameters)
 					gui_msg.converter_event.channel = msg.current_setting.channel;
 					gui_msg.converter_event.current_range = msg.current_setting.range;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				}
-				// Sound feedback
-				if (msg.sender != TID_UART)
+				
+					// Sound feedback
 					SoundEvent_OnSettingChanged(err_code);
-			}
-			else
-			{
-				// Wrong argument (channel or range)
-			}
-			break;
-		//=========================================================================//
-		// Setting current limit
-		case CONVERTER_SET_CURRENT_LIMIT:
-			if (Converter_ValidateChannel(&msg.current_limit_setting.channel) && Converter_ValidateCurrentRange(&msg.current_limit_setting.range) &&
-				Converter_ValidateLimit(msg.current_limit_setting.type))
-			{
-				res = Converter_SetCurrentLimit(msg.current_limit_setting.channel, msg.current_limit_setting.range, msg.current_limit_setting.type, 
-									msg.current_limit_setting.value, msg.current_limit_setting.enable, &err_code);
-				if (res & CURRENT_SETTING_APPLIED)
-				{
-					// Apply new setting to hardware
-					// CHECKME: charge state
-					if ((msg.current_limit_setting.channel == converter_state.channel->CHANNEL) && 
-					    (msg.current_setting.range == converter_state.channel->current->RANGE))
-					{
-						Converter_ApplyControls(APPLY_CURRENT);
-					}
 				}
-				// Send notification to GUI
-				if (res & CURRENT_LIMIT_APPLIED)
+				else
 				{
-					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-					gui_msg.converter_event.spec = CURRENT_LIMIT_CHANGED;
+					// Wrong argument (channel or range)
+				}
+				break;
+			//=========================================================================//
+			// Setting current limit
+			case CONVERTER_SET_CURRENT_LIMIT:
+				if (Converter_ValidateChannel(&msg.current_limit_setting.channel) && Converter_ValidateCurrentRange(&msg.current_limit_setting.range) &&
+					Converter_ValidateLimit(msg.current_limit_setting.type))
+				{
+					res = Converter_SetCurrentLimit(msg.current_limit_setting.channel, msg.current_limit_setting.range, msg.current_limit_setting.type, 
+										msg.current_limit_setting.value, msg.current_limit_setting.enable, &err_code);
 					if (res & CURRENT_SETTING_APPLIED)
-						gui_msg.converter_event.spec |= CURRENT_SETTING_CHANGED;
+					{
+						// Apply new setting to hardware
+						// CHECKME: charge state
+						if ((msg.current_limit_setting.channel == converter_state.channel->CHANNEL) && 
+							(msg.current_setting.range == converter_state.channel->current->RANGE))
+						{
+							SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+						}
+					}
+					// Send notification to GUI
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = CURRENT_LIMIT_CHANGED | CURRENT_SETTING_CHANGED;
 					gui_msg.converter_event.channel = msg.current_limit_setting.channel;
 					gui_msg.converter_event.type = msg.current_limit_setting.type;
 					gui_msg.converter_event.current_range = msg.current_limit_setting.range;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				}
-				// Sound feedback
-				if (msg.sender != TID_UART)
+					
+					// Sound feedback
 					SoundEvent_OnSettingChanged(err_code);
-			}
-			{
-				// Wrong argument (channel or range or limit type)
-			}
-			break;
-		//=========================================================================//
-		// Setting channel
-		case CONVERTER_SWITCH_CHANNEL:
-			// Check arguments
-			if (! Converter_ValidateChannel(&msg.channel_setting.new_channel) )
-			{
-				break;		// Wrong argument (channel)
-			}
-			if (msg.channel_setting.new_channel == converter_state.channel->CHANNEL)
-			{
-				SoundEvent_OnGenericError();
-				break;		// Trying to set channel that is already selected.
-			}
-			// Disable converter if enabled
-			if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
-			{
-				Converter_TurnOff();
-				converter_state.state = CONVERTER_STATE_OFF;
-			}
-			// Do some paranoic checks for unexpected behaviour
-			while(Converter_IsOn())
-			{
-				Converter_TurnOff();
-			}
-			// Wait until voltage feedback switching is allowed
-			while(Converter_IsReady() == 0);	
-			// Now it is safe to apply new channel settings
-			converter_state.channel = (msg.channel_setting.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
-										&converter_state.channel_12v;
-			Converter_ApplyControls(0xFF);		// all
-
-			// Send notification to GUI
-			gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-			gui_msg.converter_event.spec = CHANNEL_CHANGED;
-			gui_msg.converter_event.channel = msg.channel_setting.new_channel;
-			gui_msg.converter_event.current_range = converter_state.channel->current->RANGE;
-			xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-			// No sound feeback (a relay is ticking)
-
-			break;
-		//=========================================================================//
-		// Setting current range
-		case CONVERTER_SET_CURRENT_RANGE:
-			if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
-			{
-				SoundEvent_OnGenericError();
-				break;			// Ignore this when converter is enabled
-			}
-			if (! Converter_ValidateChannel(&msg.current_range_setting.channel) )
-			{
-				break;			// Wrong argument (channel)
-			}	
-			if (! Converter_ValidateCurrentRange(&msg.current_range_setting.new_range) )
-			{
-				break;			// Wrong argument (new_range)
-			}
-			if ( (msg.current_range_setting.new_range == converter_state.channel->current->RANGE) && 
-				 (msg.current_range_setting.channel == converter_state.channel->CHANNEL) )
-			{
-				SoundEvent_OnSettingChanged(VALUE_BOUND_BY_ABS_MAX);
-				break;			// Trying to set current range that is already selected.
-			}
-			// Do some paranoic checks for unexpected behaviour
-			while(Converter_IsOn())
-			{
-				Converter_TurnOff();
-			}
-			// Wait until current feedback switching is allowed
-			while(Converter_IsReady() == 0);	
-			// Now it is safe to apply new current range settings
-			converter_state.channel->current = (msg.current_range_setting.new_range == CURRENT_RANGE_LOW) ? &converter_state.channel->current_low_range : 
-													&converter_state.channel->current_high_range;
-			Converter_ApplyControls(APPLY_CURRENT_RANGE | APPLY_CURRENT);
-			// Send notification to GUI
-			gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-			gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
-			gui_msg.converter_event.channel = msg.current_range_setting.channel;
-			gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
-			xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-			// Sound feedback
-			SoundEvent_OnSettingChanged(VALUE_OK);
-			msg.type = 0;
-			break;
-		//=========================================================================//
-		// Turn ON
-		case CONVERTER_TURN_ON:
-			if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
-			{
-				res = Converter_TurnOn();
-				if (res == CONVERTER_CMD_OK)
-				{
-					converter_state.state = CONVERTER_STATE_ON;
 				}
-				else
+				{
+					// Wrong argument (channel or range or limit type)
+				}
+				break;
+			//=========================================================================//
+			// Setting channel
+			case CONVERTER_SWITCH_CHANNEL:
+				// Check arguments
+				if (! Converter_ValidateChannel(&msg.channel_setting.new_channel) )
+				{
+					break;		// Wrong argument (channel)
+				}
+				if (msg.channel_setting.new_channel == converter_state.channel->CHANNEL)
 				{
 					SoundEvent_OnGenericError();
+					break;		// Trying to set channel that is already selected.
 				}
-			}
-			msg.type = 0;
-			break;
-		//=========================================================================//
-		// Turn OFF
-		case CONVERTER_TURN_OFF:
-			if (converter_state.state == CONVERTER_STATE_ON)
-			{
-				Converter_TurnOff();
-			}
-			converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
-			// Do some paranoic checks for unexpected behaviour
-			while(Converter_IsOn())
-			{
-				Converter_TurnOff();
-			}
-			break;
-		//=========================================================================//
-		// Overload
-		case CONVERTER_OVERLOADED:
-			// Converter has been overloaded and disabled by low-level interrupt-driven routine.
-			// Reset that routine FSM flag
-			if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
-			{
-				// OK, flag has been reset.
-				converter_state.state = CONVERTER_STATE_OVERLOADED;
-			}	
-			else
-			{
-				// Error, we should never get here.
-				SoundEvent_OnGenericError();
-				// Kind of restore attempt
-				Converter_TurnOff();
-				Converter_ClearOverloadFlag();
-				converter_state.state = CONVERTER_STATE_OFF;
-			}
+				// Disable converter if enabled
+				if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+				{
+					Converter_TurnOff();
+					converter_state.state = CONVERTER_STATE_OFF;
+				}
+				
+				// Wait until voltage feedback switching is allowed
+				while(Converter_IsReady() == 0) 
+					vTaskDelay(1);
+				res = Converter_SetFeedBackChannel(msg.channel_setting.new_channel);
+				if (res != CONVERTER_CMD_OK)
+				{
+					// Unexpected error
+					Converter_TurnOff();
+					SoundEvent_OnGenericError();
+					break;
+				}
+				converter_state.channel = (msg.channel_setting.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+											&converter_state.channel_12v;
+				while(Converter_IsReady() == 0) 
+					vTaskDelay(1);	
+				res = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
+				if (res != CONVERTER_CMD_OK)
+				{
+					// Unexpected error
+					Converter_TurnOff();
+					SoundEvent_OnGenericError();
+					break;
+				} 
+				//SetCurrentRange(converter_state.channel->current->RANGE);
+				SetVoltageDAC(converter_state.channel->voltage.setting);
+				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+				SetOutputLoad(converter_state.channel->load_state);
+
+				// Send notification to GUI
+				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+				gui_msg.converter_event.spec = CHANNEL_CHANGED;
+				gui_msg.converter_event.channel = msg.channel_setting.new_channel;
+				gui_msg.converter_event.current_range = converter_state.channel->current->RANGE;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				// No sound feeback (a relay is ticking)
+
+				break;
+			//=========================================================================//
+			// Setting current range
+			case CONVERTER_SET_CURRENT_RANGE:
+				if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+				{
+					SoundEvent_OnGenericError();
+					break;			// Ignore this when converter is enabled
+				}
+				if (! Converter_ValidateChannel(&msg.current_range_setting.channel) )
+				{
+					break;			// Wrong argument (channel)
+				}	
+				if (! Converter_ValidateCurrentRange(&msg.current_range_setting.new_range) )
+				{
+					break;			// Wrong argument (new_range)
+				}
+				if ( (msg.current_range_setting.new_range == converter_state.channel->current->RANGE) && 
+					 (msg.current_range_setting.channel == converter_state.channel->CHANNEL) )
+				{
+					SoundEvent_OnSettingChanged(VALUE_BOUND_BY_ABS_MAX);
+					break;			// Trying to set current range that is already selected.
+				}
+				
+				// Wait until current feedback switching is allowed
+				while(Converter_IsReady() == 0) 
+					vTaskDelay(1);	
+				
+				res = Converter_SetCurrentRange(msg.current_range_setting.new_range);
+				if (res != CONVERTER_CMD_OK)
+				{
+					// Unexpected error
+					Converter_TurnOff();
+					SoundEvent_OnGenericError();
+					break;
+				}
+				
+				converter_state.channel->current = (msg.current_range_setting.new_range == CURRENT_RANGE_LOW) ? &converter_state.channel->current_low_range : 
+														&converter_state.channel->current_high_range;
+				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 		
-			break;
-			
-			
-		default:
+				// Send notification to GUI
+				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+				gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
+				gui_msg.converter_event.channel = msg.current_range_setting.channel;
+				gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				// Sound feedback
+				//SoundEvent_OnSettingChanged(VALUE_OK);
+				break;
+			//=========================================================================//
+			// Turn ON
+			case CONVERTER_TURN_ON:
+				if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
+				{
+					res = Converter_TurnOn();
+					if (res == CONVERTER_CMD_OK)
+					{
+						converter_state.state = CONVERTER_STATE_ON;
+					}
+					else
+					{
+						SoundEvent_OnGenericError();
+					}
+				}
+				break;
+			//=========================================================================//
+			// Turn OFF
+			case CONVERTER_TURN_OFF:
+				if (converter_state.state == CONVERTER_STATE_ON)
+				{
+					Converter_TurnOff();
+				}
+				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
+				break;
+			//=========================================================================//
+			// Overload
+			case CONVERTER_OVERLOADED:
+				// Converter has been overloaded and disabled by low-level interrupt-driven routine.
+				// Reset that routine FSM flag
+				if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
+				{
+					// OK, flag has been reset.
+					SoundEvent_OnOverload();
+					converter_state.state = CONVERTER_STATE_OVERLOADED;
+				}	
+				else
+				{
+					// Error, we should never get here.
+					SoundEvent_OnGenericError();
+					// Kind of restore attempt
+					Converter_TurnOff();
+					converter_state.state = CONVERTER_STATE_OFF;
+				}
+				break;
+			//=========================================================================//
+			// Tick
+			case CONVERTER_TICK:		// Temporary! Will be special for charging mode
+				// ADC task is responsible for sampling and filtering voltage and current
+				adc_msg = ADC_GET_ALL_NORMAL;
+				xQueueSendToBack(xQueueADC, &adc_msg, 0);
+				break;
+				
+			default:;
+		}
 	}
-	
 
 }
 

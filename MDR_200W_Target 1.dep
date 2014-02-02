@@ -1,2 +1,0 @@
-Dependencies for Project 'MDR_200W', Target 'Target 1': (DO NOT MODIFY !)
-F (.\startup_MDR32F9x.s)(0x4F587C0C)(--cpu Cortex-M3 --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\Inc -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\Milandr\MDR32F9x --list "startup_MDR32F9x.lst" --xref -o "startup_MDR32F9x.o" --depend "startup_MDR32F9x.d")

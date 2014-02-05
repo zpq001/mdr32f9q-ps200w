@@ -23,7 +23,7 @@
 //      except isChecked state.
 // Returns 1 if new state was applied. Otherwise returns 0.
 //-------------------------------------------------------//
-uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState)
+uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState, uint8_t callHandler)
 {
     guiEvent_t event;
     if (checkBox == 0) return 0;
@@ -43,7 +43,7 @@ uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState)
     // Checked state changed - call handler
     checkBox->redrawCheckedState = 1;
     checkBox->redrawRequired = 1;
-    if (checkBox->handlers.count != 0)
+    if (callHandler)
     {
         event.type = CHECKBOX_CHECKED_CHANGED;
         guiCore_CallEventHandler((guiGenericWidget_t *)checkBox, &event);
@@ -62,7 +62,7 @@ uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key)
 {
     if (key == CHECKBOX_KEY_SELECT)
     {
-        guiCheckbox_SetChecked(checkBox, !checkBox->isChecked);
+        guiCheckbox_SetChecked(checkBox, !checkBox->isChecked, 1);
     }
     else
     {

@@ -21,7 +21,7 @@
 
 
 void guiCheckBox_Initialize(guiCheckBox_t *checkBox, guiGenericWidget_t *parent);
-uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState);
+uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState, uint8_t callHandler);
 uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key);
 uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 

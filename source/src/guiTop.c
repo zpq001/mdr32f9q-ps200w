@@ -98,15 +98,14 @@ static void UpdateVoltageSetting(uint8_t channel)
 	}
 } 
 
-static void UpdateVoltageLimitSetting(uint8_t channel, uint8_t type)
+void UpdateVoltageLimitSetting(uint8_t channel, uint8_t type)
 {
-	if (channel == c->CHANNEL)
-	{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	
 		if (type == LIMIT_TYPE_LOW)
-			setLowVoltageLimitSetting(c->voltage.enable_low_limit, c->voltage.limit_low);
+			setLowVoltageLimitSetting(channel, c->voltage.enable_low_limit, c->voltage.limit_low);
 		else
-			setHighVoltageLimitSetting(c->voltage.enable_high_limit, c->voltage.limit_high);
-	}
+			setHighVoltageLimitSetting(channel, c->voltage.enable_high_limit, c->voltage.limit_high);
 } 
 
 //-------------------------------------------------------//
@@ -149,8 +148,8 @@ static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
 	setFeedbackChannelIndicator( (c->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
 	UpdateConverterCurrentRange(channel, current_range);
 	setVoltageSetting(c->voltage.setting);
-	setLowVoltageLimitSetting(c->voltage.enable_low_limit, c->voltage.limit_low);
-	setHighVoltageLimitSetting(c->voltage.enable_high_limit, c->voltage.limit_high);
+	setLowVoltageLimitSetting(channel, c->voltage.enable_low_limit, c->voltage.limit_low);
+	setHighVoltageLimitSetting(channel, c->voltage.enable_high_limit, c->voltage.limit_high);
 }
 
 
@@ -262,10 +261,10 @@ void applyGuiVoltageSetting(int32_t new_set_voltage)
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
-void applyGuiVoltageLimit(uint8_t type, uint8_t enable, int32_t value)
+void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value)
 {
 	converter_msg.type = CONVERTER_SET_VOLTAGE_LIMIT;
-	converter_msg.voltage_limit_setting.channel = c->CHANNEL;
+	converter_msg.voltage_limit_setting.channel = channel;
 	converter_msg.voltage_limit_setting.type = type;	
 	converter_msg.voltage_limit_setting.enable = enable;
 	converter_msg.voltage_limit_setting.value = value;
@@ -285,13 +284,13 @@ void applyGuiCurrentSetting(int32_t new_set_current)
 
 void applyGuiCurrentLimit(uint8_t type, uint8_t enable, int32_t value)
 {
-	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
+/*	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
 	converter_msg.current_limit_setting.channel = c->CHANNEL;
 	converter_msg.current_limit_setting.range = converter_current_range;
 	converter_msg.current_limit_setting.type = type;	
 	converter_msg.current_limit_setting.enable = enable;
 	converter_msg.current_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 //-------------------------------------------------------//

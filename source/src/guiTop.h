@@ -91,7 +91,10 @@ enum guiTaskCmd {
 // CurrentLimit
 #define	GUI_CURRENT_RANGE_HIGH		0x1
 #define	GUI_CURRENT_RANGE_LOW	 	0x0
-
+// Software limit types
+#define GUI_LIMIT_TYPE_LOW			0x00
+#define GUI_LIMIT_TYPE_HIGH			0x01
+	
 
 
 void GUI_Init(void);
@@ -100,9 +103,11 @@ extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);
 
 void applyGuiVoltageSetting(int32_t new_set_voltage);
-void applyGuiVoltageLimit(uint8_t type, uint8_t enable, int32_t value);
+void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value);
 void applyGuiCurrentSetting(int32_t new_set_current);
 void applyGuiCurrentRange(uint8_t new_range);
 
 
+
+void UpdateVoltageLimitSetting(uint8_t channel, uint8_t type);
 

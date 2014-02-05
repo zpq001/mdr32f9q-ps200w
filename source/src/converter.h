@@ -35,7 +35,7 @@
 // currently operating range should be updated
 #define OPERATING_CURRENT_RANGE 2
 
-// Current limit types
+// Software limit types
 #define LIMIT_TYPE_LOW			0x00
 #define LIMIT_TYPE_HIGH			0x01
 

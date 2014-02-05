@@ -118,11 +118,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
     // Initialize text label for menu list title
     guiTextLabel_Initialize(&textLabel_title, (guiGenericWidget_t *)&guiSetupPanel);
-    textLabel_title.x = 22;
+    textLabel_title.x = 0;
     textLabel_title.y = 0;
-    textLabel_title.width = 80;
+    textLabel_title.width = 95;
     textLabel_title.height = 10;
-    textLabel_title.textAlignment = ALIGN_TOP_LEFT;
+    textLabel_title.textAlignment = ALIGN_TOP;
     textLabel_title.text = "";
     textLabel_title.font = &font_h10_bold;
     textLabel_title.tag = 255;
@@ -380,6 +380,9 @@ static uint8_t guiSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t 
                     guiCore_SetVisible((guiGenericWidget_t*)&setupList, 0);
                     guiCore_SetVisible((guiGenericWidget_t*)&chSetupList, 1);
                     guiCore_RequestFocusChange((guiGenericWidget_t *)&chSetupList);
+					// Update widgets
+					UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
+					UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
                 }
                 else if (setupList.selectedIndex == 1)
                 {
@@ -388,6 +391,9 @@ static uint8_t guiSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t 
                     guiCore_SetVisible((guiGenericWidget_t*)&setupList, 0);
                     guiCore_SetVisible((guiGenericWidget_t*)&chSetupList, 1);
                     guiCore_RequestFocusChange((guiGenericWidget_t *)&chSetupList);
+					// Update widgets
+					UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
+					UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
                 }
                 else
                 {
@@ -529,14 +535,17 @@ static uint8_t onLowVoltageLimitChanged(void *widget, guiEvent_t *event)
     uint8_t limEnabled = 0;
     if (checkBox_ApplyLowVoltageLimit.isChecked)
         limEnabled = 1;
-    applyGuiVoltageLimit(0, limEnabled, spinBox_LowVoltageLimit.value * 10);
+    applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowVoltageLimit.value * 10);
     return 0;
 }
 
-void setLowVoltageLimitSetting(uint8_t isEnabled, int16_t value)
+void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
 {
-    guiCheckbox_SetChecked(&checkBox_ApplyLowVoltageLimit, isEnabled);
-    guiSpinBox_SetValue(&spinBox_LowVoltageLimit, value / 10, 0);
+	if (channel == channelBeingSetup)
+	{
+        guiCheckbox_SetChecked(&checkBox_ApplyLowVoltageLimit, isEnabled, 0);
+		guiSpinBox_SetValue(&spinBox_LowVoltageLimit, value / 10, 0);
+	}
 }
 
 static uint8_t onHighVoltageLimitChanged(void *widget, guiEvent_t *event)
@@ -544,14 +553,17 @@ static uint8_t onHighVoltageLimitChanged(void *widget, guiEvent_t *event)
     uint8_t limEnabled = 0;
     if (checkBox_ApplyHighVoltageLimit.isChecked)
         limEnabled = 1;
-    applyGuiVoltageLimit(1, limEnabled, spinBox_HighVoltageLimit.value * 10);
+    applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighVoltageLimit.value * 10);
     return 0;
 }
 
-void setHighVoltageLimitSetting(uint8_t isEnabled, int16_t value)
+void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
 {
-    guiCheckbox_SetChecked(&checkBox_ApplyHighVoltageLimit, isEnabled);
-    guiSpinBox_SetValue(&spinBox_HighVoltageLimit, value / 10, 0);
+	if (channel == channelBeingSetup)
+	{
+        guiCheckbox_SetChecked(&checkBox_ApplyHighVoltageLimit, isEnabled, 0);
+		guiSpinBox_SetValue(&spinBox_HighVoltageLimit, value / 10, 0);
+	}
 }
 
 

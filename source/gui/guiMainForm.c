@@ -149,14 +149,18 @@ static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiE
             {
                 if (guiMasterPanel.isVisible)
                 {
-                    guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 0);
-                    guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 1);
+                    //guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 0);
+                    //guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 1);
+                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, &guiEvent_HIDE);
+                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, &guiEvent_SHOW);
                     guiCore_RequestFocusChange((guiGenericWidget_t *)&guiSetupPanel);
                 }
                 else
                 {
-                    guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 0);
-                    guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 1);
+                    //guiCore_SetVisible((guiGenericWidget_t *)&guiSetupPanel, 0);
+                    //guiCore_SetVisible((guiGenericWidget_t *)&guiMasterPanel, 1);
+                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, &guiEvent_HIDE);
+                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, &guiEvent_SHOW);
                     guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
                 }
                 break;

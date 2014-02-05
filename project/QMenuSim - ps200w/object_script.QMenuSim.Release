@@ -21,11 +21,11 @@ INPUT(
 ./release\guiSpinBox.o
 ./release\guiStringList.o
 ./release\utils.o
-./release\guiTop.o
 ./release\guiMainForm.o
 ./release\guiSetupPanel.o
 ./release\guiMasterPanel.o
 ./release\uartParser.o
+./release\guiTop.o
 ./release\moc_mainwindow.o
 ./release\moc_pixeldisplay.o
 ./release\moc_keydriver.o

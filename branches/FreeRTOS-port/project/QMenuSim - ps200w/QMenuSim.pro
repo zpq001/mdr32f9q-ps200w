@@ -12,6 +12,7 @@ TEMPLATE = app
 INCLUDEPATH = ./
 INCLUDEPATH += ./gui_top/
 INCLUDEPATH += ../common/
+INCLUDEPATH += ../../source/gui/
 INCLUDEPATH += ../../source/gui/guiWidgets/
 INCLUDEPATH += ../../source/gui/guiCore/
 INCLUDEPATH += ../../source/gui/utils/
@@ -39,11 +40,11 @@ SOURCES += main.cpp\
     ../../source/gui/guiWidgets/guiSpinBox.c \
 	../../source/gui/guiWidgets/guiStringList.c \
     ../../source/gui/utils/utils.c \
-	gui_top/guiTop.c \
-    gui_top/guiMainForm.c \
-    gui_top/guiSetupPanel.c \
-    gui_top/guiMasterPanel.c \
-    gui_top/uartParser.c
+    ../../source/gui/guiMainForm.c \
+    ../../source/gui/guiSetupPanel.c \
+    ../../source/gui/guiMasterPanel.c \
+    gui_top/uartParser.c	\
+	gui_top/guiTop.c 
     
 
 HEADERS  += mainwindow.h \
@@ -62,12 +63,12 @@ HEADERS  += mainwindow.h \
 	../../source/gui/guiWidgets/guiCheckBox.h \
 	../../source/gui/guiWidgets/guiStringList.h \
 	../../source/gui/guiWidgets/guiSpinBox.h \
-	../../source/gui/utils/utils.h \
-    gui_top/guiConfig.h \
+	../../source/gui/utils/utils.h \    
+    ../../source/gui/guiMainForm.h \
+    ../../source/gui/guiSetupPanel.h \
+    ../../source/gui/guiMasterPanel.h \
 	gui_top/guiTop.h \
-    gui_top/guiMainForm.h \
-    gui_top/guiSetupPanel.h \
-    gui_top/guiMasterPanel.h \
+	gui_top/guiConfig.h \
     gui_top/uartParser.h
     
     

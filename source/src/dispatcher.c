@@ -146,9 +146,9 @@ void vTaskDispatcher(void *pvParameters)
 						gui_msg.key_event.event = BTN_EVENT_DOWN;
 						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
-					if (buttons.action_up & mask)
+					if (buttons.action_up_short & mask)
 					{
-						gui_msg.key_event.event = BTN_EVENT_UP;
+						gui_msg.key_event.event = BTN_EVENT_UP_SHORT;
 						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					if (buttons.action_hold & mask)

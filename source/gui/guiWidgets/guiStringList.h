@@ -19,6 +19,8 @@ enum StringListVirtualKeys {
     STRINGLIST_KEY_DOWN
 };
 
+#define STRINGLIST_KEY              0x01
+#define STRINGLIST_INCREMENT        0x02
 
 // Widget-specific events
 #define STRINGLIST_EVENT_ACTIVATE  (0x40 + 0x00)

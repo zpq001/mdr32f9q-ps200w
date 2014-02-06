@@ -37,6 +37,7 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
 static uint8_t guiSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
+static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
 
 static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
@@ -45,7 +46,11 @@ static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t onLowVoltageLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighVoltageLimitChanged(void *widget, guiEvent_t *event);
 
+static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
+static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
+static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
 
+static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 
 
 //--------- Setup panel  ----------//
@@ -80,11 +85,11 @@ static guiTextLabel_t textLabel_hint;        // Menu item hint
 // Voltage limit section
 guiCheckBox_t checkBox_ApplyLowVoltageLimit;
 guiCheckBox_t checkBox_ApplyHighVoltageLimit;
-guiWidgetHandler_t checkBoxHandlers_VoltageLimit[2];
+guiWidgetHandler_t LowVoltageLimit_handlers[3];
 
 guiSpinBox_t spinBox_LowVoltageLimit;
 guiSpinBox_t spinBox_HighVoltageLimit;
-guiWidgetHandler_t spinBoxHandlers_VoltageLimit[2];
+guiWidgetHandler_t HighVoltageLimit_handlers[3];
 
 
 
@@ -158,6 +163,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.handlers.elements[1].handler = &guiSetupList_onVisibleChanged;
     setupList.acceptFocusByTab = 0;
     setupList.processEvent = &guiSetupList_ProcessEvent;
+    setupList.keyTranslator = guiSetupList_KeyTranslator;
 
     guiStringList_Initialize(&chSetupList, (guiGenericWidget_t *)&guiSetupPanel );
     chSetupList.font = &font_h10;
@@ -186,6 +192,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.handlers.elements[1].handler = &guiChSetupList_onVisibleChanged;
     chSetupList.acceptFocusByTab = 0;
     chSetupList.processEvent = &guiChSetupList_ProcessEvent;
+    chSetupList.keyTranslator = guiChSetupList_KeyTranslator;
 
 
     // Initialize text label for menu item hint
@@ -200,6 +207,18 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_hint.isVisible = 0;
 
 
+    LowVoltageLimit_handlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    LowVoltageLimit_handlers[0].handler = onLowVoltageLimitChanged;
+    LowVoltageLimit_handlers[1].eventType = SPINBOX_VALUE_CHANGED;
+    LowVoltageLimit_handlers[1].handler = onLowVoltageLimitChanged;
+    LowVoltageLimit_handlers[2].eventType = GUI_EVENT_KEY;
+    LowVoltageLimit_handlers[2].handler = guiChSetupList_ChildKeyHandler;
+    HighVoltageLimit_handlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    HighVoltageLimit_handlers[0].handler = onHighVoltageLimitChanged;
+    HighVoltageLimit_handlers[1].eventType = SPINBOX_VALUE_CHANGED;
+    HighVoltageLimit_handlers[1].handler = onHighVoltageLimitChanged;
+    HighVoltageLimit_handlers[2].eventType = GUI_EVENT_KEY;
+    HighVoltageLimit_handlers[2].handler = guiChSetupList_ChildKeyHandler;
 
     // Voltage limit section
     guiCheckBox_Initialize(&checkBox_ApplyLowVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
@@ -211,11 +230,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyLowVoltageLimit.isVisible = 0;
     checkBox_ApplyLowVoltageLimit.text = "Low: [V]";
     checkBox_ApplyLowVoltageLimit.tabIndex = 1;
-    checkBox_ApplyLowVoltageLimit.handlers.elements = &checkBoxHandlers_VoltageLimit[0];
-    checkBox_ApplyLowVoltageLimit.handlers.count = 1;
-    checkBox_ApplyLowVoltageLimit.handlers.elements[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    checkBox_ApplyLowVoltageLimit.handlers.elements[0].handler = onLowVoltageLimitChanged;
-
+    checkBox_ApplyLowVoltageLimit.handlers.elements = &LowVoltageLimit_handlers[0];
+    checkBox_ApplyLowVoltageLimit.handlers.count = 3;
+    //checkBox_ApplyLowVoltageLimit.handlers.elements[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    //checkBox_ApplyLowVoltageLimit.handlers.elements[0].handler = onLowVoltageLimitChanged;
+    checkBox_ApplyLowVoltageLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
     guiCheckBox_Initialize(&checkBox_ApplyHighVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
     checkBox_ApplyHighVoltageLimit.font = &font_h10;
@@ -226,10 +245,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyHighVoltageLimit.isVisible = 0;
     checkBox_ApplyHighVoltageLimit.text = "High: [V]";
     checkBox_ApplyHighVoltageLimit.tabIndex = 3;
-    checkBox_ApplyHighVoltageLimit.handlers.elements = &checkBoxHandlers_VoltageLimit[1];
-    checkBox_ApplyHighVoltageLimit.handlers.count = 1;
-    checkBox_ApplyHighVoltageLimit.handlers.elements[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    checkBox_ApplyHighVoltageLimit.handlers.elements[0].handler = onHighVoltageLimitChanged;
+    checkBox_ApplyHighVoltageLimit.handlers.elements = &HighVoltageLimit_handlers[1];
+    checkBox_ApplyHighVoltageLimit.handlers.count = 3;
+    //checkBox_ApplyHighVoltageLimit.handlers.elements[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    //checkBox_ApplyHighVoltageLimit.handlers.elements[0].handler = onHighVoltageLimitChanged;
+    checkBox_ApplyHighVoltageLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
     guiSpinBox_Initialize(&spinBox_LowVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
     spinBox_LowVoltageLimit.x = 96+10;
@@ -250,10 +270,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowVoltageLimit.isVisible = 0;
     spinBox_LowVoltageLimit.value = 1;
     guiSpinBox_SetValue(&spinBox_LowVoltageLimit, 0, 0);
-    spinBox_LowVoltageLimit.handlers.elements = &spinBoxHandlers_VoltageLimit[0];
-    spinBox_LowVoltageLimit.handlers.count = 1;
-    spinBox_LowVoltageLimit.handlers.elements[0].eventType = SPINBOX_VALUE_CHANGED;
-    spinBox_LowVoltageLimit.handlers.elements[0].handler = onLowVoltageLimitChanged;
+    spinBox_LowVoltageLimit.handlers.elements = &LowVoltageLimit_handlers[0];
+    spinBox_LowVoltageLimit.handlers.count = 3;
+    //spinBox_LowVoltageLimit.handlers.elements[0].eventType = SPINBOX_VALUE_CHANGED;
+    //spinBox_LowVoltageLimit.handlers.elements[0].handler = onLowVoltageLimitChanged;
+    spinBox_LowVoltageLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
     guiSpinBox_Initialize(&spinBox_HighVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
     spinBox_HighVoltageLimit.x = 96+10;
@@ -274,11 +295,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighVoltageLimit.isVisible = 0;
     spinBox_HighVoltageLimit.value = 1;
     guiSpinBox_SetValue(&spinBox_HighVoltageLimit, 0, 0);
-    spinBox_HighVoltageLimit.handlers.elements = &spinBoxHandlers_VoltageLimit[1];
-    spinBox_HighVoltageLimit.handlers.count = 1;
-    spinBox_HighVoltageLimit.handlers.elements[0].eventType = SPINBOX_VALUE_CHANGED;
-    spinBox_HighVoltageLimit.handlers.elements[0].handler = onHighVoltageLimitChanged;
-
+    spinBox_HighVoltageLimit.handlers.elements = &HighVoltageLimit_handlers[1];
+    spinBox_HighVoltageLimit.handlers.count = 3;
+    //spinBox_HighVoltageLimit.handlers.elements[0].eventType = SPINBOX_VALUE_CHANGED;
+    //spinBox_HighVoltageLimit.handlers.elements[0].handler = onHighVoltageLimitChanged;
+    spinBox_HighVoltageLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
 
     //---------- Tags ----------//
@@ -303,6 +324,9 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     switch (event.type)
     {
+        case GUI_EVENT_INIT:
+            //guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);
+            break;
         case GUI_EVENT_DRAW:
             guiGraph_DrawPanel(&guiSetupPanel);
             // Reset flags - redrawForced will be reset by core
@@ -326,31 +350,30 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
                 // Bring GUI elements to initial state
                 if (setupList.isVisible == 0)
                 {
+                    guiCore_SetVisible((guiGenericWidget_t *)&chSetupList, 0);
                     guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);
                 }
             }
             break;
         case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
+            /*if ((event.spec == GUI_KEY_EVENT_UP_SHORT) && (event.lparam == GUI_KEY_ESC))
             {
                 if (setupList.isVisible)
                     guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
                 else if (chSetupList.isVisible)
                     guiCore_RequestFocusChange((guiGenericWidget_t*)&chSetupList);
 
-                //event.type = STRINGLIST_EVENT_ACTIVATE;
-                //guiCore_AddMessageToQueue((guiGenericWidget_t*)&setupList, &event);
-                /*if (setupList.isVisible == 0)
-                {
-                    guiCore_SetVisibleByTag(&guiSetupPanel.widgets, 0, 250, ITEMS_IN_RANGE_ARE_INVISIBLE);
-                    guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);
-                }*/
+                break;
+            }*/
+            if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
+            {
+                processResult = GUI_EVENT_DECLINE;
                 break;
             }
-            /*if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ENCODER))
+            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
             {
-
-            }*/
+                break;
+            }
             // fall down to default
         default:
             processResult = guiPanel_ProcessEvent(widget, event);
@@ -371,7 +394,8 @@ static uint8_t guiSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t 
             guiStringList_SetActive(&setupList, 1, 0);  // will call handler
             break;
         case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_OK))
+            if (((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_OK)) ||
+                ((event.spec == GUI_KEY_EVENT_UP_SHORT) && (event.lparam == GUI_KEY_ENCODER)))
             {
                 if (setupList.selectedIndex == 0)
                 {
@@ -399,11 +423,6 @@ static uint8_t guiSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t 
                 {
                     guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiSetupPanel, 1);
                 }
-                break;
-            }
-            else if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
-            {
-                // Do nothing
                 break;
             }
             // fall down to default
@@ -462,6 +481,31 @@ static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     return 0;
 }
 
+
+static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    tkey->key = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_LEFT)
+                tkey->key = STRINGLIST_KEY_UP;
+            else if (event->lparam == GUI_KEY_RIGHT)
+                tkey->key = STRINGLIST_KEY_DOWN;
+        }
+        if (tkey->key != 0)
+            tkey->spec = STRINGLIST_KEY;
+    }
+    else if (event->type == GUI_EVENT_ENCODER)
+    {
+        tkey->spec = STRINGLIST_INCREMENT;
+        tkey->data = (int16_t)event->lparam;
+    }
+    return tkey->spec;
+}
+
 //-------------------------//
 
 static uint8_t guiChSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
@@ -474,18 +518,21 @@ static uint8_t guiChSetupList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_
             guiStringList_SetActive(&chSetupList, 1, 0);  // will call handler
             break;
         case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_OK))
+            if (((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_OK)) ||
+                ((event.spec == GUI_KEY_EVENT_UP_SHORT) && (event.lparam == GUI_KEY_ENCODER)))
             {
                 guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiSetupPanel, 1);
                 break;
             }
-            else if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
+            else if (((event.spec == GUI_KEY_EVENT_UP_SHORT) && (event.lparam == GUI_KEY_ESC)) ||
+                     ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ENCODER)))
             {
                 guiCore_SetVisible((guiGenericWidget_t*)&chSetupList, 0);
                 guiCore_SetVisible((guiGenericWidget_t*)&setupList, 1);
                 guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
                 break;
             }
+
             // fall down to default
         default:
             processResult = guiStringList_ProcessEvent(widget, event);
@@ -525,8 +572,122 @@ static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     return 0;
 }
 
+
+static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event)
+{
+    uint8_t res = GUI_EVENT_DECLINE;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+        {
+            if (event->lparam == GUI_KEY_ESC)
+            {
+                guiCore_RequestFocusChange((guiGenericWidget_t*)&chSetupList);
+                res = GUI_EVENT_ACCEPTED;
+            }
+        }
+        if (event->spec == GUI_KEY_EVENT_HOLD)
+        {
+            if (event->lparam == GUI_KEY_ENCODER)
+            {
+                guiCore_RequestFocusChange((guiGenericWidget_t*)&chSetupList);
+                res = GUI_EVENT_ACCEPTED;
+            }
+        }
+    }
+    return res;
+}
+
 //-------------------------//
 
+static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    tkey->key = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_LEFT)
+                tkey->key = STRINGLIST_KEY_UP;
+            else if (event->lparam == GUI_KEY_RIGHT)
+                tkey->key = STRINGLIST_KEY_DOWN;
+        }
+        if (tkey->key != 0)
+            tkey->spec = STRINGLIST_KEY;
+    }
+    else if (event->type == GUI_EVENT_ENCODER)
+    {
+        tkey->spec = STRINGLIST_INCREMENT;
+        tkey->data = (int16_t)event->lparam;
+    }
+    return tkey->spec;
+}
+
+static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    tkey->key = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_OK)
+                tkey->key = CHECKBOX_KEY_SELECT;
+        }
+        else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+        {
+            if (event->lparam == GUI_KEY_ENCODER)
+                tkey->key = CHECKBOX_KEY_SELECT;
+        }
+        else if (event->spec == GUI_KEY_EVENT_HOLD)
+        {
+        }
+
+        if (tkey->key != 0)
+            tkey->spec = CHECKBOX_KEY;
+    }
+    return tkey->spec;
+}
+
+static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    tkey->key = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_OK)
+                tkey->key = SPINBOX_KEY_SELECT;
+            else if (event->lparam == GUI_KEY_LEFT)
+                tkey->key = SPINBOX_KEY_LEFT;
+            else if (event->lparam == GUI_KEY_RIGHT)
+                tkey->key = SPINBOX_KEY_RIGHT;
+        }
+        else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+        {
+            if (event->lparam == GUI_KEY_ENCODER)
+                tkey->key = SPINBOX_KEY_SELECT;
+            else if (event->lparam == GUI_KEY_ESC)
+                tkey->key = SPINBOX_KEY_EXIT;
+        }
+        else if (event->spec == GUI_KEY_EVENT_HOLD)
+        {
+            if (event->lparam == GUI_KEY_ENCODER)
+                tkey->key = SPINBOX_KEY_EXIT;
+        }
+        if (tkey->key != 0)
+            tkey->spec = SPINBOX_KEY;
+    }
+    else if (event->type == GUI_EVENT_ENCODER)
+    {
+        tkey->spec = SPINBOX_INCREMENT;
+        tkey->data = (int16_t)event->lparam;
+    }
+
+    return tkey->spec;
+}
 
 
 

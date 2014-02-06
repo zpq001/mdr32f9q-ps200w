@@ -235,6 +235,12 @@ void guiUpdateVoltageSetting(void)
     setVoltageSetting(set_voltage);
 }
 
+
+void UpdateVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+{
+    // TODO
+}
+
 // Apply voltage setting from GUI
 void applyGuiVoltageSetting(int16_t new_set_voltage)
 {
@@ -259,17 +265,17 @@ void applyGuiVoltageSetting(int16_t new_set_voltage)
 }
 
 // Apply voltage limit setting from GUI
-void applyGuiVoltageLimit(uint8_t type, uint8_t enable, int16_t value)
+void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int16_t value)
 {
     if (type == 0)
     {
         guiLogEvent("Writing LOW voltage limit ");
-        setLowVoltageLimitSetting(enable, value);
+        //setLowVoltageLimitSetting(channel, enable, value);
     }
     else
     {
         guiLogEvent("Writing HIGH voltage limit ");
-        setHighVoltageLimitSetting(enable, value);
+        //setHighVoltageLimitSetting(channel, enable, value);
     }
 }
 

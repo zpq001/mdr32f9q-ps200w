@@ -14,6 +14,9 @@
 #define SPINBOX_KEY_UP         0x05
 #define SPINBOX_KEY_DOWN       0x06
 
+// Widget-specific translated key events
+#define SPINBOX_KEY             0x01
+#define SPINBOX_INCREMENT       0x02
 
 // Widget-specific events
 #define SPINBOX_EVENT_ACTIVATE  (0x40 + 0x00)
@@ -29,6 +32,9 @@
                                                   (spinBox->isVisible) )         // TODO - add isEnabled
 #define SPINBOX_ACCEPTS_ENCODER_EVENT(spinBox) ( (spinBox->isFocused) && \
                                                (spinBox->isVisible) )            // TODO - add isEnabled
+
+
+
 
 uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 

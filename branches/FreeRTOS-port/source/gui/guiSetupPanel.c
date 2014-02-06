@@ -207,7 +207,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_hint.isVisible = 0;
 
 
-    LowVoltageLimit_handlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    LowVoltageLimit_handlers[0].eventType = CHECKBOX_CHECKED_CHANGED;	// FIXME - can be equal
     LowVoltageLimit_handlers[0].handler = onLowVoltageLimitChanged;
     LowVoltageLimit_handlers[1].eventType = SPINBOX_VALUE_CHANGED;
     LowVoltageLimit_handlers[1].handler = onLowVoltageLimitChanged;

@@ -36,7 +36,7 @@
 // Choose which actions are supported by button processor - comment unused to optimize code size
 //#define USE_ACTION_REP				// Emulation of repeated pressing
 #define USE_ACTION_UP				// Triggers when button is released
-//#define USE_ACTION_UP_SHORT			// Triggers when button is released and had been pressed for short time
+#define USE_ACTION_UP_SHORT			// Triggers when button is released and had been pressed for short time
 //#define USE_ACTION_UP_LONG			// Triggers when button is released and had been pressed for long time
 #define USE_ACTION_HOLD				// Triggers when button is being pressed for long time
 //#define USE_ACTION_TOGGLE			// Toggles every time button is pressed

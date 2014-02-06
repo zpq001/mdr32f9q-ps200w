@@ -12,6 +12,9 @@
 // Widget-specific virtual keys
 #define CHECKBOX_KEY_SELECT     0x01
 
+// Widget-specific translated key events
+#define CHECKBOX_KEY            0x01
+
 // Widget-specific state checks
 #define CHECKBOX_ACCEPTS_FOCUS_EVENT(checkBox)  ( (checkBox->isVisible) && (1) )    // TODO - add isEnabled
 #define CHECKBOX_ACCEPTS_KEY_EVENT(checkBox)    ( (checkBox->isFocused) && \

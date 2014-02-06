@@ -329,6 +329,12 @@ int MainWindow::encodeGuiEvent(int keyEventType)
         case keyDriver::KEY_UP:
             keyEvent = GUI_KEY_EVENT_UP;
             break;
+        case keyDriver::KEY_UP_SHORT:
+            keyEvent = GUI_KEY_EVENT_UP_SHORT;
+            break;
+        case keyDriver::KEY_UP_LONG:
+            keyEvent = GUI_KEY_EVENT_UP_LONG;
+            break;
         case keyDriver::KEY_HOLD:
             keyEvent = GUI_KEY_EVENT_HOLD;
             break;

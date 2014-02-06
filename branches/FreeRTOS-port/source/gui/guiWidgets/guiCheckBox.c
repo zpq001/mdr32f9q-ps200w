@@ -72,6 +72,28 @@ uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key)
 }
 
 
+// Return:
+//  non-zero if event can and should be processed
+uint8_t checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_OK)
+                tkey->key = CHECKBOX_KEY_SELECT;
+            else
+                tkey->key = 0;
+
+            if (tkey->key != 0)
+                tkey->spec = CHECKBOX_KEY;
+        }
+    }
+    return tkey->spec;
+}
+
+
 
 //-------------------------------------------------------//
 // Checkbox event handler
@@ -83,7 +105,7 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 {
     guiCheckBox_t *checkBox = (guiCheckBox_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
-    uint8_t key;
+    guiWidgetTranslatedKey_t tkey;
 #ifdef USE_TOUCH_SUPPORT
     widgetTouchState_t touch;
 #endif
@@ -119,17 +141,16 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             processResult = GUI_EVENT_DECLINE;
             if (CHECKBOX_ACCEPTS_KEY_EVENT(checkBox))
             {
-                if (event.spec == GUI_KEY_EVENT_DOWN)
+                if ((checkBox->keyTranslator) && (checkBox->keyTranslator(widget, &event, &tkey)))
                 {
-                    if (event.lparam == GUI_KEY_OK)
-                        key = CHECKBOX_KEY_SELECT;
-                    else
-                        key = 0;
-                    if (key != 0)
-                        processResult = guiCheckbox_ProcessKey(checkBox,key);
+                    if (tkey.spec == CHECKBOX_KEY)
+                    {
+                        processResult = guiCheckbox_ProcessKey(checkBox, tkey.key);
+                    }
                 }
                 // Call KEY event handler
-                processResult |= guiCore_CallEventHandler(widget, &event);
+                if (processResult == GUI_EVENT_DECLINE)
+                    processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
 #ifdef USE_TOUCH_SUPPORT
@@ -199,6 +220,7 @@ void guiCheckBox_Initialize(guiCheckBox_t *checkBox, guiGenericWidget_t *parent)
     checkBox->isVisible = 1;
     checkBox->showFocus = 1;
     checkBox->processEvent = guiCheckBox_ProcessEvent;
+    checkBox->keyTranslator = checkBox_DefaultKeyTranslator;
     checkBox->textAlignment = ALIGN_LEFT;
 }
 

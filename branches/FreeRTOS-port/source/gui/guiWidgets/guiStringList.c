@@ -174,6 +174,39 @@ uint8_t guiStringList_ProcessKey(guiStringList_t *list, uint8_t key)
 
 
 
+// Return:
+//  non-zero if event can and should be processed
+uint8_t guiStringList_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+{
+    tkey->spec = 0;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_DOWN)
+        {
+            if (event->lparam == GUI_KEY_OK)
+                tkey->key = STRINGLIST_KEY_SELECT;
+            else if (event->lparam == GUI_KEY_ESC)
+                tkey->key = STRINGLIST_KEY_EXIT;
+            else if (event->lparam == GUI_KEY_LEFT)
+                tkey->key = STRINGLIST_KEY_UP;
+            else if (event->lparam == GUI_KEY_RIGHT)
+                tkey->key = STRINGLIST_KEY_DOWN;
+            else
+                tkey->key = 0;
+
+            if (tkey->key != 0)
+                tkey->spec = STRINGLIST_KEY;
+        }
+    }
+    else if (event->type == GUI_EVENT_ENCODER)
+    {
+        tkey->spec = STRINGLIST_INCREMENT;
+        tkey->data = (int16_t)event->lparam;
+    }
+    return tkey->spec;
+}
+
+
 //-------------------------------------------------------//
 // stringList event handler
 //
@@ -184,7 +217,7 @@ uint8_t guiStringList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 {
     guiStringList_t *list = (guiStringList_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
-    uint8_t key;
+    guiWidgetTranslatedKey_t tkey;
 
     switch (event.type)
     {
@@ -220,7 +253,7 @@ uint8_t guiStringList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             guiCore_SetVisible((guiGenericWidget_t *)list, 0);
             break;
         case GUI_EVENT_ENCODER:
-            processResult = GUI_EVENT_DECLINE;
+            /*processResult = GUI_EVENT_DECLINE;
             if (STRINGLIST_ACCEPTS_ENCODER_EVENT(list))
             {
                 if (list->isActive)
@@ -233,28 +266,47 @@ uint8_t guiStringList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
                 }
                 processResult |= guiCore_CallEventHandler(widget, &event);
             }
-            break;
+            break; */
         case GUI_EVENT_KEY:
             processResult = GUI_EVENT_DECLINE;
             if (STRINGLIST_ACCEPTS_KEY_EVENT(list))
             {
-                if (event.spec == GUI_KEY_EVENT_DOWN)
+                if ((widget->keyTranslator) && (widget->keyTranslator(widget, &event, &tkey)))
                 {
-                    if (event.lparam == GUI_KEY_OK)
-                        key = STRINGLIST_KEY_SELECT;
-                    else if (event.lparam == GUI_KEY_ESC)
-                        key = STRINGLIST_KEY_EXIT;
-                    else if (event.lparam == GUI_KEY_LEFT)
-                        key = STRINGLIST_KEY_UP;
-                    else if (event.lparam == GUI_KEY_RIGHT)
-                        key = STRINGLIST_KEY_DOWN;
-                    else
-                        key = 0;
-                    if (key != 0)
-                        processResult = guiStringList_ProcessKey(list, key);
+                    if (tkey.spec == STRINGLIST_KEY)
+                    {
+                        processResult = guiStringList_ProcessKey(list, tkey.key);
+                    }
+                    else if (tkey.spec == STRINGLIST_INCREMENT)
+                    {
+                        if ((list->isActive) && (tkey.data != 0))
+                        {
+                            if ((int16_t)tkey.data < 0)
+                                guiStringList_ProcessKey(list, STRINGLIST_KEY_UP);
+                            else
+                                guiStringList_ProcessKey(list, STRINGLIST_KEY_DOWN);
+                            processResult = GUI_EVENT_ACCEPTED;
+                        }
+                    }
                 }
+                /*   if (event.spec == GUI_KEY_EVENT_DOWN)
+                   {
+                       if (event.lparam == GUI_KEY_OK)
+                           key = STRINGLIST_KEY_SELECT;
+                       else if (event.lparam == GUI_KEY_ESC)
+                           key = STRINGLIST_KEY_EXIT;
+                       else if (event.lparam == GUI_KEY_LEFT)
+                           key = STRINGLIST_KEY_UP;
+                       else if (event.lparam == GUI_KEY_RIGHT)
+                           key = STRINGLIST_KEY_DOWN;
+                       else
+                           key = 0;
+                       if (key != 0)
+                           processResult = guiStringList_ProcessKey(list, key);
+                   } */
                 // Call KEY event handler
-                processResult |= guiCore_CallEventHandler(widget, &event);
+                if (processResult == GUI_EVENT_DECLINE)
+                    processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
 
@@ -277,4 +329,5 @@ void guiStringList_Initialize(guiStringList_t *list, guiGenericWidget_t *parent)
     list->isVisible = 1;
     list->showFocus = 1;
     list->processEvent = guiStringList_ProcessEvent;
+    list->keyTranslator = guiStringList_DefaultKeyTranslator;
 }

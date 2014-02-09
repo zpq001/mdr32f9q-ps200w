@@ -98,7 +98,7 @@ static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiE
             guiMainForm.redrawRequired = 1;
             guiMainForm.redrawForced = 1;
             guiCore_SetFocused((guiGenericWidget_t *)&guiMainForm, 1);
-            guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, &event);
+            //guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, &event);
             break;
          case GUI_EVENT_START:
             // The following actions should be made by greeting timer expire

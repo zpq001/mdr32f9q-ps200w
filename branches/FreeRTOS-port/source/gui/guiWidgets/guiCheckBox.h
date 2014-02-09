@@ -10,10 +10,17 @@
 
 
 // Widget-specific virtual keys
-#define CHECKBOX_KEY_SELECT     0x01
+enum guiCheckboxVirtualKeys {
+    CHECKBOX_KEY_SELECT = 0x01
+};
 
-// Widget-specific translated key events
-#define CHECKBOX_KEY            0x01
+// Translated key event struct
+typedef struct {
+    uint8_t key;
+} guiCheckboxTranslatedKey_t;
+
+
+
 
 // Widget-specific state checks
 #define CHECKBOX_ACCEPTS_FOCUS_EVENT(checkBox)  ( (checkBox->isVisible) && (1) )    // TODO - add isEnabled
@@ -28,6 +35,6 @@ uint8_t guiCheckbox_SetChecked(guiCheckBox_t *checkBox, uint8_t newCheckedState,
 uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key);
 uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 
-
+void guiCheckBox_SetText(guiCheckBox_t *checkBox, char *text);
 
 #endif

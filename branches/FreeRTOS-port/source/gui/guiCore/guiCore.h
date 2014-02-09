@@ -62,6 +62,7 @@ typedef struct {
 #define GUI_KEY_EVENT_UP_LONG   0x04
 #define GUI_KEY_EVENT_HOLD      0x05
 #define GUI_KEY_EVENT_REPEAT    0x06
+#define GUI_ENCODER_EVENT       0x07        // Encoder rotated
 
 // Button codes
 #define GUI_KEY_ESC     0x01

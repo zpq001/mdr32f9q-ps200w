@@ -67,6 +67,32 @@ uint8_t guiPanel_ProcessKey(guiPanel_t *panel, uint8_t key)
 
 
 
+//-------------------------------------------------------//
+// Default key event translator
+//
+//-------------------------------------------------------//
+void guiPanel_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+{
+    guiPanelTranslatedKey_t *tkey = (guiPanelTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = PANEL_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_ESC)
+            tkey->key = PANEL_KEY_ESC;
+        else if ((event->lparam == GUI_KEY_LEFT) || (event->lparam == GUI_KEY_UP))
+            tkey->key = PANEL_KEY_PREV;
+        else if ((event->lparam == GUI_KEY_RIGHT) || (event->lparam == GUI_KEY_DOWN))
+            tkey->key = PANEL_KEY_NEXT;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        tkey->key = (int16_t)event->lparam < 0 ? PANEL_KEY_PREV :
+              ((int16_t)event->lparam > 0 ? PANEL_KEY_NEXT : 0);
+    }
+}
+
 
 //-------------------------------------------------------//
 // Panel event handler
@@ -78,7 +104,7 @@ uint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 {
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     guiPanel_t *panel = (guiPanel_t *)widget;
-    uint8_t key;
+    guiPanelTranslatedKey_t tkey;
 #ifdef USE_TOUCH_SUPPORT
     containerTouchState_t touch;
 #endif
@@ -119,39 +145,19 @@ uint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
         case GUI_EVENT_HIDE:
             guiCore_SetVisible((guiGenericWidget_t *)panel, 0);
             break;
-        case GUI_EVENT_ENCODER:
-            processResult = GUI_EVENT_DECLINE;
-            if (PANEL_ACCEPTS_ENCODER_EVENT(panel))
-            {
-                key = (int16_t)event.lparam < 0 ? PANEL_KEY_PREV :
-                      ((int16_t)event.lparam > 0 ? PANEL_KEY_NEXT : 0);
-                if (key != 0)
-                    processResult = guiPanel_ProcessKey(panel,key);
-                // Call ENCODER event handler
-                processResult |= guiCore_CallEventHandler(widget, &event);
-            }
-            break;
         case GUI_EVENT_KEY:
             processResult = GUI_EVENT_DECLINE;
             if (PANEL_ACCEPTS_KEY_EVENT(panel))
             {
-                if (event.spec == GUI_KEY_EVENT_DOWN)
+                if (widget->keyTranslator)
                 {
-                    if (event.lparam == GUI_KEY_OK)
-                        key = PANEL_KEY_SELECT;
-                    else if (event.lparam == GUI_KEY_ESC)
-                        key = PANEL_KEY_ESC;
-                    else if ((event.lparam == GUI_KEY_LEFT) || (event.lparam == GUI_KEY_UP))
-                        key = PANEL_KEY_PREV;
-                    else if ((event.lparam == GUI_KEY_RIGHT) || (event.lparam == GUI_KEY_DOWN))
-                        key = PANEL_KEY_NEXT;
-                    else
-                        key = 0;
-                    if (key != 0)
-                        processResult = guiPanel_ProcessKey(panel,key);
+                    widget->keyTranslator(widget, &event, &tkey);
+                    if (tkey.key != 0)
+                        processResult = guiPanel_ProcessKey(panel, tkey.key);
                 }
-                // Call KEY event handler
-                processResult |= guiCore_CallEventHandler(widget, &event);
+                // Call KEY event handler if widget cannot process event
+                if (processResult == GUI_EVENT_DECLINE)
+                    processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
 #ifdef USE_TOUCH_SUPPORT
@@ -223,6 +229,7 @@ void guiPanel_Initialize(guiPanel_t *panel, guiGenericWidget_t *parent)
     panel->acceptFocusByTab = 1;
     panel->focusFallsThrough = 1;
     panel->processEvent = guiPanel_ProcessEvent;
+    panel->keyTranslator = &guiPanel_DefaultKeyTranslator;
     panel->frame = FRAME_NONE;
 }
 

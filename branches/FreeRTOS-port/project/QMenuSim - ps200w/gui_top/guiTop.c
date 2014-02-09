@@ -228,17 +228,13 @@ void guiUpdateVoltageIndicator(void)
     setVoltageIndicator(voltage_adc);
 }
 
+
+
 // Read voltage setting and update LCD indicator
 void guiUpdateVoltageSetting(void)
 {
     guiLogEvent("Reading voltage setting");
     setVoltageSetting(set_voltage);
-}
-
-
-void UpdateVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
-{
-    // TODO
 }
 
 // Apply voltage setting from GUI
@@ -250,18 +246,13 @@ void applyGuiVoltageSetting(int16_t new_set_voltage)
 
     //------ simulation of actual conveter work ------//
     guiUpdateVoltageIndicator();
-
-/*
-    conveter_message_t msg;
-    const conveter_message_t converter_tick_message = 	{25};
-    msg.type = 1;
-    msg.data.a = 12;
-    msg.data.b = 14;
+}
 
 
-    msg.voltage_limit_setting.limit = 0;
-    msg.voltage_limit_setting.enable = 1;
-    msg.voltage_limit_setting.value = 20000; */
+
+void UpdateVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+{
+    // TODO
 }
 
 // Apply voltage limit setting from GUI
@@ -288,6 +279,7 @@ void guiUpdateCurrentIndicator(void)
     guiLogEvent("Reading current ADC");
     setCurrentIndicator(current_adc);
 }
+
 
 // Read current setting and update LCD indicator
 void guiUpdateCurrentSetting(void)

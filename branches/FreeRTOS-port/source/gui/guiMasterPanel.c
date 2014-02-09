@@ -157,7 +157,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     // Handlers:
     textLabelHandlers[0].eventType = GUI_EVENT_DRAW;
     textLabelHandlers[0].handler = onTextLabelDrawEvent;
-    textLabelHandlers[1].eventType = GUI_EVENT_ENCODER;
+    textLabelHandlers[1].eventType = GUI_EVENT_KEY;
     textLabelHandlers[1].handler = onTextLabelKeyEncoderEvent;
     textLabel_currRange.handlers.count = 2;
     textLabel_currRange.handlers.elements = textLabelHandlers;
@@ -176,7 +176,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_voltage.dotPosition = 2;
     spinBox_voltage.activeDigit = 2;
     spinBox_voltage.minDigitsToDisplay = 3;
-    spinBox_voltage.restoreValueOnEscape = 1;
+    spinBox_voltage.restoreValueOnEscape = 0;
     spinBox_voltage.maxValue = 4100;
     spinBox_voltage.minValue = -1;
     spinBox_voltage.showFocus = 0;
@@ -194,7 +194,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_current.dotPosition = 2;
     spinBox_current.activeDigit = 2;
     spinBox_current.minDigitsToDisplay = 3;
-    spinBox_current.restoreValueOnEscape = 1;
+    spinBox_current.restoreValueOnEscape = 0;
     spinBox_current.maxValue = 4100;
     spinBox_current.minValue = -1;
     spinBox_current.showFocus = 0;
@@ -299,15 +299,22 @@ static uint8_t spinBoxEventProcessFunction(guiGenericWidget_t *widget, guiEvent_
 
     switch(event.type)
     {
-        case GUI_EVENT_ENCODER:
-            if (spinBox->isActive)
+        case GUI_EVENT_KEY:
+            if (event.spec == GUI_ENCODER_EVENT)
             {
-                processResult = guiSpinBox_ProcessEvent(widget, event);
+                if (spinBox->isActive == 0)
+                {
+                    event.type = SPINBOX_EVENT_ACTIVATE;
+                    guiCore_AddMessageToQueue(widget,&event);   // activate
+                }
+                else
+                {
+                    processResult = guiSpinBox_ProcessEvent(widget, event);
+                }
             }
             else
             {
-                event.type = SPINBOX_EVENT_ACTIVATE;
-                guiCore_AddMessageToQueue(widget,&event);   // activate
+                processResult = guiSpinBox_ProcessEvent(widget, event);
             }
             break;
         default: processResult = guiSpinBox_ProcessEvent(widget, event);
@@ -389,20 +396,20 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
 {
     //guiTextLabel_t *label = (guiTextLabel_t *)sender;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
-    switch (event->type)
+    if (event->spec == GUI_ENCODER_EVENT)
     {
-        case GUI_EVENT_ENCODER:
-            if ((int16_t)event->lparam < 0)
-            {
-                applyGuiCurrentRange(GUI_CURRENT_RANGE_LOW);
-            }
-            else if ((int16_t)event->lparam > 0)
-            {
-                applyGuiCurrentRange(GUI_CURRENT_RANGE_HIGH);
-            }
-            break;
-        default:
-            processResult = GUI_EVENT_DECLINE;
+        if ((int16_t)event->lparam < 0)
+        {
+            applyGuiCurrentRange(GUI_CURRENT_RANGE_LOW);
+        }
+        else if ((int16_t)event->lparam > 0)
+        {
+            applyGuiCurrentRange(GUI_CURRENT_RANGE_HIGH);
+        }
+    }
+    else
+    {
+        processResult = GUI_EVENT_DECLINE;
     }
     return processResult;
 }

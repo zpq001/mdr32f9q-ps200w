@@ -452,8 +452,8 @@ void guiCore_ProcessKeyEvent(uint16_t code, uint8_t spec)
 void guiCore_ProcessEncoderEvent(int16_t increment)
 {
     guiEvent_t event;
-    event.type = GUI_EVENT_ENCODER;
-    event.spec = 0;
+    event.type = GUI_EVENT_KEY;
+    event.spec = GUI_ENCODER_EVENT;
     event.lparam = (uint16_t)increment;
     guiCore_AddMessageToQueue(focusedWidget, &event);
     guiCore_ProcessMessageQueue();

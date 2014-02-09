@@ -72,27 +72,23 @@ uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key)
 }
 
 
-// Return:
-//  non-zero if event can and should be processed
-uint8_t checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+
+
+
+//-------------------------------------------------------//
+// Default key event translator
+//
+//-------------------------------------------------------//
+void checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
-    if (event->type == GUI_EVENT_KEY)
+    guiCheckboxTranslatedKey_t *tkey = (guiCheckboxTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_OK)
-                tkey->key = CHECKBOX_KEY_SELECT;
-            else
-                tkey->key = 0;
-
-            if (tkey->key != 0)
-                tkey->spec = CHECKBOX_KEY;
-        }
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = CHECKBOX_KEY_SELECT;
     }
-    return tkey->spec;
 }
-
 
 
 //-------------------------------------------------------//
@@ -105,7 +101,7 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 {
     guiCheckBox_t *checkBox = (guiCheckBox_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
-    guiWidgetTranslatedKey_t tkey;
+    guiCheckboxTranslatedKey_t tkey;
 #ifdef USE_TOUCH_SUPPORT
     widgetTouchState_t touch;
 #endif
@@ -141,12 +137,11 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             processResult = GUI_EVENT_DECLINE;
             if (CHECKBOX_ACCEPTS_KEY_EVENT(checkBox))
             {
-                if ((checkBox->keyTranslator) && (checkBox->keyTranslator(widget, &event, &tkey)))
+                if (checkBox->keyTranslator)
                 {
-                    if (tkey.spec == CHECKBOX_KEY)
-                    {
+                    checkBox->keyTranslator(widget, &event, &tkey);
+                    if (tkey.key != 0)
                         processResult = guiCheckbox_ProcessKey(checkBox, tkey.key);
-                    }
                 }
                 // Call KEY event handler
                 if (processResult == GUI_EVENT_DECLINE)
@@ -203,7 +198,16 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 }
 
 
-
+//-------------------------------------------------------//
+// Set checkbox text and flags to redraw
+//
+//-------------------------------------------------------//
+void guiCheckBox_SetText(guiCheckBox_t *checkBox, char *text)
+{
+    checkBox->text = text;
+    checkBox->redrawRequired = 1;
+    checkBox->redrawForced = 1;
+}
 
 
 //-------------------------------------------------------//

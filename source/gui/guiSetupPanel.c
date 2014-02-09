@@ -35,26 +35,26 @@
 
 static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event);
 
-static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
+static void guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiSetupList_onKeyEvent(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onFocusChanged(void *widget, guiEvent_t *event);
 
 
-static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
+static void guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiChSetupList_onKeyEvent(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onFocusChanged(void *widget, guiEvent_t *event);
 
 
-static uint8_t onLowVoltageLimitChanged(void *widget, guiEvent_t *event);
-static uint8_t onHighVoltageLimitChanged(void *widget, guiEvent_t *event);
+static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
+static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 
 
-static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
-static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey);
+static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
 static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 
@@ -80,7 +80,9 @@ guiStringList_t chSetupList;
 #define CH_SETUP_LIST_ELEMENTS_COUNT 4
 char *chSsetupListElements[CH_SETUP_LIST_ELEMENTS_COUNT];
 guiWidgetHandler_t chSetupListHandlers[4];
+
 uint8_t channelBeingSetup;
+uint8_t currentRangeBeingSetup;
 
 // Hint label
 static guiTextLabel_t textLabel_hint;        // Menu item hint
@@ -89,15 +91,15 @@ static guiTextLabel_t textLabel_hint;        // Menu item hint
 
 
 // Voltage limit section
-guiCheckBox_t checkBox_ApplyLowVoltageLimit;
-guiCheckBox_t checkBox_ApplyHighVoltageLimit;
-guiWidgetHandler_t LowVoltageLimit_CheckBoxHandlers[2];
-guiWidgetHandler_t LowVoltageLimit_SpinBoxHandlers[2];
+guiCheckBox_t checkBox_ApplyLowLimit;
+guiCheckBox_t checkBox_ApplyHighLimit;
+guiWidgetHandler_t LowLimit_CheckBoxHandlers[2];
+guiWidgetHandler_t LowLimit_SpinBoxHandlers[2];
 
-guiSpinBox_t spinBox_LowVoltageLimit;
-guiSpinBox_t spinBox_HighVoltageLimit;
-guiWidgetHandler_t HighVoltageLimit_CheckBoxHandlers[2];
-guiWidgetHandler_t HighVoltageLimit_SpinBoxHandlers[2];
+guiSpinBox_t spinBox_LowLimit;
+guiSpinBox_t spinBox_HighLimit;
+guiWidgetHandler_t HighLimit_CheckBoxHandlers[2];
+guiWidgetHandler_t HighLimit_SpinBoxHandlers[2];
 
 
 
@@ -115,10 +117,10 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     guiSetupPanel.widgets.count = SETUP_PANEL_ELEMENTS_COUNT;
     guiSetupPanel.widgets.elements = guiSetupPanelElements;
     guiSetupPanel.widgets.elements[0] = &setupList;
-    guiSetupPanel.widgets.elements[1] = &checkBox_ApplyLowVoltageLimit;
-    guiSetupPanel.widgets.elements[2] = &checkBox_ApplyHighVoltageLimit;
-    guiSetupPanel.widgets.elements[3] = &spinBox_LowVoltageLimit;
-    guiSetupPanel.widgets.elements[4] = &spinBox_HighVoltageLimit;
+    guiSetupPanel.widgets.elements[1] = &checkBox_ApplyLowLimit;
+    guiSetupPanel.widgets.elements[2] = &checkBox_ApplyHighLimit;
+    guiSetupPanel.widgets.elements[3] = &spinBox_LowLimit;
+    guiSetupPanel.widgets.elements[4] = &spinBox_HighLimit;
     guiSetupPanel.widgets.elements[5] = &textLabel_hint;
     guiSetupPanel.widgets.elements[6] = &chSetupList;
     guiSetupPanel.widgets.elements[7] = &textLabel_title;
@@ -192,9 +194,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.stringCount = CH_SETUP_LIST_ELEMENTS_COUNT;
     chSetupList.strings = chSsetupListElements;
     chSetupList.strings[0] = " Voltage limit";
-    chSetupList.strings[1] = " Current limit";
-    chSetupList.strings[2] = " Overload";
-    chSetupList.strings[3] = " ****";
+    chSetupList.strings[1] = " Current lim. 20A";
+    chSetupList.strings[2] = " Current lim. 40A";
+    chSetupList.strings[3] = " Overload";
     chSetupList.handlers.count = 4;
     chSetupList.handlers.elements = chSetupListHandlers;
     chSetupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
@@ -221,106 +223,106 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_hint.isVisible = 0;
 
     // Common handlers
-    LowVoltageLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    LowVoltageLimit_CheckBoxHandlers[0].handler = onLowVoltageLimitChanged;
-    LowVoltageLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    LowVoltageLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-    LowVoltageLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
-    LowVoltageLimit_SpinBoxHandlers[0].handler = onLowVoltageLimitChanged;
-    LowVoltageLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    LowVoltageLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
+    LowLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    LowLimit_CheckBoxHandlers[0].handler = onLowLimitChanged;
+    LowLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    LowLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
+    LowLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
+    LowLimit_SpinBoxHandlers[0].handler = onLowLimitChanged;
+    LowLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    LowLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
 
-    HighVoltageLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    HighVoltageLimit_CheckBoxHandlers[0].handler = onHighVoltageLimitChanged;
-    HighVoltageLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    HighVoltageLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-    HighVoltageLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
-    HighVoltageLimit_SpinBoxHandlers[0].handler = onHighVoltageLimitChanged;
-    HighVoltageLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    HighVoltageLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
+    HighLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    HighLimit_CheckBoxHandlers[0].handler = onHighLimitChanged;
+    HighLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    HighLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
+    HighLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
+    HighLimit_SpinBoxHandlers[0].handler = onHighLimitChanged;
+    HighLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    HighLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
 
 
     // Voltage limit section
-    guiCheckBox_Initialize(&checkBox_ApplyLowVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
-    checkBox_ApplyLowVoltageLimit.font = &font_h10;
-    checkBox_ApplyLowVoltageLimit.x = 96 + 4;
-    checkBox_ApplyLowVoltageLimit.y = 0;
-    checkBox_ApplyLowVoltageLimit.width = 66;
-    checkBox_ApplyLowVoltageLimit.height = 14;
-    checkBox_ApplyLowVoltageLimit.isVisible = 0;
-    checkBox_ApplyLowVoltageLimit.text = "Low: [V]";
-    checkBox_ApplyLowVoltageLimit.tabIndex = 1;
-    checkBox_ApplyLowVoltageLimit.handlers.elements = LowVoltageLimit_CheckBoxHandlers;
-    checkBox_ApplyLowVoltageLimit.handlers.count = 2;
-    checkBox_ApplyLowVoltageLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
+    guiCheckBox_Initialize(&checkBox_ApplyLowLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    checkBox_ApplyLowLimit.font = &font_h10;
+    checkBox_ApplyLowLimit.x = 96 + 4;
+    checkBox_ApplyLowLimit.y = 0;
+    checkBox_ApplyLowLimit.width = 66;
+    checkBox_ApplyLowLimit.height = 14;
+    checkBox_ApplyLowLimit.isVisible = 0;
+    checkBox_ApplyLowLimit.text = "Low: [V]";
+    checkBox_ApplyLowLimit.tabIndex = 1;
+    checkBox_ApplyLowLimit.handlers.elements = LowLimit_CheckBoxHandlers;
+    checkBox_ApplyLowLimit.handlers.count = 2;
+    checkBox_ApplyLowLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
-    guiCheckBox_Initialize(&checkBox_ApplyHighVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
-    checkBox_ApplyHighVoltageLimit.font = &font_h10;
-    checkBox_ApplyHighVoltageLimit.x = 96 + 4;
-    checkBox_ApplyHighVoltageLimit.y = 36;
-    checkBox_ApplyHighVoltageLimit.width = 66;
-    checkBox_ApplyHighVoltageLimit.height = 14;
-    checkBox_ApplyHighVoltageLimit.isVisible = 0;
-    checkBox_ApplyHighVoltageLimit.text = "High: [V]";
-    checkBox_ApplyHighVoltageLimit.tabIndex = 3;
-    checkBox_ApplyHighVoltageLimit.handlers.elements = HighVoltageLimit_CheckBoxHandlers;
-    checkBox_ApplyHighVoltageLimit.handlers.count = 2;
-    checkBox_ApplyHighVoltageLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
+    guiCheckBox_Initialize(&checkBox_ApplyHighLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    checkBox_ApplyHighLimit.font = &font_h10;
+    checkBox_ApplyHighLimit.x = 96 + 4;
+    checkBox_ApplyHighLimit.y = 36;
+    checkBox_ApplyHighLimit.width = 66;
+    checkBox_ApplyHighLimit.height = 14;
+    checkBox_ApplyHighLimit.isVisible = 0;
+    checkBox_ApplyHighLimit.text = "High: [V]";
+    checkBox_ApplyHighLimit.tabIndex = 3;
+    checkBox_ApplyHighLimit.handlers.elements = HighLimit_CheckBoxHandlers;
+    checkBox_ApplyHighLimit.handlers.count = 2;
+    checkBox_ApplyHighLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
-    guiSpinBox_Initialize(&spinBox_LowVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
-    spinBox_LowVoltageLimit.x = 96+10;
-    spinBox_LowVoltageLimit.y = 14;
-    spinBox_LowVoltageLimit.width = 60;
-    spinBox_LowVoltageLimit.height = 18;
-    spinBox_LowVoltageLimit.textRightOffset = -2;
-    spinBox_LowVoltageLimit.textTopOffset = 2;
-    spinBox_LowVoltageLimit.tabIndex = 2;
-    spinBox_LowVoltageLimit.font = &font_h11;
-    spinBox_LowVoltageLimit.dotPosition = 2;
-    spinBox_LowVoltageLimit.activeDigit = 2;
-    spinBox_LowVoltageLimit.minDigitsToDisplay = 3;
-    spinBox_LowVoltageLimit.restoreValueOnEscape = 1;
-    spinBox_LowVoltageLimit.maxValue = 2100;
-    spinBox_LowVoltageLimit.minValue = -1;
-    spinBox_LowVoltageLimit.showFocus = 1;
-    spinBox_LowVoltageLimit.isVisible = 0;
-    spinBox_LowVoltageLimit.value = 1;
-    guiSpinBox_SetValue(&spinBox_LowVoltageLimit, 0, 0);
-    spinBox_LowVoltageLimit.handlers.elements = LowVoltageLimit_SpinBoxHandlers;
-    spinBox_LowVoltageLimit.handlers.count = 2;
-    spinBox_LowVoltageLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
+    guiSpinBox_Initialize(&spinBox_LowLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    spinBox_LowLimit.x = 96+10;
+    spinBox_LowLimit.y = 14;
+    spinBox_LowLimit.width = 60;
+    spinBox_LowLimit.height = 18;
+    spinBox_LowLimit.textRightOffset = -2;
+    spinBox_LowLimit.textTopOffset = 2;
+    spinBox_LowLimit.tabIndex = 2;
+    spinBox_LowLimit.font = &font_h11;
+    spinBox_LowLimit.dotPosition = 2;
+    spinBox_LowLimit.activeDigit = 2;
+    spinBox_LowLimit.minDigitsToDisplay = 3;
+    spinBox_LowLimit.restoreValueOnEscape = 1;
+    spinBox_LowLimit.maxValue = 2100;
+    spinBox_LowLimit.minValue = -1;
+    spinBox_LowLimit.showFocus = 1;
+    spinBox_LowLimit.isVisible = 0;
+    spinBox_LowLimit.value = 1;
+    guiSpinBox_SetValue(&spinBox_LowLimit, 0, 0);
+    spinBox_LowLimit.handlers.elements = LowLimit_SpinBoxHandlers;
+    spinBox_LowLimit.handlers.count = 2;
+    spinBox_LowLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
-    guiSpinBox_Initialize(&spinBox_HighVoltageLimit, (guiGenericWidget_t *)&guiSetupPanel);
-    spinBox_HighVoltageLimit.x = 96+10;
-    spinBox_HighVoltageLimit.y = 50;
-    spinBox_HighVoltageLimit.width = 60;
-    spinBox_HighVoltageLimit.height = 18;
-    spinBox_HighVoltageLimit.textRightOffset = -2;
-    spinBox_HighVoltageLimit.textTopOffset = 2;
-    spinBox_HighVoltageLimit.tabIndex = 4;
-    spinBox_HighVoltageLimit.font = &font_h11;
-    spinBox_HighVoltageLimit.dotPosition = 2;
-    spinBox_HighVoltageLimit.activeDigit = 2;
-    spinBox_HighVoltageLimit.minDigitsToDisplay = 3;
-    spinBox_HighVoltageLimit.restoreValueOnEscape = 1;
-    spinBox_HighVoltageLimit.maxValue = 2100;
-    spinBox_HighVoltageLimit.minValue = -1;
-    spinBox_HighVoltageLimit.showFocus = 1;
-    spinBox_HighVoltageLimit.isVisible = 0;
-    spinBox_HighVoltageLimit.value = 1;
-    guiSpinBox_SetValue(&spinBox_HighVoltageLimit, 0, 0);
-    spinBox_HighVoltageLimit.handlers.elements = HighVoltageLimit_SpinBoxHandlers;
-    spinBox_HighVoltageLimit.handlers.count = 2;
-    spinBox_HighVoltageLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
+    guiSpinBox_Initialize(&spinBox_HighLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    spinBox_HighLimit.x = 96+10;
+    spinBox_HighLimit.y = 50;
+    spinBox_HighLimit.width = 60;
+    spinBox_HighLimit.height = 18;
+    spinBox_HighLimit.textRightOffset = -2;
+    spinBox_HighLimit.textTopOffset = 2;
+    spinBox_HighLimit.tabIndex = 4;
+    spinBox_HighLimit.font = &font_h11;
+    spinBox_HighLimit.dotPosition = 2;
+    spinBox_HighLimit.activeDigit = 2;
+    spinBox_HighLimit.minDigitsToDisplay = 3;
+    spinBox_HighLimit.restoreValueOnEscape = 1;
+    spinBox_HighLimit.maxValue = 2100;
+    spinBox_HighLimit.minValue = -1;
+    spinBox_HighLimit.showFocus = 1;
+    spinBox_HighLimit.isVisible = 0;
+    spinBox_HighLimit.value = 1;
+    guiSpinBox_SetValue(&spinBox_HighLimit, 0, 0);
+    spinBox_HighLimit.handlers.elements = HighLimit_SpinBoxHandlers;
+    spinBox_HighLimit.handlers.count = 2;
+    spinBox_HighLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
 
     //---------- Tags ----------//
 
     // Group 1
-    checkBox_ApplyLowVoltageLimit.tag = 1;
-    checkBox_ApplyHighVoltageLimit.tag = 1;
-    spinBox_LowVoltageLimit.tag = 1;
-    spinBox_HighVoltageLimit.tag = 1;
+    checkBox_ApplyLowLimit.tag = 1;
+    checkBox_ApplyHighLimit.tag = 1;
+    spinBox_LowLimit.tag = 1;
+    spinBox_HighLimit.tag = 1;
     chSetupList.tag = 0;
 
     // Group 2
@@ -336,15 +338,6 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     switch (event.type)
     {
-        case GUI_EVENT_INIT:
-            //guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);
-            break;
-        case GUI_EVENT_DRAW:
-            guiGraph_DrawPanel(&guiSetupPanel);
-            // Reset flags - redrawForced will be reset by core
-            guiSetupPanel.redrawFocus = 0;
-            guiSetupPanel.redrawRequired = 0;
-            break;
         case GUI_EVENT_FOCUS:
             processResult = guiPanel_ProcessEvent(widget, event);
             if (processResult == GUI_EVENT_ACCEPTED)
@@ -352,7 +345,6 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
                 guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
                 event.type = STRINGLIST_EVENT_ACTIVATE;
                 guiCore_AddMessageToQueue((guiGenericWidget_t*)&setupList, &event);
-                //guiSetupList_onIndexChanged(widget, 0);
             }
             break;
         case GUI_EVENT_SHOW:
@@ -368,15 +360,6 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
             }
             break;
         case GUI_EVENT_KEY:
-            /*if ((event.spec == GUI_KEY_EVENT_UP_SHORT) && (event.lparam == GUI_KEY_ESC))
-            {
-                if (setupList.isVisible)
-                    guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
-                else if (chSetupList.isVisible)
-                    guiCore_RequestFocusChange((guiGenericWidget_t*)&chSetupList);
-
-                break;
-            }*/
             if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
             {
                 processResult = GUI_EVENT_DECLINE;
@@ -398,28 +381,22 @@ static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, gu
 //-------------------------//
 // guiSetupList
 
-static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+static void guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
+    guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
     tkey->key = 0;
-    if (event->type == GUI_EVENT_KEY)
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_LEFT)
-                tkey->key = STRINGLIST_KEY_UP;
-            else if (event->lparam == GUI_KEY_RIGHT)
-                tkey->key = STRINGLIST_KEY_DOWN;
-        }
-        if (tkey->key != 0)
-            tkey->spec = STRINGLIST_KEY;
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = STRINGLIST_KEY_UP;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = STRINGLIST_KEY_DOWN;
     }
-    else if (event->type == GUI_EVENT_ENCODER)
+    else if (event->spec == GUI_ENCODER_EVENT)
     {
-        tkey->spec = STRINGLIST_INCREMENT;
-        tkey->data = (int16_t)event->lparam;
+        tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
+              ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
     }
-    return tkey->spec;
 }
 
 
@@ -432,24 +409,17 @@ static uint8_t guiSetupList_onKeyEvent(void *widget, guiEvent_t *event)
         if (setupList.selectedIndex == 0)
         {
             // Show the channel setup list
-            channelBeingSetup = GUI_CHANNEL_5V;
             guiCore_SetVisible((guiGenericWidget_t*)&setupList, 0);
             guiCore_SetVisible((guiGenericWidget_t*)&chSetupList, 1);
             guiCore_RequestFocusChange((guiGenericWidget_t *)&chSetupList);
-            // Update widgets
-            UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
-            UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
+
         }
         else if (setupList.selectedIndex == 1)
         {
             // Show the channel setup list
-            channelBeingSetup = GUI_CHANNEL_12V;
             guiCore_SetVisible((guiGenericWidget_t*)&setupList, 0);
             guiCore_SetVisible((guiGenericWidget_t*)&chSetupList, 1);
             guiCore_RequestFocusChange((guiGenericWidget_t *)&chSetupList);
-            // Update widgets
-            UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
-            UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
         }
         else
         {
@@ -470,6 +440,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     guiCore_SetVisibleByTag(&guiSetupPanel.widgets, minTag, maxTag, ITEMS_IN_RANGE_ARE_INVISIBLE);
     if (setupList.selectedIndex == 0)
     {
+        channelBeingSetup = GUI_CHANNEL_5V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 5V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -478,6 +449,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     }
     else if (setupList.selectedIndex == 1)
     {
+        channelBeingSetup = GUI_CHANNEL_12V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 12V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -526,28 +498,22 @@ static uint8_t guiSetupList_onFocusChanged(void *widget, guiEvent_t *event)
 // guiChSetupList
 
 
-static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+static void guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
+    guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
     tkey->key = 0;
-    if (event->type == GUI_EVENT_KEY)
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_LEFT)
-                tkey->key = STRINGLIST_KEY_UP;
-            else if (event->lparam == GUI_KEY_RIGHT)
-                tkey->key = STRINGLIST_KEY_DOWN;
-        }
-        if (tkey->key != 0)
-            tkey->spec = STRINGLIST_KEY;
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = STRINGLIST_KEY_UP;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = STRINGLIST_KEY_DOWN;
     }
-    else if (event->type == GUI_EVENT_ENCODER)
+    else if (event->spec == GUI_ENCODER_EVENT)
     {
-        tkey->spec = STRINGLIST_INCREMENT;
-        tkey->data = (int16_t)event->lparam;
+        tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
+              ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
     }
-    return tkey->spec;
 }
 
 
@@ -573,14 +539,41 @@ static uint8_t guiChSetupList_onKeyEvent(void *widget, guiEvent_t *event)
 }
 
 
-
 static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
 {
-    uint8_t currTag = chSetupList.tag + chSetupList.selectedIndex + 1;
+    //uint8_t currTag = chSetupList.tag + chSetupList.selectedIndex + 1;
     uint8_t minTag = chSetupList.tag + 1;
     uint8_t maxTag = minTag + 9;
     guiCore_SetVisibleByTag(&guiSetupPanel.widgets, minTag, maxTag, ITEMS_IN_RANGE_ARE_INVISIBLE);
-    guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
+    //guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
+
+    if (chSetupList.selectedIndex <= 2)
+    {
+        guiCore_SetVisible((guiGenericWidget_t *)&checkBox_ApplyLowLimit, 1);
+        guiCore_SetVisible((guiGenericWidget_t *)&checkBox_ApplyHighLimit, 1);
+        guiCore_SetVisible((guiGenericWidget_t *)&spinBox_LowLimit, 1);
+        guiCore_SetVisible((guiGenericWidget_t *)&spinBox_HighLimit, 1);
+    }
+
+    if (chSetupList.selectedIndex == 0)
+    {
+        guiCheckBox_SetText(&checkBox_ApplyLowLimit, "Low: [V]");
+        guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [V]");
+        // Update widgets for voltage
+        UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
+        UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
+    }
+    else if ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2))
+    {
+        guiCheckBox_SetText(&checkBox_ApplyLowLimit, "Low: [A]");
+        guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [A]");
+        // Update widgets for current
+        currentRangeBeingSetup = (chSetupList.selectedIndex == 1) ? GUI_CURRENT_RANGE_LOW : GUI_CURRENT_RANGE_HIGH;
+        //UpdateCurrentLimitSetting(channelBeingSetup, currentRangeBeingSetup, GUI_LIMIT_TYPE_LOW);
+        //UpdateCurrentLimitSetting(channelBeingSetup, currentRangeBeingSetup, GUI_LIMIT_TYPE_HIGH);
+    }
+
+
     return 0;
 }
 
@@ -646,109 +639,129 @@ static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event)
 //-------------------------//
 
 
-static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
+    guiCheckboxTranslatedKey_t *tkey = (guiCheckboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
-    if (event->type == GUI_EVENT_KEY)
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_OK)
-                tkey->key = CHECKBOX_KEY_SELECT;
-        }
-        else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
-        {
-            if (event->lparam == GUI_KEY_ENCODER)
-                tkey->key = CHECKBOX_KEY_SELECT;
-        }
-        else if (event->spec == GUI_KEY_EVENT_HOLD)
-        {
-        }
-
-        if (tkey->key != 0)
-            tkey->spec = CHECKBOX_KEY;
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = CHECKBOX_KEY_SELECT;
     }
-    return tkey->spec;
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+            tkey->key = CHECKBOX_KEY_SELECT;
+    }
 }
 
-static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
+    guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
-    if (event->type == GUI_EVENT_KEY)
+    tkey->increment = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_OK)
-                tkey->key = SPINBOX_KEY_SELECT;
-            else if (event->lparam == GUI_KEY_LEFT)
-                tkey->key = SPINBOX_KEY_LEFT;
-            else if (event->lparam == GUI_KEY_RIGHT)
-                tkey->key = SPINBOX_KEY_RIGHT;
-        }
-        else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
-        {
-            if (event->lparam == GUI_KEY_ENCODER)
-                tkey->key = SPINBOX_KEY_SELECT;
-            else if (event->lparam == GUI_KEY_ESC)
-                tkey->key = SPINBOX_KEY_EXIT;
-        }
-        else if (event->spec == GUI_KEY_EVENT_HOLD)
-        {
-            if (event->lparam == GUI_KEY_ENCODER)
-                tkey->key = SPINBOX_KEY_EXIT;
-        }
-        if (tkey->key != 0)
-            tkey->spec = SPINBOX_KEY;
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = SPINBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = SPINBOX_KEY_LEFT;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = SPINBOX_KEY_RIGHT;
     }
-    else if (event->type == GUI_EVENT_ENCODER)
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
     {
-        tkey->spec = SPINBOX_INCREMENT;
-        tkey->data = (int16_t)event->lparam;
+        if (event->lparam == GUI_KEY_ENCODER)
+            tkey->key = SPINBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_ESC)
+            tkey->key = SPINBOX_KEY_EXIT;
     }
-
-    return tkey->spec;
+    else if (event->spec == GUI_KEY_EVENT_HOLD)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+            tkey->key = SPINBOX_KEY_EXIT;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        tkey->increment = (int16_t)event->lparam;
+    }
 }
 
 
 
-static uint8_t onLowVoltageLimitChanged(void *widget, guiEvent_t *event)
+//=================================================================//
+//=================================================================//
+//  Hardware interface functions
+
+
+static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
 {
     uint8_t limEnabled = 0;
-    if (checkBox_ApplyLowVoltageLimit.isChecked)
+    if (checkBox_ApplyLowLimit.isChecked)
         limEnabled = 1;
-    applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowVoltageLimit.value * 10);
+    if (chSetupList.selectedIndex == 0)
+        applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+    else if (chSetupList.selectedIndex == 1)
+    {}  // applyGuiCurrentLimit - TODO
+    else if (chSetupList.selectedIndex == 2)
+    {}
     return 0;
 }
+
+static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
+{
+    uint8_t limEnabled = 0;
+    if (checkBox_ApplyHighLimit.isChecked)
+        limEnabled = 1;
+    if (chSetupList.selectedIndex == 0)
+        applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+    else if (chSetupList.selectedIndex == 1)
+    {}  // applyGuiCurrentLimit - TODO
+    else if (chSetupList.selectedIndex == 2)
+    {}
+    return 0;
+}
+
+
 
 void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
 {
-	if (channel == channelBeingSetup)
+    if ((channel == channelBeingSetup) && (chSetupList.selectedIndex == 0))
 	{
-        guiCheckbox_SetChecked(&checkBox_ApplyLowVoltageLimit, isEnabled, 0);
-		guiSpinBox_SetValue(&spinBox_LowVoltageLimit, value / 10, 0);
+        guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
 	}
-}
-
-static uint8_t onHighVoltageLimitChanged(void *widget, guiEvent_t *event)
-{
-    uint8_t limEnabled = 0;
-    if (checkBox_ApplyHighVoltageLimit.isChecked)
-        limEnabled = 1;
-    applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighVoltageLimit.value * 10);
-    return 0;
 }
 
 void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
 {
-	if (channel == channelBeingSetup)
+    if ((channel == channelBeingSetup) && (chSetupList.selectedIndex == 0))
 	{
-        guiCheckbox_SetChecked(&checkBox_ApplyHighVoltageLimit, isEnabled, 0);
-		guiSpinBox_SetValue(&spinBox_HighVoltageLimit, value / 10, 0);
+        guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);
 	}
 }
 
+
+void setLowCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int16_t value)
+{
+    if ((channel == channelBeingSetup) && (range == currentRangeBeingSetup) &&
+            ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2)) )
+    {
+        guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
+    }
+}
+
+void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int16_t value)
+{
+    if ((channel == channelBeingSetup) && (range == currentRangeBeingSetup) &&
+            ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2)) )
+    {
+        guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);
+    }
+}
 
 
 

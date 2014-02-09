@@ -153,16 +153,16 @@ uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
             // move active digit right
             guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit - 1);
         }
-        else if (key == SPINBOX_KEY_UP)
-        {
-            // increase value
-            guiSpinBox_IncrementValue(spinBox, 1);
-        }
-        else if (key == SPINBOX_KEY_DOWN)
-        {
-            //decrease value
-            guiSpinBox_IncrementValue(spinBox, -1);
-        }
+//        else if (key == SPINBOX_KEY_UP)
+//        {
+//            // increase value
+//            guiSpinBox_IncrementValue(spinBox, 1);
+//        }
+//        else if (key == SPINBOX_KEY_DOWN)
+//        {
+//            //decrease value
+//            guiSpinBox_IncrementValue(spinBox, -1);
+//        }
         else
         {
             return GUI_EVENT_DECLINE;
@@ -184,40 +184,34 @@ uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
 }
 
 
-// Return:
-//  non-zero if event can and should be processed
-uint8_t guiSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, guiWidgetTranslatedKey_t *tkey)
+//-------------------------------------------------------//
+// Default key event translator
+//
+//-------------------------------------------------------//
+void guiSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    tkey->spec = 0;
-    if (event->type == GUI_EVENT_KEY)
+    guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    tkey->increment = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        if (event->spec == GUI_KEY_EVENT_DOWN)
-        {
-            if (event->lparam == GUI_KEY_OK)
-                tkey->key = SPINBOX_KEY_SELECT;
-            else if (event->lparam == GUI_KEY_ESC)
-                tkey->key = SPINBOX_KEY_EXIT;
-            else if (event->lparam == GUI_KEY_LEFT)
-                tkey->key = SPINBOX_KEY_LEFT;
-            else if (event->lparam == GUI_KEY_RIGHT)
-                tkey->key = SPINBOX_KEY_RIGHT;
-            else if (event->lparam == GUI_KEY_UP)
-                tkey->key = SPINBOX_KEY_UP;
-            else if (event->lparam == GUI_KEY_DOWN)
-                tkey->key = SPINBOX_KEY_DOWN;
-            else
-                tkey->key = 0;
-
-            if (tkey->key != 0)
-                tkey->spec = SPINBOX_KEY;
-        }
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = SPINBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_ESC)
+            tkey->key = SPINBOX_KEY_EXIT;
+        else if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = SPINBOX_KEY_LEFT;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = SPINBOX_KEY_RIGHT;
+        else if (event->lparam == GUI_KEY_UP)
+            tkey->increment = 1;
+        else if (event->lparam == GUI_KEY_DOWN)
+            tkey->increment = -1;
     }
-    else if (event->type == GUI_EVENT_ENCODER)
+    else if (event->spec == GUI_ENCODER_EVENT)
     {
-        tkey->spec = SPINBOX_INCREMENT;
-        tkey->data = (int16_t)event->lparam;
+        tkey->increment = (int16_t)event->lparam;
     }
-    return tkey->spec;
 }
 
 
@@ -233,7 +227,7 @@ uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
 {
     guiSpinBox_t *spinBox = (guiSpinBox_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
-    guiWidgetTranslatedKey_t tkey;
+    guiSpinboxTranslatedKey_t tkey;
 
     switch (event.type)
     {
@@ -271,27 +265,23 @@ uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
         case GUI_EVENT_HIDE:
             guiCore_SetVisible((guiGenericWidget_t *)spinBox, 0);
             break;
-        case GUI_EVENT_ENCODER:
         case GUI_EVENT_KEY:
             processResult = GUI_EVENT_DECLINE;
             if (SPINBOX_ACCEPTS_KEY_EVENT(spinBox))
             {
-                if ((widget->keyTranslator) && (widget->keyTranslator(widget, &event, &tkey)))
+                if (spinBox->keyTranslator)
                 {
-                    if (tkey.spec == SPINBOX_KEY)
+                    spinBox->keyTranslator(widget, &event, &tkey);
+                    if (tkey.key != 0)
                     {
                         processResult = guiSpinBox_ProcessKey(spinBox, tkey.key);
                     }
-                    else if (tkey.spec == SPINBOX_INCREMENT)
+                    else if ((tkey.increment != 0) && (spinBox->isActive))
                     {
-                        if (spinBox->isActive)
-                        {
-                            guiSpinBox_IncrementValue(spinBox, (int16_t)tkey.data);
-                            processResult = GUI_EVENT_ACCEPTED;
-                        }
+                        guiSpinBox_IncrementValue(spinBox, tkey.increment);
+                        processResult = GUI_EVENT_ACCEPTED;
                     }
                 }
-
                 // Call KEY event handler
                 if (processResult == GUI_EVENT_DECLINE)
                     processResult = guiCore_CallEventHandler(widget, &event);

@@ -81,8 +81,18 @@ guiStringList_t chSetupList;
 char *chSsetupListElements[CH_SETUP_LIST_ELEMENTS_COUNT];
 guiWidgetHandler_t chSetupListHandlers[4];
 
-uint8_t channelBeingSetup;
-uint8_t currentRangeBeingSetup;
+
+struct {
+    uint8_t channel;
+    uint8_t currentRange;
+    uint8_t view;
+} setupView;
+
+enum setupViewModes {
+    VIEW_VOLTAGE,
+    VIEW_CURRENT,
+    VIEW_OTHER
+};
 
 // Hint label
 static guiTextLabel_t textLabel_hint;        // Menu item hint
@@ -282,7 +292,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowLimit.activeDigit = 2;
     spinBox_LowLimit.minDigitsToDisplay = 3;
     spinBox_LowLimit.restoreValueOnEscape = 1;
-    spinBox_LowLimit.maxValue = 2100;
+    spinBox_LowLimit.maxValue = 5000;
     spinBox_LowLimit.minValue = -1;
     spinBox_LowLimit.showFocus = 1;
     spinBox_LowLimit.isVisible = 0;
@@ -305,7 +315,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighLimit.activeDigit = 2;
     spinBox_HighLimit.minDigitsToDisplay = 3;
     spinBox_HighLimit.restoreValueOnEscape = 1;
-    spinBox_HighLimit.maxValue = 2100;
+    spinBox_HighLimit.maxValue = 5000;
     spinBox_HighLimit.minValue = -1;
     spinBox_HighLimit.showFocus = 1;
     spinBox_HighLimit.isVisible = 0;
@@ -440,7 +450,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     guiCore_SetVisibleByTag(&guiSetupPanel.widgets, minTag, maxTag, ITEMS_IN_RANGE_ARE_INVISIBLE);
     if (setupList.selectedIndex == 0)
     {
-        channelBeingSetup = GUI_CHANNEL_5V;
+        setupView.channel = GUI_CHANNEL_5V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 5V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -449,7 +459,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     }
     else if (setupList.selectedIndex == 1)
     {
-        channelBeingSetup = GUI_CHANNEL_12V;
+        setupView.channel = GUI_CHANNEL_12V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 12V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -560,17 +570,23 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCheckBox_SetText(&checkBox_ApplyLowLimit, "Low: [V]");
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [V]");
         // Update widgets for voltage
-        UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_LOW);
-        UpdateVoltageLimitSetting(channelBeingSetup, GUI_LIMIT_TYPE_HIGH);
+        setupView.view = VIEW_VOLTAGE;
+        updateGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_LOW);
+        updateGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_HIGH);
     }
     else if ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2))
     {
         guiCheckBox_SetText(&checkBox_ApplyLowLimit, "Low: [A]");
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [A]");
         // Update widgets for current
-        currentRangeBeingSetup = (chSetupList.selectedIndex == 1) ? GUI_CURRENT_RANGE_LOW : GUI_CURRENT_RANGE_HIGH;
-        //UpdateCurrentLimitSetting(channelBeingSetup, currentRangeBeingSetup, GUI_LIMIT_TYPE_LOW);
-        //UpdateCurrentLimitSetting(channelBeingSetup, currentRangeBeingSetup, GUI_LIMIT_TYPE_HIGH);
+        setupView.view = VIEW_CURRENT;
+        setupView.currentRange = (chSetupList.selectedIndex == 1) ? GUI_CURRENT_RANGE_LOW : GUI_CURRENT_RANGE_HIGH;
+        updateGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_LOW);
+        updateGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_HIGH);
+    }
+    else
+    {
+        setupView.view = VIEW_OTHER;
     }
 
 
@@ -588,7 +604,7 @@ static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     else
     {
         guiChSetupList_onIndexChanged(widget, event);
-        if (channelBeingSetup == GUI_CHANNEL_5V)
+        if (setupView.channel == GUI_CHANNEL_5V)
             textLabel_title.text = "5V channel";
         else
             textLabel_title.text = "12V channel";
@@ -699,12 +715,10 @@ static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
     uint8_t limEnabled = 0;
     if (checkBox_ApplyLowLimit.isChecked)
         limEnabled = 1;
-    if (chSetupList.selectedIndex == 0)
-        applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
-    else if (chSetupList.selectedIndex == 1)
-    {}  // applyGuiCurrentLimit - TODO
-    else if (chSetupList.selectedIndex == 2)
-    {}
+    if (setupView.view == VIEW_VOLTAGE)
+        applyGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+    else if (setupView.view == VIEW_CURRENT)
+        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
     return 0;
 }
 
@@ -713,29 +727,27 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
     uint8_t limEnabled = 0;
     if (checkBox_ApplyHighLimit.isChecked)
         limEnabled = 1;
-    if (chSetupList.selectedIndex == 0)
-        applyGuiVoltageLimit(channelBeingSetup, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
-    else if (chSetupList.selectedIndex == 1)
-    {}  // applyGuiCurrentLimit - TODO
-    else if (chSetupList.selectedIndex == 2)
-    {}
+    if (setupView.view == VIEW_VOLTAGE)
+        applyGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+    else if (setupView.view == VIEW_CURRENT)
+        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
     return 0;
 }
 
 
 
-void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
+void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
 {
-    if ((channel == channelBeingSetup) && (chSetupList.selectedIndex == 0))
+    if ((channel == setupView.channel) && (setupView.view == VIEW_VOLTAGE))
 	{
         guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
         guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
 	}
 }
 
-void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t value)
+void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
 {
-    if ((channel == channelBeingSetup) && (chSetupList.selectedIndex == 0))
+    if ((channel == setupView.channel) && (setupView.view == VIEW_VOLTAGE))
 	{
         guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
         guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);
@@ -743,20 +755,20 @@ void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int16_t valu
 }
 
 
-void setLowCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int16_t value)
+void setLowCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int32_t value)
 {
-    if ((channel == channelBeingSetup) && (range == currentRangeBeingSetup) &&
-            ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2)) )
+    if ((channel == setupView.channel) && (range == setupView.currentRange) &&
+            (setupView.view == VIEW_CURRENT) )
     {
         guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
         guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
     }
 }
 
-void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int16_t value)
+void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int32_t value)
 {
-    if ((channel == channelBeingSetup) && (range == currentRangeBeingSetup) &&
-            ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2)) )
+    if ((channel == setupView.channel) && (range == setupView.currentRange) &&
+             (setupView.view == VIEW_CURRENT) )
     {
         guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
         guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);

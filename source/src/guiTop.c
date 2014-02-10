@@ -43,6 +43,9 @@ xQueueHandle xQueueGUI;
 static converter_message_t converter_msg;	// to save stack
 
 
+// TODO: move to some .h file common definitions - such as channel, curr. range, etc
+
+
 // Encode physical buttons into GUI virtual keys
 static uint8_t encodeGuiKey(uint16_t btnCode)
 {
@@ -70,18 +73,6 @@ static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
 }
 
 
-// GUI initialization
-void GUI_Init(void)
-{
-
-	
-	// Get values from converter - must be already initialized
-	
-	
-	// Restore values from settings
-
-}
-
 
 static channel_state_t *c;
 static uint8_t converter_current_range;
@@ -90,7 +81,8 @@ static uint8_t converter_current_range;
 
 //-------------------------------------------------------//
 //	Voltage
-static void UpdateVoltageSetting(uint8_t channel)
+
+static void updateGuiVoltageSetting(uint8_t channel)
 {
 	if (channel == c->CHANNEL)
 	{
@@ -98,7 +90,7 @@ static void UpdateVoltageSetting(uint8_t channel)
 	}
 } 
 
-void UpdateVoltageLimitSetting(uint8_t channel, uint8_t type)
+void updateGuiVoltageLimit(uint8_t channel, uint8_t type)
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	
@@ -110,7 +102,7 @@ void UpdateVoltageLimitSetting(uint8_t channel, uint8_t type)
 
 //-------------------------------------------------------//
 //	Current
-static void UpdateCurrentSetting(uint8_t channel, uint8_t current_range)
+static void updateGuiCurrentSetting(uint8_t channel, uint8_t current_range)
 {
 	if ((channel == c->CHANNEL) && (converter_current_range == current_range))
 	{
@@ -119,15 +111,15 @@ static void UpdateCurrentSetting(uint8_t channel, uint8_t current_range)
 	}
 } 
 
-static void UpdateCurrentLimitSetting(uint8_t channel, uint8_t current_range, uint8_t type)
+void updateGuiCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t type)
 {
-	if ( (channel == c->CHANNEL) && (current_range == converter_current_range) )
-	{
-		if (type == LIMIT_TYPE_LOW)
-		{ /*TODO*/ }
-		else
-		{ /*TODO*/ }
-	}
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *r = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+	
+	if (type == LIMIT_TYPE_LOW)
+		setLowCurrentLimitSetting(channel, current_range, r->enable_low_limit, r->limit_low);
+	else
+		setHighCurrentLimitSetting(channel, current_range, r->enable_high_limit, r->limit_high);
 } 
 
 //-------------------------------------------------------//
@@ -138,7 +130,7 @@ static void UpdateConverterCurrentRange(uint8_t channel, uint8_t current_range)
 	{
 		converter_current_range = current_range;
 		setCurrentRangeIndicator(current_range);
-		UpdateCurrentSetting(channel, current_range);
+		updateGuiCurrentSetting(channel, current_range);
 	}
 }
 
@@ -148,8 +140,6 @@ static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
 	setFeedbackChannelIndicator( (c->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
 	UpdateConverterCurrentRange(channel, current_range);
 	setVoltageSetting(c->voltage.setting);
-	setLowVoltageLimitSetting(channel, c->voltage.enable_low_limit, c->voltage.limit_low);
-	setHighVoltageLimitSetting(channel, c->voltage.enable_high_limit, c->voltage.limit_high);
 }
 
 
@@ -219,13 +209,13 @@ void vTaskGUI(void *pvParameters)
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
 				if (msg.converter_event.spec & VOLTAGE_SETTING_CHANGED)
-					UpdateVoltageSetting(msg.converter_event.channel);
+					updateGuiVoltageSetting(msg.converter_event.channel);
 				if (msg.converter_event.spec & CURRENT_SETTING_CHANGED)
-					UpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+					updateGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 				if (msg.converter_event.spec & VOLTAGE_LIMIT_CHANGED)
-					UpdateVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
+					updateGuiVoltageLimit(msg.converter_event.channel, msg.converter_event.type);
 				if (msg.converter_event.spec & CURRENT_LIMIT_CHANGED)
-					UpdateCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);	
+					updateGuiCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);	
 				if (msg.converter_event.spec & CURRENT_RANGE_CHANGED)
 					UpdateConverterCurrentRange(msg.converter_event.channel, msg.converter_event.current_range);
 				if (msg.converter_event.spec & CHANNEL_CHANGED)
@@ -282,15 +272,15 @@ void applyGuiCurrentSetting(int32_t new_set_current)
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
-void applyGuiCurrentLimit(uint8_t type, uint8_t enable, int32_t value)
+void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value)
 {
-/*	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
-	converter_msg.current_limit_setting.channel = c->CHANNEL;
-	converter_msg.current_limit_setting.range = converter_current_range;
+	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
+	converter_msg.current_limit_setting.channel = channel;
+	converter_msg.current_limit_setting.range = currentRange;
 	converter_msg.current_limit_setting.type = type;	
 	converter_msg.current_limit_setting.enable = enable;
 	converter_msg.current_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); 
 }
 
 //-------------------------------------------------------//

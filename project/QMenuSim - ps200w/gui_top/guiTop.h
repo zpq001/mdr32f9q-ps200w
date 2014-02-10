@@ -85,14 +85,17 @@ typedef struct {
 #define GUI_LIMIT_TYPE_HIGH			0x01
 
 
-void guiUpdateVoltageIndicator(void);
-void guiUpdateVoltageSetting(void);
-void UpdateVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
+void updateGuiVoltageIndicator(void);
+void updateGuiVoltageSetting(void);
+void updateGuiVoltageLimit(uint8_t channel, uint8_t limit_type);
 void applyGuiVoltageSetting(int16_t new_set_voltage);
-void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int16_t value);
+void applyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value);
 
-void guiUpdateCurrentIndicator(void);
-void guiUpdateCurrentSetting(void);
+void updateGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type);
+void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value);
+
+void updateGuiCurrentIndicator(void);
+void updateGuiCurrentSetting(void);
 void applyGuiCurrentSetting(int16_t new_set_current);
 
 void guiUpdateChannelSetting(void);

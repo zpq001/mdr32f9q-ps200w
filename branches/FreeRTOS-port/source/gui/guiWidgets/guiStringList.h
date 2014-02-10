@@ -40,6 +40,6 @@ typedef struct {
 uint8_t guiStringList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
 void guiStringList_Initialize(guiStringList_t *list, guiGenericWidget_t *parent);
 
-
+uint8_t guiStringList_SetActive(guiStringList_t *list, uint8_t newActiveState, uint8_t restoreValue);
 
 #endif

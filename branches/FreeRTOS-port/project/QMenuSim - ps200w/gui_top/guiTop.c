@@ -151,11 +151,11 @@ void guiInitialize(void)
     guiCore_ProcessMessageQueue();
 
 
-    guiUpdateVoltageSetting();
-    guiUpdateCurrentSetting();
+    updateGuiVoltageSetting();
+    updateGuiCurrentSetting();
 
-    guiUpdateVoltageIndicator();
-    guiUpdateCurrentIndicator();
+    updateGuiVoltageIndicator();
+    updateGuiCurrentIndicator();
     guiUpdatePowerIndicator();
     guiUpdateTemperatureIndicator();
     guiUpdateChannelSetting();
@@ -221,8 +221,8 @@ void guiEncoderRotated(int32_t delta)
 //-----------------------------------//
 // Voltage
 
-// Read ADC voltage and update LCD indicator
-void guiUpdateVoltageIndicator(void)
+// Read ADC voltage and update GUI
+void updateGuiVoltageIndicator(void)
 {
     guiLogEvent("Reading voltage ADC");
     setVoltageIndicator(voltage_adc);
@@ -230,65 +230,57 @@ void guiUpdateVoltageIndicator(void)
 
 
 
-// Read voltage setting and update LCD indicator
-void guiUpdateVoltageSetting(void)
+// Voltage setting HW -> GUI
+void updateGuiVoltageSetting(void)
 {
     guiLogEvent("Reading voltage setting");
     setVoltageSetting(set_voltage);
 }
 
-// Apply voltage setting from GUI
+
+// Voltage setting GUI -> HW
 void applyGuiVoltageSetting(int16_t new_set_voltage)
 {
-    guiLogEvent("Writing voltage setting");
     set_voltage = new_set_voltage;
     voltage_adc = set_voltage;
 
     //------ simulation of actual conveter work ------//
-    guiUpdateVoltageIndicator();
+    updateGuiVoltageIndicator();
 }
 
 
-
-void UpdateVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+// Voltage limit setting HW -> GUI
+void updateGuiVoltageLimit(uint8_t channel, uint8_t limit_type)
 {
     // TODO
 }
 
-// Apply voltage limit setting from GUI
-void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int16_t value)
+// Voltage limit setting GUI -> HW
+void applyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
 {
-    if (type == 0)
-    {
-        guiLogEvent("Writing LOW voltage limit ");
-        //setLowVoltageLimitSetting(channel, enable, value);
-    }
-    else
-    {
-        guiLogEvent("Writing HIGH voltage limit ");
-        //setHighVoltageLimitSetting(channel, enable, value);
-    }
+    // TODO
 }
+
 
 //-----------------------------------//
 // Current
 
-// Read ADC current and update LCD indicator
-void guiUpdateCurrentIndicator(void)
+// Read ADC current and update GUI
+void updateGuiCurrentIndicator(void)
 {
     guiLogEvent("Reading current ADC");
     setCurrentIndicator(current_adc);
 }
 
 
-// Read current setting and update LCD indicator
-void guiUpdateCurrentSetting(void)
+// Current setting HW -> GUI
+void updateGuiCurrentSetting(void)
 {
     guiLogEvent("Reading current setting");
     setCurrentSetting(set_current);
 }
 
-// Apply current setting from GUI
+// Current setting GUI -> HW
 void applyGuiCurrentSetting(int16_t new_set_current)
 {
     guiLogEvent("Writing current setting");
@@ -296,8 +288,23 @@ void applyGuiCurrentSetting(int16_t new_set_current)
     current_adc = set_current;
 
     //------ simulation of actual conveter work ------//
-    guiUpdateCurrentIndicator();
+    updateGuiCurrentIndicator();
 }
+
+
+// Current limit setting HW -> GUI
+void updateGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type)
+{
+    // TODO
+}
+
+// Current limit setting GUI -> HW
+void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value)
+{
+    // TODO
+}
+
+
 
 
 //-----------------------------------//

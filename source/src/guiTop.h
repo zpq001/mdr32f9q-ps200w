@@ -55,7 +55,7 @@ enum guiTaskCmd {
 	GUI_TASK_UPDATE_CURRENT_LIMIT,
 	GUI_TASK_UPDATE_FEEDBACK_CHANNEL,
 	GUI_TASK_UPDATE_TEMPERATURE_INDICATOR,
-	GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS
+	GUI_TASK_UPDATE_SOFT_LIMIT_SETTINGS,
 };
 
 
@@ -66,6 +66,7 @@ enum guiTaskCmd {
 #define CURRENT_LIMIT_CHANGED			(1<<3)
 #define CURRENT_RANGE_CHANGED			(1<<4)
 #define CHANNEL_CHANGED					(1<<5)
+#define OVERLOAD_SETTING_CHANGED		(1<<6)
 
 
 
@@ -91,12 +92,12 @@ void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t
 void applyGuiCurrentSetting(int32_t new_set_current);
 void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value);
 void applyGuiCurrentRange(uint8_t new_range);
-
+void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value);
 
 
 void updateGuiVoltageLimit(uint8_t channel, uint8_t type);
 void updateGuiCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t type);
-
+void updateGuiOverloadSetting(uint8_t channel);
 
 
 

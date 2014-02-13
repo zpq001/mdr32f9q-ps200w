@@ -245,6 +245,31 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 }
 
 
+static void Converter_SetOverloadProtection(uint8_t channel, uint8_t enabled, int32_t new_threshold, uint8_t *err_code)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+						 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
+	
+	if (new_threshold < CONV_MIN_OVERLOAD_TIMEOUT)
+	{
+		new_threshold = CONV_MIN_OVERLOAD_TIMEOUT;
+		*err_code = VALUE_BOUND_BY_ABS_MIN;
+	}
+	else if (new_threshold > CONV_MAX_OVERLOAD_TIMEOUT)
+	{
+		new_threshold = CONV_MAX_OVERLOAD_TIMEOUT;
+		*err_code = VALUE_BOUND_BY_ABS_MAX;
+	}
+	else
+	{
+		*err_code = 0;
+	}
+	
+	c->overload_protection_enable = enabled;
+	c->overload_timeout = (uint16_t)new_threshold;
+}	
+
+
 //---------------------------------------------------------------------------//
 /// Checks if channel has a valid value
 // Side-effect: if *channel = OPERATING_CHANNEL (special case), 
@@ -705,6 +730,24 @@ void vTaskConverter(void *pvParameters)
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				// Sound feedback
 				//SoundEvent_OnSettingChanged(VALUE_OK);
+				break;
+			//=========================================================================//
+			// Setting overload protection parameters
+			case CONVERTER_SET_OVERLOAD_PARAMS:
+				if (! Converter_ValidateChannel(&msg.overload_setting.channel) )
+				{
+					break;			// Wrong argument (channel)
+				}	
+				Converter_SetOverloadProtection(msg.overload_setting.channel, msg.overload_setting.enable, msg.overload_setting.value, &err_code);
+				// Send notification to GUI
+				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+				gui_msg.converter_event.spec = OVERLOAD_SETTING_CHANGED;
+				gui_msg.converter_event.channel = msg.overload_setting.channel;				
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);					
+				
+				// Sound feedback
+				SoundEvent_OnSettingChanged(err_code);
+			
 				break;
 			//=========================================================================//
 			// Turn ON

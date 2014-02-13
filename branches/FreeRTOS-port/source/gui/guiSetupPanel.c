@@ -51,6 +51,7 @@ static uint8_t guiChSetupList_onFocusChanged(void *widget, guiEvent_t *event);
 
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
+static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
 
 
 static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
@@ -60,7 +61,7 @@ static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 
 
 //--------- Setup panel  ----------//
-#define SETUP_PANEL_ELEMENTS_COUNT 8
+#define SETUP_PANEL_ELEMENTS_COUNT 10
 guiPanel_t     guiSetupPanel;
 static void *guiSetupPanelElements[SETUP_PANEL_ELEMENTS_COUNT];
 
@@ -97,22 +98,22 @@ enum setupViewModes {
 // Hint label
 static guiTextLabel_t textLabel_hint;        // Menu item hint
 
-
-
-
-// Voltage limit section
+// Low and high limit section
 guiCheckBox_t checkBox_ApplyLowLimit;
 guiCheckBox_t checkBox_ApplyHighLimit;
 guiWidgetHandler_t LowLimit_CheckBoxHandlers[2];
-guiWidgetHandler_t LowLimit_SpinBoxHandlers[2];
+guiWidgetHandler_t HighLimit_CheckBoxHandlers[2];
 
 guiSpinBox_t spinBox_LowLimit;
 guiSpinBox_t spinBox_HighLimit;
-guiWidgetHandler_t HighLimit_CheckBoxHandlers[2];
+guiWidgetHandler_t LowLimit_SpinBoxHandlers[2];
 guiWidgetHandler_t HighLimit_SpinBoxHandlers[2];
 
-
-
+// Overload section
+guiCheckBox_t checkBox_OverloadProtect;
+guiSpinBox_t spinBox_OverloadThreshold;
+guiWidgetHandler_t Overload_CheckBoxHandlers[2];
+guiWidgetHandler_t Overload_SpinBoxHandlers[2];
 
 
 //-------------------------------------------------------//
@@ -134,6 +135,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     guiSetupPanel.widgets.elements[5] = &textLabel_hint;
     guiSetupPanel.widgets.elements[6] = &chSetupList;
     guiSetupPanel.widgets.elements[7] = &textLabel_title;
+    guiSetupPanel.widgets.elements[8] = &checkBox_OverloadProtect;
+    guiSetupPanel.widgets.elements[9] = &spinBox_OverloadThreshold;
     guiSetupPanel.x = 0;
     guiSetupPanel.y = 0;
     guiSetupPanel.width = 96 * 2;
@@ -252,7 +255,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     HighLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
 
 
-    // Voltage limit section
+    // Low and high limit section
     guiCheckBox_Initialize(&checkBox_ApplyLowLimit, (guiGenericWidget_t *)&guiSetupPanel);
     checkBox_ApplyLowLimit.font = &font_h10;
     checkBox_ApplyLowLimit.x = 96 + 4;
@@ -325,6 +328,54 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighLimit.handlers.count = 2;
     spinBox_HighLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
+    // Overload section
+
+    Overload_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    Overload_CheckBoxHandlers[0].handler = &onOverloadSettingChanged;
+    Overload_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    Overload_CheckBoxHandlers[1].handler = &guiChSetupList_ChildKeyHandler;
+
+    Overload_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
+    Overload_SpinBoxHandlers[0].handler = &onOverloadSettingChanged;
+    Overload_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    Overload_SpinBoxHandlers[1].handler = &guiChSetupList_ChildKeyHandler;
+
+    guiCheckBox_Initialize(&checkBox_OverloadProtect, (guiGenericWidget_t *)&guiSetupPanel);
+    checkBox_OverloadProtect.font = &font_h10;
+    checkBox_OverloadProtect.x = 96 + 4;
+    checkBox_OverloadProtect.y = 0;
+    checkBox_OverloadProtect.width = 90;
+    checkBox_OverloadProtect.height = 14;
+    checkBox_OverloadProtect.isVisible = 0;
+    checkBox_OverloadProtect.text = "Enable [ms]";
+    checkBox_OverloadProtect.tabIndex = 1;
+    checkBox_OverloadProtect.handlers.elements = Overload_CheckBoxHandlers;
+    checkBox_OverloadProtect.handlers.count = 2;
+    checkBox_OverloadProtect.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
+
+    guiSpinBox_Initialize(&spinBox_OverloadThreshold, (guiGenericWidget_t *)&guiSetupPanel);
+    spinBox_OverloadThreshold.x = 96+10;
+    spinBox_OverloadThreshold.y = 14;
+    spinBox_OverloadThreshold.width = 60;
+    spinBox_OverloadThreshold.height = 18;
+    spinBox_OverloadThreshold.textRightOffset = -2;
+    spinBox_OverloadThreshold.textTopOffset = 2;
+    spinBox_OverloadThreshold.tabIndex = 2;
+    spinBox_OverloadThreshold.font = &font_h11;
+    spinBox_OverloadThreshold.dotPosition = 1;
+    spinBox_OverloadThreshold.activeDigit = 0;
+    spinBox_OverloadThreshold.minDigitsToDisplay = 2;
+    spinBox_OverloadThreshold.restoreValueOnEscape = 1;
+    spinBox_OverloadThreshold.maxValue = 500;
+    spinBox_OverloadThreshold.minValue = -1;
+    spinBox_OverloadThreshold.showFocus = 1;
+    spinBox_OverloadThreshold.isVisible = 0;
+    spinBox_OverloadThreshold.value = 1;
+    guiSpinBox_SetValue(&spinBox_OverloadThreshold, 0, 0);
+    spinBox_OverloadThreshold.handlers.elements = Overload_SpinBoxHandlers;
+    spinBox_OverloadThreshold.handlers.count = 2;
+    spinBox_OverloadThreshold.keyTranslator = guiSpinBoxLimit_KeyTranslator;
+
 
     //---------- Tags ----------//
 
@@ -334,10 +385,14 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowLimit.tag = 1;
     spinBox_HighLimit.tag = 1;
     chSetupList.tag = 0;
+    checkBox_OverloadProtect.tag = 4;
+    spinBox_OverloadThreshold.tag = 4;
 
     // Group 2
     setupList.tag = 10;
     textLabel_hint.tag = 11;
+
+
 }
 
 
@@ -551,11 +606,10 @@ static uint8_t guiChSetupList_onKeyEvent(void *widget, guiEvent_t *event)
 
 static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
 {
-    //uint8_t currTag = chSetupList.tag + chSetupList.selectedIndex + 1;
+    uint8_t currTag = chSetupList.tag + chSetupList.selectedIndex + 1;
     uint8_t minTag = chSetupList.tag + 1;
     uint8_t maxTag = minTag + 9;
     guiCore_SetVisibleByTag(&guiSetupPanel.widgets, minTag, maxTag, ITEMS_IN_RANGE_ARE_INVISIBLE);
-    //guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
 
     if (chSetupList.selectedIndex <= 2)
     {
@@ -587,6 +641,9 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     else
     {
         setupView.view = VIEW_OTHER;
+        guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
+        if (chSetupList.selectedIndex == 3)
+            updateGuiOverloadSetting(setupView.channel);
     }
 
 
@@ -699,7 +756,10 @@ static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t
     }
     else if (event->spec == GUI_ENCODER_EVENT)
     {
-        tkey->increment = (int16_t)event->lparam;
+        if (widget == (guiGenericWidget_t *)&spinBox_OverloadThreshold)
+            tkey->increment = (int16_t)event->lparam * 2;
+        else
+            tkey->increment = (int16_t)event->lparam;
     }
 }
 
@@ -734,6 +794,14 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
     return 0;
 }
 
+static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event)
+{
+    uint8_t protEnabled = 0;
+    if (checkBox_OverloadProtect.isChecked)
+        protEnabled = 1;
+    applyGuiOverloadSetting(setupView.channel, protEnabled, spinBox_OverloadThreshold.value / 2);
+	return 0;
+}
 
 
 void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
@@ -775,7 +843,14 @@ void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnable
     }
 }
 
-
+void setOverloadSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
+{
+    if (channel == setupView.channel)
+	{
+        guiCheckbox_SetChecked(&checkBox_OverloadProtect, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_OverloadThreshold, value * 2, 0);
+	}
+}
 
 
 

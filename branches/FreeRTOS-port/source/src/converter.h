@@ -20,8 +20,8 @@
 #define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
 #define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
-#define CONV_MIN_OVERLOAD_TIMEOUT		0
-#define CONV_MAX_OVERLOAD_TIMEOUT		(5*10)	// in units of Converter_HWProcess call period
+#define CONV_MIN_OVERLOAD_TIMEOUT		1		// in units of Converter_HWProcess call period (0.2 ms)
+#define CONV_MAX_OVERLOAD_TIMEOUT		(5*50)	
 
 
 //-------------------------------------------------------//
@@ -65,6 +65,8 @@ enum converterTaskCmd {
 	CONVERTER_SET_CURRENT,		
 	CONVERTER_SET_CURRENT_RANGE,
 	CONVERTER_SET_CURRENT_LIMIT,
+	
+	CONVERTER_SET_OVERLOAD_PARAMS,
 	
 	CONVERTER_OVERLOADED,
 	
@@ -113,6 +115,11 @@ typedef struct {
 			uint8_t channel;
 			uint8_t new_range;
 		} current_range_setting;
+		struct {
+			uint8_t channel;
+            uint8_t enable;
+            int32_t value;
+        } overload_setting;
 		struct {
 			uint8_t new_channel;
 		} channel_setting;

@@ -142,6 +142,11 @@ static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
 	setVoltageSetting(c->voltage.setting);
 }
 
+void updateGuiOverloadSetting(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	setOverloadSetting(channel, c->overload_protection_enable, c->overload_timeout);
+}
 
 
 
@@ -220,6 +225,8 @@ void vTaskGUI(void *pvParameters)
 					UpdateConverterCurrentRange(msg.converter_event.channel, msg.converter_event.current_range);
 				if (msg.converter_event.spec & CHANNEL_CHANGED)
 					UpdateConverterChannel(msg.converter_event.channel, msg.converter_event.current_range);
+				if (msg.converter_event.spec & OVERLOAD_SETTING_CHANGED)
+					updateGuiOverloadSetting(msg.converter_event.channel);
 				break;
 			
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
@@ -294,7 +301,14 @@ void applyGuiCurrentRange(uint8_t new_range)
 }
 
 
-
+void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value)
+{
+	converter_msg.type = CONVERTER_SET_OVERLOAD_PARAMS;
+	converter_msg.overload_setting.channel = channel;
+	converter_msg.overload_setting.enable = protect_enable;
+	converter_msg.overload_setting.value = new_value;
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+}
 
 
 

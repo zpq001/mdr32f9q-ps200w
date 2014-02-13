@@ -370,5 +370,17 @@ void guiUpdateTemperatureIndicator(void)
     setTemperatureIndicator(converter_temp_celsius);
 }
 
+
+//-----------------------------------//
+// Other
+void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value)
+{
+}
+
+void updateGuiOverloadSetting(uint8_t channel)
+{
+
+}
+
 //=================================================================//
 

@@ -107,8 +107,8 @@ void applyGuiCurrentRange(uint8_t new_current_range);
 void guiUpdatePowerIndicator(void);
 void guiUpdateTemperatureIndicator(void);
 
-void updateGuiOverloadSetting(uint8_t channel);
-void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value);
+void updateGuiOverloadSetting(void);
+void applyGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold);
 
 #ifdef __cplusplus
 }

@@ -84,7 +84,7 @@ typedef struct guiGenericWidget_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 } guiGenericWidget_t;
 
 
@@ -120,7 +120,7 @@ typedef struct guiGenericContainer_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     guiWidgetCollection_t widgets;
@@ -160,7 +160,7 @@ typedef struct guiPanel_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     guiWidgetCollection_t widgets;
@@ -203,7 +203,7 @@ typedef struct guiTextLabel_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     char *text;
@@ -246,7 +246,7 @@ typedef struct guiCheckBox_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     char *text;
@@ -290,7 +290,7 @@ typedef struct guiButton_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     char *text;
@@ -336,7 +336,7 @@ typedef struct guiRadioButton_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     char *text;
@@ -381,7 +381,7 @@ typedef struct guiSpinBox_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     //char text[SPINBOX_STRING_LENGTH];
@@ -441,7 +441,7 @@ typedef struct guiStringList_t {
     // Handler table
     guiHandlerTable_t handlers;
     // Key translator
-    void (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
     //-----------------------------------------//
 
     uint8_t hasFrame : 1;

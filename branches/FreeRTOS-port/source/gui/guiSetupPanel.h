@@ -14,7 +14,7 @@ void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value
 void setHighVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value);
 void setLowCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int32_t value);
 void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnabled, int32_t value);
-void setOverloadSetting(uint8_t channel, uint8_t isEnabled, int32_t value);
+void setOverloadSetting(uint8_t protectionEnable, uint8_t warningEnabled, int32_t threshold);
 
 
 

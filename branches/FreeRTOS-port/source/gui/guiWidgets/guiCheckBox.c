@@ -79,7 +79,7 @@ uint8_t guiCheckbox_ProcessKey(guiCheckBox_t *checkBox, uint8_t key)
 // Default key event translator
 //
 //-------------------------------------------------------//
-void checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+uint8_t checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiCheckboxTranslatedKey_t *tkey = (guiCheckboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -88,6 +88,7 @@ void checkBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event
         if (event->lparam == GUI_KEY_OK)
             tkey->key = CHECKBOX_KEY_SELECT;
     }
+    return 0;
 }
 
 
@@ -139,9 +140,9 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             {
                 if (checkBox->keyTranslator)
                 {
-                    checkBox->keyTranslator(widget, &event, &tkey);
+                    processResult = checkBox->keyTranslator(widget, &event, &tkey);
                     if (tkey.key != 0)
-                        processResult = guiCheckbox_ProcessKey(checkBox, tkey.key);
+                        processResult |= guiCheckbox_ProcessKey(checkBox, tkey.key);
                 }
                 // Call KEY event handler
                 if (processResult == GUI_EVENT_DECLINE)

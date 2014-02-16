@@ -20,8 +20,8 @@
 #define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
 #define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
-#define CONV_MIN_OVERLOAD_TIMEOUT		1		// in units of Converter_HWProcess call period (0.2 ms)
-#define CONV_MAX_OVERLOAD_TIMEOUT		(5*50)	
+#define CONV_MIN_OVERLOAD_THRESHOLD		1		// in units of Converter_HWProcess call period (0.2 ms)
+#define CONV_MAX_OVERLOAD_THRESHOLD		(5*50)	
 
 
 //-------------------------------------------------------//
@@ -116,9 +116,9 @@ typedef struct {
 			uint8_t new_range;
 		} current_range_setting;
 		struct {
-			uint8_t channel;
-            uint8_t enable;
-            int32_t value;
+			uint8_t protection_enable;
+            uint8_t warning_enable;
+            int32_t threshold;
         } overload_setting;
 		struct {
 			uint8_t new_channel;
@@ -147,8 +147,6 @@ typedef struct {
 typedef struct {
 	uint8_t CHANNEL : 1;						// used as const
 	uint8_t load_state : 1;	
-	uint8_t overload_protection_enable : 1;
-	uint16_t overload_timeout;
 	// Voltage
 	reg_setting_t voltage;
 	// Current
@@ -164,6 +162,9 @@ typedef struct {
 	channel_state_t channel_12v;
 	channel_state_t *channel;
 	uint8_t state;
+	uint8_t overload_protection_enable : 1;
+	uint8_t overload_warning_enable : 1;
+	uint16_t overload_threshold;
 } converter_state_t;
 
 

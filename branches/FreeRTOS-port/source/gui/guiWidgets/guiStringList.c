@@ -178,7 +178,7 @@ uint8_t guiStringList_ProcessKey(guiStringList_t *list, uint8_t key)
 // Default key event translator
 //
 //-------------------------------------------------------//
-void guiStringList_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+uint8_t guiStringList_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -198,6 +198,7 @@ void guiStringList_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *
         tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
               ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
     }
+    return 0;
 }
 
 
@@ -252,10 +253,10 @@ uint8_t guiStringList_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             {
                 if (list->keyTranslator)
                 {
-                    widget->keyTranslator(widget, &event, &tkey);
+                    processResult = widget->keyTranslator(widget, &event, &tkey);
                     if (tkey.key)
                     {
-                        processResult = guiStringList_ProcessKey(list, tkey.key);
+                        processResult |= guiStringList_ProcessKey(list, tkey.key);
                     }
                 }
                 // Call KEY event handler

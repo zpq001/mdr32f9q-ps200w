@@ -71,7 +71,7 @@ uint8_t guiPanel_ProcessKey(guiPanel_t *panel, uint8_t key)
 // Default key event translator
 //
 //-------------------------------------------------------//
-void guiPanel_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+uint8_t guiPanel_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiPanelTranslatedKey_t *tkey = (guiPanelTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -91,6 +91,7 @@ void guiPanel_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event
         tkey->key = (int16_t)event->lparam < 0 ? PANEL_KEY_PREV :
               ((int16_t)event->lparam > 0 ? PANEL_KEY_NEXT : 0);
     }
+    return 0;
 }
 
 
@@ -151,7 +152,7 @@ uint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             {
                 if (widget->keyTranslator)
                 {
-                    widget->keyTranslator(widget, &event, &tkey);
+                    processResult = widget->keyTranslator(widget, &event, &tkey);
                     if (tkey.key != 0)
                         processResult = guiPanel_ProcessKey(panel, tkey.key);
                 }

@@ -373,11 +373,11 @@ void guiUpdateTemperatureIndicator(void)
 
 //-----------------------------------//
 // Other
-void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value)
+void applyGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold)
 {
 }
 
-void updateGuiOverloadSetting(uint8_t channel)
+void updateGuiOverloadSetting(void)
 {
 
 }

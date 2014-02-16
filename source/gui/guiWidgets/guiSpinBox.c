@@ -153,16 +153,6 @@ uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
             // move active digit right
             guiSpinBox_SetActiveDigit(spinBox, spinBox->activeDigit - 1);
         }
-//        else if (key == SPINBOX_KEY_UP)
-//        {
-//            // increase value
-//            guiSpinBox_IncrementValue(spinBox, 1);
-//        }
-//        else if (key == SPINBOX_KEY_DOWN)
-//        {
-//            //decrease value
-//            guiSpinBox_IncrementValue(spinBox, -1);
-//        }
         else
         {
             return GUI_EVENT_DECLINE;
@@ -188,7 +178,7 @@ uint8_t guiSpinBox_ProcessKey(guiSpinBox_t *spinBox, uint8_t key)
 // Default key event translator
 //
 //-------------------------------------------------------//
-void guiSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+uint8_t guiSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -212,6 +202,7 @@ void guiSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *eve
     {
         tkey->increment = (int16_t)event->lparam;
     }
+    return 0;
 }
 
 
@@ -271,15 +262,15 @@ uint8_t guiSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             {
                 if (spinBox->keyTranslator)
                 {
-                    spinBox->keyTranslator(widget, &event, &tkey);
+                    processResult = spinBox->keyTranslator(widget, &event, &tkey);
                     if (tkey.key != 0)
                     {
-                        processResult = guiSpinBox_ProcessKey(spinBox, tkey.key);
+                        processResult |= guiSpinBox_ProcessKey(spinBox, tkey.key);
                     }
                     else if ((tkey.increment != 0) && (spinBox->isActive))
                     {
                         guiSpinBox_IncrementValue(spinBox, tkey.increment);
-                        processResult = GUI_EVENT_ACCEPTED;
+                        processResult |= GUI_EVENT_ACCEPTED;
                     }
                 }
                 // Call KEY event handler

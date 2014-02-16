@@ -447,7 +447,7 @@ void guiCore_ProcessKeyEvent(uint16_t code, uint8_t spec)
 
 //-------------------------------------------------------//
 //  Top function for processing encoder
-//
+//  Obsolete
 //-------------------------------------------------------//
 void guiCore_ProcessEncoderEvent(int16_t increment)
 {
@@ -749,6 +749,30 @@ guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int
 //===================================================================//
 
 
+//-------------------------------------------------------//
+// Adds a widget to collection
+// The widget being added gets specified container widget as parent
+// Not used items in a collection must be zero
+// If success, function returns non-zero
+//-------------------------------------------------------//
+uint8_t guiCore_AddWidgetToCollection(guiGenericWidget_t *widget, guiGenericContainer_t *container)
+{
+    uint8_t i;
+    if ((widget == 0) || (container == 0))
+        return 0;
+    for (i = 0; i < container->widgets.count; i++)
+    {
+        if (container->widgets.elements[i] == 0)
+        {
+            // Found free item slot
+            container->widgets.elements[i] = widget;
+            widget->parent = (guiGenericWidget_t *)container;
+            return 1;
+        }
+    }
+    // No free space
+    return 0;
+}
 
 
 //-------------------------------------------------------//

@@ -92,12 +92,11 @@ void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t
 void applyGuiCurrentSetting(int32_t new_set_current);
 void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value);
 void applyGuiCurrentRange(uint8_t new_range);
-void applyGuiOverloadSetting(uint8_t channel, uint8_t protect_enable, int32_t new_value);
-
+void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold);
 
 void updateGuiVoltageLimit(uint8_t channel, uint8_t type);
 void updateGuiCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t type);
-void updateGuiOverloadSetting(uint8_t channel);
+void updateGuiOverloadSetting(void);
 
 
 

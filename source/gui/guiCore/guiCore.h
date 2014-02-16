@@ -161,6 +161,7 @@ guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int
 //===================================================================//
 //                   Widget collections management                   //
 //===================================================================//
+uint8_t guiCore_AddWidgetToCollection(guiGenericWidget_t *widget, guiGenericContainer_t *container);
 void guiCore_RequestFocusChange(guiGenericWidget_t *newFocusedWidget);
 void guiCore_AcceptFocus(guiGenericWidget_t *widget);
 void guiCore_RequestFocusNextWidget(guiGenericContainer_t *container, int8_t tabDir);

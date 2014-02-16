@@ -245,19 +245,22 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 }
 
 
-static void Converter_SetOverloadProtection(uint8_t channel, uint8_t enabled, int32_t new_threshold, uint8_t *err_code)
+//---------------------------------------------------------------------------//
+/// Set converter overload parameters
+// new_threshold in units of 100us
+// Converter HW overload threshold in units of 200us
+//---------------------------------------------------------------------------//
+static void Converter_SetOverloadProtection(uint8_t protectionEnable, uint8_t warningEnable, int32_t new_threshold, uint8_t *err_code)
 {
-	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : 
-						 ((channel == CHANNEL_12V) ? &converter_state.channel_12v : converter_state.channel);
-	
-	if (new_threshold < CONV_MIN_OVERLOAD_TIMEOUT)
+	new_threshold /= 2;
+	if (new_threshold < CONV_MIN_OVERLOAD_THRESHOLD)
 	{
-		new_threshold = CONV_MIN_OVERLOAD_TIMEOUT;
+		new_threshold = CONV_MIN_OVERLOAD_THRESHOLD;
 		*err_code = VALUE_BOUND_BY_ABS_MIN;
 	}
-	else if (new_threshold > CONV_MAX_OVERLOAD_TIMEOUT)
+	else if (new_threshold > CONV_MAX_OVERLOAD_THRESHOLD)
 	{
-		new_threshold = CONV_MAX_OVERLOAD_TIMEOUT;
+		new_threshold = CONV_MAX_OVERLOAD_THRESHOLD;
 		*err_code = VALUE_BOUND_BY_ABS_MAX;
 	}
 	else
@@ -265,8 +268,9 @@ static void Converter_SetOverloadProtection(uint8_t channel, uint8_t enabled, in
 		*err_code = 0;
 	}
 	
-	c->overload_protection_enable = enabled;
-	c->overload_timeout = (uint16_t)new_threshold;
+	converter_state.overload_protection_enable = protectionEnable;
+	converter_state.overload_warning_enable = warningEnable;
+	converter_state.overload_threshold = new_threshold;
 }	
 
 
@@ -367,8 +371,6 @@ void Converter_Init(uint8_t default_channel)
 	// Common
 	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
 	converter_state.channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
-	converter_state.channel_5v.overload_protection_enable = 1;									// TODO: EEPROM
-	converter_state.channel_5v.overload_timeout = (5*1);										// TODO: EEPROM
 	
 	// Voltage
 	converter_state.channel_5v.voltage.setting = 5000;											// TODO: EEPROM
@@ -411,8 +413,6 @@ void Converter_Init(uint8_t default_channel)
 	// Common
 	converter_state.channel_12v.CHANNEL = CHANNEL_12V;
 	converter_state.channel_12v.load_state = LOAD_ENABLE;										
-	converter_state.channel_12v.overload_protection_enable = 1;									// TODO: EEPROM
-	converter_state.channel_12v.overload_timeout = (5*1);										// TODO: EEPROM
 	
 	// Voltage
 	converter_state.channel_12v.voltage.setting = 12000;										// TODO: EEPROM
@@ -451,6 +451,9 @@ void Converter_Init(uint8_t default_channel)
 
 	converter_state.channel_12v.current = &converter_state.channel_12v.current_low_range;
 	
+	converter_state.overload_protection_enable = 1;									// TODO: EEPROM
+	converter_state.overload_warning_enable = 0;									// TODO: EEPROM
+	converter_state.overload_threshold = (5*1);										// TODO: EEPROM
 	
 	// Select default channel
 	converter_state.channel = (default_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
@@ -734,15 +737,12 @@ void vTaskConverter(void *pvParameters)
 			//=========================================================================//
 			// Setting overload protection parameters
 			case CONVERTER_SET_OVERLOAD_PARAMS:
-				if (! Converter_ValidateChannel(&msg.overload_setting.channel) )
-				{
-					break;			// Wrong argument (channel)
-				}	
-				Converter_SetOverloadProtection(msg.overload_setting.channel, msg.overload_setting.enable, msg.overload_setting.value, &err_code);
+				
+				Converter_SetOverloadProtection( msg.overload_setting.protection_enable, msg.overload_setting.warning_enable, 
+													msg.overload_setting.threshold,  &err_code);
 				// Send notification to GUI
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
 				gui_msg.converter_event.spec = OVERLOAD_SETTING_CHANGED;
-				gui_msg.converter_event.channel = msg.overload_setting.channel;				
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);					
 				
 				// Sound feedback

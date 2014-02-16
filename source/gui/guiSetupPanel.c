@@ -32,21 +32,27 @@
 #include "guiTop.h"
 
 
+static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiSetupPanel_onVisibleChanged(void *widget, guiEvent_t *event);
+static uint8_t guiSetupPanel_onFocusChanged(void *widget, guiEvent_t *event);
 
-static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event);
-
-static void guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiSetupList_onKeyEvent(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupList_onFocusChanged(void *widget, guiEvent_t *event);
+static uint8_t guiSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 
 
-static void guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiChSetupList_onKeyEvent(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiChSetupList_onFocusChanged(void *widget, guiEvent_t *event);
+static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
+
+static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
 
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
@@ -54,17 +60,13 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
 
 
-static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
-static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
-
-static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 
 
 //--------- Setup panel  ----------//
-#define SETUP_PANEL_ELEMENTS_COUNT 10
+#define SETUP_PANEL_ELEMENTS_COUNT 20   // CHECKME - possibly too much
 guiPanel_t     guiSetupPanel;
 static void *guiSetupPanelElements[SETUP_PANEL_ELEMENTS_COUNT];
-
+guiWidgetHandler_t setupPanelHandlers[2];
 
 //--------- Panel elements ---------//
 // Title label
@@ -111,7 +113,9 @@ guiWidgetHandler_t HighLimit_SpinBoxHandlers[2];
 
 // Overload section
 guiCheckBox_t checkBox_OverloadProtect;
+guiCheckBox_t checkBox_OverloadWarning;
 guiSpinBox_t spinBox_OverloadThreshold;
+guiTextLabel_t textLabel_overloadThresholdHint;
 guiWidgetHandler_t Overload_CheckBoxHandlers[2];
 guiWidgetHandler_t Overload_SpinBoxHandlers[2];
 
@@ -124,28 +128,25 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 {
     // Initialize
     guiPanel_Initialize(&guiSetupPanel, parent);
-    guiSetupPanel.processEvent = guiSetupPanel_ProcessEvents;     // redefine standard panel message processing funtion
     guiSetupPanel.widgets.count = SETUP_PANEL_ELEMENTS_COUNT;
     guiSetupPanel.widgets.elements = guiSetupPanelElements;
-    guiSetupPanel.widgets.elements[0] = &setupList;
-    guiSetupPanel.widgets.elements[1] = &checkBox_ApplyLowLimit;
-    guiSetupPanel.widgets.elements[2] = &checkBox_ApplyHighLimit;
-    guiSetupPanel.widgets.elements[3] = &spinBox_LowLimit;
-    guiSetupPanel.widgets.elements[4] = &spinBox_HighLimit;
-    guiSetupPanel.widgets.elements[5] = &textLabel_hint;
-    guiSetupPanel.widgets.elements[6] = &chSetupList;
-    guiSetupPanel.widgets.elements[7] = &textLabel_title;
-    guiSetupPanel.widgets.elements[8] = &checkBox_OverloadProtect;
-    guiSetupPanel.widgets.elements[9] = &spinBox_OverloadThreshold;
     guiSetupPanel.x = 0;
     guiSetupPanel.y = 0;
     guiSetupPanel.width = 96 * 2;
     guiSetupPanel.height = 68;
     guiSetupPanel.showFocus = 1;
     guiSetupPanel.focusFallsThrough = 0;
+    guiSetupPanel.keyTranslator = &guiSetupPanel_KeyTranslator;
+    guiSetupPanel.handlers.count = 2;
+    guiSetupPanel.handlers.elements = setupPanelHandlers;
+    guiSetupPanel.handlers.elements[0].eventType = GUI_ON_VISIBLE_CHANGED;
+    guiSetupPanel.handlers.elements[0].handler = *guiSetupPanel_onVisibleChanged;
+    guiSetupPanel.handlers.elements[1].eventType = GUI_ON_FOCUS_CHANGED;
+    guiSetupPanel.handlers.elements[1].handler = *guiSetupPanel_onFocusChanged;
 
     // Initialize text label for menu list title
-    guiTextLabel_Initialize(&textLabel_title, (guiGenericWidget_t *)&guiSetupPanel);
+    guiTextLabel_Initialize(&textLabel_title, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_title, (guiGenericContainer_t *)&guiSetupPanel);
     textLabel_title.x = 0;
     textLabel_title.y = 0;
     textLabel_title.width = 95;
@@ -155,9 +156,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_title.font = &font_h10_bold;
     textLabel_title.tag = 255;
 
-
     // Main list
-    guiStringList_Initialize(&setupList, (guiGenericWidget_t *)&guiSetupPanel );
+    guiStringList_Initialize(&setupList, 0 );
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&setupList, (guiGenericContainer_t *)&guiSetupPanel);
     setupList.font = &font_h10;
     setupList.textAlignment = ALIGN_LEFT;
     setupList.hasFrame = 1;
@@ -174,9 +175,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.strings = setupListElements;
     setupList.strings[0] = " Channel 5V";
     setupList.strings[1] = " Channel 12V";
-    setupList.strings[2] = " 2222";
-    setupList.strings[3] = " 3333";
-    setupList.strings[4] = " 4444";
+    setupList.strings[2] = " Overload setup";
+    setupList.strings[3] = " ***";
+    setupList.strings[4] = " ###";
     setupList.strings[5] = "  ---- Exit ---- ";
     setupList.handlers.count = 4;
     setupList.handlers.elements = setupListHandlers;
@@ -189,9 +190,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.handlers.elements[3].eventType = GUI_EVENT_KEY;
     setupList.handlers.elements[3].handler = &guiSetupList_onKeyEvent;
     setupList.acceptFocusByTab = 0;
-    setupList.keyTranslator = guiSetupList_KeyTranslator;
+    setupList.keyTranslator = &guiSetupList_KeyTranslator;
 
-    guiStringList_Initialize(&chSetupList, (guiGenericWidget_t *)&guiSetupPanel );
+    // Channel setup list
+    guiStringList_Initialize(&chSetupList, 0 );
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&chSetupList, (guiGenericContainer_t *)&guiSetupPanel);
     chSetupList.font = &font_h10;
     chSetupList.textAlignment = ALIGN_LEFT;
     chSetupList.hasFrame = 1;
@@ -209,7 +212,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.strings[0] = " Voltage limit";
     chSetupList.strings[1] = " Current lim. 20A";
     chSetupList.strings[2] = " Current lim. 40A";
-    chSetupList.strings[3] = " Overload";
+    chSetupList.strings[3] = " ******";
     chSetupList.handlers.count = 4;
     chSetupList.handlers.elements = chSetupListHandlers;
     chSetupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
@@ -225,7 +228,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
 
     // Initialize text label for menu item hint
-    guiTextLabel_Initialize(&textLabel_hint, (guiGenericWidget_t *)&guiSetupPanel);
+    guiTextLabel_Initialize(&textLabel_hint, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_hint, (guiGenericContainer_t *)&guiSetupPanel);
     textLabel_hint.x = 96+5;
     textLabel_hint.y = 14;
     textLabel_hint.width = 80;
@@ -255,8 +259,10 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     HighLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
 
 
-    // Low and high limit section
-    guiCheckBox_Initialize(&checkBox_ApplyLowLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    //--------------- Limits section ---------------//
+
+    guiCheckBox_Initialize(&checkBox_ApplyLowLimit, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ApplyLowLimit, (guiGenericContainer_t *)&guiSetupPanel);
     checkBox_ApplyLowLimit.font = &font_h10;
     checkBox_ApplyLowLimit.x = 96 + 4;
     checkBox_ApplyLowLimit.y = 0;
@@ -269,7 +275,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyLowLimit.handlers.count = 2;
     checkBox_ApplyLowLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
-    guiCheckBox_Initialize(&checkBox_ApplyHighLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    guiCheckBox_Initialize(&checkBox_ApplyHighLimit, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ApplyHighLimit, (guiGenericContainer_t *)&guiSetupPanel);
     checkBox_ApplyHighLimit.font = &font_h10;
     checkBox_ApplyHighLimit.x = 96 + 4;
     checkBox_ApplyHighLimit.y = 36;
@@ -282,7 +289,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyHighLimit.handlers.count = 2;
     checkBox_ApplyHighLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
-    guiSpinBox_Initialize(&spinBox_LowLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    guiSpinBox_Initialize(&spinBox_LowLimit, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_LowLimit, (guiGenericContainer_t *)&guiSetupPanel);
     spinBox_LowLimit.x = 96+10;
     spinBox_LowLimit.y = 14;
     spinBox_LowLimit.width = 60;
@@ -305,7 +313,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowLimit.handlers.count = 2;
     spinBox_LowLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
-    guiSpinBox_Initialize(&spinBox_HighLimit, (guiGenericWidget_t *)&guiSetupPanel);
+    guiSpinBox_Initialize(&spinBox_HighLimit, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_HighLimit, (guiGenericContainer_t *)&guiSetupPanel);
     spinBox_HighLimit.x = 96+10;
     spinBox_HighLimit.y = 50;
     spinBox_HighLimit.width = 60;
@@ -328,34 +337,61 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighLimit.handlers.count = 2;
     spinBox_HighLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
-    // Overload section
+    //--------------- Overload section ---------------//
 
     Overload_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
     Overload_CheckBoxHandlers[0].handler = &onOverloadSettingChanged;
     Overload_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    Overload_CheckBoxHandlers[1].handler = &guiChSetupList_ChildKeyHandler;
+    Overload_CheckBoxHandlers[1].handler = &guiSetupList_ChildKeyHandler;
 
     Overload_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
     Overload_SpinBoxHandlers[0].handler = &onOverloadSettingChanged;
     Overload_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    Overload_SpinBoxHandlers[1].handler = &guiChSetupList_ChildKeyHandler;
+    Overload_SpinBoxHandlers[1].handler = &guiSetupList_ChildKeyHandler;
 
-    guiCheckBox_Initialize(&checkBox_OverloadProtect, (guiGenericWidget_t *)&guiSetupPanel);
+    guiTextLabel_Initialize(&textLabel_overloadThresholdHint, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_overloadThresholdHint, (guiGenericContainer_t *)&guiSetupPanel);
+    textLabel_overloadThresholdHint.x = 96+6;
+    textLabel_overloadThresholdHint.y = 20;
+    textLabel_overloadThresholdHint.width = 80;
+    textLabel_overloadThresholdHint.height = 10;
+    textLabel_overloadThresholdHint.textAlignment = ALIGN_LEFT;
+    textLabel_overloadThresholdHint.text = "Threshold [ms]:";
+    textLabel_overloadThresholdHint.font = &font_h10;
+    textLabel_overloadThresholdHint.isVisible = 0;
+
+    guiCheckBox_Initialize(&checkBox_OverloadProtect, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_OverloadProtect, (guiGenericContainer_t *)&guiSetupPanel);
     checkBox_OverloadProtect.font = &font_h10;
     checkBox_OverloadProtect.x = 96 + 4;
     checkBox_OverloadProtect.y = 0;
     checkBox_OverloadProtect.width = 90;
     checkBox_OverloadProtect.height = 14;
     checkBox_OverloadProtect.isVisible = 0;
-    checkBox_OverloadProtect.text = "Enable [ms]";
+    checkBox_OverloadProtect.text = "Protection";
     checkBox_OverloadProtect.tabIndex = 1;
     checkBox_OverloadProtect.handlers.elements = Overload_CheckBoxHandlers;
     checkBox_OverloadProtect.handlers.count = 2;
     checkBox_OverloadProtect.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
 
-    guiSpinBox_Initialize(&spinBox_OverloadThreshold, (guiGenericWidget_t *)&guiSetupPanel);
+    guiCheckBox_Initialize(&checkBox_OverloadWarning, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_OverloadWarning, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_OverloadWarning.font = &font_h10;
+    checkBox_OverloadWarning.x = 96 + 4;
+    checkBox_OverloadWarning.y = 52;
+    checkBox_OverloadWarning.width = 90;
+    checkBox_OverloadWarning.height = 14;
+    checkBox_OverloadWarning.isVisible = 0;
+    checkBox_OverloadWarning.text = "Warning";
+    checkBox_OverloadWarning.tabIndex = 3;
+    checkBox_OverloadWarning.handlers.elements = Overload_CheckBoxHandlers;
+    checkBox_OverloadWarning.handlers.count = 2;
+    checkBox_OverloadWarning.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
+
+    guiSpinBox_Initialize(&spinBox_OverloadThreshold, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_OverloadThreshold, (guiGenericContainer_t *)&guiSetupPanel);
     spinBox_OverloadThreshold.x = 96+10;
-    spinBox_OverloadThreshold.y = 14;
+    spinBox_OverloadThreshold.y = 32;
     spinBox_OverloadThreshold.width = 60;
     spinBox_OverloadThreshold.height = 18;
     spinBox_OverloadThreshold.textRightOffset = -2;
@@ -366,7 +402,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_OverloadThreshold.activeDigit = 0;
     spinBox_OverloadThreshold.minDigitsToDisplay = 2;
     spinBox_OverloadThreshold.restoreValueOnEscape = 1;
-    spinBox_OverloadThreshold.maxValue = 500;
+    spinBox_OverloadThreshold.maxValue = 1000;
     spinBox_OverloadThreshold.minValue = -1;
     spinBox_OverloadThreshold.showFocus = 1;
     spinBox_OverloadThreshold.isVisible = 0;
@@ -385,68 +421,69 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowLimit.tag = 1;
     spinBox_HighLimit.tag = 1;
     chSetupList.tag = 0;
-    checkBox_OverloadProtect.tag = 4;
-    spinBox_OverloadThreshold.tag = 4;
+
 
     // Group 2
     setupList.tag = 10;
+    checkBox_OverloadProtect.tag = 13;
+    checkBox_OverloadWarning.tag = 13;
+    spinBox_OverloadThreshold.tag = 13;
+    textLabel_overloadThresholdHint.tag = 13;
+
+    // Other
     textLabel_hint.tag = 11;
-
-
 }
 
 
 
-
-static uint8_t guiSetupPanel_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event)
+static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    uint8_t processResult = GUI_EVENT_ACCEPTED;
-    switch (event.type)
+    guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        case GUI_EVENT_FOCUS:
-            processResult = guiPanel_ProcessEvent(widget, event);
-            if (processResult == GUI_EVENT_ACCEPTED)
-            {
-                guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
-                event.type = STRINGLIST_EVENT_ACTIVATE;
-                guiCore_AddMessageToQueue((guiGenericWidget_t*)&setupList, &event);
-            }
-            break;
-        case GUI_EVENT_SHOW:
-            processResult = guiPanel_ProcessEvent(widget, event);
-            if (processResult == GUI_EVENT_ACCEPTED)
-            {
-                // Bring GUI elements to initial state
-                if (setupList.isVisible == 0)
-                {
-                    guiCore_SetVisible((guiGenericWidget_t *)&chSetupList, 0);
-                    guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);
-                }
-            }
-            break;
-        case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
-            {
-                processResult = GUI_EVENT_DECLINE;
-                break;
-            }
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
-            {
-                break;
-            }
-            // fall down to default
-        default:
-            processResult = guiPanel_ProcessEvent(widget, event);
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = PANEL_KEY_PREV;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = PANEL_KEY_NEXT;
     }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        tkey->key = (int16_t)event->lparam < 0 ? PANEL_KEY_PREV :
+              ((int16_t)event->lparam > 0 ? PANEL_KEY_NEXT : 0);
+    }
+    return 0;
+}
 
-    return processResult;
+
+static uint8_t guiSetupPanel_onVisibleChanged(void *widget, guiEvent_t *event)
+{
+    // Bring GUI elements to initial state
+    if (guiSetupPanel.isVisible == 1)
+    {
+        guiCore_SetVisible((guiGenericWidget_t *)&chSetupList, 0);      // list's onVisible handler will also
+        guiCore_SetVisible((guiGenericWidget_t *)&setupList, 1);        // hide or show related widgets
+    }
+    return 0;
+}
+
+
+static uint8_t guiSetupPanel_onFocusChanged(void *widget, guiEvent_t *event)
+{
+    if (guiSetupPanel.isFocused)
+    {
+        guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
+        event->type = STRINGLIST_EVENT_ACTIVATE;
+        guiCore_AddMessageToQueue((guiGenericWidget_t*)&setupList, event);
+    }
+    return 0;
 }
 
 
 //-------------------------//
 // guiSetupList
 
-static void guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -462,6 +499,7 @@ static void guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *e
         tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
               ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
     }
+    return 0;
 }
 
 
@@ -524,6 +562,8 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     else
     {
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
+        if (setupList.selectedIndex == 2)
+            updateGuiOverloadSetting();
     }
 
     return 0;
@@ -558,12 +598,37 @@ static uint8_t guiSetupList_onFocusChanged(void *widget, guiEvent_t *event)
 }
 
 
+static uint8_t guiSetupList_ChildKeyHandler(void *widget, guiEvent_t *event)
+{
+    uint8_t res = GUI_EVENT_DECLINE;
+    if (event->type == GUI_EVENT_KEY)
+    {
+        if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+        {
+            if (event->lparam == GUI_KEY_ESC)
+            {
+                guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
+                res = GUI_EVENT_ACCEPTED;
+            }
+        }
+        if (event->spec == GUI_KEY_EVENT_HOLD)
+        {
+            if (event->lparam == GUI_KEY_ENCODER)
+            {
+                guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
+                res = GUI_EVENT_ACCEPTED;
+            }
+        }
+    }
+    return res;
+}
+
 
 //-------------------------//
 // guiChSetupList
 
 
-static void guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+static uint8_t guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -579,6 +644,7 @@ static void guiChSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t 
         tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
               ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
     }
+    return 0;
 }
 
 
@@ -642,8 +708,6 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     {
         setupView.view = VIEW_OTHER;
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
-        if (chSetupList.selectedIndex == 3)
-            updateGuiOverloadSetting(setupView.channel);
     }
 
 
@@ -682,8 +746,6 @@ static uint8_t guiChSetupList_onFocusChanged(void *widget, guiEvent_t *event)
 }
 
 
-
-
 static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event)
 {
     uint8_t res = GUI_EVENT_DECLINE;
@@ -712,7 +774,7 @@ static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event)
 //-------------------------//
 
 
-static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiCheckboxTranslatedKey_t *tkey = (guiCheckboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -726,9 +788,11 @@ static void guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_
         if (event->lparam == GUI_KEY_ENCODER)
             tkey->key = CHECKBOX_KEY_SELECT;
     }
+    return 0;
 }
 
-static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+
+static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
     guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
@@ -757,10 +821,18 @@ static void guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t
     else if (event->spec == GUI_ENCODER_EVENT)
     {
         if (widget == (guiGenericWidget_t *)&spinBox_OverloadThreshold)
-            tkey->increment = (int16_t)event->lparam * 2;
+        {
+            if (spinBox_OverloadThreshold.activeDigit == 0)
+                tkey->increment = (int16_t)event->lparam * 2;
+            else
+                tkey->increment = (int16_t)event->lparam;
+        }
         else
+        {
             tkey->increment = (int16_t)event->lparam;
+        }
     }
+    return 0;
 }
 
 
@@ -796,13 +868,15 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
 
 static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event)
 {
-    uint8_t protEnabled = 0;
-    if (checkBox_OverloadProtect.isChecked)
-        protEnabled = 1;
-    applyGuiOverloadSetting(setupView.channel, protEnabled, spinBox_OverloadThreshold.value / 2);
+	// Threshold in units of 100us
+    uint8_t protectionEnabled = checkBox_OverloadProtect.isChecked;
+    uint8_t warningEnabled = checkBox_OverloadWarning.isChecked;
+    applyGuiOverloadSetting( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value);
 	return 0;
 }
 
+//-----------------------------------//
+//-----------------------------------//
 
 void setLowVoltageLimitSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
 {
@@ -843,12 +917,14 @@ void setHighCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t isEnable
     }
 }
 
-void setOverloadSetting(uint8_t channel, uint8_t isEnabled, int32_t value)
+void setOverloadSetting(uint8_t protectionEnable, uint8_t warningEnabled, int32_t threshold)
 {
-    if (channel == setupView.channel)
+	// Threshold in units of 100us
+    if (1)
 	{
-        guiCheckbox_SetChecked(&checkBox_OverloadProtect, isEnabled, 0);
-        guiSpinBox_SetValue(&spinBox_OverloadThreshold, value * 2, 0);
+        guiCheckbox_SetChecked(&checkBox_OverloadProtect, protectionEnable, 0);
+        guiCheckbox_SetChecked(&checkBox_OverloadWarning, warningEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_OverloadThreshold, threshold, 0);
 	}
 }
 

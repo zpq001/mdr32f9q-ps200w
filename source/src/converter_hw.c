@@ -21,7 +21,7 @@
 #define HW_SETUP_TIMEOUT			(5*10)		// 10 ms	- delay after switching channel or current range and other actions
 												
 #define LED_BLINK_TIMEOUT			(5*100)		// 100ms	- used for charging indication
-#define OVERLOAD_WARNING_TIMEOUT	(5*200)		// 200ms	- used for sound overload warning
+#define OVERLOAD_WARNING_TIMEOUT	(5*100)		// 100ms	- used for sound overload warning
 
 
 //---------------------------------------------//
@@ -242,7 +242,6 @@ void Converter_HWProcess(void)
 	static uint16_t safe_counter = 0;
 	static uint16_t led_blink_counter = 0;
 	static uint16_t overload_warning_counter = 0;
-	uint8_t overload_check_enable;
 	uint8_t raw_overload_flag;
 	uint8_t led_state;
 
@@ -251,30 +250,35 @@ void Converter_HWProcess(void)
 	
 	// Due to hardware specialty overload input is active when converter is powered off
 	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
-	overload_check_enable = 0;
-	if ((state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || (converter_state.channel->overload_protection_enable == 0))
+	if ((state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || 0/*(converter_state.overload_protection_enable == 0)*/)
 		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
 	else if (overload_ignore_counter != 0)
 		overload_ignore_counter--;
-	else
-		overload_check_enable = 1;
 		
-	
-	if (overload_check_enable)
+	if (overload_ignore_counter == 0)
 		raw_overload_flag = GetOverloadStatus();
 	else
 		raw_overload_flag = NORMAL;
 	
 	if (raw_overload_flag == NORMAL)
-		//overload_counter = OVERLOAD_TIMEOUT;
-		overload_counter = converter_state.channel->overload_timeout;
+		overload_counter = converter_state.overload_threshold;
 	else if (overload_counter != 0)
 		overload_counter--;
 	
 
 	//-------------------------------//
-	// Check overload 	
-	if (overload_counter == 0)
+	// Overload sound warning
+	// overload_warning_counter is used to provide some minimal time between succesive warnings
+	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0) && (converter_state.overload_warning_enable))
+	{
+		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
+		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
+	}
+	
+	//-------------------------------//
+	// Check if converter should be disabled
+	// overload_counter is used for specified time threshold
+	if ((raw_overload_flag == OVERLOAD) && (overload_counter == 0) && (converter_state.overload_protection_enable))
 	{
 		// Converter is overloaded
 		state_HWProcess &= ~STATE_HW_ON;
@@ -346,13 +350,7 @@ void Converter_HWProcess(void)
 		led_state |= LED_RED;
 	UpdateLEDs(led_state);
 	
-	//-------------------------------//
-	// Overload sound warning
-	if ((raw_overload_flag == OVERLOAD) && (overload_warning_counter == 0))
-	{
-		xQueueSendToFrontFromISR(xQueueSound, &sound_instant_overload_msg, 0);	// No need for exact timing
-		overload_warning_counter = OVERLOAD_WARNING_TIMEOUT;
-	}
+	
 	
 	//-------------------------------//
 	// Process timers

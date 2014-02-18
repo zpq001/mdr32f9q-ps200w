@@ -438,7 +438,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
 static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
+    guiPanelTranslatedKey_t *tkey = (guiPanelTranslatedKey_t *)translatedKey;
     tkey->key = 0;
     if (event->spec == GUI_KEY_EVENT_DOWN)
     {

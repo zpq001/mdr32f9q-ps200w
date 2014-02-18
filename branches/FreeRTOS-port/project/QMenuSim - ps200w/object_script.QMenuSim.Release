@@ -24,6 +24,7 @@ INPUT(
 ./release\guiMainForm.o
 ./release\guiSetupPanel.o
 ./release\guiMasterPanel.o
+./release\guiEditPanel1.o
 ./release\uartParser.o
 ./release\guiTop.o
 ./release\moc_mainwindow.o

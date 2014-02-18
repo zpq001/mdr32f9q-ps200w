@@ -26,17 +26,24 @@
 // Other forms and panels - in order to switch between them
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
+#include "guiEditPanel1.h"
 
 #include "guiTop.h"
 
 
+static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiMasterPanel_onFocusChanged(void *widget, guiEvent_t *event);
+static uint8_t guiMasterPanel_onDraw(void *widget, guiEvent_t *event);
 
-static uint8_t guiMasterPanel_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event);
+
+static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+
 static uint8_t onSpinBoxDrawEvent(void *sender, guiEvent_t *event);
 static uint8_t onSpinBoxValueChanged(void *sender, guiEvent_t *event);
+
 static uint8_t onTextLabelDrawEvent(void *sender, guiEvent_t *event);
 static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event);
-static uint8_t spinBoxEventProcessFunction(guiGenericWidget_t *widget, guiEvent_t event);
+
 
 
 //--------- Form elements ---------//
@@ -60,10 +67,10 @@ static guiWidgetHandler_t spinBoxHandlers[2];
 
 
 //--------- Master panel  ---------//
-#define MASTER_PANEL_ELEMENTS_COUNT 8
+#define MASTER_PANEL_ELEMENTS_COUNT 20
 guiPanel_t     guiMasterPanel;
 static void *guiMasterPanelElements[MASTER_PANEL_ELEMENTS_COUNT];
-
+static guiWidgetHandler_t masterPanelHandlers[2];
 
 
 //-------------------------------------------------------//
@@ -74,9 +81,9 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
 {
     // Initialize form
     guiPanel_Initialize(&guiMasterPanel, parent);
-    guiMasterPanel.processEvent = guiMasterPanel_ProcessEvents;     // redefine standard panel message processing funtion
     guiMasterPanel.widgets.count = MASTER_PANEL_ELEMENTS_COUNT;
     guiMasterPanel.widgets.elements = guiMasterPanelElements;
+
     guiMasterPanel.widgets.elements[0] = &textLabel_voltage;
     guiMasterPanel.widgets.elements[1] = &textLabel_current;
     guiMasterPanel.widgets.elements[2] = &textLabel_power;
@@ -85,15 +92,24 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiMasterPanel.widgets.elements[5] = &textLabel_currRange;      // focusable!
     guiMasterPanel.widgets.elements[6] = &spinBox_voltage;          // focusable
     guiMasterPanel.widgets.elements[7] = &spinBox_current;          // focusable
+
+    guiMasterPanel.handlers.count = 2;
+    guiMasterPanel.handlers.elements = masterPanelHandlers;
+    guiMasterPanel.handlers.elements[0].eventType = GUI_ON_FOCUS_CHANGED;
+    guiMasterPanel.handlers.elements[0].handler = &guiMasterPanel_onFocusChanged;
+    guiMasterPanel.handlers.elements[1].eventType = GUI_EVENT_DRAW;
+    guiMasterPanel.handlers.elements[1].handler = &guiMasterPanel_onDraw;
     guiMasterPanel.x = 0;
     guiMasterPanel.y = 0;
     guiMasterPanel.width = 96 * 2;
     guiMasterPanel.height = 68;
     guiMasterPanel.showFocus = 0;
     guiMasterPanel.focusFallsThrough = 0;
+    guiMasterPanel.keyTranslator = &guiMasterPanel_KeyTranslator;
 
     // Initialize text label for measured voltage display
     guiTextLabel_Initialize(&textLabel_voltage, (guiGenericWidget_t *)&guiMasterPanel);
+    //guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_voltage, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_voltage.x = 1;
     textLabel_voltage.y = 0;
     textLabel_voltage.width = 94;
@@ -164,7 +180,6 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
 
 
     guiSpinBox_Initialize(&spinBox_voltage, (guiGenericWidget_t *)&guiMasterPanel);
-    spinBox_voltage.processEvent = spinBoxEventProcessFunction;
     spinBox_voltage.x = 30;
     spinBox_voltage.y = 33;
     spinBox_voltage.width = 45;
@@ -180,9 +195,9 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_voltage.maxValue = 4100;
     spinBox_voltage.minValue = -1;
     spinBox_voltage.showFocus = 0;
+    spinBox_voltage.keyTranslator = &spinBox_KeyTranslator;
 
     guiSpinBox_Initialize(&spinBox_current, (guiGenericWidget_t *)&guiMasterPanel);
-    spinBox_current.processEvent = spinBoxEventProcessFunction;
     spinBox_current.x = 96+30;
     spinBox_current.y = 33;
     spinBox_current.width = 45;
@@ -198,6 +213,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_current.maxValue = 4100;
     spinBox_current.minValue = -1;
     spinBox_current.showFocus = 0;
+    spinBox_current.keyTranslator = &spinBox_KeyTranslator;
 
     spinBoxHandlers[0].eventType = GUI_EVENT_DRAW;
     spinBoxHandlers[0].handler = onSpinBoxDrawEvent;
@@ -209,117 +225,120 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_current.handlers.elements = spinBoxHandlers;
 
 
-
-#if 0
-    textLabel_voltage.hasFrame = 1;
-    textLabel_voltage.showFocus = 1;
-    textLabel_current.hasFrame = 1;
-    textLabel_current.showFocus = 1;
-    textLabel_power.hasFrame = 1;
-    textLabel_power.showFocus = 1;
-    textLabel_temperature.hasFrame = 1;
-    textLabel_temperature.showFocus = 1;
-    textLabel_channel.hasFrame = 1;
-    textLabel_channel.showFocus = 1;
-    textLabel_currRange.hasFrame = 1;
-    textLabel_currRange.showFocus = 1;
-    spinBox_voltage.hasFrame = 1;
-    spinBox_voltage.showFocus = 1;
-#endif
+    // Add widgets
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiEditPanel1, (guiGenericContainer_t *)&guiMasterPanel);
 }
 
 
 
-
-static uint8_t guiMasterPanel_ProcessEvents(struct guiGenericWidget_t *widget, guiEvent_t event)
+static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    uint8_t processResult = GUI_EVENT_ACCEPTED;
-    switch (event.type)
+    guiPanelTranslatedKey_t *tkey = (guiPanelTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
     {
-        case GUI_EVENT_DRAW:
-            guiGraph_DrawPanel(&guiMasterPanel);
-
-            if (guiMasterPanel.redrawForced)
-            {
-                // Draw static elements
-                LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
-                LCD_SetLineStyle(LINE_STYLE_SOLID);
-                LCD_DrawHorLine(0, 55, 96*2, 1);
-                LCD_DrawVertLine(48, 56, 13, 1);
-                LCD_DrawVertLine(96+42, 56 , 13, 1);
-                LCD_SetFont(&font_h11);
-                LCD_PrintString("SET:", 2, 41, IMAGE_MODE_NORMAL);
-                LCD_PrintString("V", 75, 41, IMAGE_MODE_NORMAL);
-                LCD_PrintString("SET:", 96+2, 41, IMAGE_MODE_NORMAL);
-                LCD_PrintString("A", 96+75, 41, IMAGE_MODE_NORMAL);
-            }
-            // Reset flags - redrawForced will be reset by core
-            guiMasterPanel.redrawFocus = 0;
-            guiMasterPanel.redrawRequired = 0;
-            break;
-        case GUI_EVENT_FOCUS:
-            processResult = guiPanel_ProcessEvent(widget, event);
-            if (processResult == GUI_EVENT_ACCEPTED)
-                guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMasterPanel,1);
-            break;
-        case GUI_EVENT_KEY:
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ESC))
-            {
-                // do nothing and accept event
-                break;
-            }
-            if ((event.spec == GUI_KEY_EVENT_DOWN) && (event.lparam == GUI_KEY_ENCODER))
-            {
-                if (spinBox_voltage.isFocused)
-                {
-                    guiCore_RequestFocusChange((guiGenericWidget_t *)&spinBox_current);
-                    event.type = SPINBOX_EVENT_ACTIVATE;
-                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&spinBox_current,&event);   // activate
-                }
-                else
-                {
-                    guiCore_RequestFocusChange((guiGenericWidget_t *)&spinBox_voltage);
-                    event.type = SPINBOX_EVENT_ACTIVATE;
-                    guiCore_AddMessageToQueue((guiGenericWidget_t *)&spinBox_voltage,&event);   // activate
-                }
-            }
-            // fall down to default
-        default:
-            processResult = guiPanel_ProcessEvent(widget, event);
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = PANEL_KEY_PREV;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = PANEL_KEY_NEXT;
     }
-
-    return processResult;
-}
-
-
-static uint8_t spinBoxEventProcessFunction(guiGenericWidget_t *widget, guiEvent_t event)
-{
-    guiSpinBox_t *spinBox = (guiSpinBox_t *)widget;
-    uint8_t processResult = GUI_EVENT_ACCEPTED;
-
-    switch(event.type)
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
     {
-        case GUI_EVENT_KEY:
-            if (event.spec == GUI_ENCODER_EVENT)
+        if (event->lparam == GUI_KEY_ENCODER)
+        {
+            // Hook encoder push
+            if (spinBox_voltage.isFocused)
             {
-                if (spinBox->isActive == 0)
-                {
-                    event.type = SPINBOX_EVENT_ACTIVATE;
-                    guiCore_AddMessageToQueue(widget,&event);   // activate
-                }
-                else
-                {
-                    processResult = guiSpinBox_ProcessEvent(widget, event);
-                }
+                guiCore_RequestFocusChange((guiGenericWidget_t *)&spinBox_current);
+                event->type = SPINBOX_EVENT_ACTIVATE;
+                guiCore_AddMessageToQueue((guiGenericWidget_t *)&spinBox_current,event);   // activate
             }
             else
             {
-                processResult = guiSpinBox_ProcessEvent(widget, event);
+                guiCore_RequestFocusChange((guiGenericWidget_t *)&spinBox_voltage);
+                event->type = SPINBOX_EVENT_ACTIVATE;
+                guiCore_AddMessageToQueue((guiGenericWidget_t *)&spinBox_voltage,event);   // activate
             }
-            break;
-        default: processResult = guiSpinBox_ProcessEvent(widget, event);
+            return GUI_EVENT_ACCEPTED;  // do not process this event any more
+        }
+
     }
-    return processResult;
+    else if (event->spec == GUI_KEY_EVENT_HOLD)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+        {
+            showEditPanel1();
+        }
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        tkey->key = (int16_t)event->lparam < 0 ? PANEL_KEY_PREV :
+              ((int16_t)event->lparam > 0 ? PANEL_KEY_NEXT : 0);
+    }
+    return 0;
+}
+
+
+static uint8_t guiMasterPanel_onFocusChanged(void *widget, guiEvent_t *event)
+{
+    if (guiMasterPanel.isFocused)
+    {
+        guiCore_RequestFocusNextWidget((guiGenericContainer_t *)&guiMasterPanel,1);
+    }
+    return 0;
+}
+
+
+static uint8_t guiMasterPanel_onDraw(void *widget, guiEvent_t *event)
+{
+    if (guiMasterPanel.redrawForced)
+    {
+        // Draw static elements
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        LCD_SetLineStyle(LINE_STYLE_SOLID);
+        LCD_DrawHorLine(0, 55, 96*2, 1);
+        LCD_DrawVertLine(48, 56, 13, 1);
+        LCD_DrawVertLine(96+42, 56 , 13, 1);
+        LCD_SetFont(&font_h11);
+        LCD_PrintString("SET:", 2, 41, IMAGE_MODE_NORMAL);
+        LCD_PrintString("V", 75, 41, IMAGE_MODE_NORMAL);
+        LCD_PrintString("SET:", 96+2, 41, IMAGE_MODE_NORMAL);
+        LCD_PrintString("A", 96+75, 41, IMAGE_MODE_NORMAL);
+    }
+    return 0;
+}
+
+
+
+//-------------------------//
+
+static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+{
+    guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    tkey->increment = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = SPINBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_ESC)
+            tkey->key = SPINBOX_KEY_EXIT;
+        else if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = SPINBOX_KEY_LEFT;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = SPINBOX_KEY_RIGHT;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        if (((guiSpinBox_t *)widget)->isActive == 0)
+        {
+            event->type = SPINBOX_EVENT_ACTIVATE;
+            guiCore_AddMessageToQueue(widget,event);   // activate
+            return GUI_EVENT_ACCEPTED;
+        }
+        tkey->increment = (int16_t)event->lparam;
+    }
+    return 0;
 }
 
 
@@ -372,6 +391,9 @@ static uint8_t onSpinBoxValueChanged(void *sender, guiEvent_t *event)
 }
 
 
+//-------------------------//
+
+
 static uint8_t onTextLabelDrawEvent(void *sender, guiEvent_t *event)
 {
     guiTextLabel_t *label = (guiTextLabel_t *)sender;
@@ -394,7 +416,6 @@ static uint8_t onTextLabelDrawEvent(void *sender, guiEvent_t *event)
 
 static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
 {
-    //guiTextLabel_t *label = (guiTextLabel_t *)sender;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     if (event->spec == GUI_ENCODER_EVENT)
     {
@@ -413,6 +434,45 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
     }
     return processResult;
 }
+
+
+
+//-------------------------//
+// TODO: add current view
+// TODO: check update funtions (U, I, limits) calling
+
+void showEditPanel1(void)
+{
+    uint8_t show_panel = 0;
+    if (spinBox_voltage.isFocused)
+    {
+        guiEditPanel1.x = 5;
+        show_panel = 1;
+    }
+    else if (spinBox_current.isFocused)
+    {
+        guiEditPanel1.x = 96 + 5;
+        show_panel = 1;
+    }
+    if (show_panel)
+    {
+        guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel1, &guiEvent_SHOW);
+        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiEditPanel1);
+    }
+}
+
+void hideEditPanel1(void)
+{
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel1, &guiEvent_HIDE);
+    guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
+}
+
+
+
+//=================================================================//
+//=================================================================//
+//  Hardware interface functions
+
 
 
 void setVoltageIndicator(uint16_t value)

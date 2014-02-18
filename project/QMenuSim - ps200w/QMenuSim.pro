@@ -43,6 +43,7 @@ SOURCES += main.cpp\
     ../../source/gui/guiMainForm.c \
     ../../source/gui/guiSetupPanel.c \
     ../../source/gui/guiMasterPanel.c \
+    ../../source/gui/guiEditPanel1.c \
     gui_top/uartParser.c	\
 	gui_top/guiTop.c 
     
@@ -67,6 +68,7 @@ HEADERS  += mainwindow.h \
     ../../source/gui/guiMainForm.h \
     ../../source/gui/guiSetupPanel.h \
     ../../source/gui/guiMasterPanel.h \
+    ../../source/gui/guiEditPanel1.h \
 	gui_top/guiTop.h \
 	gui_top/guiConfig.h \
     gui_top/uartParser.h

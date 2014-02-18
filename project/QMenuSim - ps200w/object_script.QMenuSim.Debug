@@ -24,6 +24,7 @@ INPUT(
 ./debug\guiMainForm.o
 ./debug\guiSetupPanel.o
 ./debug\guiMasterPanel.o
+./debug\guiEditPanel1.o
 ./debug\uartParser.o
 ./debug\guiTop.o
 ./debug\moc_mainwindow.o

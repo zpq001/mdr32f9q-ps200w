@@ -25,4 +25,8 @@ void setFeedbackChannelIndicator(uint8_t channel);
 void setCurrentRangeIndicator(uint8_t current_range);
 
 
+
+void showEditPanel1(void);
+void hideEditPanel1(void);
+
 #endif

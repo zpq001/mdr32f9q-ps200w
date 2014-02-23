@@ -679,8 +679,8 @@ void vTaskConverter(void *pvParameters)
 				// Send notification to GUI
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
 				gui_msg.converter_event.spec = CHANNEL_CHANGED;
-				gui_msg.converter_event.channel = msg.channel_setting.new_channel;
-				gui_msg.converter_event.current_range = converter_state.channel->current->RANGE;
+				//gui_msg.converter_event.channel = msg.channel_setting.new_channel;
+				//gui_msg.converter_event.current_range = converter_state.channel->current->RANGE;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				// No sound feeback (a relay is ticking)
 
@@ -729,7 +729,7 @@ void vTaskConverter(void *pvParameters)
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
 				gui_msg.converter_event.spec = CURRENT_RANGE_CHANGED;
 				gui_msg.converter_event.channel = msg.current_range_setting.channel;
-				gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
+				//gui_msg.converter_event.current_range = msg.current_range_setting.new_range;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				// Sound feedback
 				//SoundEvent_OnSettingChanged(VALUE_OK);

@@ -152,7 +152,6 @@ void guiInitialize(void)
 
 
     updateGuiVoltageSetting();
-    updateGuiCurrentSetting();
 
     updateGuiVoltageIndicator();
     updateGuiCurrentIndicator();
@@ -163,12 +162,12 @@ void guiInitialize(void)
 
 
     // Parser test
-    //char *parse_strings[] = {
-    //    "key",
-    //    "down",
-    //    "btn_esc"
-    //};
-    //uart_parse(parse_strings, 3);
+//    char *parse_strings[] = {
+//        "key",
+//        "down",
+//        "btn_esc"
+//    };
+//    uart_parse(parse_strings, 3);
 
 }
 
@@ -225,7 +224,7 @@ void guiEncoderRotated(int32_t delta)
 void updateGuiVoltageIndicator(void)
 {
     guiLogEvent("Reading voltage ADC");
-    setVoltageIndicator(voltage_adc);
+    setGuiVoltageIndicator(voltage_adc);
 }
 
 
@@ -234,18 +233,95 @@ void updateGuiVoltageIndicator(void)
 void updateGuiVoltageSetting(void)
 {
     guiLogEvent("Reading voltage setting");
-    setVoltageSetting(set_voltage);
+    setGuiVoltageSetting(channel, set_voltage);
 }
 
 
+//---------------------------------------------//
+// NEW HW interface
+uint16_t getVoltageSetting(uint8_t channel)
+{
+    return set_voltage;
+}
+
+uint16_t getVoltageAbsMax(uint8_t channel)
+{
+    return 2000;
+}
+
+uint16_t getVoltageAbsMin(uint8_t channel)
+{
+    return 0;
+}
+
+uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint16_t getCurrentSetting(uint8_t channel, uint8_t range)
+{
+    return set_current;
+}
+
+uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range)
+{
+    return 4000;
+}
+
+uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range)
+{
+    return 0;
+}
+
+uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t getOverloadProtectionState(void)
+{
+    return 0;
+}
+
+uint8_t getOverloadProtectionWarning(void)
+{
+    return 0;
+}
+
+uint16_t getOverloadProtectionThreshold(void)
+{
+    return 0;
+}
+
+uint8_t getCurrentRange(uint8_t channel)
+{
+    return 0;
+}
+
+
+//---------------------------------------------//
+
+
 // Voltage setting GUI -> HW
-void applyGuiVoltageSetting(int16_t new_set_voltage)
+void applyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 {
     set_voltage = new_set_voltage;
     voltage_adc = set_voltage;
 
     //------ simulation of actual conveter work ------//
-    updateGuiVoltageIndicator();
+    setGuiVoltageIndicator(voltage_adc);
+    setGuiVoltageSetting(channel,set_voltage);
 }
 
 
@@ -269,26 +345,20 @@ void applyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, i
 void updateGuiCurrentIndicator(void)
 {
     guiLogEvent("Reading current ADC");
-    setCurrentIndicator(current_adc);
+    setGuiCurrentIndicator(current_adc);
 }
 
-
-// Current setting HW -> GUI
-void updateGuiCurrentSetting(void)
-{
-    guiLogEvent("Reading current setting");
-    setCurrentSetting(set_current);
-}
 
 // Current setting GUI -> HW
-void applyGuiCurrentSetting(int16_t new_set_current)
+void applyGuiCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current)
 {
     guiLogEvent("Writing current setting");
     set_current = new_set_current;
     current_adc = set_current;
 
     //------ simulation of actual conveter work ------//
-    updateGuiCurrentIndicator();
+    setGuiCurrentSetting(channel,currentRange,set_current);
+    setGuiCurrentIndicator(current_adc);
 }
 
 
@@ -314,7 +384,7 @@ void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_t
 void guiUpdateChannelSetting(void)
 {
     guiLogEvent("Reading selected feedback channel");
-    setFeedbackChannelIndicator(channel);
+    setGuiFeedbackChannel(channel);
 }
 
 // Apply new selected feedback channel
@@ -335,11 +405,11 @@ void guiUpdateChannelSetting(void)
 void guiUpdateCurrentRange(void)
 {
     guiLogEvent("Reading current range");
-    setCurrentRangeIndicator(current_range);
+    setGuiCurrentRange(channel, current_range);
 }
 
 // Apply new selected feedback channel
-void applyGuiCurrentRange(uint8_t new_current_range)
+void applyGuiCurrentRange(uint8_t channel, uint8_t new_current_range)
 {
     guiLogEvent("Writing current range");
     current_range = new_current_range;
@@ -356,7 +426,7 @@ void applyGuiCurrentRange(uint8_t new_current_range)
 void guiUpdatePowerIndicator(void)
 {
     guiLogEvent("Reading power ADC");
-    setPowerIndicator(power_adc);
+    setGuiPowerIndicator(power_adc);
 }
 
 
@@ -367,7 +437,7 @@ void guiUpdatePowerIndicator(void)
 void guiUpdateTemperatureIndicator(void)
 {
     guiLogEvent("Reading temperature ADC");
-    setTemperatureIndicator(converter_temp_celsius);
+    setGuiTemperatureIndicator(converter_temp_celsius);
 }
 
 

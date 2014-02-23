@@ -25,26 +25,29 @@
 
 #include "guiTop.h"
 
+#include "guiEditPanel1.h"
 #include "guiMasterPanel.h"
 
 
 static uint8_t guiEditPanel1_onDraw(void *widget, guiEvent_t *event);
-static uint8_t guiEditPanel1_onVisibleChanged(void *widget, guiEvent_t *event);
+static uint8_t guiEditPanel1_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t guiEditPanel1_onKey(void *widget, guiEvent_t *event);
 
+static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
 
 //--------- Edit panel 1  ----------//
-#define EDIT_PANEL1_ELEMENTS_COUNT 20           // CHECKME - possibly too much
+#define EDIT_PANEL1_ELEMENTS_COUNT 10
 guiPanel_t     guiEditPanel1;
 static void *guiEditPanel1Elements[EDIT_PANEL1_ELEMENTS_COUNT];
-guiWidgetHandler_t editPanelHandlers[3];
+guiWidgetHandler_t editPanelHandlers[4];
 
 
 //--------- Panel elements ---------//
-// Title label
-static guiTextLabel_t textLabel_title;        // Menu item list title
+static guiSpinBox_t spinBox_Edit;
 
+
+editView_t editView;
 
 void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
 {
@@ -55,7 +58,7 @@ void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
     guiEditPanel1.x = 5;
     guiEditPanel1.y = 5;
     guiEditPanel1.width = 96-10;
-    guiEditPanel1.height = 68-13;
+    guiEditPanel1.height = 68-20;//68-13;
     guiEditPanel1.showFocus = 0;
     guiEditPanel1.focusFallsThrough = 0;
     guiEditPanel1.keyTranslator = 0;
@@ -63,25 +66,33 @@ void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
     guiEditPanel1.handlers.elements = editPanelHandlers;
     guiEditPanel1.handlers.elements[0].eventType = GUI_EVENT_DRAW;
     guiEditPanel1.handlers.elements[0].handler = *guiEditPanel1_onDraw;
-    guiEditPanel1.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
-    guiEditPanel1.handlers.elements[1].handler = *guiEditPanel1_onVisibleChanged;
-    guiEditPanel1.handlers.elements[2].eventType = GUI_EVENT_KEY;
-    guiEditPanel1.handlers.elements[2].handler = *guiEditPanel1_onKey;
+    guiEditPanel1.handlers.elements[1].eventType = GUI_EVENT_KEY;
+    guiEditPanel1.handlers.elements[1].handler = *guiEditPanel1_onKey;
+    guiEditPanel1.handlers.elements[2].eventType = GUI_ON_FOCUS_CHANGED;
+    guiEditPanel1.handlers.elements[2].handler = *guiEditPanel1_onFocusChanged;
 
-    // Initialize text label for menu list title
-    guiTextLabel_Initialize(&textLabel_title, 0);
-    textLabel_title.x = 5;
-    textLabel_title.y = 5;
-    textLabel_title.width = guiEditPanel1.width - 10;
-    textLabel_title.height = 10;
-    textLabel_title.textAlignment = ALIGN_TOP;
-    textLabel_title.text = "Fast edit";
-    textLabel_title.font = &font_h10_bold;
+    guiSpinBox_Initialize(&spinBox_Edit, 0);
+    spinBox_Edit.x = 10;
+    spinBox_Edit.y = 20;
+    spinBox_Edit.width = 40;
+    spinBox_Edit.height = 18;
+    spinBox_Edit.textRightOffset = -2;
+    spinBox_Edit.textTopOffset = 2;
+    spinBox_Edit.tabIndex = 2;
+    spinBox_Edit.font = &font_h11;
+    spinBox_Edit.dotPosition = 2;
+    spinBox_Edit.activeDigit = 2;
+    spinBox_Edit.minDigitsToDisplay = 3;
+    spinBox_Edit.restoreValueOnEscape = 1;
+    spinBox_Edit.showFocus = 0;
+    spinBox_Edit.isVisible = 1;
+    spinBox_Edit.value = 1;
+    guiSpinBox_SetValue(&spinBox_Edit, 0, 0);
+    spinBox_Edit.keyTranslator = spinBox_KeyTranslator;
 
 
 
-
-    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_title, (guiGenericContainer_t *)&guiEditPanel1);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_Edit, (guiGenericContainer_t *)&guiEditPanel1);
 }
 
 
@@ -98,37 +109,115 @@ static uint8_t guiEditPanel1_onDraw(void *widget, guiEvent_t *event)
         LCD_DrawHorLine(wx, wy + guiEditPanel1.height - 1, guiEditPanel1.width, 1);
         LCD_DrawVertLine(wx, wy, guiEditPanel1.height, 1);
         LCD_DrawVertLine(wx + guiEditPanel1.width - 1, wy, guiEditPanel1.height, 1);
+
+
+        if (editView.mode == EDIT_MODE_VOLTAGE)
+        {
+            LCD_SetFont(&font_h11);
+            LCD_PrintString("V", wx + 55, wy + 22, IMAGE_MODE_NORMAL);
+            LCD_SetFont(&font_h10_bold);
+            LCD_PrintString("Set voltage", wx + 10, wy + 3, IMAGE_MODE_NORMAL);
+        }
+        else
+        {
+            LCD_SetFont(&font_h11);
+            LCD_PrintString("A", wx + 55, wy + 22, IMAGE_MODE_NORMAL);
+            LCD_SetFont(&font_h10_bold);
+            LCD_PrintString("Set current", wx + 10, wy + 3, IMAGE_MODE_NORMAL);
+        }
     }
     return 0;
 }
 
 
-static uint8_t guiEditPanel1_onVisibleChanged(void *widget, guiEvent_t *event)
+static uint8_t guiEditPanel1_onFocusChanged(void *widget, guiEvent_t *event)
 {
+    int32_t value;
+    if (guiEditPanel1.isFocused)
+    {
+        if (editView.mode == EDIT_MODE_VOLTAGE)
+        {
+            spinBox_Edit.maxValue = getVoltageAbsMax(editView.channel)/10;
+            spinBox_Edit.minValue = getVoltageAbsMin(editView.channel)/10;
+            value = getVoltageSetting(editView.channel);
+            guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
+        }
+        else
+        {
+            spinBox_Edit.maxValue = getCurrentAbsMax(editView.channel, editView.current_range)/10;
+            spinBox_Edit.minValue = getCurrentAbsMin(editView.channel, editView.current_range)/10;
+            value = getCurrentSetting(editView.channel, editView.current_range);
+            guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
+        }
+        guiSpinBox_SetActiveDigit(&spinBox_Edit,editView.active_digit);
+
+        guiCore_RequestFocusChange((guiGenericWidget_t *)&spinBox_Edit);
+        event->type = SPINBOX_EVENT_ACTIVATE;
+        guiCore_AddMessageToQueue((guiGenericWidget_t *)&spinBox_Edit,event);   // activate
+    }
     return 0;
 }
 
 
 static uint8_t guiEditPanel1_onKey(void *widget, guiEvent_t *event)
 {
-    if ((event->spec == GUI_KEY_EVENT_UP_SHORT) || (event->spec == GUI_KEY_EVENT_HOLD))
+    uint8_t exit_code = 0;
+
+    if (event->spec == GUI_KEY_EVENT_UP_SHORT)
     {
         if (event->lparam == GUI_KEY_ESC)
-        {
-            hideEditPanel1();
-        }
-        if (event->lparam == GUI_KEY_ENCODER)
-        {
-            hideEditPanel1();
-        }
+            exit_code = 1;
+        else if ((event->lparam == GUI_KEY_OK) || (event->lparam == GUI_KEY_ENCODER))
+            exit_code = 2;
+    }
+    else if (event->spec == GUI_KEY_EVENT_HOLD)
+    {
+        if ((event->lparam == GUI_KEY_ESC)  || (event->lparam == GUI_KEY_ENCODER))
+            exit_code = 1;
+        if (event->lparam == GUI_KEY_OK)
+            exit_code = 2;
     }
 
-
+    if (exit_code == 2)
+    {
+        if (editView.mode == EDIT_MODE_VOLTAGE)
+            applyGuiVoltageSetting(editView.channel, spinBox_Edit.value * 10);
+        else
+            applyGuiCurrentSetting(editView.channel, editView.current_range, spinBox_Edit.value * 10);
+    }
+    if (exit_code)
+    {
+        hideEditPanel1();
+    }
     return GUI_EVENT_ACCEPTED;
 }
 
 
 
+static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+{
+    guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    tkey->increment = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = SPINBOX_KEY_LEFT;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = SPINBOX_KEY_RIGHT;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        if (((guiSpinBox_t *)widget)->isActive == 0)
+        {
+            event->type = SPINBOX_EVENT_ACTIVATE;
+            guiCore_AddMessageToQueue(widget,event);   // activate
+            return GUI_EVENT_ACCEPTED;
+        }
+        tkey->increment = (int16_t)event->lparam;
+    }
+    return 0;
+}
 
 
 

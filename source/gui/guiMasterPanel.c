@@ -31,6 +31,9 @@
 #include "guiTop.h"
 
 
+masterViev_t masterView;
+
+
 static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiMasterPanel_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t guiMasterPanel_onDraw(void *widget, guiEvent_t *event);
@@ -268,6 +271,7 @@ static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent
         if (event->lparam == GUI_KEY_ENCODER)
         {
             showEditPanel1();
+            return GUI_EVENT_ACCEPTED;  // do not process this event any more
         }
     }
     else if (event->spec == GUI_ENCODER_EVENT)
@@ -381,11 +385,11 @@ static uint8_t onSpinBoxValueChanged(void *sender, guiEvent_t *event)
     guiSpinBox_t *spinBox = (guiSpinBox_t *)sender;
     if (spinBox == &spinBox_voltage)
     {
-        applyGuiVoltageSetting(spinBox_voltage.value * 10);
+        applyGuiVoltageSetting(masterView.channel, spinBox_voltage.value * 10);
     }
     else if (spinBox == &spinBox_current)
     {
-        applyGuiCurrentSetting(spinBox_current.value * 10);
+        applyGuiCurrentSetting(masterView.channel, masterView.current_range, spinBox_current.value * 10);
     }
     return 0;   // doesn't matter
 }
@@ -421,11 +425,11 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
     {
         if ((int16_t)event->lparam < 0)
         {
-            applyGuiCurrentRange(GUI_CURRENT_RANGE_LOW);
+            applyGuiCurrentRange(masterView.channel, GUI_CURRENT_RANGE_LOW);
         }
         else if ((int16_t)event->lparam > 0)
         {
-            applyGuiCurrentRange(GUI_CURRENT_RANGE_HIGH);
+            applyGuiCurrentRange(masterView.channel, GUI_CURRENT_RANGE_HIGH);
         }
     }
     else
@@ -446,14 +450,20 @@ void showEditPanel1(void)
     uint8_t show_panel = 0;
     if (spinBox_voltage.isFocused)
     {
+        editView.mode = EDIT_MODE_VOLTAGE;
+        editView.active_digit = spinBox_voltage.activeDigit;
         guiEditPanel1.x = 5;
         show_panel = 1;
     }
     else if (spinBox_current.isFocused)
     {
+        editView.mode = EDIT_MODE_CURRENT;
+        editView.active_digit = spinBox_current.activeDigit;
         guiEditPanel1.x = 96 + 5;
         show_panel = 1;
     }
+    editView.channel = masterView.channel;
+    editView.current_range = masterView.current_range;
     if (show_panel)
     {
         guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel1, &guiEvent_SHOW);
@@ -463,76 +473,169 @@ void showEditPanel1(void)
 
 void hideEditPanel1(void)
 {
+    guiGenericWidget_t * widget;
+    guiEvent_t event;
     guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel1, &guiEvent_HIDE);
-    guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMasterPanel);
+    if (editView.mode == EDIT_MODE_VOLTAGE)
+        widget = (guiGenericWidget_t *)&spinBox_voltage;
+    else
+        widget = (guiGenericWidget_t *)&spinBox_current;
+
+    event.type = SPINBOX_EVENT_ACTIVATE;
+    guiCore_RequestFocusChange(widget);
+    guiCore_AddMessageToQueue(widget, &event);   // activate
 }
 
 
 
-//=================================================================//
+
 //=================================================================//
 //  Hardware interface functions
+//=================================================================//
 
 
+//-----------------------------------//
+// HW -> GUI
+//-----------------------------------//
 
-void setVoltageIndicator(uint16_t value)
-{
-    sprintf(textLabel_voltage.text, "%2.2fv", (float)value/1000);
-    textLabel_voltage.redrawText = 1;
-    textLabel_voltage.redrawRequired = 1;
-}
 
-void setVoltageSetting(uint16_t value)
+/********************************************************************
+  Internal GUI functions
+*********************************************************************/
+
+// Helper fucntion
+static void updateVoltageSettingWidgets(int32_t value)
 {
     guiSpinBox_SetValue(&spinBox_voltage, value/10, 0);     // do not call handler
-
 }
 
-void setCurrentIndicator(uint16_t value)
-{
-    sprintf(textLabel_current.text, "%2.2fa", (float)value/1000);
-    textLabel_current.redrawText = 1;
-    textLabel_current.redrawRequired = 1;
-}
-
-void setCurrentSetting(uint16_t value)
+// Helper fucntion
+static void updateCurrentSettingWidgets(int32_t value)
 {
     guiSpinBox_SetValue(&spinBox_current, value/10, 0);     // do not call handler
 }
 
-void setPowerIndicator(uint32_t value)
+// Helper fucntion
+static void updateCurrentRangeWidgets(uint8_t range)
 {
-    sprintf(textLabel_power.text, "%3.2fW", (float)value/1000 );
-    textLabel_power.redrawText = 1;
-    textLabel_power.redrawRequired = 1;
-}
-
-void setTemperatureIndicator(int16_t value)
-{
-    sprintf(textLabel_temperature.text, "%2d%cC", value, 0xb0);
-    textLabel_temperature.redrawText = 1;
-    textLabel_temperature.redrawRequired = 1;
-}
-
-void setFeedbackChannelIndicator(uint8_t channel)
-{
-    if (channel == GUI_CHANNEL_5V)
-        sprintf(textLabel_channel.text, "Ch.5V");
-    else
-        sprintf(textLabel_channel.text, "Ch.12V");
-    textLabel_channel.redrawText = 1;
-    textLabel_channel.redrawRequired = 1;
-}
-
-void setCurrentRangeIndicator(uint8_t current_range)
-{
-    if (current_range == GUI_CURRENT_RANGE_LOW)
+    if (range == GUI_CURRENT_RANGE_LOW)
         sprintf(textLabel_currRange.text, "20A");
     else
         sprintf(textLabel_currRange.text, "40A");
     textLabel_currRange.redrawText = 1;
     textLabel_currRange.redrawRequired = 1;
 }
+
+
+
+
+/********************************************************************
+  Top-level GUI functions
+*********************************************************************/
+
+
+
+void setGuiVoltageIndicator(uint16_t value)
+{
+    sprintf(textLabel_voltage.text, "%2.2fv", (float)value/1000);
+    textLabel_voltage.redrawText = 1;
+    textLabel_voltage.redrawRequired = 1;
+}
+
+void setGuiCurrentIndicator(uint16_t value)
+{
+    sprintf(textLabel_current.text, "%2.2fa", (float)value/1000);
+    textLabel_current.redrawText = 1;
+    textLabel_current.redrawRequired = 1;
+}
+
+void setGuiPowerIndicator(uint32_t value)
+{
+    sprintf(textLabel_power.text, "%3.2fW", (float)value/1000 );
+    textLabel_power.redrawText = 1;
+    textLabel_power.redrawRequired = 1;
+}
+
+void setGuiTemperatureIndicator(int16_t value)
+{
+    sprintf(textLabel_temperature.text, "%2d%cC", value, 0xb0);
+    textLabel_temperature.redrawText = 1;
+    textLabel_temperature.redrawRequired = 1;
+}
+
+
+void setGuiVoltageSetting(uint8_t channel, int32_t value)
+{
+    // Check if widgets update is required
+    if (channel == masterView.channel)
+    {
+        updateVoltageSettingWidgets(value);
+    }
+}
+
+void setGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t value)
+{
+    // Check if widgets update is required
+    if ((channel == masterView.channel) && (range == masterView.current_range))
+    {
+        updateCurrentSettingWidgets(value);
+    }
+}
+
+void setGuiCurrentRange(uint8_t channel, uint8_t range)
+{
+    int32_t value;
+    // Check if widgets update is required
+    if (channel == masterView.channel)
+    {
+        masterView.current_range = range;
+        updateCurrentRangeWidgets(range);
+
+        // Also update current settings
+        value = getCurrentSetting(channel, masterView.current_range);
+        updateCurrentSettingWidgets(value);
+
+        // Hide edit panel
+        if (guiEditPanel1.isVisible)
+            hideEditPanel1();
+    }
+}
+
+void setGuiFeedbackChannel(uint8_t channel)
+{
+    int32_t value;
+    masterView.channel = channel;
+
+    if (channel == GUI_CHANNEL_5V)
+        sprintf(textLabel_channel.text, "Ch.5V");
+    else
+        sprintf(textLabel_channel.text, "Ch.12V");
+    textLabel_channel.redrawText = 1;
+    textLabel_channel.redrawRequired = 1;
+
+    // Also update voltage settings
+    value = getVoltageSetting(channel);
+    updateVoltageSettingWidgets(value);
+
+    // Also update current settings
+    value = getCurrentSetting(channel, masterView.current_range);
+    updateCurrentSettingWidgets(value);
+
+    // Also update current range settings
+    masterView.current_range = getCurrentRange(channel);
+    updateCurrentRangeWidgets(masterView.current_range);
+
+    // Hide edit panel
+    if (guiEditPanel1.isVisible)
+        hideEditPanel1();
+}
+
+
+
+
+
+
+
 
 
 

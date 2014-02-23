@@ -87,11 +87,28 @@ void GUI_Init(void);
 extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);
 
-void applyGuiVoltageSetting(int32_t new_set_voltage);
+uint16_t getVoltageSetting(uint8_t channel);
+uint16_t getVoltageAbsMax(uint8_t channel);
+uint16_t getVoltageAbsMin(uint8_t channel);
+uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
+uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type);
+uint16_t getCurrentSetting(uint8_t channel, uint8_t range);
+uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range);
+uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range);
+uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t getOverloadProtectionState(void);
+uint8_t getOverloadProtectionWarning(void);
+uint16_t getOverloadProtectionThreshold(void);
+uint8_t getCurrentRange(uint8_t channel);
+
+
+
+void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage);
 void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value);
-void applyGuiCurrentSetting(int32_t new_set_current);
+void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current);
 void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value);
-void applyGuiCurrentRange(uint8_t new_range);
+void applyGuiCurrentRange(uint8_t channel, uint8_t new_range);
 void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold);
 
 void updateGuiVoltageLimit(uint8_t channel, uint8_t type);

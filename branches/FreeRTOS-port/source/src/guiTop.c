@@ -74,79 +74,107 @@ static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
 
 
 
-static channel_state_t *c;
-static uint8_t converter_current_range;
 
 
+//---------------------------------------------//
+// 
 
-//-------------------------------------------------------//
-//	Voltage
-
-static void updateGuiVoltageSetting(uint8_t channel)
-{
-	if (channel == c->CHANNEL)
-	{
-		setVoltageSetting(c->voltage.setting);
-	}
-} 
-
-void updateGuiVoltageLimit(uint8_t channel, uint8_t type)
+uint16_t getVoltageSetting(uint8_t channel)
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
-	
-		if (type == LIMIT_TYPE_LOW)
-			setLowVoltageLimitSetting(channel, c->voltage.enable_low_limit, c->voltage.limit_low);
-		else
-			setHighVoltageLimitSetting(channel, c->voltage.enable_high_limit, c->voltage.limit_high);
-} 
+    return c->voltage.setting;
+}
 
-//-------------------------------------------------------//
-//	Current
-static void updateGuiCurrentSetting(uint8_t channel, uint8_t current_range)
-{
-	if ((channel == c->CHANNEL) && (converter_current_range == current_range))
-	{
-		reg_setting_t *s = (converter_current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
-		setCurrentSetting(s->setting);
-	}
-} 
-
-void updateGuiCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t type)
+uint16_t getVoltageAbsMax(uint8_t channel)
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
-	reg_setting_t *r = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
-	
-	if (type == LIMIT_TYPE_LOW)
-		setLowCurrentLimitSetting(channel, current_range, r->enable_low_limit, r->limit_low);
-	else
-		setHighCurrentLimitSetting(channel, current_range, r->enable_high_limit, r->limit_high);
-} 
-
-//-------------------------------------------------------//
-//	Other
-static void UpdateConverterCurrentRange(uint8_t channel, uint8_t current_range)
-{
-	if (channel == c->CHANNEL)
-	{
-		converter_current_range = current_range;
-		setCurrentRangeIndicator(current_range);
-		updateGuiCurrentSetting(channel, current_range);
-	}
+    return c->voltage.MAXIMUM;
 }
 
-static void UpdateConverterChannel(uint8_t channel, uint8_t current_range)
+uint16_t getVoltageAbsMin(uint8_t channel)
 {
-	c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
-	setFeedbackChannelIndicator( (c->CHANNEL == CHANNEL_5V) ? GUI_CHANNEL_5V : GUI_CHANNEL_12V );
-	UpdateConverterCurrentRange(channel, current_range);
-	setVoltageSetting(c->voltage.setting);
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->voltage.MINIMUM;
 }
 
-void updateGuiOverloadSetting(void)
+uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
 {
-	setOverloadSetting(converter_state.overload_protection_enable, converter_state.overload_warning_enable, 
-							converter_state.overload_threshold * 2);
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return (limit_type == GUI_LIMIT_TYPE_LOW) ? c->voltage.limit_low : c->voltage.limit_high;
 }
+
+uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return (limit_type == GUI_LIMIT_TYPE_LOW) ? c->voltage.enable_low_limit : c->voltage.enable_high_limit;
+}
+
+uint16_t getCurrentSetting(uint8_t channel, uint8_t range)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->setting;
+}
+
+uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->MAXIMUM;
+}
+
+uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->MINIMUM;
+}
+
+uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+	return (limit_type == GUI_LIMIT_TYPE_LOW) ? s->limit_low : s->limit_high;
+}
+
+uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+	return (limit_type == GUI_LIMIT_TYPE_LOW) ? s->enable_low_limit : s->enable_high_limit;
+}
+
+uint8_t getOverloadProtectionState(void)
+{
+	return converter_state.overload_protection_enable;
+}
+
+uint8_t getOverloadProtectionWarning(void)
+{
+    return converter_state.overload_warning_enable;
+}
+
+uint16_t getOverloadProtectionThreshold(void)
+{
+    return converter_state.overload_threshold;
+}
+
+uint8_t getCurrentRange(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->current->RANGE;
+}
+
+uint8_t getFeedbackChannel(void)
+{
+	return converter_state.channel->CHANNEL;
+}
+
+
+//---------------------------------------------//
+
+
+
 
 
 
@@ -160,6 +188,9 @@ void vTaskGUI(void *pvParameters)
 	uint8_t guiKeyEvent;
 //	int16_t encoder_delta;
 	guiEvent_t guiEvent;
+	int32_t value;
+	uint8_t state;
+	uint8_t state2;
 	
 	// Initialize
 	xQueueGUI = xQueueCreate( 10, sizeof( gui_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
@@ -183,7 +214,8 @@ void vTaskGUI(void *pvParameters)
 		switch (msg.type)
 		{
 			case GUI_TASK_RESTORE_ALL:
-				UpdateConverterChannel(converter_state.channel->CHANNEL, converter_state.channel->current->RANGE);
+				value = getFeedbackChannel();
+				setGuiFeedbackChannel(value);
 				// Retore other values from EEPROM
 				// TODO
 				
@@ -214,32 +246,58 @@ void vTaskGUI(void *pvParameters)
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
 				if (msg.converter_event.spec & VOLTAGE_SETTING_CHANGED)
-					updateGuiVoltageSetting(msg.converter_event.channel);
+				{
+					value = getVoltageSetting(msg.converter_event.channel);
+					setGuiVoltageSetting(msg.converter_event.channel, value);
+				}
 				if (msg.converter_event.spec & CURRENT_SETTING_CHANGED)
-					updateGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+				{
+					value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+					setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
+				}
 				if (msg.converter_event.spec & VOLTAGE_LIMIT_CHANGED)
-					updateGuiVoltageLimit(msg.converter_event.channel, msg.converter_event.type);
+				{
+					value = getVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
+					state = getVoltageLimitState(msg.converter_event.channel, msg.converter_event.type);
+					setGuiVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type, state, value);
+				}
 				if (msg.converter_event.spec & CURRENT_LIMIT_CHANGED)
-					updateGuiCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);	
+				{
+					value = getCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+					state = getCurrentLimitState(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+					setGuiCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type, state, value);	
+				}
 				if (msg.converter_event.spec & CURRENT_RANGE_CHANGED)
-					UpdateConverterCurrentRange(msg.converter_event.channel, msg.converter_event.current_range);
+				{
+					value = getCurrentRange(msg.converter_event.channel);
+					setGuiCurrentRange(msg.converter_event.channel, value);
+				}
 				if (msg.converter_event.spec & CHANNEL_CHANGED)
-					UpdateConverterChannel(msg.converter_event.channel, msg.converter_event.current_range);
+				{
+					value = getFeedbackChannel();
+					setGuiFeedbackChannel(value);
+				}
 				if (msg.converter_event.spec & OVERLOAD_SETTING_CHANGED)
-					updateGuiOverloadSetting();
+				{
+					state = getOverloadProtectionState();
+					state2 = getOverloadProtectionWarning();
+					value = getOverloadProtectionThreshold();
+					setGuiOverloadSetting(state, state2, value);
+				}
 				break;
 			
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
-				setVoltageIndicator(voltage_adc);
-				setCurrentIndicator(current_adc);
-				setPowerIndicator(power_adc);
+				setGuiVoltageIndicator(voltage_adc);
+				setGuiCurrentIndicator(current_adc);
+				setGuiPowerIndicator(power_adc);
 				break;
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
-				setTemperatureIndicator(converter_temp_celsius);
+				setGuiTemperatureIndicator(converter_temp_celsius);
 				break;
 		}
 	}
 }
+
 
 //=================================================================//
 //=================================================================//
@@ -250,10 +308,10 @@ void vTaskGUI(void *pvParameters)
 
 //-------------------------------------------------------//
 //	Voltage
-void applyGuiVoltageSetting(int32_t new_set_voltage)
+void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
 {
 	converter_msg.type = CONVERTER_SET_VOLTAGE;
-	converter_msg.voltage_setting.channel = c->CHANNEL;
+	converter_msg.voltage_setting.channel = channel;
 	converter_msg.voltage_setting.value = new_set_voltage;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
@@ -270,11 +328,11 @@ void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t
 
 //-------------------------------------------------------//
 //	Current
-void applyGuiCurrentSetting(int32_t new_set_current)
+void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current)
 {
 	converter_msg.type = CONVERTER_SET_CURRENT;
-	converter_msg.current_setting.channel = c->CHANNEL;
-	converter_msg.current_setting.range = converter_current_range;
+	converter_msg.current_setting.channel = channel;
+	converter_msg.current_setting.range = range;
 	converter_msg.current_setting.value = new_set_current;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
@@ -290,16 +348,16 @@ void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, u
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0); 
 }
 
-//-------------------------------------------------------//
-//	Other
-void applyGuiCurrentRange(uint8_t new_range)
+void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
 {
 	converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
-	converter_msg.current_range_setting.channel = c->CHANNEL;
+	converter_msg.current_range_setting.channel = channel;
 	converter_msg.current_range_setting.new_range = new_range;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
 
+//-------------------------------------------------------//
+//	Other
 
 void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
 {
@@ -309,6 +367,7 @@ void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, 
 	converter_msg.overload_setting.threshold = threshold;
 	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 }
+
 
 
 

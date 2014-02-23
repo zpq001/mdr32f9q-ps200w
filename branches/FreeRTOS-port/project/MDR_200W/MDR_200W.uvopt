@@ -689,10 +689,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>32</ColumnNumber>
+      <ColumnNumber>4</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>132</TopLine>
-      <CurrentLine>156</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -737,7 +737,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>62</ColumnNumber>
+      <ColumnNumber>20</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
@@ -753,10 +753,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>26</ColumnNumber>
+      <ColumnNumber>16</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>466</TopLine>
-      <CurrentLine>651</CurrentLine>
+      <TopLine>358</TopLine>
+      <CurrentLine>740</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\converter.c</PathWithFileName>
       <FilenameWithoutPath>converter.c</FilenameWithoutPath>
@@ -769,10 +769,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>5</ColumnNumber>
+      <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>308</TopLine>
-      <CurrentLine>322</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\converter_hw.c</PathWithFileName>
       <FilenameWithoutPath>converter_hw.c</FilenameWithoutPath>
@@ -833,10 +833,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>69</ColumnNumber>
+      <ColumnNumber>40</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>229</TopLine>
-      <CurrentLine>248</CurrentLine>
+      <TopLine>135</TopLine>
+      <CurrentLine>147</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\guiTop.c</PathWithFileName>
       <FilenameWithoutPath>guiTop.c</FilenameWithoutPath>
@@ -945,7 +945,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>7</ColumnNumber>
+      <ColumnNumber>32</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
@@ -1155,8 +1155,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>17</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiMainForm.c</PathWithFileName>
       <FilenameWithoutPath>guiMainForm.c</FilenameWithoutPath>
@@ -1171,8 +1171,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>600</TopLine>
+      <CurrentLine>615</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiMasterPanel.c</PathWithFileName>
       <FilenameWithoutPath>guiMasterPanel.c</FilenameWithoutPath>
@@ -1185,10 +1185,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>12</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>70</TopLine>
-      <CurrentLine>92</CurrentLine>
+      <TopLine>969</TopLine>
+      <CurrentLine>963</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiSetupPanel.c</PathWithFileName>
       <FilenameWithoutPath>guiSetupPanel.c</FilenameWithoutPath>
@@ -1201,10 +1201,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>41</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>83</TopLine>
-      <CurrentLine>116</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>1</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiEditPanel1.c</PathWithFileName>
       <FilenameWithoutPath>guiEditPanel1.c</FilenameWithoutPath>
@@ -1227,8 +1227,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1057</TopLine>
-      <CurrentLine>1085</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiCore\guiCore.c</PathWithFileName>
       <FilenameWithoutPath>guiCore.c</FilenameWithoutPath>
@@ -1267,8 +1267,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>133</TopLine>
-      <CurrentLine>150</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiWidgets\guiPanel.c</PathWithFileName>
       <FilenameWithoutPath>guiPanel.c</FilenameWithoutPath>

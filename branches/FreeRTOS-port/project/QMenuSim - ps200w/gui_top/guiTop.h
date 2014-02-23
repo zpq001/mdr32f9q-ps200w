@@ -85,10 +85,27 @@ typedef struct {
 #define GUI_LIMIT_TYPE_HIGH			0x01
 
 
+
+uint16_t getVoltageSetting(uint8_t channel);
+uint16_t getVoltageAbsMax(uint8_t channel);
+uint16_t getVoltageAbsMin(uint8_t channel);
+uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
+uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type);
+uint16_t getCurrentSetting(uint8_t channel, uint8_t range);
+uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range);
+uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range);
+uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t getOverloadProtectionState(void);
+uint8_t getOverloadProtectionWarning(void);
+uint16_t getOverloadProtectionThreshold(void);
+uint8_t getCurrentRange(uint8_t channel);
+
+
 void updateGuiVoltageIndicator(void);
 void updateGuiVoltageSetting(void);
 void updateGuiVoltageLimit(uint8_t channel, uint8_t limit_type);
-void applyGuiVoltageSetting(int16_t new_set_voltage);
+void applyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage);
 void applyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value);
 
 void updateGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type);
@@ -96,13 +113,13 @@ void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_t
 
 void updateGuiCurrentIndicator(void);
 void updateGuiCurrentSetting(void);
-void applyGuiCurrentSetting(int16_t new_set_current);
+void applyGuiCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current);
 
 void guiUpdateChannelSetting(void);
 void applyGuiChannelSetting(uint8_t new_channel);
 
 void guiUpdateCurrentRange(void);
-void applyGuiCurrentRange(uint8_t new_current_range);
+void applyGuiCurrentRange(uint8_t channel, uint8_t new_current_range);
 
 void guiUpdatePowerIndicator(void);
 void guiUpdateTemperatureIndicator(void);

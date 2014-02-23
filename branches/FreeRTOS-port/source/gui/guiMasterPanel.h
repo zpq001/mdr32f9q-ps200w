@@ -7,26 +7,30 @@
 
 
 
+typedef struct {
+    uint8_t channel;
+    uint8_t current_range;
+
+} masterViev_t;
+
+extern masterViev_t masterView;
 extern guiPanel_t     guiMasterPanel;
 
 
 void guiMasterPanel_Initialize(guiGenericWidget_t *parent);
 
-
-void setVoltageIndicator(uint16_t value);
-void setVoltageSetting(uint16_t value);
-
-void setCurrentIndicator(uint16_t value);
-void setCurrentSetting(uint16_t value);
-
-void setPowerIndicator(uint32_t value);
-void setTemperatureIndicator(int16_t value);
-void setFeedbackChannelIndicator(uint8_t channel);
-void setCurrentRangeIndicator(uint8_t current_range);
-
+void setGuiVoltageIndicator(uint16_t value);
+void setGuiCurrentIndicator(uint16_t value);
+void setGuiPowerIndicator(uint32_t value);
+void setGuiTemperatureIndicator(int16_t value);
+void setGuiVoltageSetting(uint8_t channel, int32_t value);
+void setGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t value);
+void setGuiFeedbackChannel(uint8_t channel);
+void setGuiCurrentRange(uint8_t channel, uint8_t range);
 
 
 void showEditPanel1(void);
 void hideEditPanel1(void);
+
 
 #endif

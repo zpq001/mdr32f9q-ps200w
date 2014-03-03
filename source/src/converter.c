@@ -13,15 +13,10 @@
 #include "converter_hw.h"
 #include "adc.h"
 
-#include "guiTop.h"
+#include "dispatcher.h"
+//#include "guiTop.h"
 
-//-------------------------------------------------------//
-// Voltage and current setting return codes
-#define VALUE_OK					0x00
-#define VALUE_BOUND_BY_SOFT_MAX		0x01
-#define VALUE_BOUND_BY_SOFT_MIN		0x02
-#define VALUE_BOUND_BY_ABS_MAX		0x04
-#define VALUE_BOUND_BY_ABS_MIN		0x08
+
 
 
 //-------------------------------------------------------//
@@ -53,8 +48,9 @@ xTaskHandle xTaskHandle_Converter;
 const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
 const converter_message_t converter_tick_message = {CONVERTER_TICK};
 
-gui_msg_t gui_msg;
+//gui_msg_t gui_msg;
 uint32_t adc_msg;
+dispatch_msg_t dispatcher_msg;
 
 converter_state_t converter_state;		// main converter control
 
@@ -472,6 +468,21 @@ void Converter_Init(uint8_t default_channel)
 }
 
 
+void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dispatcher_msg)
+{
+	dispatcher_msg->type = DISPATCHER_CONVERTER_RESPONSE;
+	dispatcher_msg->sender = sender_CONVERTER;
+	dispatcher_msg->converter_resp.msg_type = converter_msg->type;
+	dispatcher_msg->converter_resp.msg_sender = converter_msg->sender;
+	dispatcher_msg->converter_resp.spec = 0;		// need to be filled
+	dispatcher_msg->converter_resp.err_code = 0;	// need to be filled
+	dispatcher_msg->converter_resp.channel = converter_msg->channel;
+	dispatcher_msg->converter_resp.range = converter_msg->range;
+	dispatcher_msg->converter_resp.limit_type = converter_msg->limit_type;
+}
+
+
+
 //---------------------------------------------//
 //	Main converter task
 //	
@@ -479,6 +490,7 @@ void Converter_Init(uint8_t default_channel)
 void vTaskConverter(void *pvParameters) 
 {
 	converter_message_t msg;
+	
 	
 	uint8_t err_code;
 	uint8_t res;
@@ -507,6 +519,32 @@ void vTaskConverter(void *pvParameters)
 			//=========================================================================//
 			// Setting voltage
 			case CONVERTER_SET_VOLTAGE:
+				if (Converter_ValidateChannel(&msg.channel))
+				{
+					res = Converter_SetVoltage(msg.channel, msg.value, &err_code);
+					// Apply new setting to hardware
+					if (res & VOLTAGE_SETTING_APPLIED)
+					{
+						// CHECKME: charge state
+						if (msg.channel == converter_state.channel->CHANNEL)
+						{
+							SetVoltageDAC(converter_state.channel->voltage.setting);
+						}
+					}
+				}
+				else
+				{
+					// Wrong argument (channel)
+					err_code = VALUE_ERROR;
+				}
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_resp.spec = VOLTAGE_SETTING_CHANGED;
+				dispatcher_msg.converter_resp.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+				/*
+			case CONVERTER_SET_VOLTAGE:
 				if (Converter_ValidateChannel(&msg.voltage_setting.channel))
 				{
 					res = Converter_SetVoltage(msg.voltage_setting.channel, msg.voltage_setting.value, &err_code);
@@ -532,8 +570,8 @@ void vTaskConverter(void *pvParameters)
 				{
 					// Wrong argument (channel)
 				}
-				break;
-			//=========================================================================//
+				break; */
+	/*		//=========================================================================//
 			// Setting voltage limit
 			case CONVERTER_SET_VOLTAGE_LIMIT:
 				if (Converter_ValidateChannel(&msg.voltage_limit_setting.channel) && Converter_ValidateLimit(msg.voltage_limit_setting.type))
@@ -793,7 +831,7 @@ void vTaskConverter(void *pvParameters)
 					Converter_TurnOff();
 					converter_state.state = CONVERTER_STATE_OFF;
 				}
-				break;
+				break; */
 			//=========================================================================//
 			// Tick
 			case CONVERTER_TICK:		// Temporary! Will be special for charging mode

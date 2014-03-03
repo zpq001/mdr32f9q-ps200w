@@ -31,6 +31,8 @@
 //#include "converter_hw.h"
 #include "adc.h"
 
+#include "dispatcher.h"
+
 #include "service.h"	// temperature
 #include "control.h"	// some defines
 
@@ -41,6 +43,7 @@
 xQueueHandle xQueueGUI;
 
 static converter_message_t converter_msg;	// to save stack
+static dispatch_msg_t dispatcher_msg;
 
 
 // TODO: move to some .h file common definitions - such as channel, curr. range, etc
@@ -310,62 +313,70 @@ void vTaskGUI(void *pvParameters)
 //	Voltage
 void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
 {
-	converter_msg.type = CONVERTER_SET_VOLTAGE;
-	converter_msg.voltage_setting.channel = channel;
-	converter_msg.voltage_setting.value = new_set_voltage;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.type = CONVERTER_SET_VOLTAGE;
+	dispatcher_msg.converter_cmd.channel = channel;	
+	dispatcher_msg.converter_cmd.value = new_set_voltage;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);	
+	
+	//converter_msg.type = CONVERTER_SET_VOLTAGE;
+	//converter_msg.voltage_setting.channel = channel;
+	//converter_msg.voltage_setting.value = new_set_voltage;
+	//xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value)
-{
+{ /*
 	converter_msg.type = CONVERTER_SET_VOLTAGE_LIMIT;
 	converter_msg.voltage_limit_setting.channel = channel;
 	converter_msg.voltage_limit_setting.type = type;	
 	converter_msg.voltage_limit_setting.enable = enable;
 	converter_msg.voltage_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 //-------------------------------------------------------//
 //	Current
 void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current)
-{
+{ /*
 	converter_msg.type = CONVERTER_SET_CURRENT;
 	converter_msg.current_setting.channel = channel;
 	converter_msg.current_setting.range = range;
 	converter_msg.current_setting.value = new_set_current;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value)
-{
+{ /*
 	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
 	converter_msg.current_limit_setting.channel = channel;
 	converter_msg.current_limit_setting.range = currentRange;
 	converter_msg.current_limit_setting.type = type;	
 	converter_msg.current_limit_setting.enable = enable;
 	converter_msg.current_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); 
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
 {
+	/*
 	converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
 	converter_msg.current_range_setting.channel = channel;
 	converter_msg.current_range_setting.new_range = new_range;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 //-------------------------------------------------------//
 //	Other
 
 void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
-{
+{ /*
 	converter_msg.type = CONVERTER_SET_OVERLOAD_PARAMS;
 	converter_msg.overload_setting.protection_enable = protection_enable;
 	converter_msg.overload_setting.warning_enable = warning_enable;
 	converter_msg.overload_setting.threshold = threshold;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
 }
 
 

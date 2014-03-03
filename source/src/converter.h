@@ -24,33 +24,62 @@
 #define CONV_MAX_OVERLOAD_THRESHOLD		(5*50)	
 
 
+
+
+
+
+
+
 //-------------------------------------------------------//
-// Other
-
-// Extended converter channel definition - used when
-// currently operating channel should be updated
-#define OPERATING_CHANNEL 2
-
-// Extended converter current range definition - used when
-// currently operating range should be updated
-#define OPERATING_CURRENT_RANGE 2
-
-// Software limit types
-#define LIMIT_TYPE_LOW			0x00
-#define LIMIT_TYPE_HIGH			0x01
-
-
-//TODO - move it to some common for all tasks header
-#define TID_UART		0x01
-#define TID_GUI			0x02
+// Voltage and current setting return codes
+#define VALUE_OK					0x00
+#define VALUE_BOUND_BY_SOFT_MAX		0x01
+#define VALUE_BOUND_BY_SOFT_MIN		0x02
+#define VALUE_BOUND_BY_ABS_MAX		0x04
+#define VALUE_BOUND_BY_ABS_MIN		0x08
+#define VALUE_ERROR					0xFF
 
 
 //---------------------------------------------//
 // Task queue messages
 
 
+enum ConverterTaskMsgTypes {
+	CONVERTER_TICK,							
+	CONVERTER_TURN_ON,			
+	CONVERTER_TURN_OFF,			
+	CONVERTER_SWITCH_CHANNEL,
+	CONVERTER_SET_VOLTAGE,		
+	CONVERTER_SET_VOLTAGE_LIMIT,
+	CONVERTER_SET_CURRENT,		
+	CONVERTER_SET_CURRENT_RANGE,
+	CONVERTER_SET_CURRENT_LIMIT,
+	CONVERTER_SET_OVERLOAD_PARAMS,
+	CONVERTER_OVERLOADED
+};
 
 
+typedef struct {
+    uint8_t type;
+	uint8_t sender;
+	uint8_t channel;
+	uint8_t range;
+	uint8_t limit_type;
+	uint8_t enable;
+	int32_t value;
+} converter_message_t;
+
+
+#define	VOLTAGE_SETTING_CHANGED			(1<<0)
+#define CURRENT_SETTING_CHANGED			(1<<1)
+#define VOLTAGE_LIMIT_CHANGED			(1<<2)
+#define CURRENT_LIMIT_CHANGED			(1<<3)
+#define CURRENT_RANGE_CHANGED			(1<<4)
+#define CHANNEL_CHANGED					(1<<5)
+#define OVERLOAD_SETTING_CHANGED		(1<<6)
+
+
+/*
 enum converterTaskCmd {
 	CONVERTER_TICK,				
 	CONVERTER_UPDATE,			
@@ -72,11 +101,11 @@ enum converterTaskCmd {
 	
 	CONVERTER_INITIALIZE
 };
+*/
 
 
 
-
-
+/*
 #pragma anon_unions
 
 typedef struct {
@@ -125,7 +154,7 @@ typedef struct {
 		} channel_setting;
     };
 } converter_message_t;
-
+*/
 
 
 

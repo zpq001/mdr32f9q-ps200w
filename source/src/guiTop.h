@@ -1,16 +1,9 @@
+#include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 
-#include "guiCore.h"
 
-// Key events
-#define BTN_EVENT_DOWN		GUI_KEY_EVENT_DOWN
-#define BTN_EVENT_UP		GUI_KEY_EVENT_UP
-#define BTN_EVENT_UP_SHORT  GUI_KEY_EVENT_UP_SHORT
-#define BTN_EVENT_UP_LONG   GUI_KEY_EVENT_UP_LONG
-#define BTN_EVENT_HOLD      GUI_KEY_EVENT_HOLD
-#define BTN_EVENT_REPEAT    GUI_KEY_EVENT_REPEAT
 
 #pragma anon_unions
 
@@ -60,13 +53,7 @@ enum guiTaskCmd {
 
 
 
-#define	VOLTAGE_SETTING_CHANGED			(1<<0)
-#define CURRENT_SETTING_CHANGED			(1<<1)
-#define VOLTAGE_LIMIT_CHANGED			(1<<2)
-#define CURRENT_LIMIT_CHANGED			(1<<3)
-#define CURRENT_RANGE_CHANGED			(1<<4)
-#define CHANNEL_CHANGED					(1<<5)
-#define OVERLOAD_SETTING_CHANGED		(1<<6)
+
 
 
 

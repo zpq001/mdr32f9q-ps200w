@@ -8,15 +8,16 @@
 
 
 // User definitions
-#define BTN_ESC			0x01
-#define BTN_LEFT		0x02
-#define BTN_RIGHT		0x04
-#define BTN_OK			0x08
-#define BTN_ENCODER		0x10
-#define SW_CHANNEL		0x20
-#define BTN_ON			0x40
-#define BTN_OFF			0x80
-#define SW_EXTERNAL		0x0100
+//#define BTN_ESC			0x01
+//#define BTN_LEFT		0x02
+//#define BTN_RIGHT		0x04
+//#define BTN_OK			0x08
+//#define BTN_ENCODER		0x10
+//#define SW_CHANNEL		0x20
+//#define BTN_ON			0x40
+//#define BTN_OFF			0x80
+//#define SW_EXTERNAL		0x0100
+#include "key_def.h"
 
 #define BTN_JTAG_MASK	(BTN_ESC | BTN_LEFT | BTN_RIGHT | BTN_OK)
 #define NOT_USE_JTAG_BUTTONS

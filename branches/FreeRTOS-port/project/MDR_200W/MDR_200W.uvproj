@@ -549,9 +549,24 @@
               <FilePath>..\..\source\src\systick.c</FilePath>
             </File>
             <File>
-              <FileName>uart.c</FileName>
+              <FileName>buttons_top.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\source\src\uart.c</FilePath>
+              <FilePath>..\..\source\src\buttons_top.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_parser.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_rx.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_tx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_tx.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1285,9 +1300,24 @@
               <FilePath>..\..\source\src\systick.c</FilePath>
             </File>
             <File>
-              <FileName>uart.c</FileName>
+              <FileName>buttons_top.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\source\src\uart.c</FilePath>
+              <FilePath>..\..\source\src\buttons_top.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_parser.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_rx.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_tx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_tx.c</FilePath>
             </File>
           </Files>
         </Group>

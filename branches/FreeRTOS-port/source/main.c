@@ -36,7 +36,10 @@
 #include "service.h"
 #include "dispatcher.h"
 #include "adc.h"
-#include "uart.h"
+#include "uart_rx.h"
+#include "uart_tx.h"
+
+#include "buttons_top.h"
 
 #include "sound_driver.h"
 
@@ -128,9 +131,8 @@ void vTaskLED2(void *pvParameters) {
 
 ******************************************************************************/
 int main(void)
-
 {
-	
+
 
 	//=============================================//
 	// system initialization
@@ -169,11 +171,13 @@ int main(void)
 	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, &xTaskHandle_Converter);
 	xTaskCreate( vTaskService, 		( signed char * ) 		"Service", 		configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskDispatcher, 	( signed char * ) 		"Dispatcher", 	configMINIMAL_STACK_SIZE, 	NULL, 3, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskButtons, 		( signed char * ) 		"buttons top", 	configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskADC, 			( signed char * ) 		"ADC", 			configMINIMAL_STACK_SIZE, 	NULL, 2, ( xTaskHandle * ) NULL);
 	
 	// Transmitter task priority should be > receiver's due to unknown error which invokes hard fault handler with INVPC error
-	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART2 RX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
-	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART2 TX", 		256, 					NULL, 1, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskUARTReceiver, ( signed char * ) 		"UART1 RX", 		256, 				(void *)1, 	1, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskUARTTransmitter, ( signed char * ) 	"UART1 TX", 		256, 				(void *)1, 	1, ( xTaskHandle * ) NULL);
+	
 	
 	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 	

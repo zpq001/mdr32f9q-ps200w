@@ -1,6 +1,8 @@
 #ifndef __GUI_CONFIG_H_
 #define __GUI_CONFIG_H_
 
+// Custom key events
+#include "key_def.h"
 
 #define GUI_CORE_QUEUE_SIZE 20
 

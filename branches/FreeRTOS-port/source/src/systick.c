@@ -18,7 +18,6 @@
 #include "converter_hw.h"
 #include "adc.h"
 #include "dispatcher.h"
-#include "uart.h"
 #include "dwt_delay.h"
 #include "sound_driver.h"
 
@@ -42,7 +41,7 @@ void vApplicationTickHook( void )
 {
 	static uint32_t tmr_gui_update = GUI_UPDATE_INTERVAL;
 	static uint32_t tmr_converter_tick = CONVERTER_TICK_INTERVAL;
-	static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
+	//static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
 	static uint32_t tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
 	portBASE_TYPE xHigherPriorityTaskWokenByPost;
 	uint32_t msg;
@@ -69,11 +68,11 @@ void vApplicationTickHook( void )
 			tmr_converter_tick = CONVERTER_TICK_INTERVAL;
 		}
 		
-		if (--tmr_dispatcher_tick == 0)
+	/*	if (--tmr_dispatcher_tick == 0)
 		{
 			xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
 			tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
-		}
+		} */
 		
 		if (--tmr_sound_driver_tick == 0)
 		{

@@ -2,10 +2,19 @@
 #include <stdint.h>
 
 
-#define PARSER_MAX_FUNCTION_ARGUMENTS   5
-
 #define READ_NEXT   0x80
 #define ATYPE_MASK  0x7F
+
+
+enum uart_cmd {
+	UART_CMD_CONVERTER = 1,
+	UART_CMD_KEY,
+	UART_CMD_ENCODER,
+	UART_CMD_PROFILING,
+	UART_CMD_UNKNOWN
+};
+
+
 
 #pragma anon_unions
 
@@ -31,7 +40,7 @@ typedef struct {
     };
 } arg_t;
 
-typedef void (*funcPtr_t)(uint8_t uart_num, arg_t *args);
+//typedef void (*funcPtr_t)(uint8_t uart_num, arg_t *args);
 
 typedef struct {
     char *argName;
@@ -43,9 +52,11 @@ typedef struct {
 
 typedef struct {
     char *cmdName;
-    funcPtr_t funcPtr;
+    uint8_t cmdCode;
     arg_table_record_t *argTable;
 } func_table_record_t;
+
+
 
 
 

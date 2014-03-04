@@ -44,6 +44,7 @@ static char uart1_received_msg[RX_MESSAGE_MAX_LENGTH];
 static char uart2_received_msg[RX_MESSAGE_MAX_LENGTH];
 
 
+static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args);
 
 
 static void UART_Init_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *data, uint32_t size)
@@ -183,8 +184,8 @@ void vTaskUARTReceiver(void *pvParameters)
 	char *argv[MAX_WORDS_IN_MESSAGE];		// Array of pointers to separate words
 	uint16_t argc = 0;						// Count of words in message
 	uint8_t i, searchWord;
-	funcPtr_t exeFunc;
-    arg_t exeFuncArgs[PARSER_MAX_FUNCTION_ARGUMENTS];
+	uint8_t exeFunc;
+    arg_t exeFuncArgs[MAX_FUNCTION_ARGUMENTS];
 	
 	portTickType lastExecutionTime = xTaskGetTickCount();
 	
@@ -222,10 +223,8 @@ void vTaskUARTReceiver(void *pvParameters)
 			exeFunc = parse_argv(argv, argc, exeFuncArgs);
 		
 			// Execute function
-			if (exeFunc)
-			{
-				exeFunc(my_uart_num, exeFuncArgs);
-			}
+			execute_command(exeFunc, my_uart_num, exeFuncArgs);
+			
 			
 			chars_to_read = RX_MESSAGE_MAX_LENGTH;
 			received_msg_ptr = received_msg;
@@ -242,69 +241,125 @@ void vTaskUARTReceiver(void *pvParameters)
 
 
 
-void converter_command(uint8_t uart_num, arg_t *args)
+// This is a huge switch-based procedure for executing commands
+// received from UARTs.
+// Possibly there is a better way to implement it.
+static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 {
 	dispatch_msg_t dispatcher_msg;
 	uart_transmiter_msg_t transmitter_msg;
 	dispatcher_msg.type = 0;
 	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
 	transmitter_msg.type = 0;
-	
-    if (args[0].type != 0)
-    {
-		switch(args[0].flag)
-		{
-			case 0:
-				// Turn converter OFF
-				dispatcher_msg.type = DISPATCHER_CONVERTER;
-				dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
-				break;
-			case 1:
-				// Turn converter ON
-				dispatcher_msg.type = DISPATCHER_CONVERTER;
-				dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
-				break;
-			case 2:
-				// Set voltage
-				if (args[3].type != 0)
-				{
-					dispatcher_msg.type = DISPATCHER_CONVERTER;
-					dispatcher_msg.converter_cmd.type = CONVERTER_SET_VOLTAGE;
-					dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-					dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
-				}
-				else
-				{
-					// value is missing
-					transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
-				}
-				break;
-			case 3:
-				// Set current
-				if (args[3].type != 0)
-				{
-					dispatcher_msg.type = DISPATCHER_CONVERTER;
-					dispatcher_msg.converter_cmd.type = CONVERTER_SET_CURRENT;
-					dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-					dispatcher_msg.converter_cmd.range = (args[2].type) ? args[2].flag : OPERATING_CURRENT_RANGE;
-					dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
-				}
-				else
-				{
-					// value is missing
-					transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
-				}
-				break;
-				
-			default:
-				transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-		}		
-	}
-	else
+	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? xQueueUART1TX : xQueueUART2TX;
+
+	switch (cmd_code)
 	{
-        // Command specifier is missing
-		transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
-    }
+		//=========================================================================//
+		// Converter command
+		case UART_CMD_CONVERTER:
+			if (args[0].type != 0)
+			{
+				switch(args[0].flag)
+				{
+					case 0:
+						// Turn converter OFF
+						dispatcher_msg.type = DISPATCHER_CONVERTER;
+						dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
+						break;
+					case 1:
+						// Turn converter ON
+						dispatcher_msg.type = DISPATCHER_CONVERTER;
+						dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
+						break;
+					case 2:
+						// Set voltage
+						if (args[3].type != 0)
+						{
+							dispatcher_msg.type = DISPATCHER_CONVERTER;
+							dispatcher_msg.converter_cmd.type = CONVERTER_SET_VOLTAGE;
+							dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
+						}
+						else
+						{
+							// value is missing
+							transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
+						}
+						break;
+					case 3:
+						// Set current
+						if (args[3].type != 0)
+						{
+							dispatcher_msg.type = DISPATCHER_CONVERTER;
+							dispatcher_msg.converter_cmd.type = CONVERTER_SET_CURRENT;
+							dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							dispatcher_msg.converter_cmd.range = (args[2].type) ? args[2].flag : OPERATING_CURRENT_RANGE;
+							dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
+						}
+						else
+						{
+							// value is missing
+							transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
+						}
+						break;
+						
+					default:
+						transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
+				}		
+			}
+			else
+			{
+				transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
+			}
+			break;
+			
+		//=========================================================================//
+		// Key command
+		case UART_CMD_KEY:
+			if ((args[0].type != 0) && (args[1].type != 0))
+			{
+				dispatcher_msg.type = DISPATCHER_BUTTONS;
+				dispatcher_msg.key_event.code = args[1].flag;
+				dispatcher_msg.key_event.event_type = args[0].flag;
+				transmitter_msg.type = UART_RESPONSE_OK;
+			}
+			else
+			{
+				// Unknown key event or code
+				transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
+			}
+			break;
+			
+		//=========================================================================//
+		// Encoder command
+		case UART_CMD_ENCODER:
+			if (args[0].type != 0)
+			{
+				dispatcher_msg.type = DISPATCHER_ENCODER;
+				dispatcher_msg.encoder_event.delta = args[0].data32;
+				transmitter_msg.type = UART_RESPONSE_OK;
+			}
+			else
+			{
+				// Missing argument
+				transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
+			}
+			break;
+			
+		//=========================================================================//
+		// Time profiling command
+		case UART_CMD_PROFILING:
+			transmitter_msg.type = UART_SEND_PROFILING;
+			break;
+			
+		//=========================================================================//
+		// Unknown command
+		default:
+			transmitter_msg.type = UART_RESPONSE_UNKNOWN_CMD;
+	}
+	
+	
 	
 	// Send message to the dispatcher
 	if (dispatcher_msg.type != 0)
@@ -313,78 +368,15 @@ void converter_command(uint8_t uart_num, arg_t *args)
 	}
 		
 	// Send message directly to UART
-	if (transmitter_msg.type)
+	if (transmitter_msg.type != 0)
 	{
-		if (uart_num == 1)
-			xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
-		else
-			xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
+		xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, 0);
 	}
+	
 }
 
 
-void key_command(uint8_t uart_num, arg_t *args)
-{
-	dispatch_msg_t dispatcher_msg;
-	uart_transmiter_msg_t transmitter_msg;
-	dispatcher_msg.type = 0;
-	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	transmitter_msg.type = 0;
-	
-	if ((args[0].type != 0) && (args[1].type != 0))
-	{
-		dispatcher_msg.type = DISPATCHER_BUTTONS;
-		dispatcher_msg.key_event.code = args[1].flag;
-		dispatcher_msg.key_event.event_type = args[0].flag;
-		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-		transmitter_msg.type = UART_RESPONSE_OK;
-	}
-	else
-	{
-		// Unknown key event or code
-		transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-	}
-	// Uart response
-	if (transmitter_msg.type)
-		xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
-}
 
-
-void encoder_command(uint8_t uart_num, arg_t *args)
-{
-	dispatch_msg_t dispatcher_msg;
-	uart_transmiter_msg_t transmitter_msg;
-	dispatcher_msg.type = 0;
-	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	transmitter_msg.type = 0;
-	
-	if (args[0].type != 0)
-	{
-		dispatcher_msg.type = DISPATCHER_ENCODER;
-		dispatcher_msg.encoder_event.delta = args[0].data32;
-		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-		transmitter_msg.type = UART_RESPONSE_OK;
-	}
-	else
-	{
-		// Missing argument
-		transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-	}
-	// Uart response
-	if (transmitter_msg.type)
-		xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
-}	
-
-void send_profiling(uint8_t uart_num, arg_t *args)
-{
-	uart_transmiter_msg_t transmitter_msg;
-	
-	transmitter_msg.type = UART_SEND_PROFILING;
-	if (uart_num == 1)
-		xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
-	else
-		xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
-}
 
 
 

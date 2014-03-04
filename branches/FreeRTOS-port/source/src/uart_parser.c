@@ -3,19 +3,8 @@
 #include <string.h>
 #include "stdlib.h"     /* strtol */
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-
 #include "uart_parser.h"
 #include "key_def.h"
-
-
-
-extern void converter_command(uint8_t uart_num, arg_t *args);
-extern void key_command(uint8_t uart_num, arg_t *args);
-extern void encoder_command(uint8_t uart_num, arg_t *args);
-extern void send_profiling(uint8_t uart_num, arg_t *args);
 
 
 //-----------------------------------//
@@ -65,26 +54,26 @@ arg_table_record_t arg_table4[] = {
 
 func_table_record_t func_table[] = {
 //    command name      |       function            |       argument table
-    { "converter",          &converter_command,           arg_table_converter      	},
-    { "key",                &key_command,                 arg_table3          		},
-	{ "encoder",            &encoder_command,             arg_table4          		},
-    { "profiling",          &send_profiling,       			0                   	},
+    { "converter",          UART_CMD_CONVERTER,           arg_table_converter      	},
+    { "key",                UART_CMD_KEY,                 arg_table3          		},
+	{ "encoder",            UART_CMD_ENCODER,             arg_table4          		},
+    { "profiling",          UART_CMD_PROFILING,       			0                   },
     //{ "get_voltage",        &converter_get_voltage,         arg_table2          },
     //{ "get_current",        &converter_get_current,         arg_table2          },
     //{ "get_state",          &converter_get_state,           0                   },
-    {0,                     0,                              0                   }
+    {0,                     UART_CMD_UNKNOWN,                   0                   }
 };
 
 
 
-static void getFunction(func_table_record_t *searchTable, char* keyword, funcPtr_t *function, arg_table_record_t **argTable)
+static void getFunction(func_table_record_t *searchTable, char* keyword, uint8_t *function, arg_table_record_t **argTable)
 {
     func_table_record_t *rec;
     do
         rec = searchTable++;
     while ((rec->cmdName) && (strcmp(keyword, rec->cmdName)));
     // Function name match or end of table
-    *function = rec->funcPtr;
+    *function = rec->cmdCode;
     *argTable = rec->argTable;
 }
 
@@ -102,9 +91,9 @@ static arg_table_record_t *getArgument(arg_table_record_t *searchTable, char* ke
 
 
 
-funcPtr_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments)
+uint8_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments)
 {
-    funcPtr_t funcPtr;
+    uint8_t cmdCode;
     arg_table_record_t *argTable;
     arg_table_record_t *argRecord;
     uint8_t argIndex = 0;
@@ -113,7 +102,7 @@ funcPtr_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments)
     // Clear parsedArguments to function
     memset(parsedArguments, 0, sizeof(*parsedArguments));
     // Get function pointer for command (command is argv[0])
-    getFunction(func_table, argv[argIndex++], &funcPtr, &argTable);
+    getFunction(func_table, argv[argIndex++], &cmdCode, &argTable);
     argc--;
     if (argTable)
     {
@@ -156,7 +145,7 @@ funcPtr_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments)
             argc--;
         }
     }
-    return funcPtr;
+    return cmdCode;
 }
 
 

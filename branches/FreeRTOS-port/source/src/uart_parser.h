@@ -63,7 +63,7 @@ typedef struct {
 
 
 
-funcPtr_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments);
+uint8_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments);
 
 
 

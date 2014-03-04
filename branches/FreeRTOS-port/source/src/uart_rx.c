@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
+#include "stdint.h"
 
 #include "MDR32F9Qx_uart.h"
 #include "MDR32F9Qx_dma.h"
@@ -9,22 +10,17 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "semphr.h"
-
-#include "systick.h"
-#include "stdint.h"
-#include "dispatcher.h"
-#include "buttons.h"
-#include "systemfunc.h"
-
-#include "key_def.h"		// button codes
-#include "uart_parser.h"
-#include "dwt_delay.h"
-#include "uart_rx.h"
-#include "uart_tx.h"
 
 #include "global_def.h"
+#include "key_def.h"		// button codes
+#include "uart_parser.h"
+#include "uart_rx.h"
+#include "uart_tx.h"
+#include "systemfunc.h"
+#include "dispatcher.h"
 #include "converter.h"
+
+
 
 extern DMA_CtrlDataTypeDef DMA_ControlTable[];
 
@@ -174,7 +170,7 @@ static uint8_t UART_read_rx_stream(uint8_t uart_num, char **rx_string, uint16_t 
 void vTaskUARTReceiver(void *pvParameters) 
 {
 	// Uart number for task is passed by argument
-	uint8_t my_uart_num = (uint8_t)pvParameters;
+	uint8_t my_uart_num = (uint32_t)pvParameters;
 	char *received_msg = (my_uart_num == 1) ? uart1_received_msg : uart2_received_msg;
 	char *received_msg_ptr = received_msg;
 	uint16_t chars_to_read = RX_MESSAGE_MAX_LENGTH;
@@ -219,12 +215,14 @@ void vTaskUARTReceiver(void *pvParameters)
 				}
 			}
 			
-			// Parse string into function and arguments
-			exeFunc = parse_argv(argv, argc, exeFuncArgs);
-		
-			// Execute function
-			execute_command(exeFunc, my_uart_num, exeFuncArgs);
+			if (argc > 0)
+			{
+				// Parse string into function and arguments
+				exeFunc = parse_argv(argv, argc, exeFuncArgs);
 			
+				// Execute function
+				execute_command(exeFunc, my_uart_num, exeFuncArgs);
+			}
 			
 			chars_to_read = RX_MESSAGE_MAX_LENGTH;
 			received_msg_ptr = received_msg;
@@ -248,10 +246,10 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 {
 	dispatch_msg_t dispatcher_msg;
 	uart_transmiter_msg_t transmitter_msg;
+	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
 	dispatcher_msg.type = 0;
 	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
 	transmitter_msg.type = 0;
-	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? xQueueUART1TX : xQueueUART2TX;
 
 	switch (cmd_code)
 	{

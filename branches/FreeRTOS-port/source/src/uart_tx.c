@@ -179,7 +179,7 @@ static void UART_do_tx_DMA(MDR_UART_TypeDef *MDR_UARTx, DMA_CtrlDataInitTypeDef 
 void vTaskUARTTransmitter(void *pvParameters) 
 {
 	// Uart number for task is passed by argument
-	uint8_t my_uart_num = (uint8_t)pvParameters;
+	uint8_t my_uart_num = (uint32_t)pvParameters;
 	xQueueHandle *xQueueUARTx = (my_uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
 	xSemaphoreHandle *xSemaphoreUARTx = (my_uart_num == 1) ? &xSemaphoreUART1TX : &xSemaphoreUART2TX;
 	MDR_UART_TypeDef *MDR_UARTx = (my_uart_num == 1) ? MDR_UART1 : MDR_UART2;

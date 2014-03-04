@@ -694,7 +694,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>64</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>151</TopLine>
       <CurrentLine>178</CurrentLine>
@@ -758,10 +758,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>76</ColumnNumber>
+      <ColumnNumber>50</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>511</TopLine>
-      <CurrentLine>542</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\converter.c</PathWithFileName>
       <FilenameWithoutPath>converter.c</FilenameWithoutPath>
@@ -950,7 +950,7 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>32</ColumnNumber>
+      <ColumnNumber>26</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
@@ -984,8 +984,8 @@
       <Focus>0</Focus>
       <ColumnNumber>61</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>20</TopLine>
-      <CurrentLine>38</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\buttons_top.c</PathWithFileName>
       <FilenameWithoutPath>buttons_top.c</FilenameWithoutPath>
@@ -998,10 +998,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>19</ColumnNumber>
+      <ColumnNumber>26</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>56</TopLine>
+      <CurrentLine>101</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_parser.c</PathWithFileName>
       <FilenameWithoutPath>uart_parser.c</FilenameWithoutPath>
@@ -1014,10 +1014,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>58</ColumnNumber>
+      <ColumnNumber>27</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>206</TopLine>
-      <CurrentLine>222</CurrentLine>
+      <TopLine>186</TopLine>
+      <CurrentLine>202</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_rx.c</PathWithFileName>
       <FilenameWithoutPath>uart_rx.c</FilenameWithoutPath>
@@ -1030,10 +1030,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>8</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>37</TopLine>
-      <CurrentLine>53</CurrentLine>
+      <TopLine>172</TopLine>
+      <CurrentLine>163</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_tx.c</PathWithFileName>
       <FilenameWithoutPath>uart_tx.c</FilenameWithoutPath>
@@ -1152,8 +1152,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>2135</TopLine>
+      <CurrentLine>2136</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\library\FreeRTOS\Source\tasks.c</PathWithFileName>
       <FilenameWithoutPath>tasks.c</FilenameWithoutPath>

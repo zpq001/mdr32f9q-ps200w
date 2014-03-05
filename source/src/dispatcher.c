@@ -18,6 +18,8 @@
 #include "task.h"
 #include "queue.h"
 
+#include <string.h>
+
 //#include "buttons.h"
 //#include "encoder.h"
 #include "key_def.h"
@@ -117,13 +119,9 @@ void vTaskDispatcher(void *pvParameters)
 			
 			//-------------- Converter command -------------//
 			case DISPATCHER_CONVERTER:
-				converter_msg.type = msg.converter_cmd.type;
+				converter_msg.type = msg.converter_cmd.msg_type; 
 				converter_msg.sender = msg.sender;
-				converter_msg.channel = msg.converter_cmd.channel;
-				converter_msg.range = msg.converter_cmd.range;
-				converter_msg.limit_type = msg.converter_cmd.limit_type;
-				converter_msg.enable = msg.converter_cmd.enable;
-				converter_msg.value = msg.converter_cmd.value;
+				memcpy(&converter_msg.a, &msg.converter_cmd.a, sizeof(converter_arguments_t));
 				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			
@@ -146,12 +144,28 @@ void vTaskDispatcher(void *pvParameters)
 				if ( (msg.converter_resp.msg_sender != sender_UART1) && (msg.converter_resp.msg_sender != sender_UART2) )
 				{
 					// CHECKME - this can be actualy decided by sound task itself, depending on settings
-					if (msg.converter_resp.err_code == 0)
-						sound_msg = SND_CONV_SETTING_OK;
-					else
-						sound_msg = SND_CONV_SETTING_ILLEGAL;
-					sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
-					xQueueSendToBack(xQueueSound, &sound_msg, 0); 
+					sound_msg = 0;
+					switch(msg.converter_resp.msg_type)
+					{
+						case CONVERTER_SET_VOLTAGE:
+						case CONVERTER_SET_VOLTAGE_LIMIT:
+						case CONVERTER_SET_CURRENT:
+						case CONVERTER_SET_CURRENT_LIMIT:
+						case CONVERTER_SET_OVERLOAD_PARAMS:
+							if (msg.converter_resp.err_code == 0)
+								sound_msg = SND_CONV_SETTING_OK;
+							else
+								sound_msg = SND_CONV_SETTING_ILLEGAL;
+							sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+							break;
+						case CONVERTER_SET_CURRENT_RANGE:
+						case CONVERTER_OVERLOADED:
+						default:
+							// no sound event
+							break;
+					}
+					if (sound_msg)
+						xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 				}
 			
 				// Serial feedback

@@ -47,28 +47,28 @@ void vTaskButtons(void *pvParameters)
 		if (buttons.action_down & SW_CHANNEL)
 		{
 			// Send switch channel to 5V message
-			dispatcher_msg.converter_cmd.type = CONVERTER_SWITCH_CHANNEL;
-			dispatcher_msg.converter_cmd.channel = CHANNEL_5V;
+			dispatcher_msg.converter_cmd.msg_type = CONVERTER_SWITCH_CHANNEL;
+			dispatcher_msg.converter_cmd.a.ch_set.new_channel = CHANNEL_5V;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
 		else if (buttons.action_up & SW_CHANNEL)
 		{
 			// Send switch channel to 12V message
-			dispatcher_msg.converter_cmd.type = CONVERTER_SWITCH_CHANNEL;
-			dispatcher_msg.converter_cmd.channel = CHANNEL_12V;
+			dispatcher_msg.converter_cmd.msg_type = CONVERTER_SWITCH_CHANNEL;
+			dispatcher_msg.converter_cmd.a.ch_set.new_channel = CHANNEL_12V;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
 		
 		if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
 		{
 			// Send OFF mesage to converter task
-			dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
+			dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_OFF;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
 		else if ((buttons.action_down & BTN_ON) || (buttons.action_down & SW_EXTERNAL))
 		{
 			// Send ON mesage to converter task
-			dispatcher_msg.converter_cmd.type = CONVERTER_TURN_ON;
+			dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_ON;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
 		

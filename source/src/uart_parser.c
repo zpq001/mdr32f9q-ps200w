@@ -5,6 +5,7 @@
 
 #include "uart_parser.h"
 #include "key_def.h"
+#include "global_def.h"
 
 
 //-----------------------------------//
@@ -18,10 +19,10 @@ arg_table_record_t arg_table_converter[] = {
     { "on",                     0,        ATYPE_FLAG,                 1   },
     { "set_voltage",            0,        ATYPE_FLAG,                 2   },
     { "set_current",            0,        ATYPE_FLAG,                 3   },
-    { "-ch5v",                  1,        ATYPE_FLAG,                 0   },
-    { "-ch12v",                 1,        ATYPE_FLAG,                 1   },
-    { "-range20",               2,        ATYPE_FLAG,                 0   },
-    { "-range40",               2,        ATYPE_FLAG,                 1   },
+    { "-ch5v",                  1,        ATYPE_FLAG,                 CHANNEL_5V   			},
+    { "-ch12v",                 1,        ATYPE_FLAG,                 CHANNEL_12V  			},
+    { "-range20",               2,        ATYPE_FLAG,                 CURRENT_RANGE_LOW   	},
+    { "-range40",               2,        ATYPE_FLAG,                 CURRENT_RANGE_HIGH   	},
     { "-v",                     3,        ATYPE_UINT32 | READ_NEXT,   0   },
     { 0,                        0,        ATYPE_NONE,                 0   }
 };
@@ -99,8 +100,6 @@ uint8_t parse_argv(char **argv, uint8_t argc, arg_t *parsedArguments)
     uint8_t argIndex = 0;
     // Check argument count
     if (argc < 1) return 0;
-    // Clear parsedArguments to function
-    memset(parsedArguments, 0, sizeof(*parsedArguments));
     // Get function pointer for command (command is argv[0])
     getFunction(func_table, argv[argIndex++], &cmdCode, &argTable);
     argc--;

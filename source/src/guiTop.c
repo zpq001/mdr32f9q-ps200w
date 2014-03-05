@@ -42,7 +42,6 @@
 
 xQueueHandle xQueueGUI;
 
-static converter_message_t converter_msg;	// to save stack
 static dispatch_msg_t dispatcher_msg;
 
 
@@ -238,57 +237,59 @@ void vTaskGUI(void *pvParameters)
 				guiCore_ProcessMessageQueue();
 				break;
 			case GUI_TASK_PROCESS_BUTTONS:
-				guiKeyCode = encodeGuiKey(msg.key_event.code);
-				guiKeyEvent = encodeGuiKeyEvent(msg.key_event.event);
-				if ((guiKeyEvent != 0) && (guiKeyCode != 0))
-					guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
+				//guiKeyCode = encodeGuiKey(msg.key_event.code);
+				//guiKeyEvent = encodeGuiKeyEvent(msg.key_event.event);
+				//if ((guiKeyEvent != 0) && (guiKeyCode != 0))
+				//	guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
+				guiCore_ProcessKeyEvent(msg.key_event.code, msg.key_event.event);
 				break;
 			case GUI_TASK_PROCESS_ENCODER:
 				if (msg.encoder_event.delta)
 					guiCore_ProcessEncoderEvent(msg.encoder_event.delta);
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
-				if (msg.converter_event.spec & VOLTAGE_SETTING_CHANGED)
+				switch (msg.converter_event.spec)
 				{
-					value = getVoltageSetting(msg.converter_event.channel);
-					setGuiVoltageSetting(msg.converter_event.channel, value);
-				}
-				if (msg.converter_event.spec & CURRENT_SETTING_CHANGED)
-				{
-					value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
-					setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
-				}
-				if (msg.converter_event.spec & VOLTAGE_LIMIT_CHANGED)
-				{
-					value = getVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
-					state = getVoltageLimitState(msg.converter_event.channel, msg.converter_event.type);
-					setGuiVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type, state, value);
-				}
-				if (msg.converter_event.spec & CURRENT_LIMIT_CHANGED)
-				{
-					value = getCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
-					state = getCurrentLimitState(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
-					setGuiCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type, state, value);	
-				}
-				if (msg.converter_event.spec & CURRENT_RANGE_CHANGED)
-				{
-					value = getCurrentRange(msg.converter_event.channel);
-					setGuiCurrentRange(msg.converter_event.channel, value);
-				}
-				if (msg.converter_event.spec & CHANNEL_CHANGED)
-				{
-					value = getFeedbackChannel();
-					setGuiFeedbackChannel(value);
-				}
-				if (msg.converter_event.spec & OVERLOAD_SETTING_CHANGED)
-				{
-					state = getOverloadProtectionState();
-					state2 = getOverloadProtectionWarning();
-					value = getOverloadProtectionThreshold();
-					setGuiOverloadSetting(state, state2, value);
+					case VOLTAGE_SETTING_CHANGED:
+						value = getVoltageSetting(msg.converter_event.channel);
+						setGuiVoltageSetting(msg.converter_event.channel, value);
+						break;
+					case CURRENT_SETTING_CHANGED:
+						value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
+						break;
+					case VOLTAGE_LIMIT_CHANGED:
+						value = getVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
+						state = getVoltageLimitState(msg.converter_event.channel, msg.converter_event.type);
+						setGuiVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type, state, value);
+						// Update voltage setting too
+						value = getVoltageSetting(msg.converter_event.channel);
+						setGuiVoltageSetting(msg.converter_event.channel, value);
+						break;
+					case CURRENT_LIMIT_CHANGED:
+						value = getCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+						state = getCurrentLimitState(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+						setGuiCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type, state, value);	
+						// Update current setting too
+						value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
+						break;
+					case CURRENT_RANGE_CHANGED:
+						value = getCurrentRange(msg.converter_event.channel);
+						setGuiCurrentRange(msg.converter_event.channel, value);
+						break;
+					case CHANNEL_CHANGED:
+						value = getFeedbackChannel();
+						setGuiFeedbackChannel(value);
+						break;
+					case OVERLOAD_SETTING_CHANGED:
+						state = getOverloadProtectionState();
+						state2 = getOverloadProtectionWarning();
+						value = getOverloadProtectionThreshold();
+						setGuiOverloadSetting(state, state2, value);
+						break;
 				}
 				break;
-			
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
 				setGuiVoltageIndicator(voltage_adc);
 				setGuiCurrentIndicator(current_adc);
@@ -315,69 +316,74 @@ void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
 {
 	dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
-	dispatcher_msg.converter_cmd.type = CONVERTER_SET_VOLTAGE;
-	dispatcher_msg.converter_cmd.channel = channel;	
-	dispatcher_msg.converter_cmd.value = new_set_voltage;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);	
-	
-	//converter_msg.type = CONVERTER_SET_VOLTAGE;
-	//converter_msg.voltage_setting.channel = channel;
-	//converter_msg.voltage_setting.value = new_set_voltage;
-	//xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
+	dispatcher_msg.converter_cmd.a.v_set.channel = channel;	
+	dispatcher_msg.converter_cmd.a.v_set.value = new_set_voltage;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
 void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value)
-{ /*
-	converter_msg.type = CONVERTER_SET_VOLTAGE_LIMIT;
-	converter_msg.voltage_limit_setting.channel = channel;
-	converter_msg.voltage_limit_setting.type = type;	
-	converter_msg.voltage_limit_setting.enable = enable;
-	converter_msg.voltage_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+{ 
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE_LIMIT;
+	dispatcher_msg.converter_cmd.a.vlim_set.channel = channel;
+	dispatcher_msg.converter_cmd.a.vlim_set.type = type;	
+	dispatcher_msg.converter_cmd.a.vlim_set.enable = enable;
+	dispatcher_msg.converter_cmd.a.vlim_set.value = value;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
 //-------------------------------------------------------//
 //	Current
 void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current)
-{ /*
-	converter_msg.type = CONVERTER_SET_CURRENT;
-	converter_msg.current_setting.channel = channel;
-	converter_msg.current_setting.range = range;
-	converter_msg.current_setting.value = new_set_current;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+{ 
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT;
+	dispatcher_msg.converter_cmd.a.c_set.channel = channel;	
+	dispatcher_msg.converter_cmd.a.c_set.range = range;	
+	dispatcher_msg.converter_cmd.a.c_set.value = new_set_current;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
 void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value)
-{ /*
-	converter_msg.type = CONVERTER_SET_CURRENT_LIMIT;
-	converter_msg.current_limit_setting.channel = channel;
-	converter_msg.current_limit_setting.range = currentRange;
-	converter_msg.current_limit_setting.type = type;	
-	converter_msg.current_limit_setting.enable = enable;
-	converter_msg.current_limit_setting.value = value;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+{ 
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_LIMIT;
+	dispatcher_msg.converter_cmd.a.clim_set.channel = channel;
+	dispatcher_msg.converter_cmd.a.clim_set.range = currentRange;
+	dispatcher_msg.converter_cmd.a.clim_set.type = type;	
+	dispatcher_msg.converter_cmd.a.clim_set.enable = enable;
+	dispatcher_msg.converter_cmd.a.clim_set.value = value;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
 void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
 {
-	/*
-	converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
-	converter_msg.current_range_setting.channel = channel;
-	converter_msg.current_range_setting.new_range = new_range;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_RANGE;
+	dispatcher_msg.converter_cmd.a.crange_set.channel = channel;	
+	dispatcher_msg.converter_cmd.a.crange_set.new_range = new_range;	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
 //-------------------------------------------------------//
 //	Other
 
 void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
-{ /*
-	converter_msg.type = CONVERTER_SET_OVERLOAD_PARAMS;
-	converter_msg.overload_setting.protection_enable = protection_enable;
-	converter_msg.overload_setting.warning_enable = warning_enable;
-	converter_msg.overload_setting.threshold = threshold;
-	xQueueSendToBack(xQueueConverter, &converter_msg, 0); */
+{ 
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_RANGE;
+	dispatcher_msg.converter_cmd.a.overload_set.protection_enable = protection_enable;
+	dispatcher_msg.converter_cmd.a.overload_set.warning_enable = warning_enable;
+	dispatcher_msg.converter_cmd.a.overload_set.threshold = threshold;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
 }
+
 
 
 

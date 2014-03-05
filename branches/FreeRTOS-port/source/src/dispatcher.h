@@ -4,6 +4,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
+#include "converter_task_def.h"
+
 /*
 typedef struct {
 	uint8_t type;
@@ -70,12 +72,8 @@ typedef struct {
 	uint8_t sender;
 	union {
 		struct {
-			uint8_t type;
-			uint8_t channel;
-			uint8_t range;
-			uint8_t limit_type;
-			uint8_t enable;
-			int32_t value;			
+			uint8_t msg_type;
+			converter_arguments_t a;
 		} converter_cmd;
 		struct {
 			uint8_t msg_type;

@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "task.h"
 
+#include "converter_task_def.h"
 
 //-------------------------------------------------------//
 // Global converter constraints
@@ -52,13 +53,13 @@ enum ConverterTaskMsgTypes {
 	CONVERTER_SET_VOLTAGE,		
 	CONVERTER_SET_VOLTAGE_LIMIT,
 	CONVERTER_SET_CURRENT,		
-	CONVERTER_SET_CURRENT_RANGE,
 	CONVERTER_SET_CURRENT_LIMIT,
+	CONVERTER_SET_CURRENT_RANGE,
 	CONVERTER_SET_OVERLOAD_PARAMS,
 	CONVERTER_OVERLOADED
 };
 
-
+/*
 typedef struct {
     uint8_t type;
 	uint8_t sender;
@@ -68,15 +69,22 @@ typedef struct {
 	uint8_t enable;
 	int32_t value;
 } converter_message_t;
+*/
 
+typedef struct {
+    uint8_t type;
+	uint8_t sender;
+	converter_arguments_t a;
+} converter_message_t;
 
-#define	VOLTAGE_SETTING_CHANGED			(1<<0)
-#define CURRENT_SETTING_CHANGED			(1<<1)
-#define VOLTAGE_LIMIT_CHANGED			(1<<2)
-#define CURRENT_LIMIT_CHANGED			(1<<3)
-#define CURRENT_RANGE_CHANGED			(1<<4)
-#define CHANNEL_CHANGED					(1<<5)
-#define OVERLOAD_SETTING_CHANGED		(1<<6)
+#define	VOLTAGE_SETTING_CHANGED			1
+#define CURRENT_SETTING_CHANGED			2
+#define VOLTAGE_LIMIT_CHANGED			3
+#define CURRENT_LIMIT_CHANGED			4
+#define CURRENT_RANGE_CHANGED			5
+#define CHANNEL_CHANGED					6
+#define OVERLOAD_SETTING_CHANGED		7
+#define STATE_CHANGED					8
 
 
 /*

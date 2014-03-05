@@ -217,6 +217,10 @@ void vTaskUARTReceiver(void *pvParameters)
 			
 			if (argc > 0)
 			{
+				// Clear parsedArguments to function -
+				// actualy fill args[i].type with ATYPE_NONE
+				memset(exeFuncArgs, 0, sizeof(exeFuncArgs));
+				
 				// Parse string into function and arguments
 				exeFunc = parse_argv(argv, argc, exeFuncArgs);
 			
@@ -263,21 +267,21 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 					case 0:
 						// Turn converter OFF
 						dispatcher_msg.type = DISPATCHER_CONVERTER;
-						dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
+						dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_OFF;
 						break;
 					case 1:
 						// Turn converter ON
 						dispatcher_msg.type = DISPATCHER_CONVERTER;
-						dispatcher_msg.converter_cmd.type = CONVERTER_TURN_OFF;
+						dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_ON;
 						break;
 					case 2:
 						// Set voltage
 						if (args[3].type != 0)
 						{
 							dispatcher_msg.type = DISPATCHER_CONVERTER;
-							dispatcher_msg.converter_cmd.type = CONVERTER_SET_VOLTAGE;
-							dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
+							dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
+							dispatcher_msg.converter_cmd.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							dispatcher_msg.converter_cmd.a.v_set.value = (int32_t)args[3].data32u;
 						}
 						else
 						{
@@ -290,10 +294,10 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 						if (args[3].type != 0)
 						{
 							dispatcher_msg.type = DISPATCHER_CONVERTER;
-							dispatcher_msg.converter_cmd.type = CONVERTER_SET_CURRENT;
-							dispatcher_msg.converter_cmd.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							dispatcher_msg.converter_cmd.range = (args[2].type) ? args[2].flag : OPERATING_CURRENT_RANGE;
-							dispatcher_msg.converter_cmd.value = (int32_t)args[3].data32u;
+							dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT;
+							dispatcher_msg.converter_cmd.a.c_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							dispatcher_msg.converter_cmd.a.c_set.range = (args[2].type) ? args[2].flag : OPERATING_CURRENT_RANGE;
+							dispatcher_msg.converter_cmd.a.c_set.value = (int32_t)args[3].data32u;
 						}
 						else
 						{

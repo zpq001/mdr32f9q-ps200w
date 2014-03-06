@@ -63,7 +63,7 @@ enum DispatcherTaskMsgTypes {
 	DISPATCHER_BUTTONS,
 	DISPATCHER_ENCODER,
 	DISPATCHER_CONVERTER,
-	DISPATCHER_CONVERTER_RESPONSE
+	DISPATCHER_CONVERTER_EVENT
 };
 
 
@@ -83,7 +83,7 @@ typedef struct {
 			uint8_t channel : 2;
 			uint8_t range : 2;
 			uint8_t limit_type : 2;
-		} converter_resp;
+		} converter_event;
 		struct {
 			uint16_t event_type;
 			uint16_t code;

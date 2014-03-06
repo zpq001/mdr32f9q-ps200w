@@ -84,7 +84,8 @@ uint8_t Converter_IsReady(void)
 
 
 //---------------------------------------------------------------------------//
-//
+//	Additional checks are a kind of extra protection
+//	
 //---------------------------------------------------------------------------//
 uint8_t Converter_SetFeedBackChannel(uint8_t channel)
 {
@@ -115,6 +116,7 @@ uint8_t Converter_SetFeedBackChannel(uint8_t channel)
 
 
 //---------------------------------------------------------------------------//
+//	Additional checks are a kind of extra protection
 //
 //---------------------------------------------------------------------------//
 uint8_t Converter_SetCurrentRange(uint8_t range)
@@ -146,6 +148,7 @@ uint8_t Converter_SetCurrentRange(uint8_t range)
 
 
 //---------------------------------------------------------------------------//
+//	Additional checks are a kind of extra protection
 //
 //---------------------------------------------------------------------------//
 uint8_t Converter_TurnOn(void)
@@ -195,6 +198,7 @@ uint8_t Converter_TurnOff(void)
 
 
 //---------------------------------------------------------------------------//
+//	Additional checks are a kind of extra protection
 //
 //---------------------------------------------------------------------------//
 uint8_t Converter_ClearOverloadFlag(void)

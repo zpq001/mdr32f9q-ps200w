@@ -28,22 +28,8 @@
 
 
 
-
-
-
-//-------------------------------------------------------//
-// Voltage and current setting return codes
-#define VALUE_OK					0x00
-#define VALUE_BOUND_BY_SOFT_MAX		0x01
-#define VALUE_BOUND_BY_SOFT_MIN		0x02
-#define VALUE_BOUND_BY_ABS_MAX		0x04
-#define VALUE_BOUND_BY_ABS_MIN		0x08
-#define VALUE_ERROR					0xFF
-
-
 //---------------------------------------------//
 // Task queue messages
-
 
 enum ConverterTaskMsgTypes {
 	CONVERTER_TICK,							
@@ -59,17 +45,6 @@ enum ConverterTaskMsgTypes {
 	CONVERTER_OVERLOADED
 };
 
-/*
-typedef struct {
-    uint8_t type;
-	uint8_t sender;
-	uint8_t channel;
-	uint8_t range;
-	uint8_t limit_type;
-	uint8_t enable;
-	int32_t value;
-} converter_message_t;
-*/
 
 typedef struct {
     uint8_t type;
@@ -77,95 +52,42 @@ typedef struct {
 	converter_arguments_t a;
 } converter_message_t;
 
-#define	VOLTAGE_SETTING_CHANGED			1
-#define CURRENT_SETTING_CHANGED			2
-#define VOLTAGE_LIMIT_CHANGED			3
-#define CURRENT_LIMIT_CHANGED			4
-#define CURRENT_RANGE_CHANGED			5
-#define CHANNEL_CHANGED					6
-#define OVERLOAD_SETTING_CHANGED		7
-#define STATE_CHANGED					8
+
+//-------------------------------------------------------//
+// Voltage and current setting return codes
+
+#define VALUE_OK					0x00
+#define VALUE_BOUND_BY_SOFT_MAX		0x01
+#define VALUE_BOUND_BY_SOFT_MIN		0x02
+#define VALUE_BOUND_BY_ABS_MAX		0x03
+#define VALUE_BOUND_BY_ABS_MIN		0x04
+#define CMD_OK						0x10
+#define CMD_ERROR					0x11
+#define EVENT_OK					0x12
+#define EVENT_ERROR					0x13
 
 
-/*
-enum converterTaskCmd {
-	CONVERTER_TICK,				
-	CONVERTER_UPDATE,			
-	CONVERTER_TURN_ON,			
-	CONVERTER_TURN_OFF,			
-	
-	CONVERTER_SWITCH_CHANNEL,
-			
-	CONVERTER_SET_VOLTAGE,		
-	CONVERTER_SET_VOLTAGE_LIMIT,
-	
-	CONVERTER_SET_CURRENT,		
-	CONVERTER_SET_CURRENT_RANGE,
-	CONVERTER_SET_CURRENT_LIMIT,
-	
-	CONVERTER_SET_OVERLOAD_PARAMS,
-	
-	CONVERTER_OVERLOADED,
-	
-	CONVERTER_INITIALIZE
+
+//-------------------------------------------------------//
+// spec values to dispatcher
+
+enum ConverterEventSpec {
+	VOLTAGE_SETTING_CHANGE = 1,
+	CURRENT_SETTING_CHANGE,	
+	VOLTAGE_LIMIT_CHANGE,
+	CURRENT_LIMIT_CHANGE,	
+	OVERLOAD_SETTING_CHANGE,
+	CURRENT_RANGE_CHANGE,
+	CHANNEL_CHANGE,
+	STATE_CHANGE_TO_ON,
+	STATE_CHANGE_TO_OFF,
+	STATE_CHANGE_TO_OVERLOAD
 };
-*/
 
 
 
-/*
-#pragma anon_unions
-
-typedef struct {
-    uint16_t type;
-	uint16_t sender;
-    union {
-        struct {
-            uint32_t a;
-            uint32_t b;
-        } data;
-		//----- voltage -----//
-		struct {
-			uint8_t channel;
-			int32_t value;
-		} voltage_setting;
-        struct {
-			uint8_t channel;
-            uint8_t type;
-            uint8_t enable;
-            int32_t value;
-        } voltage_limit_setting;
-		//----- current -----//
-		struct {
-			uint8_t channel;
-			uint8_t range;
-			int32_t value;
-		} current_setting;
-		struct {
-			uint8_t channel;		// channel to affect
-			uint8_t range;			// 20A (low) or 40A (high)
-			uint8_t type;			// min or max limit
-			uint8_t enable;			// enable/disable limit check
-			int32_t value;			// new value
-		} current_limit_setting;
-		struct {
-			uint8_t channel;
-			uint8_t new_range;
-		} current_range_setting;
-		struct {
-			uint8_t protection_enable;
-            uint8_t warning_enable;
-            int32_t threshold;
-        } overload_setting;
-		struct {
-			uint8_t new_channel;
-		} channel_setting;
-    };
-} converter_message_t;
-*/
-
-
-
+//-------------------------------------------------------//
+// Converter data structures
 
 typedef struct {
 	uint16_t setting;	
@@ -193,7 +115,6 @@ typedef struct {
 } channel_state_t;
 
 
-
 typedef struct {
 	channel_state_t channel_5v;
 	channel_state_t channel_12v;
@@ -206,9 +127,15 @@ typedef struct {
 
 
 
+//-------------------------------------------------------//
+// Converter states
+
 #define CONVERTER_STATE_OFF			0x00
 #define CONVERTER_STATE_ON			0x01
 #define CONVERTER_STATE_OVERLOADED	0x02
+
+
+
 
 
 

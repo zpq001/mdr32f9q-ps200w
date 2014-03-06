@@ -30,6 +30,7 @@
 #include "guiSetupPanel.h"
 
 #include "guiTop.h"
+#include "converter.h"
 
 
 static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
@@ -545,7 +546,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     guiCore_SetVisibleByTag(&guiSetupPanel.widgets, minTag, maxTag, ITEMS_IN_RANGE_ARE_INVISIBLE);
     if (setupList.selectedIndex == 0)
     {
-        setupView.channel = GUI_CHANNEL_5V;
+        setupView.channel = CHANNEL_5V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 5V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -554,7 +555,7 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     }
     else if (setupList.selectedIndex == 1)
     {
-        setupView.channel = GUI_CHANNEL_12V;
+        setupView.channel = CHANNEL_12V;
         textLabel_hint.isVisible = 1;
         textLabel_hint.text = "Ch. 12V setup ...";
         textLabel_hint.redrawRequired = 1;
@@ -693,8 +694,8 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [V]");
         // Update widgets for voltage
         setupView.view = VIEW_VOLTAGE;
-        updateVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_LOW);
-        updateVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_HIGH);
+        updateVoltageLimit(setupView.channel, LIMIT_TYPE_LOW);
+        updateVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH);
     }
     else if ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2))
     {
@@ -702,9 +703,9 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [A]");
         // Update widgets for current
         setupView.view = VIEW_CURRENT;
-        setupView.currentRange = (chSetupList.selectedIndex == 1) ? GUI_CURRENT_RANGE_LOW : GUI_CURRENT_RANGE_HIGH;
-        updateCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_LOW);
-        updateCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_HIGH);
+        setupView.currentRange = (chSetupList.selectedIndex == 1) ? CURRENT_RANGE_LOW : CURRENT_RANGE_HIGH;
+        updateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW);
+        updateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH);
     }
     else
     {
@@ -727,7 +728,7 @@ static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     else
     {
         guiChSetupList_onIndexChanged(widget, event);
-        if (setupView.channel == GUI_CHANNEL_5V)
+        if (setupView.channel == CHANNEL_5V)
             textLabel_title.text = "5V channel";
         else
             textLabel_title.text = "12V channel";
@@ -853,9 +854,9 @@ static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
     if (checkBox_ApplyLowLimit.isChecked)
         limEnabled = 1;
     if (setupView.view == VIEW_VOLTAGE)
-        applyGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+        applyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
     else if (setupView.view == VIEW_CURRENT)
-        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
     return 0;
 }
 
@@ -865,9 +866,9 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
     if (checkBox_ApplyHighLimit.isChecked)
         limEnabled = 1;
     if (setupView.view == VIEW_VOLTAGE)
-        applyGuiVoltageLimit(setupView.channel, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+        applyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
     else if (setupView.view == VIEW_CURRENT)
-        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, GUI_LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
     return 0;
 }
 
@@ -898,7 +899,7 @@ static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event)
 // Helper fucntion
 static void updateLimitWidgets(uint8_t limit_type, uint8_t isEnabled, int32_t value)
 {
-    if (limit_type == GUI_LIMIT_TYPE_LOW)
+    if (limit_type == LIMIT_TYPE_LOW)
     {
         guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
         guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
@@ -928,8 +929,8 @@ static void updateOverloadWidgets(uint8_t protectionEnabled, uint8_t warningEnab
 //---------------------------------------------//
 static void updateVoltageLimit(uint8_t channel, uint8_t limit_type)
 {
-    uint8_t isEnabled = getVoltageLimitState(channel, limit_type);
-    uint16_t value = getVoltageLimitSetting(channel, limit_type);
+    uint8_t isEnabled = Converter_GetVoltageLimitState(channel, limit_type);
+    uint16_t value = Converter_GetVoltageLimitSetting(channel, limit_type);
     updateLimitWidgets(limit_type, isEnabled, value);
 }
 
@@ -940,8 +941,8 @@ static void updateVoltageLimit(uint8_t channel, uint8_t limit_type)
 //---------------------------------------------//
 static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
 {
-    uint8_t isEnabled = getCurrentLimitState(channel, range, limit_type);
-    uint16_t value = getCurrentLimitSetting(channel, range, limit_type);
+    uint8_t isEnabled = Converter_GetCurrentLimitState(channel, range, limit_type);
+    uint16_t value = Converter_GetCurrentLimitSetting(channel, range, limit_type);
     updateLimitWidgets(limit_type, isEnabled, value);
 }
 
@@ -952,9 +953,9 @@ static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_typ
 //---------------------------------------------//
 static void updateOverloadSetting(void)
 {
-    uint8_t protectionEnabled = getOverloadProtectionState();
-    uint8_t warningEnabled = getOverloadProtectionWarning();
-    uint16_t threshold = getOverloadProtectionThreshold();
+    uint8_t protectionEnabled = Converter_GetOverloadProtectionState();
+    uint8_t warningEnabled = Converter_GetOverloadProtectionWarning();
+    uint16_t threshold = Converter_GetOverloadProtectionThreshold();
     updateOverloadWidgets(protectionEnabled, warningEnabled, threshold);
 }
 

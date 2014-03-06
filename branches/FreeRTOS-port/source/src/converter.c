@@ -56,6 +56,109 @@ converter_state_t converter_state;		// main converter control
 
 
 
+
+//---------------------------------------------//
+// 
+
+uint16_t Converter_GetVoltageSetting(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->voltage.setting;
+}
+
+uint16_t Converter_GetVoltageAbsMax(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->voltage.MAXIMUM;
+}
+
+uint16_t Converter_GetVoltageAbsMin(uint8_t channel)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->voltage.MINIMUM;
+}
+
+uint16_t Converter_GetVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return (limit_type == LIMIT_TYPE_LOW) ? c->voltage.limit_low : c->voltage.limit_high;
+}
+
+uint8_t Converter_GetVoltageLimitState(uint8_t channel, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return (limit_type == LIMIT_TYPE_LOW) ? c->voltage.enable_low_limit : c->voltage.enable_high_limit;
+}
+
+uint16_t Converter_GetCurrentSetting(uint8_t channel, uint8_t range)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->setting;
+}
+
+uint16_t Converter_GetCurrentAbsMax(uint8_t channel, uint8_t range)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->MAXIMUM;
+}
+
+uint16_t Converter_GetCurrentAbsMin(uint8_t channel, uint8_t range)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+    return s->MINIMUM;
+}
+
+uint16_t Converter_GetCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+	return (limit_type == LIMIT_TYPE_LOW) ? s->limit_low : s->limit_high;
+}
+
+uint8_t Converter_GetCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	reg_setting_t *s = (range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+	return (limit_type == LIMIT_TYPE_LOW) ? s->enable_low_limit : s->enable_high_limit;
+}
+
+uint8_t Converter_GetOverloadProtectionState(void)
+{
+	return converter_state.overload_protection_enable;
+}
+
+uint8_t Converter_GetOverloadProtectionWarning(void)
+{
+    return converter_state.overload_warning_enable;
+}
+
+uint16_t Converter_GetOverloadProtectionThreshold(void)
+{
+    return converter_state.overload_threshold;
+}
+
+uint8_t Converter_GetCurrentRange(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+    return c->current->RANGE;
+}
+
+uint8_t Converter_GetFeedbackChannel(void)
+{
+	return converter_state.channel->CHANNEL;
+}
+
+
+//---------------------------------------------//
+
+
+
+
+
+
 //---------------------------------------------------------------------------//
 ///	Checks and sets new value in regulation structure
 //---------------------------------------------------------------------------//
@@ -92,7 +195,7 @@ static uint8_t SetRegulationValue(reg_setting_t *s, int32_t new_value)
 //---------------------------------------------------------------------------//
 ///	Checks and sets new value limit in regultaion structure
 //---------------------------------------------------------------------------//
-static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *errCode)
+static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t new_value, uint8_t enable)
 {
 	uint8_t errCode = VALUE_OK;
 	if (new_value <= (int32_t)s->LIMIT_MIN)
@@ -130,7 +233,7 @@ static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t 
 //---------------------------------------------------------------------------//
 static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value)
 {
-	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : ? &converter_state.channel_12v;
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	uint8_t err_code = SetRegulationValue(&c->voltage, new_value);
 	return err_code;
 }
@@ -149,10 +252,10 @@ static uint8_t Converter_SetVoltage(uint8_t channel, int32_t new_value)
 //---------------------------------------------------------------------------//
 static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, int32_t new_value, uint8_t enable)
 {
-	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : ? &converter_state.channel_12v;
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	uint8_t err_code = SetRegulationLimit(&c->voltage, limit_type, new_value, enable);
 	// Ensure that voltage setting lies inside new limits
-	Converter_SetVoltage(channel, c->voltage.setting, 0);
+	Converter_SetVoltage(channel, c->voltage.setting);
 	return err_code;
 }
 
@@ -188,7 +291,7 @@ static uint8_t Converter_SetCurrent(uint8_t channel, uint8_t current_range, int3
 //		err_code - return code providing information about 
 //				   limiting new value by absolute limits
 //---------------------------------------------------------------------------//
-static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable, uint8_t *err_code)
+static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type, int32_t new_value, uint8_t enable)
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
@@ -226,6 +329,7 @@ static uint8_t Converter_SetOverloadProtection(uint8_t protectionEnable, uint8_t
 	converter_state.overload_protection_enable = protectionEnable;
 	converter_state.overload_warning_enable = warningEnable;
 	converter_state.overload_threshold = new_threshold;
+	return err_code;
 }	
 
 
@@ -259,35 +363,6 @@ static uint8_t Converter_ValidateCurrentRange(uint8_t range)
 //===========================================================================//
 
 
-/*
-static void SoundEvent_OnSettingChanged(uint8_t err_code)
-{
-	uint32_t sound_msg;
-	if ((err_code == VALUE_BOUND_BY_SOFT_MAX) || (err_code == VALUE_BOUND_BY_SOFT_MIN))
-		sound_msg = SND_CONV_SETTING_ILLEGAL;
-	else if ((err_code == VALUE_BOUND_BY_ABS_MAX) || (err_code == VALUE_BOUND_BY_ABS_MIN))
-		sound_msg = SND_CONV_SETTING_ILLEGAL;
-	else
-		sound_msg = SND_CONV_SETTING_OK;
-	sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
-	xQueueSendToBack(xQueueSound, &sound_msg, 0); 
-}
-
-static void SoundEvent_OnOverload(void)
-{
-	uint32_t sound_msg;
-	sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
-	xQueueSendToBack(xQueueSound, &sound_msg, 0); 
-}
-
-static void SoundEvent_OnGenericError(void)
-{
-	uint32_t sound_msg;
-	sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_HIGHEST;	// FIXME
-	xQueueSendToBack(xQueueSound, &sound_msg, 0);
-}
-
-*/
 
 
 void Converter_Init(uint8_t default_channel)
@@ -424,7 +499,7 @@ void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dis
 void vTaskConverter(void *pvParameters) 
 {
 	converter_message_t msg;
-	
+	channel_state_t *c;
 	
 	uint8_t err_code;
 	uint8_t temp8u;
@@ -521,7 +596,7 @@ void vTaskConverter(void *pvParameters)
 				}
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = CURRENT_SETTING_CHANGE;
+				dispatcher_msg.converter_event.spec = CURRENT_LIMIT_CHANGE;
 				dispatcher_msg.converter_event.channel = msg.a.clim_set.channel;
 				dispatcher_msg.converter_event.range = msg.a.clim_set.range;
 				dispatcher_msg.converter_event.limit_type = msg.a.clim_set.type;
@@ -593,7 +668,7 @@ void vTaskConverter(void *pvParameters)
 				msg.a.crange_set.channel = Converter_ValidateChannel(msg.a.crange_set.channel);	
 				msg.a.crange_set.new_range = Converter_ValidateCurrentRange(msg.a.crange_set.new_range);
 				
-				channel_state_t *c = (msg.a.crange_set.channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+				c = (msg.a.crange_set.channel == CHANNEL_5V) ? &converter_state.channel_5v : 
 											&converter_state.channel_12v;
 								
 				if (msg.a.crange_set.new_range != c->current->RANGE)
@@ -717,8 +792,8 @@ void vTaskConverter(void *pvParameters)
 					err_code = EVENT_ERROR;							
 				}
 				// Send notification to dispatcher
-				dispatcher_msg->type = DISPATCHER_CONVERTER_EVENT;
-				dispatcher_msg->sender = sender_CONVERTER;
+				dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
+				dispatcher_msg.sender = sender_CONVERTER;
 				dispatcher_msg.converter_event.msg_type = 0;
 				dispatcher_msg.converter_event.msg_sender = 0;
 				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OVERLOAD;
@@ -733,7 +808,8 @@ void vTaskConverter(void *pvParameters)
 				xQueueSendToBack(xQueueADC, &adc_msg, 0);
 				break;
 				
-			default:;
+			default:
+				break;
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include "task.h"
 #include "queue.h"
 
+#include "global_def.h"
 
 
 #pragma anon_unions
@@ -55,40 +56,10 @@ enum guiTaskCmd {
 
 
 
-
-
-// SelectedChannel
-#define	GUI_CHANNEL_5V				0x1		// Actualy a copy of definitions in common.h
-#define	GUI_CHANNEL_12V				0x0		// CHECKME - possibly gather all definitions that are common to hardware and GUI into separate file?
-// CurrentLimit
-#define	GUI_CURRENT_RANGE_HIGH		0x1
-#define	GUI_CURRENT_RANGE_LOW	 	0x0
-// Software limit types
-#define GUI_LIMIT_TYPE_LOW			0x00
-#define GUI_LIMIT_TYPE_HIGH			0x01
-	
-
-
 void GUI_Init(void);
 
 extern xQueueHandle xQueueGUI;
 void vTaskGUI(void *pvParameters);
-
-uint16_t getVoltageSetting(uint8_t channel);
-uint16_t getVoltageAbsMax(uint8_t channel);
-uint16_t getVoltageAbsMin(uint8_t channel);
-uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
-uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type);
-uint16_t getCurrentSetting(uint8_t channel, uint8_t range);
-uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range);
-uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range);
-uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type);
-uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type);
-uint8_t getOverloadProtectionState(void);
-uint8_t getOverloadProtectionWarning(void);
-uint16_t getOverloadProtectionThreshold(void);
-uint8_t getCurrentRange(uint8_t channel);
-
 
 
 void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage);
@@ -98,9 +69,6 @@ void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, u
 void applyGuiCurrentRange(uint8_t channel, uint8_t new_range);
 void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold);
 
-void updateGuiVoltageLimit(uint8_t channel, uint8_t type);
-void updateGuiCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t type);
-void updateGuiOverloadSetting(void);
 
 
 

@@ -29,6 +29,7 @@
 #include "guiEditPanel1.h"
 
 #include "guiTop.h"
+#include "converter.h"
 
 
 masterViev_t masterView;
@@ -425,11 +426,11 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
     {
         if ((int16_t)event->lparam < 0)
         {
-            applyGuiCurrentRange(masterView.channel, GUI_CURRENT_RANGE_LOW);
+            applyGuiCurrentRange(masterView.channel, CURRENT_RANGE_LOW);
         }
         else if ((int16_t)event->lparam > 0)
         {
-            applyGuiCurrentRange(masterView.channel, GUI_CURRENT_RANGE_HIGH);
+            applyGuiCurrentRange(masterView.channel, CURRENT_RANGE_HIGH);
         }
     }
     else
@@ -518,7 +519,7 @@ static void updateCurrentSettingWidgets(int32_t value)
 // Helper fucntion
 static void updateCurrentRangeWidgets(uint8_t range)
 {
-    if (range == GUI_CURRENT_RANGE_LOW)
+    if (range == CURRENT_RANGE_LOW)
         sprintf(textLabel_currRange.text, "20A");
     else
         sprintf(textLabel_currRange.text, "40A");
@@ -592,7 +593,7 @@ void setGuiCurrentRange(uint8_t channel, uint8_t range)
         updateCurrentRangeWidgets(range);
 
         // Also update current settings
-        value = getCurrentSetting(channel, masterView.current_range);
+        value = Converter_GetCurrentSetting(channel, masterView.current_range);
         updateCurrentSettingWidgets(value);
 
         // Hide edit panel
@@ -606,7 +607,7 @@ void setGuiFeedbackChannel(uint8_t channel)
     int32_t value;
     masterView.channel = channel;
 
-    if (channel == GUI_CHANNEL_5V)
+    if (channel == CHANNEL_5V)
         sprintf(textLabel_channel.text, "Ch.5V");
     else
         sprintf(textLabel_channel.text, "Ch.12V");
@@ -614,15 +615,15 @@ void setGuiFeedbackChannel(uint8_t channel)
     textLabel_channel.redrawRequired = 1;
 
     // Also update voltage settings
-    value = getVoltageSetting(channel);
+    value = Converter_GetVoltageSetting(channel);
     updateVoltageSettingWidgets(value);
 
     // Also update current settings
-    value = getCurrentSetting(channel, masterView.current_range);
+    value = Converter_GetCurrentSetting(channel, masterView.current_range);
     updateCurrentSettingWidgets(value);
 
     // Also update current range settings
-    masterView.current_range = getCurrentRange(channel);
+    masterView.current_range = Converter_GetCurrentRange(channel);
     updateCurrentRangeWidgets(masterView.current_range);
 
     // Hide edit panel

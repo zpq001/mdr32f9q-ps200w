@@ -1,3 +1,6 @@
+#ifndef __GLOBAL_DEF_H_
+#define __GLOBAL_DEF_H_
+
 
 
 // ConverterState
@@ -40,4 +43,8 @@ enum senders {
 	sender_CONVERTER
 };
 
+
+
+
+#endif
 

@@ -138,6 +138,25 @@ typedef struct {
 
 
 
+uint16_t Converter_GetVoltageSetting(uint8_t channel);
+uint16_t Converter_GetVoltageAbsMax(uint8_t channel);
+uint16_t Converter_GetVoltageAbsMin(uint8_t channel);
+uint16_t Converter_GetVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
+uint8_t Converter_GetVoltageLimitState(uint8_t channel, uint8_t limit_type);
+uint16_t Converter_GetCurrentSetting(uint8_t channel, uint8_t range);
+uint16_t Converter_GetCurrentAbsMax(uint8_t channel, uint8_t range);
+uint16_t Converter_GetCurrentAbsMin(uint8_t channel, uint8_t range);
+uint16_t Converter_GetCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t Converter_GetCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type);
+uint8_t Converter_GetOverloadProtectionState(void);
+uint8_t Converter_GetOverloadProtectionWarning(void);
+uint16_t Converter_GetOverloadProtectionThreshold(void);
+uint8_t Converter_GetCurrentRange(uint8_t channel);
+uint8_t Converter_GetFeedbackChannel(void);
+
+// TODO: check closed static data - converter_state, etc
+
+
 
 extern converter_state_t converter_state;		// main converter control
 extern xQueueHandle xQueueConverter;

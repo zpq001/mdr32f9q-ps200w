@@ -23,10 +23,13 @@
 #include "guiTextLabel.h"
 #include "guiSpinBox.h"
 
-#include "guiTop.h"
-
 #include "guiEditPanel1.h"
 #include "guiMasterPanel.h"
+
+
+#include "guiTop.h"
+#include "converter.h"
+
 
 
 static uint8_t guiEditPanel1_onDraw(void *widget, guiEvent_t *event);
@@ -137,16 +140,16 @@ static uint8_t guiEditPanel1_onFocusChanged(void *widget, guiEvent_t *event)
     {
         if (editView.mode == EDIT_MODE_VOLTAGE)
         {
-            spinBox_Edit.maxValue = getVoltageAbsMax(editView.channel)/10;
-            spinBox_Edit.minValue = getVoltageAbsMin(editView.channel)/10;
-            value = getVoltageSetting(editView.channel);
+            spinBox_Edit.maxValue = Converter_GetVoltageAbsMax(editView.channel)/10;
+            spinBox_Edit.minValue = Converter_GetVoltageAbsMin(editView.channel)/10;
+            value = Converter_GetVoltageSetting(editView.channel);
             guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
         }
         else
         {
-            spinBox_Edit.maxValue = getCurrentAbsMax(editView.channel, editView.current_range)/10;
-            spinBox_Edit.minValue = getCurrentAbsMin(editView.channel, editView.current_range)/10;
-            value = getCurrentSetting(editView.channel, editView.current_range);
+            spinBox_Edit.maxValue = Converter_GetCurrentAbsMax(editView.channel, editView.current_range)/10;
+            spinBox_Edit.minValue = Converter_GetCurrentAbsMin(editView.channel, editView.current_range)/10;
+            value = Converter_GetCurrentSetting(editView.channel, editView.current_range);
             guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
         }
         guiSpinBox_SetActiveDigit(&spinBox_Edit,editView.active_digit);

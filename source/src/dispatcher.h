@@ -6,51 +6,7 @@
 
 #include "converter_task_def.h"
 
-/*
-typedef struct {
-	uint8_t type;
-	
-	union {
-		uint32_t data;
-		struct {
-			uint8_t type;
-			uint8_t data;
-		} converter_cmd;
-		struct {
-			uint8_t type;
-			uint8_t sender;
-			uint8_t data;
-		} converter_resp;
-		struct {
-			uint16_t event_type;
-			uint16_t code;
-		} key_event;
-		struct {
-			int16_t delta;
-		} encoder_event;
-	};
-	
-	
-} dispatch_msg_t;
-*/
 
-/*
-enum dispatcher_msg_type_t {	
-	DISPATCHER_TICK, 
-	DP_CONVERTER_TURN_ON, 
-	DP_CONVERTER_TURN_OFF,
-	DP_CONVERTER_SET_VOLTAGE,
-	DP_CONVERTER_SET_CURRENT,
-	DP_CONVERTER_SET_CURRENT_LIMIT,
-	DP_EMU_BTN_DOWN,
-	DP_EMU_ENC_DELTA,
-	DISPATCHER_EMULATE_BUTTON,
-	DISPATCHER_BUTTONS,
-	DISPATCHER_ENCODER,
-	DISPATCHER_CONVERTER
-};
-
-*/
 
 enum DispatcherTaskMsgTypes {	
 	DISPATCHER_TICK = 1, 
@@ -93,6 +49,8 @@ typedef struct {
 		} encoder_event;
 	};
 } dispatch_msg_t;
+
+
 
 extern xQueueHandle xQueueDispatcher;
 extern const dispatch_msg_t dispatcher_tick_msg;

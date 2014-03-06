@@ -122,11 +122,12 @@ void vTaskDispatcher(void *pvParameters)
 				converter_msg.type = msg.converter_cmd.msg_type; 
 				converter_msg.sender = msg.sender;
 				memcpy(&converter_msg.a, &msg.converter_cmd.a, sizeof(converter_arguments_t));
+				// TODO: disable turn ON to converter for N ms after power-on
 				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				break;
 			
 			//------------- Converter response -------------//
-			case DISPATCHER_converter_event:
+			case DISPATCHER_CONVERTER_EVENT:
 				// Converter has processed a message and returned feedback (or generated message itself):
 				// income_msg.converter_event.type provides information about message been processed.
 				// income_msg.converter_event.sender provides information about message origin.

@@ -126,53 +126,67 @@ void vTaskDispatcher(void *pvParameters)
 				break;
 			
 			//------------- Converter response -------------//
-			case DISPATCHER_CONVERTER_RESPONSE:
-				// Converter has processed a message and returned feedback:
-				// income_msg.converter_resp.type provides information about message been processed.
-				// income_msg.converter_resp.sender provides information about message origin.
+			case DISPATCHER_converter_event:
+				// Converter has processed a message and returned feedback (or generated message itself):
+				// income_msg.converter_event.type provides information about message been processed.
+				// income_msg.converter_event.sender provides information about message origin.
 				// Other fields provide information about converter message process status
 				
 				// Always notify GUI
 				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-				gui_msg.converter_event.spec = msg.converter_resp.spec;
-				gui_msg.converter_event.channel = msg.converter_resp.channel;
-				gui_msg.converter_event.current_range = msg.converter_resp.range;
-				gui_msg.converter_event.type = msg.converter_resp.limit_type;
+				gui_msg.converter_event.spec = msg.converter_event.spec;
+				gui_msg.converter_event.channel = msg.converter_event.channel;
+				gui_msg.converter_event.current_range = msg.converter_event.range;
+				gui_msg.converter_event.type = msg.converter_event.limit_type;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				
 				// Sound feedback
-				if ( (msg.converter_resp.msg_sender != sender_UART1) && (msg.converter_resp.msg_sender != sender_UART2) )
+				if ( (msg.converter_event.msg_sender != sender_UART1) && (msg.converter_event.msg_sender != sender_UART2) )
 				{
 					// CHECKME - this can be actualy decided by sound task itself, depending on settings
 					sound_msg = 0;
-					switch(msg.converter_resp.msg_type)
+					switch (msg.converter_event.spec)
 					{
-						case CONVERTER_SET_VOLTAGE:
-						case CONVERTER_SET_VOLTAGE_LIMIT:
-						case CONVERTER_SET_CURRENT:
-						case CONVERTER_SET_CURRENT_LIMIT:
-						case CONVERTER_SET_OVERLOAD_PARAMS:
-							if (msg.converter_resp.err_code == 0)
-								sound_msg = SND_CONV_SETTING_OK;
+						case VOLTAGE_SETTING_CHANGE:
+						case CURRENT_SETTING_CHANGE:
+						case VOLTAGE_LIMIT_CHANGE:
+						case CURRENT_LIMIT_CHANGE:
+						case OVERLOAD_SETTING_CHANGE:
+							if (msg.converter_event.err_code == VALUE_OK)
+								sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 							else
-								sound_msg = SND_CONV_SETTING_ILLEGAL;
-							sound_msg |= SND_CONVERTER_PRIORITY_NORMAL;
+								sound_msg = SND_CONV_SETTING_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;	
 							break;
-						case CONVERTER_SET_CURRENT_RANGE:
-						case CONVERTER_OVERLOADED:
+						//---------------------//
+						case CHANNEL_CHANGE:
+						case CURRENT_RANGE_CHANGE:
+							if (msg.converter_event.err_code == VALUE_BOUND_BY_ABS_MAX)
+								sound_msg = SND_CONV_SETTING_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
+							else if (msg.converter_event.err_code == CMD_ERROR)
+								sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;	
+							break;
+						//---------------------//
+						case STATE_CHANGE_TO_OVERLOAD:
+							if (msg.converter_event.err_code != EVENT_ERROR)
+								sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+							else
+								sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_HIGHEST;
+							break;
+						//---------------------//
 						default:
-							// no sound event
+							if ((msg.converter_event.err_code == CMD_ERROR) || (msg.converter_event.err_code == EVENT_ERROR))
+								sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;	
 							break;
-					}
+					}					
 					if (sound_msg)
 						xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 				}
 			
 				// Serial feedback
-				if ( (msg.converter_resp.msg_sender == sender_UART1) || (msg.converter_resp.msg_sender == sender_UART2) )
+				if ( (msg.converter_event.msg_sender == sender_UART1) || (msg.converter_event.msg_sender == sender_UART2) )
 				{
 					transmitter_msg.type = UART_RESPONSE_OK;
-					if (msg.converter_resp.msg_sender == sender_UART1)
+					if (msg.converter_event.msg_sender == sender_UART1)
 						xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
 					else
 						xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);

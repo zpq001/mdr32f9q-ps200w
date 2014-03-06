@@ -45,37 +45,6 @@ xQueueHandle xQueueGUI;
 static dispatch_msg_t dispatcher_msg;
 
 
-// TODO: move to some .h file common definitions - such as channel, curr. range, etc
-
-
-// Encode physical buttons into GUI virtual keys
-static uint8_t encodeGuiKey(uint16_t btnCode)
-{
-	switch (btnCode)
-	{
-		case BTN_ESC:
-			return GUI_KEY_ESC;
-		case BTN_OK:
-			return GUI_KEY_OK;
-		case BTN_LEFT:
-			return GUI_KEY_LEFT;
-		case BTN_RIGHT:
-			return GUI_KEY_RIGHT;
-		case BTN_ENCODER:
-			return GUI_KEY_ENCODER;
-		default: 
-			return 0;
-	}
-}
-
-// Encode physical buttons events into GUI virtual events
-static uint8_t encodeGuiKeyEvent(uint16_t btnEvent)
-{
-	return (uint8_t)btnEvent;
-}
-
-
-
 
 
 //---------------------------------------------//
@@ -237,28 +206,23 @@ void vTaskGUI(void *pvParameters)
 				guiCore_ProcessMessageQueue();
 				break;
 			case GUI_TASK_PROCESS_BUTTONS:
-				//guiKeyCode = encodeGuiKey(msg.key_event.code);
-				//guiKeyEvent = encodeGuiKeyEvent(msg.key_event.event);
-				//if ((guiKeyEvent != 0) && (guiKeyCode != 0))
-				//	guiCore_ProcessKeyEvent(guiKeyCode, guiKeyEvent);
 				guiCore_ProcessKeyEvent(msg.key_event.code, msg.key_event.event);
 				break;
 			case GUI_TASK_PROCESS_ENCODER:
-				if (msg.encoder_event.delta)
-					guiCore_ProcessEncoderEvent(msg.encoder_event.delta);
+				guiCore_ProcessEncoderEvent(msg.encoder_event.delta);
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
 				switch (msg.converter_event.spec)
 				{
-					case VOLTAGE_SETTING_CHANGED:
+					case VOLTAGE_SETTING_CHANGE:
 						value = getVoltageSetting(msg.converter_event.channel);
 						setGuiVoltageSetting(msg.converter_event.channel, value);
 						break;
-					case CURRENT_SETTING_CHANGED:
+					case CURRENT_SETTING_CHANGE:
 						value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
 						break;
-					case VOLTAGE_LIMIT_CHANGED:
+					case VOLTAGE_LIMIT_CHANGE:
 						value = getVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
 						state = getVoltageLimitState(msg.converter_event.channel, msg.converter_event.type);
 						setGuiVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type, state, value);
@@ -266,7 +230,7 @@ void vTaskGUI(void *pvParameters)
 						value = getVoltageSetting(msg.converter_event.channel);
 						setGuiVoltageSetting(msg.converter_event.channel, value);
 						break;
-					case CURRENT_LIMIT_CHANGED:
+					case CURRENT_LIMIT_CHANGE:
 						value = getCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
 						state = getCurrentLimitState(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
 						setGuiCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type, state, value);	
@@ -274,15 +238,15 @@ void vTaskGUI(void *pvParameters)
 						value = getCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
 						break;
-					case CURRENT_RANGE_CHANGED:
+					case CURRENT_RANGE_CHANGE:
 						value = getCurrentRange(msg.converter_event.channel);
 						setGuiCurrentRange(msg.converter_event.channel, value);
 						break;
-					case CHANNEL_CHANGED:
+					case CHANNEL_CHANGE:
 						value = getFeedbackChannel();
 						setGuiFeedbackChannel(value);
 						break;
-					case OVERLOAD_SETTING_CHANGED:
+					case OVERLOAD_SETTING_CHANGE:
 						state = getOverloadProtectionState();
 						state2 = getOverloadProtectionWarning();
 						value = getOverloadProtectionThreshold();

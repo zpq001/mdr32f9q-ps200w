@@ -1,4 +1,4 @@
-/*******************************************************************
+/******************************************************************
 	Module i2c_eeprom.c
 	
 		Low-level functions for serial 24LC16B EEPROM device.
@@ -13,12 +13,65 @@
 #include "i2c_eeprom.h"
 
 
+static uint8_t EEPROM_IsReady(void);
+static uint8_t EEPROM_WriteSmallBlock(uint16_t address, uint8_t* data, uint8_t count);	
+static uint8_t EEPROM_ReadSmallBlock(uint16_t address, uint8_t* data, uint8_t count);
+		
+
+
+uint8_t EEPROM_ReadBlock(uint16_t address, uint8_t *data, uint16_t count)
+{
+	uint8_t current_block_count;
+	uint8_t result;
+	// Check if EEPROM is ready
+	while (EEPROM_IsReady() == 0);
+	while(count)
+	{
+		current_block_count = 16 - address % 16;
+		if (current_block_count > count)
+			current_block_count = count;
+		result = EEPROM_ReadBlock(address, data, current_block_count);
+		if (result)
+			return result;
+		address += current_block_count;
+		count -= current_block_count;
+		data += current_block_count;
+	}
+	return 0;
+}
+
+uint8_t EEPROM_WriteBlock(uint16_t address, uint8_t *data, uint16_t count)
+{
+	uint8_t current_block_count;
+	uint8_t result;
+	// Check if EEPROM is ready
+	while (EEPROM_IsReady() == 0);
+	while(count)
+	{
+		current_block_count = 16 - address % 16;
+		if (current_block_count > count)
+			current_block_count = count;
+		result = EEPROM_WriteBlock(address, data, current_block_count);
+		if (result)
+			return result;
+		address += current_block_count;
+		count -= current_block_count;
+		data += current_block_count;
+		// Wait until EEPROM is ready
+		while (EEPROM_IsReady() == 0);
+	}
+	return 0;
+}
+
+
+
+
 //==============================================================//
 // Reads block from EEPROM devices
 // max count for 24LC16B is 16 bytes
 // Returns 0 if no errors happened
 //==============================================================//
-uint8_t EEPROMReadBlock(uint16_t address, uint8_t* data, uint8_t count)
+static uint8_t EEPROM_ReadSmallBlock(uint16_t address, uint8_t* data, uint8_t count)
 {
 	uint8_t error = 0;
 	uint8_t dev_addr = (address & 0x0700) >> 7;
@@ -88,7 +141,7 @@ uint8_t EEPROMReadBlock(uint16_t address, uint8_t* data, uint8_t count)
 // max count for 24LC16B is 16 bytes
 // Returns 0 if no errors happened
 //==============================================================//
-uint8_t EEPROMWriteBlock(uint16_t address, uint8_t* data, uint8_t count)
+static uint8_t EEPROM_WriteSmallBlock(uint16_t address, uint8_t* data, uint8_t count)
 {
 	uint8_t error = 0;
 	uint8_t dev_addr = (address & 0x0700) >> 7;
@@ -143,7 +196,7 @@ uint8_t EEPROMWriteBlock(uint16_t address, uint8_t* data, uint8_t count)
 // Returns EEPROM status 
 // Returns 0 during EEPROM write cycle
 //==============================================================//
-uint8_t EEPROMReady(void)
+static uint8_t EEPROM_IsReady(void)
 {
 	/* Wait I2C bus is free */
   while (I2C_GetFlagStatus(I2C_FLAG_BUS_FREE) != SET) {}

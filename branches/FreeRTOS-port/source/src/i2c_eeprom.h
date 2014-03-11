@@ -1,4 +1,6 @@
 
+#include <stdint.h>
+
 // EEPROM address in system
 #define EEPROM_ADDRESS 0xA0
 
@@ -13,9 +15,8 @@
 // Page buffer is 16 bytes
 
 // Reads block from EEPROM devices
-uint8_t EEPROMReadBlock(uint16_t address, uint8_t* data, uint8_t count);
+uint8_t EEPROM_ReadBlock(uint16_t address, uint8_t* data, uint16_t count);
 // Writes block to EEPROM devices
-uint8_t EEPROMWriteBlock(uint16_t address, uint8_t* data, uint8_t count);
-// Returns EEPROM status 
-uint8_t EEPROMReady(void);
+uint8_t EEPROM_WriteBlock(uint16_t address, uint8_t* data, uint16_t count);
+
 

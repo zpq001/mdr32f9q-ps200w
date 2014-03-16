@@ -354,7 +354,13 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 		case UART_CMD_PROFILING:
 			transmitter_msg.type = UART_SEND_PROFILING;
 			break;
-			
+		
+		//=========================================================================//
+		// Test function 1 command	
+		case UART_CMD_TEST1:
+			dispatcher_msg.type = DISPATCHER_TEST_FUNC1;
+			break;
+		
 		//=========================================================================//
 		// Unknown command
 		default:

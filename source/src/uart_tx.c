@@ -16,6 +16,7 @@
 #include "dispatcher.h"
 #include "buttons.h"
 #include "systemfunc.h"
+#include "eeprom.h"
 
 #include "uart_tx.h"
 
@@ -229,6 +230,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 				sprintf(string_to_send,"Systick hook max ticks: %d\r",time_profile.max_ticks_in_Systick_hook);
 				UART_do_tx_DMA(MDR_UARTx, &DMA_PriCtrlStr, string_to_send, strlen(string_to_send));
 				sprintf(string_to_send,"Timer2 ISR max ticks: %d\r",time_profile.max_ticks_in_Timer2_ISR);
+				UART_do_tx_DMA(MDR_UARTx, &DMA_PriCtrlStr, string_to_send, strlen(string_to_send));
+				break;
+			case UART_SEND_POWER_CYCLES_STAT:
+				string_to_send = uart_tx_data_buffer;
+				length = 0;
+				sprintf(string_to_send,"Power on/off cycles: %d\r", global_settings->number_of_power_cycles);
 				UART_do_tx_DMA(MDR_UARTx, &DMA_PriCtrlStr, string_to_send, strlen(string_to_send));
 				break;
 			default:

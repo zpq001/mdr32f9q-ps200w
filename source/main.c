@@ -135,7 +135,7 @@ int main(void)
 
 
 	//=============================================//
-	// system initialization
+	// System initialization
 	//=============================================//
 	Setup_CPU_Clock();
 	HW_NVIC_init();
@@ -147,15 +147,18 @@ int main(void)
 	HW_ADCInit();
 	HW_UARTInit();
 	HW_DMAInit();
+	
+	// Other initialization is done by tasks.
+	InitButtons();
 	LcdInit();
 
-	InitButtons();
-
-	// CHECKME - low level converter iint - required ?
 	
 	// Enable interrupt for fast low-level control dispatcher
 	// TODO: bring ISR from systick.c to systemfunc.c
 	NVIC_EnableIRQ(Timer2_IRQn);
+
+	// Init converter
+	Converter_Init();
 	
 	SetCoolerSpeed(80);
 	LcdSetBacklight(85);

@@ -19,7 +19,12 @@ enum DispatcherTaskMsgTypes {
 	DISPATCHER_BUTTONS,
 	DISPATCHER_ENCODER,
 	DISPATCHER_CONVERTER,
-	DISPATCHER_CONVERTER_EVENT
+	DISPATCHER_CONVERTER_EVENT,
+	
+	DISPATCHER_LOAD_PROFILE,
+	DISPATCHER_SAVE_PROFILE,
+	
+	DISPATCHER_TEST_FUNC1
 };
 
 
@@ -47,6 +52,13 @@ typedef struct {
 		struct {
 			int16_t delta;
 		} encoder_event;
+		struct {
+			uint8_t number;
+		} profile_load;
+		struct {
+			uint8_t number;
+			char *new_name;
+		} profile_save;
 	};
 } dispatch_msg_t;
 

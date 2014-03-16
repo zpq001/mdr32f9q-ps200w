@@ -5,8 +5,8 @@
 
 	24LC16B is 16K bit = 2048 bytes
 
-	Bytes 0-15 store general device information
-	Device profiles start at address 0x0010
+	Data at EE_GSETTINGS_BASE stores general device information
+	Device profiles start at address EE_PROFILES_BASE
 	Each profile occupies EE_PROFILE_SIZE bytes.
 	First profile is recent - it is saved on power off and used
 	for restore on power on.
@@ -14,6 +14,7 @@
 ********************************************************************/
 
 #include "MDR32Fx.h" 
+#include <string.h>		// usigng memset
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -59,15 +60,22 @@ static uint16_t get_crc16(uint8_t *data, uint16_t size, uint16_t seed)
 
 static void fill_global_settings_by_default(void)
 {
+	// Fill whole settings structure with FF's (padding)
+	// These values will be written to EEPROM and used for CRC
+	memset(global_settings, 0xFFFFFFFF, sizeof(global_settings_t));
 	global_settings->adc_voltage_offset = 0;
 	global_settings->adc_current_offset = 0;
 	global_settings->number_of_power_cycles = 0;
 }
 
-static void fill_device_profile_by_default(void)
+static void update_global_settings(void)
 {
-	device_profile->converter_profile.name[0] = '\0';
-	
+	// Gather configuration from all the modules
+	global_settings->number_of_power_cycles++;
+}
+
+static void fill_device_profile_by_default(void)
+{	
 	// 5V channel voltage
 	device_profile->converter_profile.ch5v_voltage.setting = 5000;
 	device_profile->converter_profile.ch5v_voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;
@@ -105,9 +113,69 @@ static void fill_device_profile_by_default(void)
 	device_profile->converter_profile.ch12v_current.high_range.enable_high_limit = 0;
 	device_profile->converter_profile.ch12v_current.selected_range = CURRENT_RANGE_LOW;
 	
+	// Overload
+	device_profile->converter_profile.overload.protection_enable = 1;
+	device_profile->converter_profile.overload.warning_enable = 0;
+	device_profile->converter_profile.overload.threshold = (5*1);	// x 200us
+	
 	// Other fields
 	// ...
 }
+
+
+static void update_device_profile(void)
+{
+	// Fill whole settings structure with FF's (padding)
+	// These values will be written to EEPROM and used for CRC
+	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));
+	
+	// 5V channel voltage
+	device_profile->converter_profile.ch5v_voltage.setting = Converter_GetVoltageSetting(CHANNEL_5V);
+	device_profile->converter_profile.ch5v_voltage.limit_low = Converter_GetVoltageLimitSetting(CHANNEL_5V, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_voltage.limit_high = Converter_GetVoltageLimitSetting(CHANNEL_5V, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch5v_voltage.enable_low_limit = Converter_GetVoltageLimitState(CHANNEL_5V, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_voltage.enable_high_limit = Converter_GetVoltageLimitState(CHANNEL_5V, LIMIT_TYPE_HIGH);
+	// Current
+	device_profile->converter_profile.ch5v_current.low_range.setting = Converter_GetCurrentSetting(CHANNEL_5V, CURRENT_RANGE_LOW);
+	device_profile->converter_profile.ch5v_current.low_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_current.low_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch5v_current.low_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_current.low_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch5v_current.high_range.setting = Converter_GetCurrentSetting(CHANNEL_5V, CURRENT_RANGE_HIGH);
+	device_profile->converter_profile.ch5v_current.high_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_current.high_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch5v_current.high_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch5v_current.high_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch5v_current.selected_range = Converter_GetCurrentRange(CHANNEL_5V);
+	
+	// 12V channel voltage
+	device_profile->converter_profile.ch12v_voltage.setting = Converter_GetVoltageSetting(CHANNEL_12V);
+	device_profile->converter_profile.ch12v_voltage.limit_low = Converter_GetVoltageLimitSetting(CHANNEL_12V, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_voltage.limit_high = Converter_GetVoltageLimitSetting(CHANNEL_12V, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch12v_voltage.enable_low_limit = Converter_GetVoltageLimitState(CHANNEL_12V, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_voltage.enable_high_limit = Converter_GetVoltageLimitState(CHANNEL_12V, LIMIT_TYPE_HIGH);
+	// Current
+	device_profile->converter_profile.ch12v_current.low_range.setting = Converter_GetCurrentSetting(CHANNEL_12V, CURRENT_RANGE_LOW);
+	device_profile->converter_profile.ch12v_current.low_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_current.low_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch12v_current.low_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_current.low_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch12v_current.high_range.setting = Converter_GetCurrentSetting(CHANNEL_12V, CURRENT_RANGE_HIGH);
+	device_profile->converter_profile.ch12v_current.high_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_current.high_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch12v_current.high_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
+	device_profile->converter_profile.ch12v_current.high_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
+	device_profile->converter_profile.ch12v_current.selected_range = Converter_GetCurrentRange(CHANNEL_12V);
+	
+	// Overload
+	device_profile->converter_profile.overload.protection_enable = Converter_GetOverloadProtectionState();
+	device_profile->converter_profile.overload.warning_enable = Converter_GetOverloadProtectionWarning();
+	device_profile->converter_profile.overload.threshold = Converter_GetOverloadProtectionThreshold();
+	
+	// Other fields
+	// ...
+}
+
 
 
 
@@ -129,9 +197,9 @@ uint8_t EE_InitialLoad(void)
 	//-------------------------------//
 	//	Read global settings
 	ee_addr = EE_GSETTINGS_BASE;
-	hw_result = EE_ReadBlock(ee_addr, (uint8_t *)&global_settings_data, sizeof(global_settings_t));
+	hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&global_settings_data, sizeof(global_settings_t));
 	ee_addr = EE_GSETTINGS_BASE + EE_GSETTINGS_CRC_OFFSET;
-	hw_result |= EE_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
+	hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
 	if (hw_result == 0)
 	{
 		// Hardware EEPROM access OK. Check CRC.
@@ -153,11 +221,11 @@ uint8_t EE_InitialLoad(void)
 	for (i=0; i<EE_PROFILES_COUNT; i++)
 	{
 		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE);
-		hw_result = EE_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+		hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
 		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
-		hw_result |= EE_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
 		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_CRC_OFFSET;
-		hw_result |= EE_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
 		if (hw_result == 0)
 		{
 			// Hardware EEPROM access OK. Check CRC.
@@ -171,13 +239,13 @@ uint8_t EE_InitialLoad(void)
 			else
 			{
 				// Profile CRC is broken.
-				profile_info[i] = EE_PROFILE_CRC_ERR;
+				profile_info[i] = EE_PROFILE_CRC_ERROR;
 			}
 		}
 		else
 		{
 			// EEPROM hardware error. Cannot access device.
-			profile_info[i] = EE_PROFILE_HW_ERR;
+			profile_info[i] = EE_PROFILE_HW_ERROR;
 		}
 	}
 	
@@ -185,26 +253,23 @@ uint8_t EE_InitialLoad(void)
 	//-------------------------------//
 	//	Read recent profile
 	ee_addr = EE_RECENT_PROFILE_BASE;
-	hw_result = EE_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
-	ee_addr = EE_RECENT_PROFILE_BASE + EE_PROFILE_NAME_OFFSET;
-	hw_result |= EE_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+	hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
 	ee_addr = EE_RECENT_PROFILE_BASE + EE_PROFILE_CRC_OFFSET;
-	hw_result |= EE_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
+	hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
 	if (hw_result == 0)
 	{
 		// Hardware EEPROM access OK. Check CRC.
 		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
-		crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);
 		if (crc != ee_crc)
 		{
 			// Profile CRC is broken.
-			err_code |= EE_PROFILE_CRC_ERR;
+			err_code |= EE_PROFILE_CRC_ERROR;
 		}
 	}
 	else
 	{
 		// EEPROM hardware error. Cannot access device.
-		err_code |= EE_PROFILE_HW_ERR;
+		err_code |= EE_PROFILE_HW_ERROR;
 	}
 	
 	// Check status and restore defaults
@@ -223,20 +288,233 @@ uint8_t EE_InitialLoad(void)
 
 
 
-
-uint8_t EE_LoadDeviceProfile(uint8_t num)
+uint8_t EE_SaveGlobalSettings(void)
 {
+	uint8_t err_code = EE_OK;
+	uint8_t hw_result;
+	uint16_t crc;
 	
+	update_global_settings();
+	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
+	
+	//-------------------------------//
+	//	Write global settings
+	hw_result = EEPROM_WriteBlock(EE_GSETTINGS_BASE, (uint8_t *)&global_settings_data, sizeof(global_settings_t));
+	hw_result |= EEPROM_WriteBlock(EE_GSETTINGS_BASE + EE_GSETTINGS_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
+	if (hw_result != 0)
+	{
+		// EEPROM hardware error. Cannot access device.
+		err_code = EE_GSETTINGS_HW_ERROR;
+	}
+	return err_code;
 }
+
+
+
+uint8_t EE_SaveRecentProfile(void)
+{
+	uint8_t err_code = EE_OK;
+	uint8_t hw_result;
+	uint16_t crc;
+	
+	update_device_profile();
+	crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
+
+	//-------------------------------//
+	//	Write recent profile
+	hw_result = EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+	hw_result |= EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE + EE_PROFILE_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
+	if (hw_result != 0)
+	{
+		// EEPROM hardware error. Cannot access device.
+		err_code = EE_PROFILE_HW_ERROR;
+	}
+	return err_code;
+}
+
+
+
+
+
+
+//-------------------------------------------------------//
+// Loads data from specified profile into device_profile_data structure
+//
+//
+//-------------------------------------------------------//
+uint8_t EE_LoadDeviceProfile(uint8_t i)
+{	
+	uint8_t err_code;
+	uint8_t hw_result;
+	uint16_t crc;
+	uint16_t ee_crc;
+	uint16_t ee_addr;
+	
+	if (i < EE_PROFILES_COUNT) 
+	{
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE);
+		hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_CRC_OFFSET;
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
+		if (hw_result == 0)
+		{
+			// Hardware EEPROM access OK. Check CRC.
+			crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
+			crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);
+			if (crc == ee_crc)
+			{
+				// Profile CRC is OK.
+				profile_info[i] = EE_PROFILE_VALID;
+				err_code = EE_OK;
+			}	
+			else
+			{
+				// Profile CRC is broken.
+				profile_info[i] = EE_PROFILE_CRC_ERROR;
+				err_code = EE_PROFILE_CRC_ERROR;
+			}
+		}
+		else
+		{
+			// EEPROM hardware error. Cannot access device.
+			profile_info[i] = EE_PROFILE_HW_ERROR;
+			err_code = EE_PROFILE_HW_ERROR;
+		}
+	}
+	else
+	{
+		// Wrong profile number
+		err_code = EE_WRONG_ARGUMENT;
+	}	
+	return err_code;
+}
+
+
+//-------------------------------------------------------//
+//	Returns name of a profile
+//	profile_info[i] must be filled correctly before calling.
+//
+//-------------------------------------------------------//
+uint8_t EE_GetProfileName(uint8_t i, char **str)
+{
+	uint8_t err_code;
+	uint8_t hw_result;
+	uint16_t ee_addr;
+	
+	if (i < EE_PROFILES_COUNT) 
+	{
+		if (profile_info[i] == EE_PROFILE_VALID)
+		{
+			ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
+			hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+			if (hw_result == 0)
+			{
+				// Hardware EEPROM access OK.
+				err_code = EE_OK;
+			}
+			else
+			{
+				// EEPROM hardware error. Cannot access device.
+				profile_info[i] = EE_PROFILE_HW_ERROR;
+				err_code = EE_PROFILE_HW_ERROR;
+			}
+		}
+		else if (profile_info[i] == EE_PROFILE_CRC_ERROR)
+		{
+			err_code = EE_PROFILE_CRC_ERROR;
+		}
+		else
+		{
+			err_code = EE_PROFILE_HW_ERROR;
+		}
+	}
+	else
+	{
+		// Wrong profile number
+		err_code = EE_WRONG_ARGUMENT;
+	}	
+	return err_code;
+}
+
+
+
+//-------------------------------------------------------//
+// Saves profile data to EEPROM
+//
+//-------------------------------------------------------//
+uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
+{	
+	uint8_t err_code;
+	uint8_t hw_result;
+	uint16_t crc;
+	uint16_t ee_addr;
+	
+	if (i < EE_PROFILES_COUNT) 
+	{
+		update_device_profile();
+		// Copy name
+		strncpy(device_profile_name, name, EE_PROFILE_NAME_SIZE);
+		
+		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
+		crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);
+
+		//-------------------------------//
+		//	Write profile
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE);
+		hw_result = EEPROM_WriteBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
+		hw_result |= EEPROM_WriteBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_CRC_OFFSET;
+		hw_result |= EEPROM_WriteBlock(ee_addr, (uint8_t *)&crc, EE_CRC_SIZE);
+		
+		if (hw_result == 0)
+		{
+			err_code = EE_OK;
+			profile_info[i] = EE_PROFILE_VALID;
+		}
+		else
+		{
+			// EEPROM hardware error. Cannot access device.
+			err_code = EE_PROFILE_HW_ERROR;
+			profile_info[i] = EE_PROFILE_HW_ERROR;
+		}
+	}
+	else
+	{
+		// Wrong profile number
+		err_code = EE_WRONG_ARGUMENT;
+	}
+	return err_code;
+}
+
+
+
+uint8_t EE_GetProfileState(uint8_t i)
+{
+	uint8_t err_code;
+	if (i < EE_PROFILES_COUNT) 
+	{
+		err_code = profile_info[i];
+	}
+	else
+	{
+		// Wrong profile number
+		err_code = EE_WRONG_ARGUMENT;
+	}
+	return err_code;
+}
+
+
+
+
 
 
 
 
 
 /*
-void EE_load_default_profile(void)
-{
-}
 
 //-------------------------------------------------------//
 //	Reads last saved profile into global device_profile

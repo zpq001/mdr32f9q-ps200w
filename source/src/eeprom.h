@@ -58,10 +58,11 @@ Note:
 // can be ORed
 #define EE_OK						0
 #define EE_PROFILE_VALID			0		// Alias for EEPROM profile status
-#define EE_GSETTINGS_HW_ERROR		(1<<1)
-#define EE_GSETTINGS_CRC_ERROR		(1<<2)	
-#define EE_PROFILE_HW_ERROR			(1<<3)
-#define EE_PROFILE_CRC_ERROR		(1<<4)
+#define EE_GSETTINGS_HW_ERROR		(1<<0)
+#define EE_GSETTINGS_CRC_ERROR		(1<<1)	
+#define EE_PROFILE_HW_ERROR			(1<<2)
+#define EE_PROFILE_CRC_ERROR		(1<<3)
+#define EE_WRONG_ARGUMENT			0x10
 
 //#define EEPROM_HW_ERROR			1
 //#define EEPROM_CRC_ERROR		2
@@ -86,6 +87,12 @@ typedef struct {
 	uint8_t selected_range;
 } current_profile_t;
 
+typedef struct {
+	uint8_t protection_enable;
+	uint8_t warning_enable;
+	uint16_t threshold;
+} overload_profile_t;
+
 
 
 typedef struct {
@@ -93,7 +100,7 @@ typedef struct {
 	reg_profile_t ch12v_voltage;
 	current_profile_t ch5v_current;
 	current_profile_t ch12v_current;
-	char name[EEPROM_PROFILE_NAME_LENGTH];
+	overload_profile_t overload;
 } converter_profile_t;
 
 
@@ -115,5 +122,21 @@ typedef struct {
 } global_settings_t;
 
 
+
+//---------------------------------------------//
+
+
+extern global_settings_t * global_settings;
+extern device_profile_t *device_profile;
+//extern char device_profile_name[];
+extern uint8_t profile_info[];
+
+uint8_t EE_InitialLoad(void);
+
+uint8_t EE_SaveGlobalSettings(void);
+uint8_t EE_SaveRecentProfile(void);
+uint8_t EE_LoadDeviceProfile(uint8_t i);
+uint8_t EE_SaveDeviceProfile(uint8_t i, char *name);
+uint8_t EE_GetProfileState(uint8_t i);
 
 

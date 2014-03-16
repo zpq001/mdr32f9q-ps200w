@@ -59,6 +59,7 @@ func_table_record_t func_table[] = {
     { "key",                UART_CMD_KEY,                 arg_table3          		},
 	{ "encoder",            UART_CMD_ENCODER,             arg_table4          		},
     { "profiling",          UART_CMD_PROFILING,       			0                   },
+	{ "test1",          	UART_CMD_TEST1,       				0                   },
     //{ "get_voltage",        &converter_get_voltage,         arg_table2          },
     //{ "get_current",        &converter_get_current,         arg_table2          },
     //{ "get_state",          &converter_get_state,           0                   },

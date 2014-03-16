@@ -42,7 +42,8 @@ enum ConverterTaskMsgTypes {
 	CONVERTER_SET_CURRENT_LIMIT,
 	CONVERTER_SET_CURRENT_RANGE,
 	CONVERTER_SET_OVERLOAD_PARAMS,
-	CONVERTER_OVERLOADED
+	CONVERTER_OVERLOADED,
+	CONVERTER_LOAD_PROFILE
 };
 
 
@@ -81,7 +82,8 @@ enum ConverterEventSpec {
 	CHANNEL_CHANGE,
 	STATE_CHANGE_TO_ON,
 	STATE_CHANGE_TO_OFF,
-	STATE_CHANGE_TO_OVERLOAD
+	STATE_CHANGE_TO_OVERLOAD,
+	PROFILE_LOADED
 };
 
 
@@ -163,7 +165,7 @@ extern xQueueHandle xQueueConverter;
 extern xTaskHandle xTaskHandle_Converter;
 extern const converter_message_t converter_tick_message;
 
-void Converter_Init(uint8_t default_channel);
+void Converter_Init(void);
 void vTaskConverter(void *pvParameters);
 
 

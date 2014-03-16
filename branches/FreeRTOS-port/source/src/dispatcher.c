@@ -20,23 +20,17 @@
 
 #include <string.h>
 
-//#include "buttons.h"
-//#include "encoder.h"
+
 #include "key_def.h"
 #include "converter.h"
 #include "control.h"
-//#include "gui_top.h"
 #include "guiTop.h"
 #include "dispatcher.h"
 #include "sound_driver.h"
-
+#include "eeprom.h"
 #include "uart_tx.h"
 
 xQueueHandle xQueueDispatcher;
-
-//const dispatch_msg_t dispatcher_tick_msg = {DISPATCHER_TICK, 0};
-
-
 
 
 void vTaskDispatcher(void *pvParameters) 
@@ -45,7 +39,7 @@ void vTaskDispatcher(void *pvParameters)
 	converter_message_t converter_msg;
 	uart_transmiter_msg_t transmitter_msg;
 	gui_msg_t gui_msg;
-	
+	uint8_t temp8u;
 	uint32_t sound_msg;
 	
 	// Initialize
@@ -59,26 +53,26 @@ void vTaskDispatcher(void *pvParameters)
 	
 	//---------- Task init sequence ----------//
 	// Tasks suspended on this moment:
-	//		- vTaskConverter
+	//		
 	
 	// Provide some time for hardware to stay idle
-	vTaskDelay( 500 / portTICK_RATE_MS);
+	vTaskDelay( 200 / portTICK_RATE_MS);
 	
-	// EEPROM status (fake for now)
+	// Read EEPROM and restore global settings and recent profile
+	temp8u = EE_InitialLoad();
+	
+	// EEPROM status 
 	gui_msg.type = GUI_TASK_EEPROM_STATE;
-	gui_msg.data.a = 1;	// 1 = OK, 0 = FAIL
+	// 1 = OK, 0 = FAIL
+	gui_msg.data.a = (temp8u == 0) ? 1 : 0;	
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	
-	// Init and start converter
-	//ProcessButtons();
-	//if (buttons.raw_state & SW_CHANNEL)
-	//	Converter_Init(CHANNEL_5V);
-	//else
-		Converter_Init(CHANNEL_12V);
-	vTaskResume(xTaskHandle_Converter);	
+	// Load converter profile
+	converter_msg.type = CONVERTER_LOAD_PROFILE;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
 	// Wait a bit more
-	vTaskDelay( 200 / portTICK_RATE_MS);
+	vTaskDelay( 500 / portTICK_RATE_MS);
 	
 	// Send GUI task message to read all settings and converter setup and update it's widgets.
 	gui_msg.type = GUI_TASK_RESTORE_ALL;
@@ -88,11 +82,9 @@ void vTaskDispatcher(void *pvParameters)
 	// UART?
 	
 	// Sound notification
-	sound_msg = SND_CONV_SETTING_OK;
+	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
-	// Clear message queue from tick messages and start normal operation
-	//xQueueReset(xQueueDispatcher);
 	
 	while(1)
 	{
@@ -115,6 +107,69 @@ void vTaskDispatcher(void *pvParameters)
 				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
 				gui_msg.encoder_event.delta = msg.encoder_event.delta;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				break;
+			
+			//---------------- Test function  --------------//	
+			case DISPATCHER_TEST_FUNC1:
+				//EE_SaveGlobalSettings();
+				//EE_SaveRecentProfile();
+				transmitter_msg.type = UART_SEND_POWER_CYCLES_STAT;
+				if (msg.sender == sender_UART1)
+					xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
+				else if (msg.sender == sender_UART2)
+					xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
+				break;
+				
+			//----------------- Load profile ---------------//	
+			case DISPATCHER_LOAD_PROFILE:
+				// Check profile state
+				if (EE_GetProfileState(msg.profile_load.number) == EE_PROFILE_VALID)
+				{
+					// State OK. Try to load data
+					if (EE_LoadDeviceProfile(msg.profile_load.number) == EE_OK)
+					{
+						// New profile data is loaded
+						converter_msg.type = CONVERTER_LOAD_PROFILE;
+						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+						// Send response to GUI
+						// TODO
+						// Bring GUI to initial state
+						// TODO
+					}
+					else
+					{
+						// Send response ERROR to GUI
+						// TODO
+						// Repopulate GUI profile list (or update exact profile record)
+						// TODO
+					}
+				}
+				else
+				{	
+					// Send response ERROR to GUI
+					// TODO
+				}
+				break;
+			
+			//----------------- Save profile ---------------//	
+			case DISPATCHER_SAVE_PROFILE:
+				// Try to save data
+				if (EE_SaveDeviceProfile(msg.profile_save.number, msg.profile_save.new_name) == EE_OK)
+				{
+					// Profile data is saved
+					// Send response to GUI
+					// TODO
+					// Repopulate GUI profile list (or update exact profile record)
+					// TODO
+				}
+				else
+				{
+					// Profile data cannot be saved
+					// Send response to GUI
+					// TODO
+					// Repopulate GUI profile list (or update exact profile record)
+					// TODO
+				}
 				break;
 			
 			//-------------- Converter command -------------//

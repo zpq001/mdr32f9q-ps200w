@@ -30,7 +30,7 @@ uint8_t EEPROM_ReadBlock(uint16_t address, uint8_t *data, uint16_t count)
 		current_block_count = 16 - address % 16;
 		if (current_block_count > count)
 			current_block_count = count;
-		result = EEPROM_ReadBlock(address, data, current_block_count);
+		result = EEPROM_ReadSmallBlock(address, data, current_block_count);
 		if (result)
 			return result;
 		address += current_block_count;
@@ -51,7 +51,7 @@ uint8_t EEPROM_WriteBlock(uint16_t address, uint8_t *data, uint16_t count)
 		current_block_count = 16 - address % 16;
 		if (current_block_count > count)
 			current_block_count = count;
-		result = EEPROM_WriteBlock(address, data, current_block_count);
+		result = EEPROM_WriteSmallBlock(address, data, current_block_count);
 		if (result)
 			return result;
 		address += current_block_count;

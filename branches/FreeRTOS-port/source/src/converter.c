@@ -1,5 +1,7 @@
 
 
+#include <string.h>
+
 #include "MDR32Fx.h" 
 
 #include "FreeRTOS.h"
@@ -12,6 +14,7 @@
 #include "converter.h"
 #include "converter_hw.h"
 #include "adc.h"
+#include "eeprom.h"
 
 #include "dispatcher.h"
 //#include "guiTop.h"
@@ -362,59 +365,94 @@ static uint8_t Converter_ValidateCurrentRange(uint8_t range)
 //===========================================================================//
 //===========================================================================//
 
+// Converter data is shared between hardcoded constants and 
+// profile data which is loaded from EEPROM
 
-
-
-void Converter_Init(uint8_t default_channel)
+static void Converter_LoadProfile(void)
 {
-	// Converter is powered off.
-	// TODO: add restore from EEPROM
+	//---------- Channel 5V ------------//
+	// Voltage
+	converter_state.channel_5v.voltage.setting = device_profile->converter_profile.ch5v_voltage.setting;
+	converter_state.channel_5v.voltage.limit_low = device_profile->converter_profile.ch5v_voltage.limit_low;
+	converter_state.channel_5v.voltage.limit_high = device_profile->converter_profile.ch5v_voltage.limit_high;
+	converter_state.channel_5v.voltage.enable_low_limit = device_profile->converter_profile.ch5v_voltage.enable_low_limit;
+	converter_state.channel_5v.voltage.enable_high_limit = device_profile->converter_profile.ch5v_voltage.enable_high_limit;
+	// Current low range
+	converter_state.channel_5v.current_low_range.setting = device_profile->converter_profile.ch5v_current.low_range.setting;
+	converter_state.channel_5v.current_low_range.limit_low = device_profile->converter_profile.ch5v_current.low_range.limit_low;
+	converter_state.channel_5v.current_low_range.limit_high = device_profile->converter_profile.ch5v_current.low_range.limit_high;
+	converter_state.channel_5v.current_low_range.enable_low_limit = device_profile->converter_profile.ch5v_current.low_range.enable_low_limit;
+	converter_state.channel_5v.current_low_range.enable_high_limit = device_profile->converter_profile.ch5v_current.low_range.enable_high_limit;
+	// Current high range
+	converter_state.channel_5v.current_high_range.setting = device_profile->converter_profile.ch5v_current.high_range.setting;
+	converter_state.channel_5v.current_high_range.limit_low = device_profile->converter_profile.ch5v_current.high_range.limit_low;
+	converter_state.channel_5v.current_high_range.limit_high = device_profile->converter_profile.ch5v_current.high_range.limit_high;
+	converter_state.channel_5v.current_high_range.enable_low_limit = device_profile->converter_profile.ch5v_current.high_range.enable_low_limit;
+	converter_state.channel_5v.current_high_range.enable_high_limit = device_profile->converter_profile.ch5v_current.high_range.enable_high_limit;
+	// Apply current range
+	converter_state.channel_5v.current = (device_profile->converter_profile.ch5v_current.selected_range == CURRENT_RANGE_LOW) ? 
+		&converter_state.channel_5v.current_low_range : &converter_state.channel_5v.current_high_range;
+	
+	
+	//---------- Channel 12V -----------//
+	// Voltage
+	converter_state.channel_12v.voltage.setting = device_profile->converter_profile.ch12v_voltage.setting;
+	converter_state.channel_12v.voltage.limit_low = device_profile->converter_profile.ch12v_voltage.limit_low;
+	converter_state.channel_12v.voltage.limit_high = device_profile->converter_profile.ch12v_voltage.limit_high;
+	converter_state.channel_12v.voltage.enable_low_limit = device_profile->converter_profile.ch12v_voltage.enable_low_limit;
+	converter_state.channel_12v.voltage.enable_high_limit = device_profile->converter_profile.ch12v_voltage.enable_high_limit;
+	// Current low range
+	converter_state.channel_12v.current_low_range.setting = device_profile->converter_profile.ch12v_current.low_range.setting;
+	converter_state.channel_12v.current_low_range.limit_low = device_profile->converter_profile.ch12v_current.low_range.limit_low;
+	converter_state.channel_12v.current_low_range.limit_high = device_profile->converter_profile.ch12v_current.low_range.limit_high;
+	converter_state.channel_12v.current_low_range.enable_low_limit = device_profile->converter_profile.ch12v_current.low_range.enable_low_limit;
+	converter_state.channel_12v.current_low_range.enable_high_limit = device_profile->converter_profile.ch12v_current.low_range.enable_high_limit;
+	// Current high range
+	converter_state.channel_12v.current_high_range.setting = device_profile->converter_profile.ch12v_current.high_range.setting;
+	converter_state.channel_12v.current_high_range.limit_low = device_profile->converter_profile.ch12v_current.high_range.limit_low;
+	converter_state.channel_12v.current_high_range.limit_high = device_profile->converter_profile.ch12v_current.high_range.limit_high;
+	converter_state.channel_12v.current_high_range.enable_low_limit = device_profile->converter_profile.ch12v_current.high_range.enable_low_limit;
+	converter_state.channel_12v.current_high_range.enable_high_limit = device_profile->converter_profile.ch12v_current.high_range.enable_high_limit;
+	// Apply current range
+	converter_state.channel_12v.current = (device_profile->converter_profile.ch12v_current.selected_range == CURRENT_RANGE_LOW) ? 
+		&converter_state.channel_12v.current_low_range : &converter_state.channel_12v.current_high_range;
+		
+	// Overload
+	converter_state.overload_protection_enable = device_profile->converter_profile.overload.protection_enable;
+	converter_state.overload_warning_enable = device_profile->converter_profile.overload.warning_enable;
+	converter_state.overload_threshold = device_profile->converter_profile.overload.threshold;
+}
+
+
+// Converter initialization
+void Converter_Init(void)
+{
+	// Set everything to 0
+	memset(&converter_state, 0, sizeof(converter_state));
 	
 	//---------- Channel 5V ------------//
-	
-	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
-	converter_state.channel_5v.load_state = LOAD_ENABLE;
-	
 	
 	// Common
 	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
 	converter_state.channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
 	
 	// Voltage
-	converter_state.channel_5v.voltage.setting = 5000;											// TODO: EEPROM
 	converter_state.channel_5v.voltage.MINIMUM = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage setting for channel
 	converter_state.channel_5v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage setting for channel
-	converter_state.channel_5v.voltage.limit_low = CONV_MIN_VOLTAGE_5V_CHANNEL;					// TODO: EEPROM
-	converter_state.channel_5v.voltage.limit_high = CONV_MAX_VOLTAGE_5V_CHANNEL;				// TODO: EEPROM
 	converter_state.channel_5v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_5V_CHANNEL;					// Minimum voltage limit setting
 	converter_state.channel_5v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_5V_CHANNEL;					// Maximum voltage limit setting
-	converter_state.channel_5v.voltage.enable_low_limit = 0;									// TODO: EEPROM
-	converter_state.channel_5v.voltage.enable_high_limit = 0;									// TODO: EEPROM
 	
 	// Current
 	converter_state.channel_5v.current_low_range.RANGE = CURRENT_RANGE_LOW;						// LOW current range
-	converter_state.channel_5v.current_low_range.setting = 4000;								// TODO: EEPROM
 	converter_state.channel_5v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
 	converter_state.channel_5v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
-	converter_state.channel_5v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	converter_state.channel_5v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
 	converter_state.channel_5v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
 	converter_state.channel_5v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	converter_state.channel_5v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
-	converter_state.channel_5v.current_low_range.enable_high_limit = 0;							// TODO: EEPROM
-	
 	converter_state.channel_5v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
-	converter_state.channel_5v.current_high_range.setting = 4000;								// TODO: EEPROM
 	converter_state.channel_5v.current_high_range.MINIMUM = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
 	converter_state.channel_5v.current_high_range.MAXIMUM = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
-	converter_state.channel_5v.current_high_range.limit_low = CONV_HIGH_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	converter_state.channel_5v.current_high_range.limit_high = CONV_HIGH_CURRENT_RANGE_MAX;		// TODO: EEPROM
 	converter_state.channel_5v.current_high_range.LIMIT_MIN = CONV_HIGH_CURRENT_RANGE_MIN;		// Minimum current limit setting
 	converter_state.channel_5v.current_high_range.LIMIT_MAX = CONV_HIGH_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	converter_state.channel_5v.current_high_range.enable_low_limit = 0;							// TODO: EEPROM
-	converter_state.channel_5v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
-
-	converter_state.channel_5v.current = &converter_state.channel_5v.current_low_range;
 	
 	//---------- Channel 12V -----------//
 	
@@ -423,50 +461,39 @@ void Converter_Init(uint8_t default_channel)
 	converter_state.channel_12v.load_state = LOAD_ENABLE;										
 	
 	// Voltage
-	converter_state.channel_12v.voltage.setting = 12000;										// TODO: EEPROM
 	converter_state.channel_12v.voltage.MINIMUM = CONV_MIN_VOLTAGE_12V_CHANNEL;					// Minimum voltage setting for channel
 	converter_state.channel_12v.voltage.MAXIMUM = CONV_MAX_VOLTAGE_12V_CHANNEL;					// Maximum voltage setting for channel
-	converter_state.channel_12v.voltage.limit_low = CONV_MIN_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
-	converter_state.channel_12v.voltage.limit_high = CONV_MAX_VOLTAGE_12V_CHANNEL;				// TODO: EEPROM
 	converter_state.channel_12v.voltage.LIMIT_MIN = CONV_MIN_VOLTAGE_12V_CHANNEL;				// Minimum voltage limit setting
-	converter_state.channel_12v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting
-	converter_state.channel_12v.voltage.enable_low_limit = 0;									// TODO: EEPROM
-	converter_state.channel_12v.voltage.enable_high_limit = 0;									// TODO: EEPROM
+	converter_state.channel_12v.voltage.LIMIT_MAX = CONV_MAX_VOLTAGE_12V_CHANNEL;				// Maximum voltage limit setting	
 	
 	// Current
 	converter_state.channel_12v.current_low_range.RANGE = CURRENT_RANGE_LOW;					// LOW current range
-	converter_state.channel_12v.current_low_range.setting = 2000;								// TODO: EEPROM
 	converter_state.channel_12v.current_low_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;			// Minimum current setting for specified current range
 	converter_state.channel_12v.current_low_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;			// Maximum current setting for specified current range
-	converter_state.channel_12v.current_low_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	converter_state.channel_12v.current_low_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
 	converter_state.channel_12v.current_low_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
 	converter_state.channel_12v.current_low_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	converter_state.channel_12v.current_low_range.enable_low_limit = 0;							// TODO: EEPROM
-	converter_state.channel_12v.current_low_range.enable_high_limit = 0;						// TODO: EEPROM
-	
 	// 12V channel cannot provide currents > 20A (low range)
 	converter_state.channel_12v.current_high_range.RANGE = CURRENT_RANGE_HIGH;					// HIGH current range
-	converter_state.channel_12v.current_high_range.setting = 4000;								// TODO: EEPROM
 	converter_state.channel_12v.current_high_range.MINIMUM = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current setting for specified current range
 	converter_state.channel_12v.current_high_range.MAXIMUM = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current setting for specified current range
-	converter_state.channel_12v.current_high_range.limit_low = CONV_LOW_CURRENT_RANGE_MIN;		// TODO: EEPROM
-	converter_state.channel_12v.current_high_range.limit_high = CONV_LOW_CURRENT_RANGE_MAX;		// TODO: EEPROM
 	converter_state.channel_12v.current_high_range.LIMIT_MIN = CONV_LOW_CURRENT_RANGE_MIN;		// Minimum current limit setting
 	converter_state.channel_12v.current_high_range.LIMIT_MAX = CONV_LOW_CURRENT_RANGE_MAX;		// Maximum current limit setting
-	converter_state.channel_12v.current_high_range.enable_low_limit = 0;						// TODO: EEPROM
-	converter_state.channel_12v.current_high_range.enable_high_limit = 0;						// TODO: EEPROM
-
+	
+	
+	// Overload protection
+	converter_state.overload_protection_enable = 1;
+	converter_state.overload_warning_enable = 0;
+	converter_state.overload_threshold = (5*1);
+	
+	
+	// Default settings for channel and current ranges
+	converter_state.channel_5v.current = &converter_state.channel_5v.current_low_range;
 	converter_state.channel_12v.current = &converter_state.channel_12v.current_low_range;
+	converter_state.channel = &converter_state.channel_12v;
 	
-	converter_state.overload_protection_enable = 1;									// TODO: EEPROM
-	converter_state.overload_warning_enable = 0;									// TODO: EEPROM
-	converter_state.overload_threshold = (5*1);										// TODO: EEPROM
 	
-	// Select default channel
-	converter_state.channel = (default_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
-								&converter_state.channel_12v;
-	
+	// Apply default configuration to hardware
+	// Using functions without additional checks - safe here.
 	Converter_TurnOff();
 	while(Converter_IsReady() == 0);
 	SetFeedbackChannel(converter_state.channel->CHANNEL);
@@ -474,7 +501,6 @@ void Converter_Init(uint8_t default_channel)
 	SetVoltageDAC(converter_state.channel->voltage.setting);
 	SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 	SetOutputLoad(converter_state.channel->load_state);
-
 	// Overload protection mechanism uses data from converter_regulation, so no
 	// 	special settings are required.
 }
@@ -514,7 +540,7 @@ void vTaskConverter(void *pvParameters)
 	}
 	
 	// Wait until task is started by dispatcher		
-	vTaskSuspend(0);			
+	//vTaskSuspend(0);			
 	
 	xQueueReset(xQueueConverter);
 	while(1)
@@ -525,6 +551,41 @@ void vTaskConverter(void *pvParameters)
 
 		switch(msg.type)
 		{
+			//=========================================================================//
+			// Loading profile
+			case CONVERTER_LOAD_PROFILE:
+				// Disable converter if enabled
+				if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+				{
+					Converter_TurnOff();
+				}
+				converter_state.state = CONVERTER_STATE_OFF;		// Reset overloaded flag (if set)
+				// Load profile data
+				Converter_LoadProfile();
+				// Wait until current feedback switching is allowed
+				while(Converter_IsReady() == 0) 
+					vTaskDelay(1);	
+				// Apply new channel current range setting to hardware
+				temp8u = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
+				if (temp8u == CONVERTER_CMD_OK)
+				{
+					SetVoltageDAC(converter_state.channel->voltage.setting);
+					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+					SetOutputLoad(converter_state.channel->load_state);
+					err_code = CMD_OK;
+				}
+				else
+				{
+					// Unexpected error for current range setting
+					err_code = CMD_ERROR;
+					Converter_TurnOff();
+				} 
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = PROFILE_LOADED;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
 			//=========================================================================//
 			// Setting voltage
 			case CONVERTER_SET_VOLTAGE:

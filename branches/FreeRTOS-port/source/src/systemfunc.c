@@ -24,6 +24,7 @@
 #include "guiGraphHAL.h"
 #include "guiFonts.h"
 #include "guiGraphPrimitives.h"
+#include "eeprom.h"
 
 #include "dwt_delay.h"
 
@@ -813,6 +814,8 @@ void LcdSetBacklight(uint16_t value)
 void ProcessPowerOff(void)
 {
 	uint32_t time_delay;
+	uint8_t ee_status1, ee_status2;
+	
 	if (GetACLineStatus() == OFFLINE)
 	{	
 		__disable_irq();
@@ -824,40 +827,49 @@ void ProcessPowerOff(void)
 
 		time_delay = DWT_StartDelayUs(5000);
 
-		LcdSetBacklight(0);
+		// Disable power consumers
+		//LcdSetBacklight(0);
 		SetCoolerSpeed(0);
 		SetVoltagePWMPeriod(0);
 		SetCurrentPWMPeriod(0);
 
-
-		// Put message
-		//LcdFillBuffer(lcd0_buffer,0);
-		//LcdFillBuffer(lcd1_buffer,0);
+		// Put power off message
 		LCD_FillWholeBuffer(0);
-		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd0_buffer);
-		//LcdPutNormalStr(0,10,"Power OFF",(tNormalFont*)&font_8x12,lcd1_buffer);
 		LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
-		LCD_SetFont(&font_h11);
-		LCD_PrintString("Power OFF", 0, 10, IMAGE_MODE_NORMAL);
-		LCD_PrintString("Power OFF", 96+0, 10, IMAGE_MODE_NORMAL);
-
-
-
+		LCD_SetFont(&font_h10_bold);
+		LCD_PrintString("Power OFF", 0, 0, IMAGE_MODE_NORMAL);
+		LcdUpdateBothByCore(lcdBuffer);
+		
+		// Delay is required for converter to completely turn off.
 		while(DWT_DelayInProgress(time_delay));
 
+		// Set converter hardware to default
 		SetFeedbackChannel(CHANNEL_12V);
 		SetCurrentRange(CURRENT_RANGE_LOW); 
 		SetOutputLoad(LOAD_ENABLE); 
-
-//		LcdUpdateByCore(LCD0,lcd0_buffer);
-//		LcdUpdateByCore(LCD1,lcd1_buffer);
+	
+		// Save device settings and profile
+		ee_status1 = EE_SaveGlobalSettings();
+		ee_status2 = EE_SaveRecentProfile();
+		
+		// Print EEPROM status messages
+		LCD_PrintString("Settings", 96+0, 0, IMAGE_MODE_NORMAL);
+		LCD_PrintString("Profile", 96+0, 34, IMAGE_MODE_NORMAL);
+		if (ee_status1 == 0)
+			LCD_PrintString("saved OK", 96+25, 12, IMAGE_MODE_NORMAL);
+		else
+			LCD_PrintString("NOT saved", 96+25, 12, IMAGE_MODE_NORMAL);
+		if (ee_status2 == 0)
+			LCD_PrintString("saved OK", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+		else
+			LCD_PrintString("NOT saved", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
 		LcdUpdateBothByCore(lcdBuffer);
-
-
-
-		time_delay = DWT_StartDelayUs(1000);
+		
+		// Wait a bit more
+		time_delay = DWT_StartDelayUs(1000000);
 		while(DWT_DelayInProgress(time_delay));
 
+		// Disable all ports
 		PORT_DeInit(MDR_PORTA);
 		PORT_DeInit(MDR_PORTB);
 		PORT_DeInit(MDR_PORTC);
@@ -865,8 +877,8 @@ void ProcessPowerOff(void)
 		PORT_DeInit(MDR_PORTE);
 		PORT_DeInit(MDR_PORTF);
 
+		// DIE
 		while(1);
-		 
 	}
 }
 

@@ -12,6 +12,7 @@ TEMPLATE = app
 INCLUDEPATH = ./
 INCLUDEPATH += ./gui_top/
 INCLUDEPATH += ../common/
+INCLUDEPATH += ../../source/src/
 INCLUDEPATH += ../../source/gui/
 INCLUDEPATH += ../../source/gui/guiWidgets/
 INCLUDEPATH += ../../source/gui/guiCore/
@@ -45,7 +46,9 @@ SOURCES += main.cpp\
     ../../source/gui/guiMasterPanel.c \
     ../../source/gui/guiEditPanel1.c \
     gui_top/uartParser.c	\
-	gui_top/guiTop.c 
+    gui_top/guiTop.c \
+    gui_top/eeprom.c \
+    gui_top/converter.c
     
 
 HEADERS  += mainwindow.h \
@@ -69,9 +72,13 @@ HEADERS  += mainwindow.h \
     ../../source/gui/guiSetupPanel.h \
     ../../source/gui/guiMasterPanel.h \
     ../../source/gui/guiEditPanel1.h \
+    ../../source/src/key_def.h \
+    ../../source/src/global_def.h \
 	gui_top/guiTop.h \
 	gui_top/guiConfig.h \
-    gui_top/uartParser.h
+    gui_top/uartParser.h \
+    gui_top/eeprom.h \
+    gui_top/converter.h
     
     
     

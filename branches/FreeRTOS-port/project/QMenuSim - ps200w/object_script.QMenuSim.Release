@@ -27,6 +27,8 @@ INPUT(
 ./release\guiEditPanel1.o
 ./release\uartParser.o
 ./release\guiTop.o
+./release\eeprom.o
+./release\converter.o
 ./release\moc_mainwindow.o
 ./release\moc_pixeldisplay.o
 ./release\moc_keydriver.o

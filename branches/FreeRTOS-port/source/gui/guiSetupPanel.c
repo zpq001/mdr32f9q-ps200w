@@ -31,6 +31,7 @@
 
 #include "guiTop.h"
 #include "converter.h"
+#include "eeprom.h"
 
 
 static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
@@ -55,6 +56,9 @@ static uint8_t guiChSetupList_ChildKeyHandler(void *widget, guiEvent_t *event);
 static uint8_t guiCheckBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
+static uint8_t guiProfileList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event);
+static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event);
 
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
@@ -87,17 +91,29 @@ guiStringList_t chSetupList;
 char *chSsetupListElements[CH_SETUP_LIST_ELEMENTS_COUNT];
 guiWidgetHandler_t chSetupListHandlers[4];
 
+// Profile list
+guiStringList_t profileList;
+#define PROFILE_LIST_ELEMENTS_COUNT     EE_PROFILES_COUNT       // from eeprom module
+char *profileListElements[PROFILE_LIST_ELEMENTS_COUNT];
+char profileListStrings[PROFILE_LIST_ELEMENTS_COUNT][EE_PROFILE_NAME_SIZE];
+guiWidgetHandler_t profileListHandlers[4];
 
 struct {
     uint8_t channel;
     uint8_t currentRange;
     uint8_t view;
+    uint8_t profileAction;
 } setupView;
 
 enum setupViewModes {
     VIEW_VOLTAGE,
     VIEW_CURRENT,
     VIEW_OTHER
+};
+
+enum setupViewProfileActions {
+    PROFILE_SAVE,
+    PROFILE_LOAD
 };
 
 // Hint label
@@ -179,9 +195,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.strings[0] = " Channel 5V";
     setupList.strings[1] = " Channel 12V";
     setupList.strings[2] = " Overload setup";
-    setupList.strings[3] = " ***";
-    setupList.strings[4] = " ###";
-    setupList.strings[5] = "  ---- Exit ---- ";
+    setupList.strings[3] = " Profile load";
+    setupList.strings[4] = " Profile save";
+    setupList.strings[5] = " Profile setup";
     setupList.handlers.count = 4;
     setupList.handlers.elements = setupListHandlers;
     setupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
@@ -416,6 +432,43 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_OverloadThreshold.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
 
+    //--------------- Profile section ---------------//
+
+    guiStringList_Initialize(&profileList, 0 );
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&profileList, (guiGenericContainer_t *)&guiSetupPanel);
+    profileList.font = &font_h10;
+    profileList.textAlignment = ALIGN_LEFT;
+    profileList.hasFrame = 1;
+    profileList.showFocus = 1;
+    profileList.isVisible = 0;
+    profileList.acceptFocusByTab = 1;
+    profileList.showStringFocus = 1;
+    profileList.canWrap = 0;
+    profileList.restoreIndexOnEscape = 1;
+    profileList.x = 96;
+    profileList.y = 11;
+    profileList.width = 96;
+    profileList.height = 68 - 13;
+    profileList.strings = profileListElements;
+    profileList.stringCount = 0;
+    while (profileList.stringCount < PROFILE_LIST_ELEMENTS_COUNT)
+    {
+        profileList.strings[profileList.stringCount] = profileListStrings[profileList.stringCount];
+        profileList.strings[profileList.stringCount++][0] = 0;
+    }
+    profileList.handlers.count = 2;
+    profileList.handlers.elements = profileListHandlers;
+    profileList.handlers.elements[0].eventType = GUI_EVENT_KEY;
+    profileList.handlers.elements[0].handler = &guiProfileList_onKeyEvent;
+    profileList.handlers.elements[1].eventType = GUI_ON_FOCUS_CHANGED;
+    profileList.handlers.elements[1].handler = &guiProfileList_onFocusChanged;
+    profileList.handlers.elements[2].eventType = 0;
+    profileList.handlers.elements[2].handler = 0;
+    profileList.handlers.elements[3].eventType = 0;
+    profileList.handlers.elements[3].handler = 0;
+    profileList.keyTranslator = &guiProfileList_KeyTranslator;
+
+
     //---------- Tags ----------//
 
     // Group 1
@@ -432,6 +485,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_OverloadWarning.tag = 13;
     spinBox_OverloadThreshold.tag = 13;
     textLabel_overloadThresholdHint.tag = 13;
+    profileList.tag = 14;   // takes tags 14,15
 
     // Other
     textLabel_hint.tag = 11;
@@ -561,6 +615,16 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         textLabel_hint.redrawRequired = 1;
         textLabel_hint.redrawText = 1;
         guiCore_SetVisible((guiGenericWidget_t *)&textLabel_hint, 1);
+    }
+    else if (setupList.selectedIndex == 3)
+    {
+        setupView.profileAction = PROFILE_LOAD;
+        guiCore_SetVisible((guiGenericWidget_t *)&profileList, 1);
+    }
+    else if (setupList.selectedIndex == 4)
+    {
+        setupView.profileAction = PROFILE_SAVE;
+        guiCore_SetVisible((guiGenericWidget_t *)&profileList, 1);
     }
     else
     {
@@ -840,6 +904,72 @@ static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEven
 
 
 
+
+//-------------------------//
+// guiProfileList
+
+static uint8_t guiProfileList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+{
+    guiStringlistTranslatedKey_t *tkey = (guiStringlistTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = STRINGLIST_KEY_UP;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = STRINGLIST_KEY_DOWN;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        tkey->key = (int16_t)event->lparam < 0 ? STRINGLIST_KEY_UP :
+              ((int16_t)event->lparam > 0 ? STRINGLIST_KEY_DOWN : 0);
+    }
+    return 0;
+}
+
+
+static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
+{
+    // Here unhandled key events are caught
+    if (((event->spec == GUI_KEY_EVENT_DOWN) && (event->lparam == GUI_KEY_OK)) ||
+        ((event->spec == GUI_KEY_EVENT_UP_SHORT) && (event->lparam == GUI_KEY_ENCODER)))
+    {
+        // All checks are done by dispatcher
+        if (setupView.profileAction == PROFILE_LOAD)
+        {
+            // Load profile data from EEPROM
+            loadProfile(profileList.selectedIndex);
+        }
+        else
+        {
+            // Save profile data to EEPROM
+            saveProfile(profileList.selectedIndex, "");   // TODO: ask for new name before saving
+
+        }
+        return GUI_EVENT_ACCEPTED;
+    }
+    else if (((event->spec == GUI_KEY_EVENT_UP_SHORT) && (event->lparam == GUI_KEY_ESC)) ||
+             ((event->spec == GUI_KEY_EVENT_HOLD) && (event->lparam == GUI_KEY_ENCODER)))
+    {
+        guiCore_RequestFocusChange((guiGenericWidget_t*)&setupList);
+        return GUI_EVENT_ACCEPTED;
+    }
+
+    return GUI_EVENT_DECLINE;
+}
+
+
+static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event)
+{
+    if (profileList.isFocused)
+    {
+        guiStringList_SetActive(&profileList, 1, 0);  // will call handler
+    }
+    return 0;
+}
+
+
+
 //===========================================================================//
 //  Hardware interface functions
 //===========================================================================//
@@ -1008,6 +1138,34 @@ void setGuiOverloadSetting(uint8_t protectionEnabled, uint8_t warningEnabled, in
         updateOverloadWidgets(protectionEnabled, warningEnabled, threshold);
     }
 }
+
+
+
+//---------------------------------------------//
+// Called by GUI top-level
+// Reads profile data and populates list
+//---------------------------------------------//
+void updateGuiProfileList(void)
+{
+    uint8_t i;
+    uint8_t profileState;
+    char *profileName;
+    for (i = 0; i < PROFILE_LIST_ELEMENTS_COUNT; i++)
+    {
+        profileState = EE_GetProfileState(i);
+        if ((profileState == EE_PROFILE_CRC_ERROR) || (profileState == EE_PROFILE_HW_ERROR))
+        {
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<empty>");
+        }
+        else
+        {
+            //profileName = EE_GetProfileName(i);
+            //snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, profileName);
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "Profile %d", i);
+        }
+    }
+}
+
 
 
 

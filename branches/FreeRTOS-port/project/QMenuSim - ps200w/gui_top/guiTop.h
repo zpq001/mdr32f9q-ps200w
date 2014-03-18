@@ -1,6 +1,7 @@
 
 #include <stdint.h>
 #include "guiGraphHAL.h"
+#include "global_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -126,6 +127,9 @@ void guiUpdateTemperatureIndicator(void);
 
 void updateGuiOverloadSetting(void);
 void applyGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold);
+
+void loadProfile(uint8_t index);
+void saveProfile(uint8_t index, char *profileName);
 
 #ifdef __cplusplus
 }

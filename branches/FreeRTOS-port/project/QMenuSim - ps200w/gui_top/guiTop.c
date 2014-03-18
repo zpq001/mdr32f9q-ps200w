@@ -143,6 +143,8 @@ void guiInitialize(void)
 
     guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
+    // Profile list init
+    updateGuiProfileList();
     // EEPROM
     guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
     //guiEvent.spec = 0;  // EEPROM FAIL
@@ -451,6 +453,24 @@ void updateGuiOverloadSetting(void)
 {
 
 }
+
+
+//---------------------------------------------//
+// Requests for profile load
+//---------------------------------------------//
+void loadProfile(uint8_t index)
+{
+
+}
+
+//---------------------------------------------//
+// Requests for profile save
+//---------------------------------------------//
+void saveProfile(uint8_t index, char *profileName)
+{
+
+}
+
 
 //=================================================================//
 

@@ -27,6 +27,8 @@ INPUT(
 ./debug\guiEditPanel1.o
 ./debug\uartParser.o
 ./debug\guiTop.o
+./debug\eeprom.o
+./debug\converter.o
 ./debug\moc_mainwindow.o
 ./debug\moc_pixeldisplay.o
 ./debug\moc_keydriver.o

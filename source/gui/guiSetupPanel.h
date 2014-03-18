@@ -15,6 +15,6 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent);
 void setGuiVoltageLimitSetting(uint8_t channel, uint8_t limit_type, uint8_t isEnabled, int32_t value);
 void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type, uint8_t isEnabled, int32_t value);
 void setGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnabled, int32_t threshold);
-
+void updateGuiProfileList(void);
 
 #endif

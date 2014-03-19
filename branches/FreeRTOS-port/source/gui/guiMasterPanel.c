@@ -27,6 +27,7 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiEditPanel1.h"
+#include "guiMessagePanel1.h"
 
 #include "guiTop.h"
 #include "converter.h"
@@ -271,7 +272,7 @@ static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent
     {
         if (event->lparam == GUI_KEY_ENCODER)
         {
-            showEditPanel1();
+            showEditPanel1();           // edit panel may be not shown if focus has "wrong" widget
             return GUI_EVENT_ACCEPTED;  // do not process this event any more
         }
     }

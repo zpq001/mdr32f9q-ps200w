@@ -45,6 +45,7 @@ SOURCES += main.cpp\
     ../../source/gui/guiSetupPanel.c \
     ../../source/gui/guiMasterPanel.c \
     ../../source/gui/guiEditPanel1.c \
+	../../source/gui/guiMessagePanel1.c \
     gui_top/uartParser.c	\
     gui_top/guiTop.c \
     gui_top/eeprom.c \
@@ -72,10 +73,11 @@ HEADERS  += mainwindow.h \
     ../../source/gui/guiSetupPanel.h \
     ../../source/gui/guiMasterPanel.h \
     ../../source/gui/guiEditPanel1.h \
+	../../source/gui/guiMessagePanel1.h \
     ../../source/src/key_def.h \
     ../../source/src/global_def.h \
+	../../source/gui/guiConfig.h \
 	gui_top/guiTop.h \
-	gui_top/guiConfig.h \
     gui_top/uartParser.h \
     gui_top/eeprom.h \
     gui_top/converter.h

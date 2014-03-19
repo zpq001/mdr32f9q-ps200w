@@ -25,9 +25,10 @@
 #include "guiStringList.h"
 #include "guiCheckBox.h"
 
-// Other forms and panels - in order to switch between them
+// Other forms and panels
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
+#include "guiMessagePanel1.h"
 
 #include "guiTop.h"
 #include "converter.h"
@@ -489,6 +490,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
     // Other
     textLabel_hint.tag = 11;
+
 }
 
 

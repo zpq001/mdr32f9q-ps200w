@@ -45,6 +45,7 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiEditPanel1.h"
+#include "guiMessagePanel1.h"
 
 extern void guiLogEvent(char *string);
 
@@ -61,7 +62,7 @@ static uint8_t guiMainForm_ProcessEvents(guiGenericWidget_t *widget, guiEvent_t 
 
 
 //----------- GUI Form  -----------//
-#define MAIN_FORM_ELEMENTS_COUNT 2
+#define MAIN_FORM_ELEMENTS_COUNT 3
 guiPanel_t     guiMainForm;
 static void *guiMainFormElements[MAIN_FORM_ELEMENTS_COUNT];
 static uint8_t greetingFlags = 0;
@@ -87,6 +88,10 @@ void guiMainForm_Initialize(void)
     guiMasterPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
     guiSetupPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
     guiEditPanel1_Initialize((guiGenericWidget_t *)&guiMasterPanel);    // parent is not important here
+    guiMessagePanel1_Initialize((guiGenericWidget_t *)&guiSetupPanel);    //
+
+    // Add widgets
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiMessagePanel1, (guiGenericContainer_t *)&guiMainForm);
 }
 
 

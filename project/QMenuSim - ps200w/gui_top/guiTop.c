@@ -14,6 +14,7 @@
 #include "guiMainForm.h"
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
+#include "guiMessagePanel1.h"
 
 
 // UART parser test
@@ -460,7 +461,9 @@ void updateGuiOverloadSetting(void)
 //---------------------------------------------//
 void loadProfile(uint8_t index)
 {
-
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+    messageView.lastFocused = focusedWidget;
+    guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMessagePanel1);
 }
 
 //---------------------------------------------//

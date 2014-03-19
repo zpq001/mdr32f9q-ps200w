@@ -25,6 +25,7 @@ INPUT(
 ./debug\guiSetupPanel.o
 ./debug\guiMasterPanel.o
 ./debug\guiEditPanel1.o
+./debug\guiMessagePanel1.o
 ./debug\uartParser.o
 ./debug\guiTop.o
 ./debug\eeprom.o

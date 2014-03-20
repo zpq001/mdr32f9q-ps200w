@@ -8,7 +8,7 @@
 
 #define GUI_CFG_USE_TIMERS
 #define GUI_TIMER_COUNT 1
-#define TMR_TIME_UPDATE 0   // timer's name
+#define GUI_MESSAGE_PANEL_TIMER 0   // timer's name
 
 #define CFG_USE_UPDATE
 

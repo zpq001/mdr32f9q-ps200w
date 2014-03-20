@@ -113,6 +113,17 @@ typedef struct {
     void (*handler)(uint8_t id);
 } guiTimer_t;
 
+// Timer init arguments
+#define TMR_RUN_CONSTANTLY  0
+#define TMR_RUN_ONCE        1
+#define TMR_TARGET_VOID     0
+#define TMR_HANDLER_VOID    0
+
+// Timer start arguments
+#define TMR_DO_RESET        1
+#define TMR_NO_RESET        0
+
+
 
 // Modifying these pointers should be done with care!
 extern guiGenericWidget_t *rootWidget;         // Root widget must be present

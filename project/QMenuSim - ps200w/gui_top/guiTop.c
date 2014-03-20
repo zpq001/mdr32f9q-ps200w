@@ -178,6 +178,7 @@ void guiInitialize(void)
 
 void guiDrawAll(void)
 {
+    guiCore_ProcessTimers();
     //addLogCallback(LOG_FROM_TOP, "Redrawing GUI");
     guiCore_RedrawAll();
     // Update display(s)
@@ -463,7 +464,8 @@ void loadProfile(uint8_t index)
 {
     guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
     messageView.lastFocused = focusedWidget;
-    guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMessagePanel1);
+    messageView.type = MESSAGE_TYPE_INFO;
+    //guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMessagePanel1);
 }
 
 //---------------------------------------------//

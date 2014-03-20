@@ -1163,7 +1163,7 @@ void updateGuiProfileList(void)
         {
             //profileName = EE_GetProfileName(i);
             //snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, profileName);
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "Profile %d", i);
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " Profile %d", i);
         }
     }
 }

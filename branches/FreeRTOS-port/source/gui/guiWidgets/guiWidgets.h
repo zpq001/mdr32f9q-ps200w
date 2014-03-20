@@ -46,6 +46,13 @@ typedef struct {
     void **elements;
 } guiWidgetCollection_t;
 
+typedef struct {
+    int16_t x1;                        // Required by core for invalidating container areas while redrawing
+    int16_t x2;
+    int16_t y1;
+    int16_t y2;
+} traverseRectangle_t;
+
 
 
 // Basic widget type - all widget types MUST have all fields in their typedef beginning
@@ -124,6 +131,7 @@ typedef struct guiGenericContainer_t {
     //-----------------------------------------//
 
     guiWidgetCollection_t widgets;
+    traverseRectangle_t trect;
 
 } guiGenericContainer_t;
 
@@ -164,6 +172,7 @@ typedef struct guiPanel_t {
     //-----------------------------------------//
 
     guiWidgetCollection_t widgets;
+    traverseRectangle_t trect;
     uint8_t focusFallsThrough : 1;
     uint8_t frame : 3;
     // uint8_t focusIsKeptOnChilds : 1;      // doesn't let unfocus child widgets when focusFallsThrough is set. CHECKME

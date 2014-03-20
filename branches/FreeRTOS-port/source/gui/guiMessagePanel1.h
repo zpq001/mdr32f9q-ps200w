@@ -6,9 +6,20 @@
 
 
 typedef struct {
-    uint8_t mode;
+    uint8_t type;
+    uint8_t code;
     guiGenericWidget_t *lastFocused;
 } messageView_t;
+
+enum messageViewTypes {
+    MESSAGE_TYPE_INFO,
+    MESSAGE_TYPE_WARNING,
+    MESSAGE_TYPE_ERROR
+};
+
+
+
+
 
 extern messageView_t messageView;
 

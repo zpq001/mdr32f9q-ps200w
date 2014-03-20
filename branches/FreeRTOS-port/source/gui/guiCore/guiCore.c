@@ -299,7 +299,7 @@ void guiCore_Init(guiGenericWidget_t *guiRootWidget)
 }
 
 
-
+/*
 //-------------------------------------------------------//
 //  Top function for GUI redrawing
 //
@@ -405,7 +405,187 @@ void guiCore_RedrawAll(void)
     }
     // Process messages
     guiCore_ProcessMessageQueue();
+} */
+
+//-------------------------------------------------------//
+//  Top function for GUI redrawing
+//
+//-------------------------------------------------------//
+void guiCore_RedrawAll(void)
+{
+    guiGenericWidget_t *widget;
+    guiGenericWidget_t *nextWidget;
+    guiGenericWidget_t *processedWidget;
+    uint8_t index;
+    uint8_t containerRequiredRedraw;
+    uint8_t trectEmpty;
+    guiGenericWidget_t *w;
+    uint8_t i;
+    rect16_t wrect;
+
+    // Start widget tree traverse from root widget
+    widget = rootWidget;
+    guiGraph_SetBaseXY(widget->x, widget->y);
+
+    while(1)
+    {
+        // Process widget
+        containerRequiredRedraw = widget->redrawRequired;
+        if (widget->redrawRequired)
+        {
+            // The redrawRequired flag is reset by widget after processing DRAW event
+            widget->processEvent(widget, guiEvent_DRAW);
+        }
+        // Check if widget has children (is a container)
+        if (widget->isContainer)
+        {
+            if (((guiGenericContainer_t *)widget)->widgets.traverseIndex == 0)
+            {
+                // The first time visit
+                // TODO - set graph clipping
+                if (containerRequiredRedraw)
+                {
+                    // If container needed to be redawn itself, set trect to it's size
+                    ((guiGenericContainer_t *)widget)->trect.x1 = 0;
+                    ((guiGenericContainer_t *)widget)->trect.y1 = 0;
+                    ((guiGenericContainer_t *)widget)->trect.x2 = widget->width - 1;
+                    ((guiGenericContainer_t *)widget)->trect.y2 = widget->height - 1;
+                }
+                else
+                {
+                    // Set trect to be empty - it may be expanded by child widgets
+                    ((guiGenericContainer_t *)widget)->trect.x1 = 0;
+                    ((guiGenericContainer_t *)widget)->trect.y1 = 0;
+                    ((guiGenericContainer_t *)widget)->trect.x2 = -1;
+                    ((guiGenericContainer_t *)widget)->trect.y2 = -1;
+                }
+            }
+
+            // If container has unprocessed children
+            if ( ((guiGenericContainer_t *)widget)->widgets.traverseIndex <
+                 ((guiGenericContainer_t *)widget)->widgets.count )
+            {
+                // switch to next one if possible
+                index = ((guiGenericContainer_t *)widget)->widgets.traverseIndex++;
+                nextWidget = ((guiGenericContainer_t *)widget)->widgets.elements[index];
+                // check if widget actually exists and is visible
+                if ((nextWidget) && (nextWidget->isVisible))
+                {
+                    // Check if widget must be redrawn forcibly
+                    // <------------ analyze if nextWidget and parent's trect overlap
+                    if (widget->redrawForced)
+                    {
+                        nextWidget->redrawForced = 1;
+                        nextWidget->redrawRequired = 1;
+                    }
+                    // Switch to next widget if required
+                    if ((nextWidget->redrawRequired) || (nextWidget->isContainer))
+                    {
+                        widget = nextWidget;
+                        guiGraph_OffsetBaseXY(widget->x, widget->y);
+                    }
+                }
+                // Either skip current widget which does not require redraw,
+                // or redraw new widget that was selected
+                continue;
+            }
+            else
+            {
+                // All container child items are processed. Reset counter of processed items.
+                ((guiGenericContainer_t *)widget)->widgets.traverseIndex = 0;
+                widget->redrawForced = 0;
+                if (widget->parent == 0)    // root widget has no parent
+                    break;                  // done
+            }
+        }
+        else
+        {
+            // Widget is not a container
+            widget->redrawForced = 0;
+        }
+
+        //-------------------------//
+        // A widget has been processed.
+        // Move up the tree
+        guiGraph_OffsetBaseXY(-widget->x, -widget->y);
+        processedWidget = widget;
+        widget = widget->parent;
+
+
+        // Invalidate widget's rectangle for it's neighbours with higher Z
+        // We get here if widget was not container but required redraw,
+        // or widget was a container (possibly not required redraw).
+
+        // trect has coordinates of it's container.
+
+        if (processedWidget->isContainer)
+        {
+            wrect.x1 = ((guiGenericContainer_t *)processedWidget)->trect.x1;
+            wrect.y1 = ((guiGenericContainer_t *)processedWidget)->trect.y1;
+            wrect.x2 = ((guiGenericContainer_t *)processedWidget)->trect.x2;
+            wrect.y2 = ((guiGenericContainer_t *)processedWidget)->trect.y2;
+
+            // Offset to parent's coordinates
+            wrect.x1 += processedWidget->x;
+            wrect.y1 += processedWidget->y;
+            wrect.x2 += processedWidget->x;
+            wrect.y2 += processedWidget->y;
+        }
+        else
+        {
+            wrect.x1 = processedWidget->x;
+            wrect.y1 = processedWidget->y;
+            wrect.x2 = processedWidget->x + processedWidget->width - 1;
+            wrect.y2 = processedWidget->y + processedWidget->height - 1;
+        }
+
+        // Expand parent's invalidating rectangle
+        trectEmpty = ( ((guiGenericContainer_t *)widget)->trect.x1 > ((guiGenericContainer_t *)widget)->trect.x2 ) ? 1 : 0;
+        if (wrect.x1 < wrect.x2)
+        {
+            if ((trectEmpty) || (wrect.x1 < ((guiGenericContainer_t *)widget)->trect.x1))
+                ((guiGenericContainer_t *)widget)->trect.x1 = wrect.x1;
+            if ((trectEmpty) || (wrect.y1 < ((guiGenericContainer_t *)widget)->trect.y1))
+                ((guiGenericContainer_t *)widget)->trect.y1 = wrect.y1;
+            if ((trectEmpty) || (wrect.x2  > ((guiGenericContainer_t *)widget)->trect.x2))
+                ((guiGenericContainer_t *)widget)->trect.x2 = wrect.x2;
+            if ((trectEmpty) || (wrect.y2  > ((guiGenericContainer_t *)widget)->trect.y2))
+                ((guiGenericContainer_t *)widget)->trect.y2 = wrect.y2;
+        }
+
+        /////////////////////////
+#ifdef USE_Z_ORDER_REDRAW
+        // Analyze parent's flag
+        if (widget->redrawForced == 0)
+        {
+            // Widget has been redrawn - make overlapping widgets in the same container
+            //  with higher Z index redraw too
+            for (i = ((guiGenericContainer_t *)widget)->widgets.traverseIndex;
+                 i < ((guiGenericContainer_t *)widget)->widgets.count; i++)
+            {
+                w = ((guiGenericContainer_t *)widget)->widgets.elements[i];
+                if ((w != 0) && (w->isVisible))
+                {
+                    if (guiCore_CheckWidgetOvelap(w, &wrect))
+                    {
+                        w->redrawForced = 1;
+                        w->redrawRequired = 1;
+                    }
+                }
+            }
+        }
+#endif
+        /////////////////////////
+
+
+    }
+    // Process messages
+    guiCore_ProcessMessageQueue();
 }
+
+
+
+
 
 
 //-------------------------------------------------------//
@@ -714,6 +894,10 @@ guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int
 
     if (widget->isContainer)
     {
+        if ( (((guiGenericContainer_t *)widget)->widgets.count == 0) ||
+             (((guiGenericContainer_t *)widget)->widgets.elements == 0) )
+            return widget;
+
         // Point is inside container or one of it's widgets. Find out which one.
         i = ((guiGenericContainer_t *)widget)->widgets.count - 1;
         do

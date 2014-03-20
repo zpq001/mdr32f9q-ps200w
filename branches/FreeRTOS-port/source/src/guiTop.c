@@ -94,6 +94,7 @@ void vTaskGUI(void *pvParameters)
 				guiCore_ProcessMessageQueue();
 				break;
 			case GUI_TASK_REDRAW:
+				guiCore_ProcessTimers();
 				guiCore_RedrawAll();				// Draw GUI
 				LcdUpdateBothByCore(lcdBuffer);		// Flush buffer to LCDs
 				break;

@@ -6,6 +6,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "stdio.h"
 
@@ -25,6 +26,7 @@
 #include "guiMainForm.h"
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
+#include "guiMessagePanel1.h"
 //----------------------------//
 
 #include "converter.h"	// voltage, current, etc
@@ -34,6 +36,7 @@
 
 #include "service.h"	// temperature
 #include "control.h"	// some defines
+#include "eeprom.h"
 
 #include "buttons.h"
 #include "encoder.h"
@@ -43,10 +46,30 @@ xQueueHandle xQueueGUI;
 
 static dispatch_msg_t dispatcher_msg;
 
+static eeprom_message_t eeprom_msg;
 
 
 
+static xSemaphoreHandle xSemaphoreEEPROM;
 
+
+static char profileName[EE_PROFILE_NAME_SIZE];
+
+
+// Blockinbg read from EEPROM task
+static uint8_t readProfileListRecordName(uint8_t index, char *profileName)
+{
+	uint8_t profileState;
+	eeprom_msg.type = EE_TASK_GET_PROFILE_NAME;
+	eeprom_msg.profile_name_request.index = index;
+	eeprom_msg.profile_name_request.state = &profileState;
+	eeprom_msg.profile_name_request.name = profileName;
+	xSemaphoreTake(xSemaphoreEEPROM, 0);
+	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
+	// Wait for EEPROM task to complete
+	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+	return profileState;
+}
 
 
 
@@ -60,6 +83,8 @@ void vTaskGUI(void *pvParameters)
 	int32_t value;
 	uint8_t state;
 	uint8_t state2;
+	uint8_t i;
+    uint8_t profileState;
 	
 	// Initialize
 	xQueueGUI = xQueueCreate( 10, sizeof( gui_msg_t ) );		// GUI queue can contain 10 elements of type gui_incoming_msg_t
@@ -68,6 +93,16 @@ void vTaskGUI(void *pvParameters)
 		// Queue was not created and must not be used.
 		while(1);
 	}
+	
+	vSemaphoreCreateBinary( xSemaphoreEEPROM );
+	if( xSemaphoreEEPROM == 0 )
+    {
+        while(1);
+    }
+	
+	// Common fields
+	eeprom_msg.sender = sender_GUI;
+	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
 	
 	// Create all GUI elements and prepare core
 	guiMainForm_Initialize();
@@ -85,13 +120,21 @@ void vTaskGUI(void *pvParameters)
 			case GUI_TASK_RESTORE_ALL:
 				value = Converter_GetFeedbackChannel();
 				setGuiFeedbackChannel(value);
-				// Retore other values from EEPROM
+				// Restore other values from EEPROM
 				// TODO
 				
 				// Start normal GUI operation
 				guiEvent.type = GUI_EVENT_START;
 				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
 				guiCore_ProcessMessageQueue();
+
+				// Populate GUI profile list
+				for (i = 0; i < EE_PROFILES_COUNT; i++)
+				{
+					profileState = readProfileListRecordName(i, profileName);
+					updateGuiProfileListRecord(i, profileState, profileName);
+				}
+				
 				break;
 			case GUI_TASK_REDRAW:
 				guiCore_ProcessTimers();
@@ -161,9 +204,64 @@ void vTaskGUI(void *pvParameters)
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
 				setGuiTemperatureIndicator(converter_temp_celsius);
 				break;
+				
+			case GUI_TASK_PROFILE_EVENT:
+				if (msg.profile_event.event == PROFILE_LOAD)
+				{
+					if (msg.profile_event.err_code == PROFILE_OK)
+					{
+						// Profile succesfully loaded. Show message.
+						messageView.type = MESSAGE_TYPE_INFO;
+						messageView.lastFocused = 0;
+						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+						
+						// Bring GUI to initial state - TODO
+						
+						// Update widgets
+						value = Converter_GetFeedbackChannel();
+						setGuiFeedbackChannel(value);
+					}
+					else
+					{
+						// Profile load failed. Show message and update profile list record
+						messageView.type = MESSAGE_TYPE_ERROR;
+						messageView.lastFocused = 0;
+						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+					}
+					// Update single record
+					profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+					updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+				}
+				else
+				{
+					if (msg.profile_event.err_code == PROFILE_OK)
+					{
+						// Profile succesfully saved. Show message.
+						messageView.type = MESSAGE_TYPE_INFO;
+						messageView.lastFocused = 0;
+						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+					}
+					else
+					{
+						// Profile save failed. Show message and update profile list record
+						messageView.type = MESSAGE_TYPE_ERROR;
+						messageView.lastFocused = 0;
+						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+					}
+					// Update single record
+					profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+					updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+				}
+				break;
+			
 		}
 	}
 }
+
+
+
+
+
 
 
 //=================================================================//
@@ -248,6 +346,29 @@ void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, 
 }
 
 
+
+
+//---------------------------------------------//
+// Requests for profile load
+//---------------------------------------------//
+void loadProfile(uint8_t index)
+{
+	dispatcher_msg.type = DISPATCHER_LOAD_PROFILE;
+	dispatcher_msg.profile_load.number = index;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+}
+
+
+//---------------------------------------------//
+// Requests for profile save
+//---------------------------------------------//
+void saveProfile(uint8_t index, char *profileName)
+{
+	dispatcher_msg.type = DISPATCHER_SAVE_PROFILE;
+	dispatcher_msg.profile_save.number = index;
+	dispatcher_msg.profile_save.new_name = profileName;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+}
 
 
 

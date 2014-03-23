@@ -113,8 +113,8 @@ enum setupViewModes {
 };
 
 enum setupViewProfileActions {
-    PROFILE_SAVE,
-    PROFILE_LOAD
+    PROFILE_ACTION_SAVE,
+    PROFILE_ACTION_LOAD
 };
 
 // Hint label
@@ -139,6 +139,8 @@ guiTextLabel_t textLabel_overloadThresholdHint;
 guiWidgetHandler_t Overload_CheckBoxHandlers[2];
 guiWidgetHandler_t Overload_SpinBoxHandlers[2];
 
+
+char newProfileName[EE_PROFILE_NAME_SIZE];
 
 //-------------------------------------------------------//
 //  Panel initialization
@@ -447,9 +449,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     profileList.canWrap = 0;
     profileList.restoreIndexOnEscape = 1;
     profileList.x = 96;
-    profileList.y = 11;
+    profileList.y = 0;
     profileList.width = 96;
-    profileList.height = 68 - 13;
+    profileList.height = 68;
     profileList.strings = profileListElements;
     profileList.stringCount = 0;
     while (profileList.stringCount < PROFILE_LIST_ELEMENTS_COUNT)
@@ -620,12 +622,12 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     }
     else if (setupList.selectedIndex == 3)
     {
-        setupView.profileAction = PROFILE_LOAD;
+        setupView.profileAction = PROFILE_ACTION_LOAD;
         guiCore_SetVisible((guiGenericWidget_t *)&profileList, 1);
     }
     else if (setupList.selectedIndex == 4)
     {
-        setupView.profileAction = PROFILE_SAVE;
+        setupView.profileAction = PROFILE_ACTION_SAVE;
         guiCore_SetVisible((guiGenericWidget_t *)&profileList, 1);
     }
     else
@@ -937,7 +939,7 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
         ((event->spec == GUI_KEY_EVENT_UP_SHORT) && (event->lparam == GUI_KEY_ENCODER)))
     {
         // All checks are done by dispatcher
-        if (setupView.profileAction == PROFILE_LOAD)
+        if (setupView.profileAction == PROFILE_ACTION_LOAD)
         {
             // Load profile data from EEPROM
             loadProfile(profileList.selectedIndex);
@@ -945,7 +947,8 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
         else
         {
             // Save profile data to EEPROM
-            saveProfile(profileList.selectedIndex, "");   // TODO: ask for new name before saving
+			snprintf(newProfileName, EE_PROFILE_NAME_SIZE, "Profile %d", profileList.selectedIndex);	// tap
+            saveProfile(profileList.selectedIndex, newProfileName);   // TODO: ask for new name before saving
 
         }
         return GUI_EVENT_ACCEPTED;
@@ -1145,27 +1148,24 @@ void setGuiOverloadSetting(uint8_t protectionEnabled, uint8_t warningEnabled, in
 
 //---------------------------------------------//
 // Called by GUI top-level
-// Reads profile data and populates list
+// Updates profile record
 //---------------------------------------------//
-void updateGuiProfileList(void)
+void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name)
 {
-    uint8_t i;
-    uint8_t profileState;
-    char *profileName;
-    for (i = 0; i < PROFILE_LIST_ELEMENTS_COUNT; i++)
-    {
-        profileState = EE_GetProfileState(i);
-        if ((profileState == EE_PROFILE_CRC_ERROR) || (profileState == EE_PROFILE_HW_ERROR))
-        {
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<empty>");
-        }
-        else
-        {
-            //profileName = EE_GetProfileName(i);
-            //snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, profileName);
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " Profile %d", i);
-        }
-    }
+	switch (profileState)
+	{
+		case EE_PROFILE_CRC_ERROR:
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " <empty>");
+			break;
+		case EE_PROFILE_HW_ERROR:
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " <hw n/a>");
+			break;
+		default:
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " %s", name);
+			break;
+	}
+	profileList.redrawRequired = 1;
+	profileList.redrawForced = 1;
 }
 
 

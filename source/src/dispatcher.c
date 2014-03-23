@@ -32,6 +32,9 @@
 
 xQueueHandle xQueueDispatcher;
 
+static eeprom_message_t eeprom_msg;
+static xSemaphoreHandle xSemaphoreEEPROM;
+
 
 void vTaskDispatcher(void *pvParameters) 
 {
@@ -39,7 +42,7 @@ void vTaskDispatcher(void *pvParameters)
 	converter_message_t converter_msg;
 	uart_transmiter_msg_t transmitter_msg;
 	gui_msg_t gui_msg;
-	uint8_t temp8u;
+	uint8_t eepromState;
 	uint32_t sound_msg;
 	
 	// Initialize
@@ -50,6 +53,11 @@ void vTaskDispatcher(void *pvParameters)
 		while(1);
 	}
 	
+	vSemaphoreCreateBinary( xSemaphoreEEPROM );
+	if( xSemaphoreEEPROM == 0 )
+    {
+        while(1);
+    }
 	
 	//---------- Task init sequence ----------//
 	// Tasks suspended on this moment:
@@ -59,12 +67,18 @@ void vTaskDispatcher(void *pvParameters)
 	vTaskDelay( 200 / portTICK_RATE_MS);
 	
 	// Read EEPROM and restore global settings and recent profile
-	temp8u = EE_InitialLoad();
+	eeprom_msg.type = EE_TASK_INITIAL_LOAD;
+	eeprom_msg.initial_load.state = &eepromState;
+	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
+	xSemaphoreTake(xSemaphoreEEPROM, 0);
+	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
+	// Wait for EEPROM task to complete
+	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
 	
 	// EEPROM status 
 	gui_msg.type = GUI_TASK_EEPROM_STATE;
 	// 1 = OK, 0 = FAIL
-	gui_msg.data.a = (temp8u == 0) ? 1 : 0;	
+	gui_msg.data.a = (eepromState == 0) ? 1 : 0;	
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	
 	// Load converter profile
@@ -122,53 +136,82 @@ void vTaskDispatcher(void *pvParameters)
 				
 			//----------------- Load profile ---------------//	
 			case DISPATCHER_LOAD_PROFILE:
+				// Send to EEPROM task command to read profile data
+				eeprom_msg.type = EE_TASK_LOAD_PROFILE;
+				eeprom_msg.profile_load_request.index = msg.profile_load.number;
+				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);
+				break;
+			case DISPATCHER_LOAD_PROFILE_RESPONSE:
+				// EEPROM task has completed profile data load
 				// Check profile state
-				if (EE_GetProfileState(msg.profile_load.number) == EE_PROFILE_VALID)
+				if (msg.profile_load_response.profileState == EE_PROFILE_VALID)
 				{
-					// State OK. Try to load data
-					if (EE_LoadDeviceProfile(msg.profile_load.number) == EE_OK)
-					{
-						// New profile data is loaded
-						converter_msg.type = CONVERTER_LOAD_PROFILE;
-						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-						// Send response to GUI
-						// TODO
-						// Bring GUI to initial state
-						// TODO
-					}
-					else
-					{
-						// Send response ERROR to GUI
-						// TODO
-						// Repopulate GUI profile list (or update exact profile record)
-						// TODO
-					}
+					// New profile data is loaded
+					converter_msg.type = CONVERTER_LOAD_PROFILE;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					// Wait for conveter task to complete - TODO
+					// Send response to GUI
+					gui_msg.type = GUI_TASK_PROFILE_EVENT;
+					gui_msg.profile_event.event = PROFILE_LOAD;
+					gui_msg.profile_event.err_code = PROFILE_OK;
+					gui_msg.profile_event.index = msg.profile_load_response.index;
+					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+					// Send response to sound task
+					sound_msg = SND_CONV_CMD_OK | SND_CONVERTER_PRIORITY_NORMAL;
+					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				else
-				{	
+				{
 					// Send response ERROR to GUI
-					// TODO
+					gui_msg.type = GUI_TASK_PROFILE_EVENT;
+					gui_msg.profile_event.event = PROFILE_LOAD;
+					gui_msg.profile_event.err_code = PROFILE_ERROR;
+					gui_msg.profile_event.index = msg.profile_load_response.index;
+					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+					// Send response to sound task
+					sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
+					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				break;
 			
 			//----------------- Save profile ---------------//	
 			case DISPATCHER_SAVE_PROFILE:
-				// Try to save data
-				if (EE_SaveDeviceProfile(msg.profile_save.number, msg.profile_save.new_name) == EE_OK)
+				eeprom_msg.type = EE_TASK_SAVE_PROFILE;
+				eeprom_msg.profile_save_request.index  = msg.profile_save.number;
+				eeprom_msg.profile_save_request.newName = msg.profile_save.new_name;
+				xSemaphoreTake(xSemaphoreEEPROM, 0);
+				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);	
+				// Wait while EEPROM task updates it's data structure - to prevent system state change.
+				xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+				break;
+			case DISPATCHER_SAVE_PROFILE_RESPONSE:
+				// EEPROM task has completed profile data saving
+				// Check profile state
+				if (msg.profile_save_response.profileState == EE_PROFILE_VALID)
 				{
 					// Profile data is saved
 					// Send response to GUI
-					// TODO
-					// Repopulate GUI profile list (or update exact profile record)
-					// TODO
+					gui_msg.type = GUI_TASK_PROFILE_EVENT;
+					gui_msg.profile_event.event = PROFILE_SAVE;
+					gui_msg.profile_event.err_code = PROFILE_OK;
+					gui_msg.profile_event.index = msg.profile_save_response.index;
+					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+					// Send response to sound task
+					sound_msg = SND_CONV_CMD_OK | SND_CONVERTER_PRIORITY_NORMAL;
+					xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 				}
 				else
 				{
 					// Profile data cannot be saved
 					// Send response to GUI
-					// TODO
-					// Repopulate GUI profile list (or update exact profile record)
-					// TODO
+					gui_msg.type = GUI_TASK_PROFILE_EVENT;
+					gui_msg.profile_event.event = PROFILE_SAVE;
+					gui_msg.profile_event.err_code = PROFILE_ERROR;
+					gui_msg.profile_event.index = msg.profile_save_response.index;
+					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+					// Send response to sound task
+					sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
+					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				break;
 			

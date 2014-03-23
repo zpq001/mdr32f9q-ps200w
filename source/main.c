@@ -29,6 +29,7 @@
 #include "led.h"
 #include "encoder.h"
 #include "i2c_eeprom.h"
+#include "eeprom.h"
 #include "dwt_delay.h"
 #include "control.h"
 
@@ -186,6 +187,7 @@ int main(void)
 	
 	
 	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
+	xTaskCreate( vTaskEEPROM, 		( signed char * ) 		"EEPROM driver", configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
 	
 	vTaskStartScheduler();
 	

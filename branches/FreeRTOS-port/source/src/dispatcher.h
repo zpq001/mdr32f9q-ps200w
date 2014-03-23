@@ -23,6 +23,8 @@ enum DispatcherTaskMsgTypes {
 	
 	DISPATCHER_LOAD_PROFILE,
 	DISPATCHER_SAVE_PROFILE,
+	DISPATCHER_LOAD_PROFILE_RESPONSE,
+	DISPATCHER_SAVE_PROFILE_RESPONSE,
 	
 	DISPATCHER_TEST_FUNC1
 };
@@ -56,9 +58,28 @@ typedef struct {
 			uint8_t number;
 		} profile_load;
 		struct {
+			uint8_t index;
+			uint8_t profileState;
+		} profile_load_response;
+		struct {
 			uint8_t number;
 			char *new_name;
 		} profile_save;
+		struct {
+			uint8_t index;
+			uint8_t profileState;
+		} profile_save_response;
+		struct {
+			uint8_t number;
+			uint8_t sender;
+			char **buffer;
+		} profile_name_request;
+		struct {
+			uint8_t number;
+			uint8_t sender;
+			uint8_t profileState;
+			char **buffer;
+		} profile_name_response;
 	};
 } dispatch_msg_t;
 

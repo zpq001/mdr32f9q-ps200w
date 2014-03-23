@@ -133,10 +133,10 @@ static uint8_t guiMessagePanel1_onTimer(void *widget, guiEvent_t *event)
 
 static uint8_t guiMessagePanel1_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
+	uint8_t exit_code = 0;
     guiPanelTranslatedKey_t *tkey = (guiPanelTranslatedKey_t *)translatedKey;
     tkey->key = 0;
-    uint8_t exit_code = 0;
-
+    
     if (event->spec == GUI_KEY_EVENT_UP_SHORT)
     {
         if (event->lparam == GUI_KEY_ESC)

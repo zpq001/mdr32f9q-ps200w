@@ -15,7 +15,7 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiMessagePanel1.h"
-
+#include "eeprom.h"
 
 // UART parser test
 #include "uartParser.h"
@@ -131,7 +131,8 @@ void guiInitialize(void)
     timeHours = 0;
     timeMinutes = 0;
     timeSeconds = 0;
-
+    uint8_t i;
+    char profileName[50];
 
     set_voltage = 10000;        // mV
     voltage_adc = set_voltage;
@@ -145,7 +146,13 @@ void guiInitialize(void)
     guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
     // Profile list init
-    updateGuiProfileList();
+    for (i=0; i < EE_PROFILES_COUNT; i++)
+    {
+        sprintf(profileName, "Profile %d", i);
+        updateGuiProfileListRecord(i, EE_PROFILE_VALID, profileName);
+    }
+
+
     // EEPROM
     guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
     //guiEvent.spec = 0;  // EEPROM FAIL

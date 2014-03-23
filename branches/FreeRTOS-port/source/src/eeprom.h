@@ -1,5 +1,9 @@
 
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 /*
     EEPROM profile record structure (every record has size EE_PROFILE_SIZE in bytes):
@@ -64,12 +68,6 @@ Note:
 #define EE_PROFILE_CRC_ERROR		(1<<3)
 #define EE_WRONG_ARGUMENT			0x10
 
-//#define EEPROM_HW_ERROR			1
-//#define EEPROM_CRC_ERROR		2
-//#define EEPROM_WRONG_ARGUMENT	3
-
-
-
 
 
 
@@ -113,8 +111,6 @@ typedef struct {
 
 
 
-
-
 typedef struct {
 	uint32_t number_of_power_cycles;
 	int8_t adc_voltage_offset;
@@ -125,18 +121,49 @@ typedef struct {
 
 //---------------------------------------------//
 
+enum {
+	EE_TASK_INITIAL_LOAD,
+	EE_TASK_GET_PROFILE_NAME,
+	EE_TASK_LOAD_PROFILE,
+	EE_TASK_SAVE_PROFILE
+};
+
+
+
+typedef struct {
+	uint8_t type;
+	uint8_t sender;
+	xSemaphoreHandle *xSemaphorePtr;
+	union {
+		struct {
+			uint8_t *state;
+		} initial_load;
+		struct {
+			uint8_t index;
+			uint8_t *state;
+			char *name;
+		} profile_name_request;
+		struct {
+			uint8_t index;
+        } profile_load_request;
+		struct {
+			uint8_t index;
+			char *newName;
+        } profile_save_request;
+	};
+} eeprom_message_t;
+
+
+
+extern xQueueHandle xQueueEEPROM;
 
 extern global_settings_t * global_settings;
 extern device_profile_t *device_profile;
-//extern char device_profile_name[];
-extern uint8_t profile_info[];
 
-uint8_t EE_InitialLoad(void);
 
 uint8_t EE_SaveGlobalSettings(void);
 uint8_t EE_SaveRecentProfile(void);
-uint8_t EE_LoadDeviceProfile(uint8_t i);
-uint8_t EE_SaveDeviceProfile(uint8_t i, char *name);
 uint8_t EE_GetProfileState(uint8_t i);
+void vTaskEEPROM(void *pvParameters);
 
 

@@ -648,6 +648,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiEditPanel1.c</FilePath>
             </File>
+            <File>
+              <FileName>guiMessagePanel1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiMessagePanel1.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1403,6 +1408,11 @@
               <FileName>guiEditPanel1.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiEditPanel1.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiMessagePanel1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiMessagePanel1.c</FilePath>
             </File>
           </Files>
         </Group>

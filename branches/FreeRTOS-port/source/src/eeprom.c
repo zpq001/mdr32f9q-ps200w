@@ -24,6 +24,7 @@
 
 #include "global_def.h"
 #include "converter.h"
+#include "dispatcher.h"
 
 
 static device_profile_t device_profile_data;		
@@ -185,7 +186,7 @@ static void update_device_profile(void)
 //		EE_PROFILE_HW_ERROR if there was an hardware error for recent profile
 //		EE_PROFILE_CRC_ERROR if there was CRC error for recent profile
 //		If specific bit is cleared, it means that that kind of error has not occured.
-uint8_t EE_InitialLoad(void)
+static uint8_t EE_InitialLoad(void)
 {
 	uint8_t err_code = EE_OK;
 	uint8_t hw_result;
@@ -342,7 +343,7 @@ uint8_t EE_SaveRecentProfile(void)
 //
 //
 //-------------------------------------------------------//
-uint8_t EE_LoadDeviceProfile(uint8_t i)
+static uint8_t EE_LoadDeviceProfile(uint8_t i)
 {	
 	uint8_t err_code;
 	uint8_t hw_result;
@@ -397,7 +398,7 @@ uint8_t EE_LoadDeviceProfile(uint8_t i)
 //	profile_info[i] must be filled correctly before calling.
 //
 //-------------------------------------------------------//
-uint8_t EE_GetProfileName(uint8_t i, char **str)
+static uint8_t EE_GetProfileName(uint8_t i, char *str_to_fill)
 {
 	uint8_t err_code;
 	uint8_t hw_result;
@@ -408,7 +409,7 @@ uint8_t EE_GetProfileName(uint8_t i, char **str)
 		if (profile_info[i] == EE_PROFILE_VALID)
 		{
 			ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
-			hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+			hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)str_to_fill, EE_PROFILE_NAME_SIZE);
 			if (hw_result == 0)
 			{
 				// Hardware EEPROM access OK.
@@ -444,7 +445,7 @@ uint8_t EE_GetProfileName(uint8_t i, char **str)
 // Saves profile data to EEPROM
 //
 //-------------------------------------------------------//
-uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
+static uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
 {	
 	uint8_t err_code;
 	uint8_t hw_result;
@@ -453,7 +454,7 @@ uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
 	
 	if (i < EE_PROFILES_COUNT) 
 	{
-		update_device_profile();
+		//update_device_profile(); - moved to task
 		// Copy name
 		strncpy(device_profile_name, name, EE_PROFILE_NAME_SIZE);
 		
@@ -512,56 +513,75 @@ uint8_t EE_GetProfileState(uint8_t i)
 
 
 
+xQueueHandle xQueueEEPROM;
+
+static eeprom_message_t msg;
+static dispatch_msg_t dispatcher_msg;
 
 
-/*
-
-//-------------------------------------------------------//
-//	Reads last saved profile into global device_profile
-//	Returns 0 if success.
-//-------------------------------------------------------//
-uint8_t EE_load_recent_profile(void)
-{	
-}
-
-//-------------------------------------------------------//
-//	Reads profile with specified number (starting with 0)
-//	into global device_profile.
-//	Returns 0 if success.
-//-------------------------------------------------------//
-uint8_t EE_load_profile(uint8_t number)
+void vTaskEEPROM(void *pvParameters) 
 {
+	// Initialize
+	xQueueEEPROM = xQueueCreate( 10, sizeof( eeprom_message_t ) );		// Queue can contain 10 elements
+	if( xQueueEEPROM == 0 )
+	{
+		// Queue was not created and must not be used.
+		while(1);
+	}
+	
+	
+	while(1)
+	{
+		xQueueReceive(xQueueEEPROM, &msg, portMAX_DELAY);
+		switch (msg.type)
+		{
+			case EE_TASK_INITIAL_LOAD:
+				*msg.initial_load.state = EE_InitialLoad();
+				if (msg.xSemaphorePtr != 0)
+				{
+					// Confirm
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				}
+				break;
+				
+			case EE_TASK_GET_PROFILE_NAME:
+				*msg.profile_name_request.state = EE_GetProfileName(msg.profile_name_request.index, msg.profile_name_request.name);
+				if (msg.xSemaphorePtr != 0)
+				{
+					// Confirm
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				}
+				break;
+			
+			case EE_TASK_LOAD_PROFILE:
+				dispatcher_msg.type = DISPATCHER_LOAD_PROFILE_RESPONSE;
+				dispatcher_msg.profile_load_response.profileState = EE_GetProfileState(msg.profile_load_request.index);
+				if (dispatcher_msg.profile_load_response.profileState == EE_PROFILE_VALID)
+				{
+					dispatcher_msg.profile_load_response.profileState = EE_LoadDeviceProfile(msg.profile_load_request.index);
+				}
+				// Confirm
+				dispatcher_msg.profile_load_response.index = msg.profile_load_request.index;	// return passed index
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
+				break;
+			
+			case EE_TASK_SAVE_PROFILE:
+				// Gather system state
+				update_device_profile();
+				if (msg.xSemaphorePtr != 0)
+				{
+					// Confirm
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				}
+				// Save to EEPROM device
+				dispatcher_msg.type = DISPATCHER_SAVE_PROFILE_RESPONSE;
+				dispatcher_msg.profile_save_response.profileState = EE_SaveDeviceProfile(msg.profile_save_request.index, msg.profile_save_request.newName);
+				dispatcher_msg.profile_save_response.index = msg.profile_save_request.index;	// return passed index
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+				break;
+		}
+	}
 }
-
-//-------------------------------------------------------//
-//	Saves the global device_profile
-//	
-//-------------------------------------------------------//
-void EE_save_recent_profile(void)
-{
-}
-
-
-//-------------------------------------------------------//
-//	Returns total count of profiles
-//	
-//-------------------------------------------------------//
-uint8_t EE_get_profile_count(void)
-{
-	return EE_PROFILES_COUNT;
-}
-
-//-------------------------------------------------------//
-//	Returns name of a profile
-//	If profile is empty or there is CRC error 
-//	(which is actualy the same), function return 0.
-//-------------------------------------------------------//
-char *EE_get_profile_name(uint8_t number)
-{
-}
-*/
-
-
 
 
 

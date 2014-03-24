@@ -469,10 +469,18 @@ void updateGuiOverloadSetting(void)
 //---------------------------------------------//
 void loadProfile(uint8_t index)
 {
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
-    messageView.lastFocused = focusedWidget;
-    messageView.type = MESSAGE_TYPE_INFO;
-    //guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMessagePanel1);
+    if (index % 3 == 0)
+    {
+        guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED, 0, 30);
+    }
+    else if (index % 3 == 1)
+    {
+        guiMessagePanel1_Show(MESSAGE_TYPE_WARNING, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+    }
+    else if (index % 3 == 2)
+    {
+        guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
+    }
 }
 
 //---------------------------------------------//

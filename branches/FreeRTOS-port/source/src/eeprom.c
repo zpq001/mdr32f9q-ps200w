@@ -509,6 +509,18 @@ uint8_t EE_GetProfileState(uint8_t i)
 
 
 
+/*
+EEPROM settings:
+
+	- save or not device global settings on POFF
+	- save or not device profile on POFF
+
+	- load global settings from EEPROM upon start
+	- load recent profile or default settings upon start
+
+*/
+
+
 
 
 

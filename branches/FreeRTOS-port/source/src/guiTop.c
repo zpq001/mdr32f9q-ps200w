@@ -55,6 +55,8 @@ static xSemaphoreHandle xSemaphoreEEPROM;
 
 static char profileName[EE_PROFILE_NAME_SIZE];
 
+static uint8_t profileOperationInProgress = 0;
+
 
 // Blockinbg read from EEPROM task
 static uint8_t readProfileListRecordName(uint8_t index, char *profileName)
@@ -208,12 +210,10 @@ void vTaskGUI(void *pvParameters)
 			case GUI_TASK_PROFILE_EVENT:
 				if (msg.profile_event.event == PROFILE_LOAD)
 				{
-					if (msg.profile_event.err_code == PROFILE_OK)
+					if (msg.profile_event.err_code == EE_PROFILE_VALID)
 					{
-						// Profile succesfully loaded. Show message.
-						messageView.type = MESSAGE_TYPE_INFO;
-						messageView.lastFocused = 0;
-						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+						// Profile succesfully loaded
+						guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED, 0, 30);
 						
 						// Bring GUI to initial state - TODO
 						
@@ -223,35 +223,34 @@ void vTaskGUI(void *pvParameters)
 					}
 					else
 					{
-						// Profile load failed. Show message and update profile list record
-						messageView.type = MESSAGE_TYPE_ERROR;
-						messageView.lastFocused = 0;
-						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+						// Profile load failed
+						if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
+							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+						else
+							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);						
 					}
-					// Update single record
-					profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-					updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
 				}
-				else
+				else // PROFILE_SAVE
 				{
-					if (msg.profile_event.err_code == PROFILE_OK)
+					if (msg.profile_event.err_code == EE_PROFILE_VALID)
 					{
-						// Profile succesfully saved. Show message.
-						messageView.type = MESSAGE_TYPE_INFO;
-						messageView.lastFocused = 0;
-						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+						// Profile succesfully saved
+						guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
 					}
 					else
 					{
-						// Profile save failed. Show message and update profile list record
-						messageView.type = MESSAGE_TYPE_ERROR;
-						messageView.lastFocused = 0;
-						guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMessagePanel1, &guiEvent_SHOW);
+						// Profile save failed
+						if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
+							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+						else
+							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
 					}
-					// Update single record
-					profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-					updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
 				}
+				// Update single record anyway
+				profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+				updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+				// Allow another profile load or save request
+				profileOperationInProgress = 0;
 				break;
 			
 		}
@@ -353,9 +352,14 @@ void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, 
 //---------------------------------------------//
 void loadProfile(uint8_t index)
 {
-	dispatcher_msg.type = DISPATCHER_LOAD_PROFILE;
-	dispatcher_msg.profile_load.number = index;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+	if (profileOperationInProgress == 0)
+	{
+		dispatcher_msg.type = DISPATCHER_LOAD_PROFILE;
+		dispatcher_msg.profile_load.number = index;
+		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);	
+		// Preserve repeating until answer is received
+		profileOperationInProgress = 1;
+	}
 }
 
 
@@ -364,10 +368,15 @@ void loadProfile(uint8_t index)
 //---------------------------------------------//
 void saveProfile(uint8_t index, char *profileName)
 {
-	dispatcher_msg.type = DISPATCHER_SAVE_PROFILE;
-	dispatcher_msg.profile_save.number = index;
-	dispatcher_msg.profile_save.new_name = profileName;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+	if (profileOperationInProgress == 0)
+	{
+		dispatcher_msg.type = DISPATCHER_SAVE_PROFILE;
+		dispatcher_msg.profile_save.number = index;
+		dispatcher_msg.profile_save.new_name = profileName;
+		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+		// Preserve repeating until answer is received
+		profileOperationInProgress = 1;
+	}
 }
 
 

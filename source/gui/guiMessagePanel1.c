@@ -33,7 +33,7 @@
 
 static uint8_t guiMessagePanel1_onDraw(void *widget, guiEvent_t *event);
 static uint8_t guiMessagePanel1_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
-static uint8_t guiMessagePanel1_onVisibleChanged(void *widget, guiEvent_t *event);
+//static uint8_t guiMessagePanel1_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiMessagePanel1_onTimer(void *widget, guiEvent_t *event);
 
 
@@ -55,21 +55,21 @@ void guiMessagePanel1_Initialize(guiGenericWidget_t *parent)
     guiPanel_Initialize(&guiMessagePanel1, parent);
     guiMessagePanel1.widgets.count = MESSAGE_PANEL1_ELEMENTS_COUNT;
     guiMessagePanel1.widgets.elements = guiMessagePanel1Elements;
-    guiMessagePanel1.x = 5;
-    guiMessagePanel1.y = 5;
-    guiMessagePanel1.width = 96-10;
-    guiMessagePanel1.height = 68-15;
+    guiMessagePanel1.x = 3;
+    guiMessagePanel1.y = 3;
+    guiMessagePanel1.width = 96-6;
+    guiMessagePanel1.height = 68-12;
     guiMessagePanel1.showFocus = 0;
     guiMessagePanel1.focusFallsThrough = 0;
     guiMessagePanel1.keyTranslator = &guiMessagePanel1_KeyTranslator;
-    guiMessagePanel1.handlers.count = 3;
+    guiMessagePanel1.handlers.count = 2;
     guiMessagePanel1.handlers.elements = messagePanelHandlers;
     guiMessagePanel1.handlers.elements[0].eventType = GUI_EVENT_DRAW;
     guiMessagePanel1.handlers.elements[0].handler = *guiMessagePanel1_onDraw;
-    guiMessagePanel1.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
-    guiMessagePanel1.handlers.elements[1].handler = *guiMessagePanel1_onVisibleChanged;
-    guiMessagePanel1.handlers.elements[2].eventType = GUI_EVENT_TIMER;
-    guiMessagePanel1.handlers.elements[2].handler = *guiMessagePanel1_onTimer;
+    //guiMessagePanel1.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
+    //guiMessagePanel1.handlers.elements[1].handler = *guiMessagePanel1_onVisibleChanged;
+    guiMessagePanel1.handlers.elements[1].eventType = GUI_EVENT_TIMER;
+    guiMessagePanel1.handlers.elements[1].handler = *guiMessagePanel1_onTimer;
     guiMessagePanel1.isVisible = 0;
     guiMessagePanel1.frame = 0;
 
@@ -87,36 +87,61 @@ static uint8_t guiMessagePanel1_onDraw(void *widget, guiEvent_t *event)
         LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
         LCD_SetLineStyle(LINE_STYLE_SOLID);
         LCD_DrawRect(wx,wy,guiMessagePanel1.width,guiMessagePanel1.height,1);
+        LCD_DrawHorLine(wx+5,wy+23,guiMessagePanel1.width-10,1);
 
-        LCD_SetFont(&font_h10);
+        LCD_SetFont(&font_h10_bold);
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
 
 		// Draw icon
         // Draw caption text
         switch (messageView.type)
         {
             case MESSAGE_TYPE_INFO:
-                LCD_PrintString("Information", wx + 20, wy + 2, IMAGE_MODE_NORMAL);
+                LCD_PrintString("Info", wx + 25, wy + 10, IMAGE_MODE_NORMAL);
+                LCD_DrawImage(info_8x18, wx + 8,wy + 2, 8, 18, 1);
                 break;
             case MESSAGE_TYPE_WARNING:
-                LCD_PrintString("Warning", wx + 20, wy + 2, IMAGE_MODE_NORMAL);
+                LCD_PrintString("Warning", wx + 20, wy + 10, IMAGE_MODE_NORMAL);
+                LCD_DrawImage(exclamation_6x18, wx + 8,wy + 2, 6, 18, 1);
                 break;
             default:
-                LCD_PrintString("Error", wx + 20, wy + 2, IMAGE_MODE_NORMAL);
+                LCD_PrintString("Error", wx + 30, wy + 10, IMAGE_MODE_NORMAL);
+                LCD_DrawImage(cross_15x15, wx + 8,wy + 5, 15, 15, 1);
                 break;
         }
+
+        LCD_SetFont(&font_h10);
+        // Draw message
+        switch (messageView.code)
+        {
+            case MESSAGE_PROFILE_LOADED:
+                LCD_PrintString("Profile loaded", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                break;
+            case MESSAGE_PROFILE_SAVED:
+                LCD_PrintString("Profile saved", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                break;
+            case MESSAGE_PROFILE_CRC_ERROR:
+                LCD_PrintString("CRC mismatch", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                break;
+            case MESSAGE_PROFILE_HW_ERROR:
+                LCD_PrintString("EEPROM fail", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                break;
+        }
+
+
     }
     return 0;
 }
 
 
-static uint8_t guiMessagePanel1_onVisibleChanged(void *widget, guiEvent_t *event)
-{
-    if (guiMessagePanel1.isVisible)
-    {
-        guiCore_TimerStart(GUI_MESSAGE_PANEL_TIMER, TMR_DO_RESET);
-    }
-    return 0;
-}
+//static uint8_t guiMessagePanel1_onVisibleChanged(void *widget, guiEvent_t *event)
+//{
+//    if (guiMessagePanel1.isVisible)
+//    {
+//        guiCore_TimerStart(GUI_MESSAGE_PANEL_TIMER, TMR_DO_RESET);
+//    }
+//    return 0;
+//}
 
 
 static uint8_t guiMessagePanel1_onTimer(void *widget, guiEvent_t *event)
@@ -149,6 +174,29 @@ static uint8_t guiMessagePanel1_KeyTranslator(guiGenericWidget_t *widget, guiEve
     return GUI_EVENT_ACCEPTED;		// block keys
 }
 
+
+void guiMessagePanel1_Show(uint8_t msgType, uint8_t msgCode, uint8_t takeFocus, uint8_t timeout)
+{
+    messageView.type = msgType;
+    messageView.code = msgCode;
+    // Reinit and start timer
+    guiCore_TimerInit(GUI_MESSAGE_PANEL_TIMER, timeout, TMR_RUN_ONCE, (guiGenericWidget_t *)&guiMessagePanel1, 0);
+    guiCore_TimerStart(GUI_MESSAGE_PANEL_TIMER, TMR_DO_RESET);
+    if (guiMessagePanel1.isVisible == 0)
+    {
+        guiCore_SetVisible((guiGenericWidget_t *)&guiMessagePanel1, 1);
+    }
+    else
+    {
+        guiMessagePanel1.redrawRequired = 1;
+        guiMessagePanel1.redrawForced = 1;
+    }
+    if (takeFocus)
+    {
+        messageView.lastFocused = focusedWidget;
+        guiCore_RequestFocusChange((guiGenericWidget_t *)&guiMessagePanel1);
+    }
+}
 
 
 

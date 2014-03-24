@@ -99,6 +99,17 @@ void vTaskDispatcher(void *pvParameters)
 	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
+	/* TODO: 
+		-  add GUI menu for external switch
+		-  add GUI menu for UARTs
+		-  check if additional EEPROM settings are required
+		-  add GUI input box for user profile name
+		-  add various sound signals
+		-  clean up GUI (bringing to initial state)
+		-  !!! check and remove voltage spike upon power ON !!!
+	*/
+	
+	
 	
 	while(1)
 	{
@@ -153,7 +164,7 @@ void vTaskDispatcher(void *pvParameters)
 					// Send response to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_LOAD;
-					gui_msg.profile_event.err_code = PROFILE_OK;
+					gui_msg.profile_event.err_code = msg.profile_load_response.profileState;
 					gui_msg.profile_event.index = msg.profile_load_response.index;
 					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 					// Send response to sound task
@@ -165,7 +176,7 @@ void vTaskDispatcher(void *pvParameters)
 					// Send response ERROR to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_LOAD;
-					gui_msg.profile_event.err_code = PROFILE_ERROR;
+					gui_msg.profile_event.err_code = msg.profile_load_response.profileState;
 					gui_msg.profile_event.index = msg.profile_load_response.index;
 					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 					// Send response to sound task
@@ -193,7 +204,7 @@ void vTaskDispatcher(void *pvParameters)
 					// Send response to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_SAVE;
-					gui_msg.profile_event.err_code = PROFILE_OK;
+					gui_msg.profile_event.err_code = msg.profile_save_response.profileState;
 					gui_msg.profile_event.index = msg.profile_save_response.index;
 					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 					// Send response to sound task
@@ -206,7 +217,7 @@ void vTaskDispatcher(void *pvParameters)
 					// Send response to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_SAVE;
-					gui_msg.profile_event.err_code = PROFILE_ERROR;
+					gui_msg.profile_event.err_code = msg.profile_save_response.profileState;
 					gui_msg.profile_event.index = msg.profile_save_response.index;
 					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 					// Send response to sound task

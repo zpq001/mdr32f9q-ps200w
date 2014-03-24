@@ -69,9 +69,7 @@ enum guiTaskCmd {
 
 enum profileEvents {
 	PROFILE_LOAD,
-	PROFILE_SAVE,
-	PROFILE_OK,
-	PROFILE_ERROR
+	PROFILE_SAVE
 };
 
 

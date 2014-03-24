@@ -17,7 +17,12 @@ enum messageViewTypes {
     MESSAGE_TYPE_ERROR
 };
 
-
+enum messageViewCodes {
+    MESSAGE_PROFILE_LOADED,
+    MESSAGE_PROFILE_SAVED,
+    MESSAGE_PROFILE_CRC_ERROR,
+    MESSAGE_PROFILE_HW_ERROR
+};
 
 
 
@@ -27,7 +32,7 @@ extern guiPanel_t     guiMessagePanel1;
 
 
 void guiMessagePanel1_Initialize(guiGenericWidget_t *parent);
-
+void guiMessagePanel1_Show(uint8_t msgType, uint8_t msgCode, uint8_t takeFocus, uint8_t timeout);
 
 
 #endif

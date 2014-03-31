@@ -208,49 +208,79 @@ void vTaskGUI(void *pvParameters)
 				break;
 				
 			case GUI_TASK_PROFILE_EVENT:
-				if (msg.profile_event.event == PROFILE_LOAD)
+				switch (msg.profile_event.event)
 				{
-					if (msg.profile_event.err_code == EE_PROFILE_VALID)
-					{
-						// Profile succesfully loaded
-						guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED, 0, 30);
-						
-						// Bring GUI to initial state - TODO
-						
-						// Update widgets
-						value = Converter_GetFeedbackChannel();
-						setGuiFeedbackChannel(value);
-					}
-					else
-					{
-						// Profile load failed
-						if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
-							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+					case PROFILE_LOAD:
+						if (msg.profile_event.err_code == EE_PROFILE_VALID)
+						{
+							// Profile succesfully loaded
+							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED, 0, 30);
+							
+							// Bring GUI to initial state - TODO
+							
+							// Update widgets
+							value = Converter_GetFeedbackChannel();
+							setGuiFeedbackChannel(value);
+						}
 						else
-							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);						
-					}
-				}
-				else // PROFILE_SAVE
-				{
-					if (msg.profile_event.err_code == EE_PROFILE_VALID)
-					{
-						// Profile succesfully saved
-						guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
-					}
-					else
-					{
-						// Profile save failed
-						if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
-							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+						{
+							// Profile load failed
+							if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
+								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+							else
+								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);	
+							// Update single record 
+							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+						}
+						break;
+					case PROFILE_SAVE:
+						if (msg.profile_event.err_code == EE_PROFILE_VALID)
+						{
+							// Profile succesfully saved
+							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
+						}
 						else
-							guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
-					}
+						{
+							// Profile save failed
+							if (msg.profile_event.err_code == EE_PROFILE_CRC_ERROR) 
+								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
+							else
+								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
+							// Update single record 
+							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+						}
+						break;
+					case PROFILE_LOAD_RECENT:
+						if (EE_IsRecentProfileRestoreEnabled())
+						{
+							if (msg.profile_event.err_code == EE_PROFILE_VALID)
+							{
+								// Profile succesfully loaded
+								guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_RESTORED_RECENT, 0, 30);
+							}
+							else
+							{
+								// Default profile used due to error
+								guiMessagePanel1_Show(MESSAGE_TYPE_WARNING, MESSAGE_PROFILE_LOADED_DEFAULT, 0, 30);
+							}
+						}
+						else
+						{
+							// Default profile used according to settings
+							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED_DEFAULT, 0, 30);
+						}
+						break;
 				}
-				// Update single record anyway
-				profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-				updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
 				// Allow another profile load or save request
 				profileOperationInProgress = 0;
+				break;
+				
+				
+			case GUI_TASK_UPDATE_PROFILE_SETUP:
+					// Read profile settings and update widgets
+					updateProfileSetup();
 				break;
 			
 		}
@@ -379,6 +409,17 @@ void saveProfile(uint8_t index, char *profileName)
 	}
 }
 
+//---------------------------------------------//
+// Profile setup change
+//---------------------------------------------//
+void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+{
+	dispatcher_msg.type = DISPATCHER_PROFILE_SETUP;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.profile_setup.saveRecentProfile = saveRecentProfile;
+	dispatcher_msg.profile_setup.restoreRecentProfile = restoreRecentProfile;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);
+}
 
 
 

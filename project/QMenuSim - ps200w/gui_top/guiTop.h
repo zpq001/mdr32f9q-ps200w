@@ -131,6 +131,8 @@ void applyGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnable, in
 void loadProfile(uint8_t index);
 void saveProfile(uint8_t index, char *profileName);
 
+void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
+
 #ifdef __cplusplus
 }
 #endif

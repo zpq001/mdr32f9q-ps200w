@@ -17,4 +17,6 @@ void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_typ
 void setGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnabled, int32_t threshold);
 void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name);
 
+void updateProfileSetup(void);
+
 #endif

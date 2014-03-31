@@ -26,6 +26,7 @@ Through message queue:
 **********************************************************/
 
 #include <stdint.h>
+#include <string.h>     // using memset
 #include "guiConfig.h"
 #include "guiGraphWidgets.h"
 #include "guiEvents.h"
@@ -52,6 +53,102 @@ guiTimer_t guiTimers[GUI_TIMER_COUNT];
 guiMsgQueue_t guiMsgQueue;
 guiGenericWidget_t *rootWidget;         // Root widget must be present
 guiGenericWidget_t *focusedWidget;      // Focused widget gets events from keys/encoder/touch
+
+
+//===================================================================//
+//===================================================================//
+//                                                                   //
+//               GUI core memory management functions                //
+//                                                                   //
+//===================================================================//
+
+static uint8_t gui_heap[GUI_HEAP_SIZE];
+static int32_t allocated_bytes_count;
+
+
+// Inspired by freeRTOS heap1
+void *gui_malloc(uint32_t wantedSize)
+{
+    static uint8_t *p_heap = 0;
+    void *result = 0;
+
+    // Make sure blocks are aligned
+    if (wantedSize & 0x03)
+    {
+        wantedSize += (4 - (wantedSize & 0x03));
+    }
+
+    if (p_heap == 0)
+    {
+        p_heap = (uint8_t *)(((uint32_t)&gui_heap[4]) & (~3));
+    }
+
+    // Check there is enough space
+    if( ( ( allocated_bytes_count + wantedSize ) < (GUI_HEAP_SIZE - 4) ) &&
+        ( ( allocated_bytes_count + wantedSize ) > allocated_bytes_count )	)   // Check for overflow
+    {
+        // Return the next free byte then increment the index past this block
+        result = p_heap + allocated_bytes_count;
+        allocated_bytes_count += wantedSize;
+    }
+
+    if (result == 0)
+    {
+        // Trace error
+    }
+    return result;
+}
+
+
+void *gui_calloc(uint32_t wantedSize)
+{
+    void *result = gui_malloc(wantedSize);
+    if (result)
+    {
+        memset(result,0,wantedSize);
+    }
+    return result;
+}
+
+
+void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t count)
+{
+    container->widgets.count = count;
+    container->widgets.elements = gui_calloc(10 * sizeof(void *));
+}
+
+void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count)
+{
+    widget->handlers.count = count;
+    widget->handlers.elements = gui_calloc(3 * sizeof(guiWidgetHandler_t));
+}
+
+
+//-------------------------------------------------------//
+// Adds a handler to widget's handlers
+//
+// Not used items in a collection must be zero
+// If success, function returns non-zero
+//-------------------------------------------------------//
+uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventHandler_t handler)
+{
+    uint8_t i;
+    if ((widget == 0) || (handler == 0))
+        return 0;
+    for (i = 0; i < widget->handlers.count; i++)
+    {
+        if (widget->handlers.elements[i].handler == 0)
+        {
+            // Found free item slot
+            widget->handlers.elements[i].eventType = eventType;
+            widget->handlers.elements[i].handler = handler;
+            return 1;
+        }
+    }
+    // No free space
+    // Trace!
+    return 0;
+}
 
 
 

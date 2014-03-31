@@ -52,10 +52,9 @@ enum guiTaskCmd {
 	
 	GUI_TASK_UPDATE_CONVERTER_STATE,
 	
-	GUI_TASK_UPDATE_PROFILE_LIST,
-	GUI_TASK_PROFILE_NAME_RESPONSE,
-	//GUI_TASK_SHOW_PROFILE_EVENT,
+	
 	GUI_TASK_PROFILE_EVENT,
+	GUI_TASK_UPDATE_PROFILE_SETUP,
 		
 	GUI_TASK_UPDATE_VOLTAGE_CURRENT,
 	GUI_TASK_UPDATE_VOLTAGE_SETTING,
@@ -69,7 +68,8 @@ enum guiTaskCmd {
 
 enum profileEvents {
 	PROFILE_LOAD,
-	PROFILE_SAVE
+	PROFILE_SAVE,
+	PROFILE_LOAD_RECENT
 };
 
 
@@ -91,4 +91,5 @@ void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, 
 void loadProfile(uint8_t index);
 void saveProfile(uint8_t index, char *profileName);
 
+void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
 

@@ -129,6 +129,12 @@ typedef struct {
 extern guiGenericWidget_t *rootWidget;         // Root widget must be present
 extern guiGenericWidget_t *focusedWidget;      // Focused widget gets events from keys/encoder/touch
 
+void *gui_malloc(uint32_t wantedSize);
+void *gui_calloc(uint32_t wantedSize);
+void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t count);
+void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count);
+uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventHandler_t handler);
+
 //===================================================================//
 //                 GUI core message queue functions
 //===================================================================//

@@ -64,7 +64,7 @@ void vTaskDispatcher(void *pvParameters)
 	//		
 	
 	// Provide some time for hardware to stay idle
-	vTaskDelay( 200 / portTICK_RATE_MS);
+	vTaskDelay( 100 / portTICK_RATE_MS);
 	
 	// Read EEPROM and restore global settings and recent profile
 	eeprom_msg.type = EE_TASK_INITIAL_LOAD;
@@ -86,11 +86,18 @@ void vTaskDispatcher(void *pvParameters)
 	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
 	// Wait a bit more
-	vTaskDelay( 500 / portTICK_RATE_MS);
+	vTaskDelay( 250 / portTICK_RATE_MS);
 	
 	// Send GUI task message to read all settings and converter setup and update it's widgets.
 	gui_msg.type = GUI_TASK_RESTORE_ALL;
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+	
+	// Display profile restore state
+	gui_msg.type = GUI_TASK_PROFILE_EVENT;
+	gui_msg.profile_event.event = PROFILE_LOAD_RECENT;
+	gui_msg.profile_event.err_code = (eepromState & (EE_PROFILE_HW_ERROR | EE_PROFILE_CRC_ERROR));
+	gui_msg.profile_event.index = msg.profile_load_response.index;
+	xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 	
 	// Some tasks stay suspended. Start them.  - TODO
 	// UART?
@@ -99,10 +106,11 @@ void vTaskDispatcher(void *pvParameters)
 	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
+	
 	/* TODO: 
 		-  add GUI menu for external switch
 		-  add GUI menu for UARTs
-		-  check if additional EEPROM settings are required
+<done>	-  check if additional EEPROM settings are required
 		-  add GUI input box for user profile name
 		-  add various sound signals
 		-  clean up GUI (bringing to initial state)
@@ -225,6 +233,14 @@ void vTaskDispatcher(void *pvParameters)
 					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				break;
+				
+			//---------------- Setup profile ---------------//		
+			case DISPATCHER_PROFILE_SETUP:
+				EE_ApplyProfileSettings(msg.profile_setup.saveRecentProfile, msg.profile_setup.restoreRecentProfile);
+				// Send response to GUI
+				gui_msg.type = GUI_TASK_UPDATE_PROFILE_SETUP;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+			break;
 			
 			//-------------- Converter command -------------//
 			case DISPATCHER_CONVERTER:

@@ -29,6 +29,7 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiMessagePanel1.h"
+#include "guiEditPanel2.h"
 
 #include "guiTop.h"
 #include "converter.h"
@@ -64,6 +65,7 @@ static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
+static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event);
 
 static void updateVoltageLimit(uint8_t channel, uint8_t limit_type);
 static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
@@ -138,6 +140,11 @@ guiSpinBox_t spinBox_OverloadThreshold;
 guiTextLabel_t textLabel_overloadThresholdHint;
 guiWidgetHandler_t Overload_CheckBoxHandlers[2];
 guiWidgetHandler_t Overload_SpinBoxHandlers[2];
+
+// Profile setup
+guiCheckBox_t checkBox_ProfileSetup1;
+guiCheckBox_t checkBox_ProfileSetup2;
+guiWidgetHandler_t ProfileSetup_CheckBoxHandlers[2];
 
 
 char newProfileName[EE_PROFILE_NAME_SIZE];
@@ -471,6 +478,38 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     profileList.handlers.elements[3].handler = 0;
     profileList.keyTranslator = &guiProfileList_KeyTranslator;
 
+    guiCheckBox_Initialize(&checkBox_ProfileSetup1, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ProfileSetup1, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_ProfileSetup1.font = &font_h10;
+    checkBox_ProfileSetup1.x = 96 + 2;
+    checkBox_ProfileSetup1.y = 5;
+    checkBox_ProfileSetup1.width = 90;
+    checkBox_ProfileSetup1.height = 14;
+    checkBox_ProfileSetup1.isVisible = 0;
+    checkBox_ProfileSetup1.text = "Save recent";
+    checkBox_ProfileSetup1.tabIndex = 1;
+    checkBox_ProfileSetup1.handlers.elements = ProfileSetup_CheckBoxHandlers;
+    checkBox_ProfileSetup1.handlers.count = 2;
+    checkBox_ProfileSetup1.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
+
+    guiCheckBox_Initialize(&checkBox_ProfileSetup2, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ProfileSetup2, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_ProfileSetup2.font = &font_h10;
+    checkBox_ProfileSetup2.x = 96 + 2;
+    checkBox_ProfileSetup2.y = 30;
+    checkBox_ProfileSetup2.width = 90;
+    checkBox_ProfileSetup2.height = 14;
+    checkBox_ProfileSetup2.isVisible = 0;
+    checkBox_ProfileSetup2.text = "Restore";
+    checkBox_ProfileSetup2.tabIndex = 2;
+    checkBox_ProfileSetup2.handlers.elements = ProfileSetup_CheckBoxHandlers;
+    checkBox_ProfileSetup2.handlers.count = 2;
+    checkBox_ProfileSetup2.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
+
+    ProfileSetup_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
+    ProfileSetup_CheckBoxHandlers[0].handler = onProfileSetupChanged;
+    ProfileSetup_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
+    ProfileSetup_CheckBoxHandlers[1].handler = guiSetupList_ChildKeyHandler;
 
     //---------- Tags ----------//
 
@@ -481,7 +520,6 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighLimit.tag = 1;
     chSetupList.tag = 0;
 
-
     // Group 2
     setupList.tag = 10;
     checkBox_OverloadProtect.tag = 13;
@@ -489,6 +527,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_OverloadThreshold.tag = 13;
     textLabel_overloadThresholdHint.tag = 13;
     profileList.tag = 14;   // takes tags 14,15
+
+    checkBox_ProfileSetup1.tag = 16;
+    checkBox_ProfileSetup2.tag = 16;
 
     // Other
     textLabel_hint.tag = 11;
@@ -635,6 +676,8 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
         if (setupList.selectedIndex == 2)
             updateOverloadSetting();
+        else if (setupList.selectedIndex == 5)
+            updateProfileSetup();
     }
 
     return 0;
@@ -947,8 +990,9 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
         else
         {
             // Save profile data to EEPROM
-			snprintf(newProfileName, EE_PROFILE_NAME_SIZE, "Profile %d", profileList.selectedIndex);	// tap
-            saveProfile(profileList.selectedIndex, newProfileName);   // TODO: ask for new name before saving
+            //snprintf(newProfileName, EE_PROFILE_NAME_SIZE, "Profile %d", profileList.selectedIndex);	// tap
+            //saveProfile(profileList.selectedIndex, newProfileName);   // TODO: ask for new name before saving
+            guiCore_SetVisible((guiGenericWidget_t*)&guiEditPanel2, 1);
 
         }
         return GUI_EVENT_ACCEPTED;
@@ -1016,7 +1060,13 @@ static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event)
 	return 0;
 }
 
-
+static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event)
+{
+    uint8_t saveRecentProfile = checkBox_ProfileSetup1.isChecked;
+    uint8_t restoreRecentProfile = checkBox_ProfileSetup2.isChecked;
+    applyGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
+    return 0;
+}
 
 
 
@@ -1094,6 +1144,17 @@ static void updateOverloadSetting(void)
     updateOverloadWidgets(protectionEnabled, warningEnabled, threshold);
 }
 
+//---------------------------------------------//
+// Called by GUI itself and top-level
+// Reads profile setup settings and updates widgets
+//---------------------------------------------//
+void updateProfileSetup(void)
+{
+    uint8_t saveRecentProfile = EE_IsRecentProfileSavingEnabled();
+    uint8_t restoreRecentProfile = EE_IsRecentProfileRestoreEnabled();
+    guiCheckbox_SetChecked(&checkBox_ProfileSetup1, saveRecentProfile, 0);
+    guiCheckbox_SetChecked(&checkBox_ProfileSetup2, restoreRecentProfile, 0);
+}
 
 
 

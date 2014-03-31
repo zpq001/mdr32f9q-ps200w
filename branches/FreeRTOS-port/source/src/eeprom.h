@@ -67,6 +67,7 @@ Note:
 #define EE_PROFILE_HW_ERROR			(1<<2)
 #define EE_PROFILE_CRC_ERROR		(1<<3)
 #define EE_WRONG_ARGUMENT			0x10
+#define EE_NOT_REQUIRED				0x11
 
 
 
@@ -115,6 +116,8 @@ typedef struct {
 	uint32_t number_of_power_cycles;
 	int8_t adc_voltage_offset;
 	int8_t adc_current_offset;
+	uint8_t saveRecentProfile;
+	uint8_t restoreRecentProfile;
 } global_settings_t;
 
 
@@ -157,13 +160,20 @@ typedef struct {
 
 extern xQueueHandle xQueueEEPROM;
 
-extern global_settings_t * global_settings;
+extern global_settings_t *global_settings;
 extern device_profile_t *device_profile;
 
-
+// These two are special functions for calling from routine which
+// services power-down sequence
 uint8_t EE_SaveGlobalSettings(void);
 uint8_t EE_SaveRecentProfile(void);
+
+// General functions
 uint8_t EE_GetProfileState(uint8_t i);
+uint8_t EE_IsRecentProfileSavingEnabled(void);
+uint8_t EE_IsRecentProfileRestoreEnabled(void);
+void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
+
 void vTaskEEPROM(void *pvParameters);
 
 

@@ -126,6 +126,14 @@ static uint8_t guiMessagePanel1_onDraw(void *widget, guiEvent_t *event)
             case MESSAGE_PROFILE_HW_ERROR:
                 LCD_PrintString("EEPROM fail", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
                 break;
+            case MESSAGE_PROFILE_LOADED_DEFAULT:
+                LCD_PrintString("Using default", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                LCD_PrintString("profile", wx + 15, wy + 42, IMAGE_MODE_NORMAL);
+                break;
+            case MESSAGE_PROFILE_RESTORED_RECENT:
+                LCD_PrintString("Loaded recent", wx + 5, wy + 30, IMAGE_MODE_NORMAL);
+                LCD_PrintString("profile", wx + 15, wy + 42, IMAGE_MODE_NORMAL);
+                break;
         }
 
 

@@ -469,17 +469,25 @@ void updateGuiOverloadSetting(void)
 //---------------------------------------------//
 void loadProfile(uint8_t index)
 {
-    if (index % 3 == 0)
+    if (index % 5 == 0)
     {
         guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED, 0, 30);
     }
-    else if (index % 3 == 1)
+    else if (index % 5 == 1)
     {
         guiMessagePanel1_Show(MESSAGE_TYPE_WARNING, MESSAGE_PROFILE_CRC_ERROR, 0, 30);
     }
-    else if (index % 3 == 2)
+    else if (index % 5 == 2)
     {
         guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
+    }
+    else if (index % 5 == 3)
+    {
+        guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_LOADED_DEFAULT, 0, 30);
+    }
+    else if (index % 5 == 4)
+    {
+        guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_RESTORED_RECENT, 0, 30);
     }
 }
 
@@ -488,6 +496,14 @@ void loadProfile(uint8_t index)
 //---------------------------------------------//
 void saveProfile(uint8_t index, char *profileName)
 {
+
+}
+
+
+void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+{
+
+
 
 }
 

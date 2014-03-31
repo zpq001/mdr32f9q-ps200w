@@ -142,9 +142,9 @@ void LcdInit(void)
   // Hardware reset
 	#ifdef USE_HARDWARE_RESET
 		lcd_clear_reset_line;
-		LcdDelayUs(10000);
+		LcdDelayUs(4000);
 		lcd_set_reset_line;
-		LcdDelayUs(10000);
+		LcdDelayUs(4000);
 	#endif
   // Initialize LCD #0
 	LcdSelect(LCD0);

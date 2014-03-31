@@ -45,6 +45,7 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiEditPanel1.h"
+#include "guiEditPanel2.h"
 #include "guiMessagePanel1.h"
 
 extern void guiLogEvent(char *string);
@@ -89,9 +90,11 @@ void guiMainForm_Initialize(void)
     guiSetupPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
     guiEditPanel1_Initialize((guiGenericWidget_t *)&guiMasterPanel);    // parent is not important here
     guiMessagePanel1_Initialize((guiGenericWidget_t *)&guiSetupPanel);    //
+    guiEditPanel2_Initialize((guiGenericWidget_t *)&guiSetupPanel);
 
     // Add widgets
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiMessagePanel1, (guiGenericContainer_t *)&guiMainForm);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiEditPanel2, (guiGenericContainer_t *)&guiSetupPanel);
 }
 
 

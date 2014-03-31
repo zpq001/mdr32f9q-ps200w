@@ -37,6 +37,14 @@ global_settings_t * global_settings = &global_settings_data;
 uint8_t profile_info[EE_PROFILES_COUNT];
 
 
+//-------------------------------------------------------//
+/// @func Function for CRC update by single byte
+/// @input 
+//		uint16_t crc - initial CRC
+//		uint8_t a - data byte
+/// @return
+//		Updated CRC
+//-------------------------------------------------------//
 static uint16_t crc16_update(uint16_t crc, uint8_t a)
 {
 	uint8_t i;
@@ -51,6 +59,15 @@ static uint16_t crc16_update(uint16_t crc, uint8_t a)
 	return crc;
 }
 
+//-------------------------------------------------------//
+/// @func Function for CRC update for data block
+/// @input 
+//		uint8_t *data - pointer to data
+//		uint16_t size - byte count
+//		uint16_t seed - initial seed for CRC
+/// @return
+//		Updated CRC
+//-------------------------------------------------------//
 static uint16_t get_crc16(uint8_t *data, uint16_t size, uint16_t seed)
 {
 	while(size--)
@@ -58,6 +75,7 @@ static uint16_t get_crc16(uint8_t *data, uint16_t size, uint16_t seed)
 	return seed;
 }
 	
+
 
 static void fill_global_settings_by_default(void)
 {
@@ -67,6 +85,8 @@ static void fill_global_settings_by_default(void)
 	global_settings->adc_voltage_offset = 0;
 	global_settings->adc_current_offset = 0;
 	global_settings->number_of_power_cycles = 0;
+	global_settings->restoreRecentProfile = 1;
+	global_settings->saveRecentProfile = 1;
 }
 
 static void update_global_settings(void)
@@ -74,6 +94,7 @@ static void update_global_settings(void)
 	// Gather configuration from all the modules
 	global_settings->number_of_power_cycles++;
 }
+
 
 static void fill_device_profile_by_default(void)
 {	
@@ -179,20 +200,23 @@ static void update_device_profile(void)
 
 
 
+//=================================================================//
+//	Load routines (from EEPROM)
+//=================================================================//
 
-//	Return: bits are set indicating errors:
+
+
+//-------------------------------------------------------//
+// Return:
 //		EE_GSETTINGS_HW_ERROR if there was an hardware error for global settings
 //  	EE_GSETTINGS_CRC_ERROR if there was CRC error for global settings
-//		EE_PROFILE_HW_ERROR if there was an hardware error for recent profile
-//		EE_PROFILE_CRC_ERROR if there was CRC error for recent profile
-//		If specific bit is cleared, it means that that kind of error has not occured.
-static uint8_t EE_InitialLoad(void)
+//-------------------------------------------------------//
+static uint8_t EE_LoadGlobalSettings(void)
 {
 	uint8_t err_code = EE_OK;
 	uint8_t hw_result;
 	uint16_t crc;
 	uint16_t ee_crc;
-	uint8_t i;
 	uint16_t ee_addr;
 	
 	//-------------------------------//
@@ -216,40 +240,22 @@ static uint8_t EE_InitialLoad(void)
 		// EEPROM hardware error. Cannot access device.
 		err_code |= EE_GSETTINGS_HW_ERROR;
 	}
-	
-	//-------------------------------//
-	//	Read profiles and fill info structure
-	for (i=0; i<EE_PROFILES_COUNT; i++)
-	{
-		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE);
-		hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
-		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
-		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
-		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_CRC_OFFSET;
-		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
-		if (hw_result == 0)
-		{
-			// Hardware EEPROM access OK. Check CRC.
-			crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
-			crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);
-			if (crc == ee_crc)
-			{
-				// Profile CRC is OK.
-				profile_info[i] = EE_PROFILE_VALID;
-			}	
-			else
-			{
-				// Profile CRC is broken.
-				profile_info[i] = EE_PROFILE_CRC_ERROR;
-			}
-		}
-		else
-		{
-			// EEPROM hardware error. Cannot access device.
-			profile_info[i] = EE_PROFILE_HW_ERROR;
-		}
-	}
-	
+	return err_code;
+}
+
+
+//-------------------------------------------------------//
+// Return:
+//		EE_PROFILE_HW_ERROR if there was an hardware error for recent profile
+//		EE_PROFILE_CRC_ERROR if there was CRC error for recent profile
+//-------------------------------------------------------//
+static uint8_t EE_LoadRecentProfile(void)
+{
+	uint8_t err_code = EE_OK;
+	uint8_t hw_result;
+	uint16_t crc;
+	uint16_t ee_crc;
+	uint16_t ee_addr;
 	
 	//-------------------------------//
 	//	Read recent profile
@@ -272,70 +278,8 @@ static uint8_t EE_InitialLoad(void)
 		// EEPROM hardware error. Cannot access device.
 		err_code |= EE_PROFILE_HW_ERROR;
 	}
-	
-	// Check status and restore defaults
-	if (err_code & (EE_GSETTINGS_HW_ERROR | EE_GSETTINGS_CRC_ERROR))
-	{
-		fill_global_settings_by_default();
-	}
-	if (err_code & (EE_PROFILE_HW_ERROR | EE_PROFILE_CRC_ERROR))
-	{
-		fill_device_profile_by_default();
-	}
-
 	return err_code;
 }
-
-
-
-
-uint8_t EE_SaveGlobalSettings(void)
-{
-	uint8_t err_code = EE_OK;
-	uint8_t hw_result;
-	uint16_t crc;
-	
-	update_global_settings();
-	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
-	
-	//-------------------------------//
-	//	Write global settings
-	hw_result = EEPROM_WriteBlock(EE_GSETTINGS_BASE, (uint8_t *)&global_settings_data, sizeof(global_settings_t));
-	hw_result |= EEPROM_WriteBlock(EE_GSETTINGS_BASE + EE_GSETTINGS_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
-	if (hw_result != 0)
-	{
-		// EEPROM hardware error. Cannot access device.
-		err_code = EE_GSETTINGS_HW_ERROR;
-	}
-	return err_code;
-}
-
-
-
-uint8_t EE_SaveRecentProfile(void)
-{
-	uint8_t err_code = EE_OK;
-	uint8_t hw_result;
-	uint16_t crc;
-	
-	update_device_profile();
-	crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
-
-	//-------------------------------//
-	//	Write recent profile
-	hw_result = EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
-	hw_result |= EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE + EE_PROFILE_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
-	if (hw_result != 0)
-	{
-		// EEPROM hardware error. Cannot access device.
-		err_code = EE_PROFILE_HW_ERROR;
-	}
-	return err_code;
-}
-
-
-
-
 
 
 //-------------------------------------------------------//
@@ -393,6 +337,55 @@ static uint8_t EE_LoadDeviceProfile(uint8_t i)
 }
 
 
+
+//-------------------------------------------------------//
+// Return:
+//		none
+//-------------------------------------------------------//
+static void EE_ExamineProfiles(void)
+{
+	uint8_t hw_result;
+	uint16_t crc;
+	uint16_t ee_crc;
+	uint16_t ee_addr;
+	uint8_t i;
+	
+	//-------------------------------//
+	//	Read profiles and fill info structure
+	for (i=0; i<EE_PROFILES_COUNT; i++)
+	{
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE);
+		hw_result = EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_NAME_OFFSET;
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE);
+		ee_addr = EE_PROFILES_BASE + (i * EE_PROFILE_SIZE) + EE_PROFILE_CRC_OFFSET;
+		hw_result |= EEPROM_ReadBlock(ee_addr, (uint8_t *)&ee_crc, EE_CRC_SIZE);
+		if (hw_result == 0)
+		{
+			// Hardware EEPROM access OK. Check CRC.
+			crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
+			crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);
+			if (crc == ee_crc)
+			{
+				// Profile CRC is OK.
+				profile_info[i] = EE_PROFILE_VALID;
+			}	
+			else
+			{
+				// Profile CRC is broken.
+				profile_info[i] = EE_PROFILE_CRC_ERROR;
+			}
+		}
+		else
+		{
+			// EEPROM hardware error. Cannot access device.
+			profile_info[i] = EE_PROFILE_HW_ERROR;
+		}
+	}	
+}
+
+
+
 //-------------------------------------------------------//
 //	Returns name of a profile
 //	profile_info[i] must be filled correctly before calling.
@@ -441,8 +434,77 @@ static uint8_t EE_GetProfileName(uint8_t i, char *str_to_fill)
 
 
 
+//=================================================================//
+//	Saving routines (to EEPROM)
+//=================================================================//
+
+
+
 //-------------------------------------------------------//
-// Saves profile data to EEPROM
+// Saves global settings to EEPROM
+//
+//-------------------------------------------------------//
+uint8_t EE_SaveGlobalSettings(void)
+{
+	uint8_t err_code = EE_OK;
+	uint8_t hw_result;
+	uint16_t crc;
+	
+	update_global_settings();
+	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
+	
+	//-------------------------------//
+	//	Write global settings
+	hw_result = EEPROM_WriteBlock(EE_GSETTINGS_BASE, (uint8_t *)&global_settings_data, sizeof(global_settings_t));
+	hw_result |= EEPROM_WriteBlock(EE_GSETTINGS_BASE + EE_GSETTINGS_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
+	if (hw_result != 0)
+	{
+		// EEPROM hardware error. Cannot access device.
+		err_code = EE_GSETTINGS_HW_ERROR;
+	}
+	return err_code;
+}
+
+
+//-------------------------------------------------------//
+// Saves recent profile to EEPROM
+//
+//-------------------------------------------------------//
+uint8_t EE_SaveRecentProfile(void)
+{
+	uint8_t err_code = EE_OK;
+	uint8_t hw_result;
+	uint16_t crc;
+	
+	if (global_settings->saveRecentProfile)
+	{
+		// Profile save is required
+		update_device_profile();
+		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
+
+		//-------------------------------//
+		//	Write recent profile
+		hw_result = EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE, (uint8_t *)&device_profile_data, sizeof(device_profile_t));
+		hw_result |= EEPROM_WriteBlock(EE_RECENT_PROFILE_BASE + EE_PROFILE_CRC_OFFSET, (uint8_t *)&crc, EE_CRC_SIZE);
+		if (hw_result != 0)
+		{
+			// EEPROM hardware error. Cannot access device.
+			err_code = EE_PROFILE_HW_ERROR;
+		}
+	}
+	else
+	{
+		// Profile save is NOT required
+		err_code = EE_NOT_REQUIRED;
+	}
+	return err_code;
+}
+
+
+
+
+//-------------------------------------------------------//
+// Saves profile to EEPROM
 //
 //-------------------------------------------------------//
 static uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
@@ -492,6 +554,14 @@ static uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
 
 
 
+
+
+//=================================================================//
+//	Interface routines 
+//=================================================================//
+
+
+
 uint8_t EE_GetProfileState(uint8_t i)
 {
 	uint8_t err_code;
@@ -508,14 +578,38 @@ uint8_t EE_GetProfileState(uint8_t i)
 }
 
 
+uint8_t EE_IsRecentProfileSavingEnabled(void)
+{
+	return global_settings->saveRecentProfile;
+}
+
+uint8_t EE_IsRecentProfileRestoreEnabled(void)
+{
+	return global_settings->restoreRecentProfile;
+}
+
+void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+{
+	if ((restoreRecentProfile == 0) && (saveRecentProfile == 1))
+	{
+		// Saving profile without restoring is useless
+		saveRecentProfile = 0;
+	} 
+	taskENTER_CRITICAL();
+	global_settings->saveRecentProfile = saveRecentProfile;
+	global_settings->restoreRecentProfile = restoreRecentProfile;
+	taskEXIT_CRITICAL();
+}
+
+
 
 /*
 EEPROM settings:
 
-	- save or not device global settings on POFF
+	- save or not device global settings on POFF		<- always enabled
 	- save or not device profile on POFF
 
-	- load global settings from EEPROM upon start
+	- load global settings from EEPROM upon start		<- always enabled
 	- load recent profile or default settings upon start
 
 */
@@ -533,6 +627,8 @@ static dispatch_msg_t dispatcher_msg;
 
 void vTaskEEPROM(void *pvParameters) 
 {
+	uint8_t state;
+	
 	// Initialize
 	xQueueEEPROM = xQueueCreate( 10, sizeof( eeprom_message_t ) );		// Queue can contain 10 elements
 	if( xQueueEEPROM == 0 )
@@ -548,10 +644,35 @@ void vTaskEEPROM(void *pvParameters)
 		switch (msg.type)
 		{
 			case EE_TASK_INITIAL_LOAD:
-				*msg.initial_load.state = EE_InitialLoad();
+				// Always restore global settings
+				state = EE_LoadGlobalSettings();
+				if (state & (EE_GSETTINGS_HW_ERROR | EE_GSETTINGS_CRC_ERROR))
+				{
+					fill_global_settings_by_default();
+				}
+				// The following function uses profile data structure, so call it before
+				// restoring recent profile
+				EE_ExamineProfiles();
+				
+				// Restore recent profile
+				if (global_settings->restoreRecentProfile)
+				{
+					state |= EE_LoadRecentProfile();
+					if (state & (EE_PROFILE_HW_ERROR | EE_PROFILE_CRC_ERROR))
+					{
+						fill_device_profile_by_default();
+					}
+				}
+				else
+				{
+					// Profile restore is not required. Use defaults.
+					fill_device_profile_by_default();
+				}
+				// Provide feedback
+				*msg.initial_load.state = state;
+				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
 				{
-					// Confirm
 					xSemaphoreGive(*msg.xSemaphorePtr);		
 				}
 				break;

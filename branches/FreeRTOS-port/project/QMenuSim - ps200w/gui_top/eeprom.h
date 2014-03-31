@@ -132,5 +132,6 @@ extern device_profile_t *device_profile;
 extern uint8_t profile_info[];
 
 uint8_t EE_GetProfileState(uint8_t i);
-
+uint8_t EE_IsRecentProfileSavingEnabled(void);
+uint8_t EE_IsRecentProfileRestoreEnabled(void);
 

@@ -855,14 +855,20 @@ void ProcessPowerOff(void)
 		// Print EEPROM status messages
 		LCD_PrintString("Settings", 96+0, 0, IMAGE_MODE_NORMAL);
 		LCD_PrintString("Profile", 96+0, 34, IMAGE_MODE_NORMAL);
-		if (ee_status1 == 0)
+		LCD_SetFont(&font_h10);
+		
+		if (ee_status1 == EE_OK)
 			LCD_PrintString("saved OK", 96+25, 12, IMAGE_MODE_NORMAL);
 		else
 			LCD_PrintString("NOT saved", 96+25, 12, IMAGE_MODE_NORMAL);
-		if (ee_status2 == 0)
+		
+		if (ee_status2 == EE_OK)
 			LCD_PrintString("saved OK", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+		else if (ee_status2 == EE_NOT_REQUIRED)
+			LCD_PrintString("not requried", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
 		else
 			LCD_PrintString("NOT saved", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+		
 		LcdUpdateBothByCore(lcdBuffer);
 		
 		// Wait a bit more

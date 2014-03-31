@@ -40,7 +40,15 @@ uint8_t EE_GetProfileState(uint8_t i)
 
 
 
+uint8_t EE_IsRecentProfileSavingEnabled(void)
+{
+    return 1;
+}
 
+uint8_t EE_IsRecentProfileRestoreEnabled(void)
+{
+    return 1;
+}
 
 
 

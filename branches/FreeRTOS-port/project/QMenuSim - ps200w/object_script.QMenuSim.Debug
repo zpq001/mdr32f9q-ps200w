@@ -30,6 +30,8 @@ INPUT(
 ./debug\guiTop.o
 ./debug\eeprom.o
 ./debug\converter.o
+./debug\guiEditPanel2.o
+./debug\guiTextSpinBox.o
 ./debug\moc_mainwindow.o
 ./debug\moc_pixeldisplay.o
 ./debug\moc_keydriver.o

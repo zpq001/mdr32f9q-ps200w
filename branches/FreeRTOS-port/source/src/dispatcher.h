@@ -26,6 +26,8 @@ enum DispatcherTaskMsgTypes {
 	DISPATCHER_LOAD_PROFILE_RESPONSE,
 	DISPATCHER_SAVE_PROFILE_RESPONSE,
 	
+	DISPATCHER_PROFILE_SETUP,
+	
 	DISPATCHER_TEST_FUNC1
 };
 
@@ -80,6 +82,10 @@ typedef struct {
 			uint8_t profileState;
 			char **buffer;
 		} profile_name_response;
+		struct {
+			uint8_t saveRecentProfile;
+			uint8_t restoreRecentProfile;
+		} profile_setup;
 	};
 } dispatch_msg_t;
 

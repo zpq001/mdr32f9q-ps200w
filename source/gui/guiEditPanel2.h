@@ -10,5 +10,7 @@ extern guiPanel_t     guiEditPanel2;
 void guiEditPanel2_Initialize(guiGenericWidget_t *parent);
 
 
+void guiEditPanel2_Show(char *textToEdit);
+
 
 #endif

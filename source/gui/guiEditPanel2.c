@@ -21,7 +21,7 @@
 #include "guiWidgets.h"
 #include "guiPanel.h"
 #include "guiTextLabel.h"
-#include "guiSpinBox.h"
+#include "guiTextSpinBox.h"
 
 #include "guiEditPanel2.h"
 #include "guiSetupPanel.h"
@@ -29,19 +29,19 @@
 
 #include "guiTop.h"
 #include "converter.h"
-
+#include "eeprom.h"
 
 
 static uint8_t guiEditPanel2_onDraw(void *widget, guiEvent_t *event);
 static uint8_t guiEditPanel2_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t guiEditPanel2_onKey(void *widget, guiEvent_t *event);
+static uint8_t textSpinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
-//static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
 
 //--------- Edit panel 1  ----------//
 guiPanel_t     guiEditPanel2;
-
+guiTextSpinBox_t nameTextSpinBox;
 
 
 //--------- Panel elements ---------//
@@ -65,6 +65,21 @@ void guiEditPanel2_Initialize(guiGenericWidget_t *parent)
     guiCore_AddHandler((guiGenericWidget_t *)&guiEditPanel2, GUI_ON_FOCUS_CHANGED, guiEditPanel2_onFocusChanged);
 
 
+    guiTextSpinBox_Initialize(&nameTextSpinBox, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&nameTextSpinBox, (guiGenericContainer_t *)&guiEditPanel2);
+    nameTextSpinBox.x = 3;
+    nameTextSpinBox.y = 20;
+    nameTextSpinBox.width = 84;
+    nameTextSpinBox.height = 20;
+    nameTextSpinBox.font = &font_h10;
+    nameTextSpinBox.textLeftOffset = 2;
+    nameTextSpinBox.textTopOffset = 2;
+    nameTextSpinBox.tabIndex = 1;
+    nameTextSpinBox.textLength = EE_PROFILE_NAME_SIZE - 1;
+    nameTextSpinBox.text = gui_calloc(EE_PROFILE_NAME_SIZE);    // + \0
+    nameTextSpinBox.hasFrame = 1;
+    nameTextSpinBox.showFocus = 0;
+    nameTextSpinBox.keyTranslator = textSpinBox_KeyTranslator;
 }
 
 
@@ -79,7 +94,7 @@ static uint8_t guiEditPanel2_onDraw(void *widget, guiEvent_t *event)
         LCD_SetLineStyle(LINE_STYLE_SOLID);
 		LCD_DrawRect(wx,wy,guiEditPanel2.width,guiEditPanel2.height,1);
 
-        LCD_SetFont(&font_h10);
+        LCD_SetFont(&font_h10_bold);
         LCD_PrintString("Edit name", wx + 5, wy + 2, IMAGE_MODE_NORMAL);
     }
     return 0;
@@ -91,7 +106,9 @@ static uint8_t guiEditPanel2_onFocusChanged(void *widget, guiEvent_t *event)
     //int32_t value;
     if (guiEditPanel2.isFocused)
     {
-       
+        guiCore_RequestFocusChange((guiGenericWidget_t *)&nameTextSpinBox);
+        event->type = TEXTSPINBOX_EVENT_ACTIVATE;
+        guiCore_AddMessageToQueue((guiGenericWidget_t *)&nameTextSpinBox,event);   // activate
     }
     return 0;
 }
@@ -101,12 +118,15 @@ static uint8_t guiEditPanel2_onKey(void *widget, guiEvent_t *event)
 {
     uint8_t exit_code = 0;
 
-    if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if ((event->lparam == GUI_KEY_OK))
+            exit_code = 2;
+    }
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
     {
         if (event->lparam == GUI_KEY_ESC)
             exit_code = 1;
-        else if ((event->lparam == GUI_KEY_OK) || (event->lparam == GUI_KEY_ENCODER))
-            exit_code = 2;
     }
     else if (event->spec == GUI_KEY_EVENT_HOLD)
     {
@@ -118,46 +138,51 @@ static uint8_t guiEditPanel2_onKey(void *widget, guiEvent_t *event)
 
     if (exit_code == 2)
     {
-        //if (editView.mode == EDIT_MODE_VOLTAGE)
-        //    applyGuiVoltageSetting(editView.channel, spinBox_Edit.value * 10);
-        //else
-        //    applyGuiCurrentSetting(editView.channel, editView.current_range, spinBox_Edit.value * 10);
+        hideEditPanel2(nameTextSpinBox.text);
     }
-    if (exit_code)
+    else if (exit_code)
     {
-        //hideEditPanel1();
+        hideEditPanel2(0);
     }
     return GUI_EVENT_ACCEPTED;
 }
 
 
-/*
-static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+
+static uint8_t textSpinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
-    guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
+    guiTextSpinBoxTranslatedKey_t *tkey = (guiTextSpinBoxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
     tkey->increment = 0;
     if (event->spec == GUI_KEY_EVENT_DOWN)
     {
         if (event->lparam == GUI_KEY_LEFT)
-            tkey->key = SPINBOX_KEY_LEFT;
+            tkey->key = TEXTSPINBOX_KEY_LEFT;
         else if (event->lparam == GUI_KEY_RIGHT)
-            tkey->key = SPINBOX_KEY_RIGHT;
+            tkey->key = TEXTSPINBOX_KEY_RIGHT;
+    }
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+            // Reset active char
+            guiTextSpinBox_SetActiveChar(&nameTextSpinBox, ' ', 0);
     }
     else if (event->spec == GUI_ENCODER_EVENT)
     {
-        if (((guiSpinBox_t *)widget)->isActive == 0)
-        {
-            event->type = SPINBOX_EVENT_ACTIVATE;
-            guiCore_AddMessageToQueue(widget,event);   // activate
-            return GUI_EVENT_ACCEPTED;
-        }
-        tkey->increment = (int16_t)event->lparam;
+        tkey->increment = (int8_t)event->lparam;
     }
     return 0;
 }
-*/
 
+
+
+
+void guiEditPanel2_Show(char *textToEdit)
+{
+    guiCore_SetVisible((guiGenericWidget_t*)&guiEditPanel2, 1);
+    guiCore_RequestFocusChange((guiGenericWidget_t*)&guiEditPanel2);
+    guiTextSpinBox_SetText(&nameTextSpinBox, textToEdit, 0);
+}
 
 
 

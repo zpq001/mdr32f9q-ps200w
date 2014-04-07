@@ -1,5 +1,5 @@
-/*******************************************************************
-	Module i2c_eeprom.c
+/***************************************************************//**
+	@brief i2c_eeprom
 	
 	Top-level functions for serial 24LC16B EEPROM device.
 
@@ -26,24 +26,23 @@
 #include "converter.h"
 #include "dispatcher.h"
 
-
-static device_profile_t device_profile_data;		
-device_profile_t *device_profile = &device_profile_data;
-char device_profile_name[EE_PROFILE_NAME_SIZE];
-
+/// Global settings 
 static global_settings_t global_settings_data;
 global_settings_t * global_settings = &global_settings_data;
-
+/// Device profile
+static device_profile_t device_profile_data;		
+device_profile_t *device_profile = &device_profile_data;
+/// Profile name
+static char device_profile_name[EE_PROFILE_NAME_SIZE];
+/// Array that holds profile states
 uint8_t profile_info[EE_PROFILES_COUNT];
 
 
 //-------------------------------------------------------//
-/// @func Function for CRC update by single byte
-/// @input 
-//		uint16_t crc - initial CRC
-//		uint8_t a - data byte
-/// @return
-//		Updated CRC
+/// @brief Function for single byte CRC update
+/// @param[in] crc - initial CRC
+/// @param[in] a - data byte
+/// @return	updated CRC
 //-------------------------------------------------------//
 static uint16_t crc16_update(uint16_t crc, uint8_t a)
 {
@@ -60,13 +59,11 @@ static uint16_t crc16_update(uint16_t crc, uint8_t a)
 }
 
 //-------------------------------------------------------//
-/// @func Function for CRC update for data block
-/// @input 
-//		uint8_t *data - pointer to data
-//		uint16_t size - byte count
-//		uint16_t seed - initial seed for CRC
-/// @return
-//		Updated CRC
+/// @brief Function for data block CRC update
+/// @param[in] data - pointer to data
+/// @param[in] size - byte count
+/// @param[in] seed - initial seed for CRC
+/// @return updated CRC
 //-------------------------------------------------------//
 static uint16_t get_crc16(uint8_t *data, uint16_t size, uint16_t seed)
 {
@@ -245,6 +242,7 @@ static uint8_t EE_LoadGlobalSettings(void)
 
 
 //-------------------------------------------------------//
+// Profile name for recent profile is ignored
 // Return:
 //		EE_PROFILE_HW_ERROR if there was an hardware error for recent profile
 //		EE_PROFILE_CRC_ERROR if there was CRC error for recent profile
@@ -389,7 +387,8 @@ static void EE_ExamineProfiles(void)
 //-------------------------------------------------------//
 //	Returns name of a profile
 //	profile_info[i] must be filled correctly before calling.
-//
+//	Function always read EE_PROFILE_NAME_SIZE characters from EEPROM
+//	filled string is always terminated with \0
 //-------------------------------------------------------//
 static uint8_t EE_GetProfileName(uint8_t i, char *str_to_fill)
 {
@@ -516,9 +515,14 @@ static uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
 	
 	if (i < EE_PROFILES_COUNT) 
 	{
-		//update_device_profile(); - moved to task
-		// Copy name
-		strncpy(device_profile_name, name, EE_PROFILE_NAME_SIZE);
+		// Device profile data structure must be filled before saving by
+		// calling update_device_profile();
+		
+		// Fill temporary buffer with \0
+		memset(device_profile_name, 0, sizeof(device_profile_name));
+		// Copy name (first EE_PROFILE_NAME_SIZE - 1 characters or until \0 is found in source name)
+		// Profile name always contains teminating \0
+		strncpy(device_profile_name, name, EE_PROFILE_NAME_SIZE - 1);
 		
 		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
 		crc = get_crc16((uint8_t *)&device_profile_name, EE_PROFILE_NAME_SIZE, crc);

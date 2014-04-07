@@ -202,12 +202,12 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.height = 68 - 13;
     setupList.stringCount = SETUP_LIST_ELEMENTS_COUNT;
     setupList.strings = setupListElements;
-    setupList.strings[0] = " Channel 5V";
-    setupList.strings[1] = " Channel 12V";
-    setupList.strings[2] = " Overload setup";
-    setupList.strings[3] = " Profile load";
-    setupList.strings[4] = " Profile save";
-    setupList.strings[5] = " Profile setup";
+    setupList.strings[0] = "Channel 5V";
+    setupList.strings[1] = "Channel 12V";
+    setupList.strings[2] = "Overload setup";
+    setupList.strings[3] = "Profile load";
+    setupList.strings[4] = "Profile save";
+    setupList.strings[5] = "Profile setup";
     setupList.handlers.count = 4;
     setupList.handlers.elements = setupListHandlers;
     setupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
@@ -238,10 +238,10 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.height = 68 - 13;
     chSetupList.stringCount = CH_SETUP_LIST_ELEMENTS_COUNT;
     chSetupList.strings = chSsetupListElements;
-    chSetupList.strings[0] = " Voltage limit";
-    chSetupList.strings[1] = " Current lim. 20A";
-    chSetupList.strings[2] = " Current lim. 40A";
-    chSetupList.strings[3] = " ******";
+    chSetupList.strings[0] = "Voltage limit";
+    chSetupList.strings[1] = "Current lim. 20A";
+    chSetupList.strings[2] = "Current lim. 40A";
+    chSetupList.strings[3] = "******";
     chSetupList.handlers.count = 4;
     chSetupList.handlers.elements = chSetupListHandlers;
     chSetupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
@@ -992,8 +992,7 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
             // Save profile data to EEPROM
             //snprintf(newProfileName, EE_PROFILE_NAME_SIZE, "Profile %d", profileList.selectedIndex);	// tap
             //saveProfile(profileList.selectedIndex, newProfileName);   // TODO: ask for new name before saving
-            guiCore_SetVisible((guiGenericWidget_t*)&guiEditPanel2, 1);
-
+            guiEditPanel2_Show(profileList.strings[profileList.selectedIndex]);
         }
         return GUI_EVENT_ACCEPTED;
     }
@@ -1015,6 +1014,17 @@ static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event)
         guiStringList_SetActive(&profileList, 1, 0);  // will call handler
     }
     return 0;
+}
+
+void hideEditPanel2(char *newProfileName)
+{
+    if (newProfileName)
+    {
+        // New name confirmed
+        saveProfile(profileList.selectedIndex, newProfileName);
+    }
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel2, &guiEvent_HIDE);
+    guiCore_RequestFocusChange((guiGenericWidget_t *)&profileList);
 }
 
 
@@ -1145,7 +1155,7 @@ static void updateOverloadSetting(void)
 }
 
 //---------------------------------------------//
-// Called by GUI itself and top-level
+// Called by GUI itself and by top-level
 // Reads profile setup settings and updates widgets
 //---------------------------------------------//
 void updateProfileSetup(void)
@@ -1155,6 +1165,7 @@ void updateProfileSetup(void)
     guiCheckbox_SetChecked(&checkBox_ProfileSetup1, saveRecentProfile, 0);
     guiCheckbox_SetChecked(&checkBox_ProfileSetup2, restoreRecentProfile, 0);
 }
+
 
 
 
@@ -1216,13 +1227,13 @@ void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name)
 	switch (profileState)
 	{
 		case EE_PROFILE_CRC_ERROR:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " <empty>");
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<empty>");
 			break;
 		case EE_PROFILE_HW_ERROR:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " <hw n/a>");
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<hw n/a>");
 			break;
 		default:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, " %s", name);
+            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "%s", name);
 			break;
 	}
 	profileList.redrawRequired = 1;

@@ -54,6 +54,35 @@ void LCD_DrawRect(uint8_t x_pos, uint8_t y_pos, uint8_t width, uint8_t height, u
 }
 
 
+//-------------------------------------------------------//
+// Rerurns index in code table for code
+// Returns -1 if not found
+//-------------------------------------------------------//
+int16_t LCD_GetFontIndexForChar(const tFont *font, uint8_t code)
+{
+    uint8_t itemCode;
+    uint8_t start_index = 0;
+    uint8_t end_index;
+    uint8_t i;
+
+    end_index = font->charCount;
+    while (start_index < end_index)
+    {
+        i = start_index + (end_index - start_index) / 2;
+        itemCode = font->codeTable[i];
+        if (code < itemCode)
+            end_index = i;
+        else if (code > itemCode)
+            start_index = i+1;
+        else
+        {
+            // Found
+            return i;
+        }
+    }
+    return -1;
+}
+
 
 //-------------------------------------------------------//
 // Rerurns width and offset of a font item
@@ -120,6 +149,41 @@ uint8_t LCD_GetFontItem(const tFont *font, uint8_t code, uint8_t *width, uint16_
     }
     return 0;
 }
+
+//-------------------------------------------------------//
+// Rerurns next or previous char in the font
+//
+//-------------------------------------------------------//
+uint8_t LCD_GetNextFontChar(const tFont *font, uint8_t code, int8_t scanDir)
+{
+    int16_t index;
+    //scanDir = (scanDir < 0) ? -1 : ((scanDir > 0) ? 1 : 0);
+
+    if (font->codeTable == 0)
+    {
+        // Char subset is contiguous, starting with _firstCharCode_ and containing _charCount_ chars.
+        index = code + scanDir;
+        if (index <= font->firstCharCode)
+            code = font->firstCharCode;
+        else if (index >= font->firstCharCode + font->charCount - 1)
+            code = font->firstCharCode + font->charCount - 1;
+        else
+            code = (uint8_t)index;
+    }
+    else
+    {
+        // Char subset is defined by _codeTable_ table
+        index = LCD_GetFontIndexForChar(font, code);
+        index += scanDir;
+        if (index < 0)
+            index = 0;
+        else if (index > font->charCount - 1)
+            index = font->charCount - 1;
+        code = font->codeTable[index];
+    }
+    return code;
+}
+
 
 //-------------------------------------------------------//
 // Rerurns length of a string in pixels

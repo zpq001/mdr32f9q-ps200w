@@ -18,9 +18,9 @@
 
 
 
-uint8_t guiTextSpinBox_SetActive(guiTextSpinBox_t *textSpinBox, uint8_t newActiveState, uint8_t restoreValue)
+uint8_t guiTextSpinBox_SetActive(guiTextSpinBox_t *textSpinBox, uint8_t newActiveState)
 {
-    /*guiEvent_t event;
+    guiEvent_t event;
     if (textSpinBox == 0) return 0;
 
     if (newActiveState)
@@ -28,98 +28,111 @@ uint8_t guiTextSpinBox_SetActive(guiTextSpinBox_t *textSpinBox, uint8_t newActiv
         // Activate
         if (textSpinBox->isActive) return 0;
         textSpinBox->isActive = 1;
-        textSpinBox->savedValue = textSpinBox->value;
     }
     else
     {
         // Deactivate
         if (textSpinBox->isActive == 0) return 0;
         textSpinBox->isActive = 0;
-        if ((textSpinBox->restoreValueOnEscape) && (restoreValue))
-        {
-            guiTextSpinBox_SetValue(textSpinBox, textSpinBox->savedValue, 1);
-            textSpinBox->newValueAccepted = 0;
-        }
-        else
-        {
-            textSpinBox->newValueAccepted = 1;
-        }
     }
     // Active state changed - call handler
-    textSpinBox->redrawDigitSelection = 1;
+    textSpinBox->redrawCharSelection = 1;
     textSpinBox->redrawRequired = 1;
     if (textSpinBox->handlers.count != 0)
     {
-        event.type = SPINBOX_ACTIVE_CHANGED;
+        event.type = TEXTSPINBOX_ACTIVE_CHANGED;
         guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
-    }*/
+    }
     return 1;
 }
 
 
 
-void guiTextSpinBox_SetActiveDigit(guiTextSpinBox_t *textSpinBox, int8_t num)
+void guiTextSpinBox_SetActiveCharPos(guiTextSpinBox_t *textSpinBox, int8_t num)
 {
-    /*uint8_t newActiveDigit;
+    uint8_t newActiveChar;
     guiEvent_t event;
     if (textSpinBox != 0)
     {
-        newActiveDigit = (num >= textSpinBox->digitsToDisplay) ? textSpinBox->digitsToDisplay - 1 :
+        newActiveChar = (num >= textSpinBox->textLength) ? textSpinBox->textLength - 1 :
                                                              ((num < 0) ? 0 : num);
-        if (newActiveDigit != textSpinBox->activeDigit)
+        if (newActiveChar != textSpinBox->activeChar)
         {
-            textSpinBox->activeDigit = newActiveDigit;
-            textSpinBox->redrawDigitSelection = 1;
+            textSpinBox->activeChar = newActiveChar;
+            textSpinBox->redrawCharSelection = 1;
             textSpinBox->redrawRequired = 1;
             // Call handler
-            event.type = SPINBOX_ACTIVE_DIGIT_CHANGED;
+            event.type = TEXTSPINBOX_ACTIVE_CHAR_CHANGED;
             guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
         }
-    }*/
+    }
 }
 
 
-void guiTextSpinBox_SetValue(guiTextSpinBox_t *textSpinBox, int32_t value, uint8_t callHandler)
+void guiTextSpinBox_SetText(guiTextSpinBox_t *textSpinBox, char *newText, uint8_t callHandler)
 {
-   /* int32_t newValue;
+    uint8_t i, newTextIndex;
+    char c;
     guiEvent_t event;
     if (textSpinBox != 0)
     {
-        newValue = (value < textSpinBox->minValue) ? textSpinBox->minValue :
-                   ((value > textSpinBox->maxValue) ? textSpinBox->maxValue : value);
-
-        if (newValue != textSpinBox->value)
+        for (i=0, newTextIndex=0; i<textSpinBox->textLength; i++)
         {
-            textSpinBox->value = newValue;
-            textSpinBox->redrawValue = 1;
-            textSpinBox->redrawRequired = 1;
-            textSpinBox->digitsToDisplay = i32toa_align_right(textSpinBox->value, textSpinBox->text,
-                                       SPINBOX_STRING_LENGTH | NO_TERMINATING_ZERO, textSpinBox->minDigitsToDisplay);
-            // Call handler
-            if (callHandler)
+            c = newText[newTextIndex];
+            if (c != 0)
             {
-                event.type = SPINBOX_VALUE_CHANGED;
-                guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
+                textSpinBox->text[i] = c;
+                newTextIndex++;
             }
-            // Check active digit position
-            guiTextSpinBox_SetActiveDigit(textSpinBox, textSpinBox->activeDigit);
+            else
+            {
+                textSpinBox->text[i] = ' ';
+            }
         }
-    }*/
+
+        textSpinBox->redrawText = 1;
+        textSpinBox->redrawRequired = 1;
+
+        // Call handler
+        if (callHandler)
+        {
+            event.type = TEXTSPINBOX_TEXT_CHANGED;
+            guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
+        }
+    }
 }
 
-void guiTextSpinBox_IncrementValue(guiTextSpinBox_t *textSpinBox, int32_t delta)
+void guiTextSpinBox_IncrementActiveChar(guiTextSpinBox_t *textSpinBox, int8_t inc)
 {
-    /*int32_t mul_c = 1;
-    uint8_t i;
-    if ((textSpinBox != 0) && (delta != 0))
+    guiEvent_t event;
+    uint8_t c = textSpinBox->text[textSpinBox->activeChar];
+    uint8_t newChar = LCD_GetNextFontChar(textSpinBox->font, c, inc);
+    if (newChar != c)
     {
-        for (i=0;i<textSpinBox->activeDigit;i++)
+        textSpinBox->text[textSpinBox->activeChar] = newChar;
+        textSpinBox->redrawText = 1;
+        textSpinBox->redrawRequired = 1;
+        event.type = TEXTSPINBOX_TEXT_CHANGED;
+        guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
+    }
+}
+
+void guiTextSpinBox_SetActiveChar(guiTextSpinBox_t *textSpinBox, char newChar, uint8_t callHandler)
+{
+    guiEvent_t event;
+    uint8_t c = textSpinBox->text[textSpinBox->activeChar];
+    if (newChar != c)
+    {
+        textSpinBox->text[textSpinBox->activeChar] = newChar;
+        textSpinBox->redrawText = 1;
+        textSpinBox->redrawRequired = 1;
+        // Call handler
+        if (callHandler)
         {
-            mul_c *= 10;
+            event.type = TEXTSPINBOX_TEXT_CHANGED;
+            guiCore_CallEventHandler((guiGenericWidget_t *)textSpinBox, &event);
         }
-        delta *= mul_c;
-        guiTextSpinBox_SetValue(textSpinBox, textSpinBox->value + delta, 1);
-    }*/
+    }
 }
 
 
@@ -133,25 +146,33 @@ void guiTextSpinBox_IncrementValue(guiTextSpinBox_t *textSpinBox, int32_t delta)
 //-------------------------------------------------------//
 uint8_t guiTextSpinBox_ProcessKey(guiTextSpinBox_t *textSpinBox, uint8_t key)
 {
-  /*  if (textSpinBox->isActive)
+    if (textSpinBox->isActive)
     {
-        if (key == SPINBOX_KEY_SELECT)
+        if (key == TEXTSPINBOX_KEY_SELECT)
         {
-            guiTextSpinBox_SetActive(textSpinBox, 0, 0);
+            guiTextSpinBox_SetActive(textSpinBox, 0);
         }
-        else if (key == SPINBOX_KEY_EXIT)
+        else if (key == TEXTSPINBOX_KEY_EXIT)
         {
-            guiTextSpinBox_SetActive(textSpinBox, 0, 1);
+            guiTextSpinBox_SetActive(textSpinBox, 0);
         }
-        else if (key == SPINBOX_KEY_LEFT)
+        else if (key == TEXTSPINBOX_KEY_LEFT)
         {
             // move active digit left
-            guiTextSpinBox_SetActiveDigit(textSpinBox, textSpinBox->activeDigit + 1);
+            guiTextSpinBox_SetActiveCharPos(textSpinBox, textSpinBox->activeChar - 1);
         }
-        else if (key == SPINBOX_KEY_RIGHT)
+        else if (key == TEXTSPINBOX_KEY_RIGHT)
         {
             // move active digit right
-            guiTextSpinBox_SetActiveDigit(textSpinBox, textSpinBox->activeDigit - 1);
+            guiTextSpinBox_SetActiveCharPos(textSpinBox, textSpinBox->activeChar + 1);
+        }
+        else if (key == TEXTSPINBOX_KEY_UP)
+        {
+            guiTextSpinBox_IncrementActiveChar(textSpinBox, 1);
+        }
+        else if (key == TEXTSPINBOX_KEY_DOWN)
+        {
+            guiTextSpinBox_IncrementActiveChar(textSpinBox, -1);
         }
         else
         {
@@ -160,16 +181,16 @@ uint8_t guiTextSpinBox_ProcessKey(guiTextSpinBox_t *textSpinBox, uint8_t key)
     }
     else
     {
-        if (key == SPINBOX_KEY_SELECT)
+        if (key == TEXTSPINBOX_KEY_SELECT)
         {
-            guiTextSpinBox_SetActive(textSpinBox, 1, 0);
+            guiTextSpinBox_SetActive(textSpinBox, 1);
         }
         else
         {
             return GUI_EVENT_DECLINE;
         }
     }
-*/
+
     return GUI_EVENT_ACCEPTED;
 }
 
@@ -180,28 +201,28 @@ uint8_t guiTextSpinBox_ProcessKey(guiTextSpinBox_t *textSpinBox, uint8_t key)
 //-------------------------------------------------------//
 uint8_t guiTextSpinBox_DefaultKeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
 {
- /*   guiSpinboxTranslatedKey_t *tkey = (guiSpinboxTranslatedKey_t *)translatedKey;
+    guiTextSpinBoxTranslatedKey_t *tkey = (guiTextSpinBoxTranslatedKey_t *)translatedKey;
     tkey->key = 0;
     tkey->increment = 0;
     if (event->spec == GUI_KEY_EVENT_DOWN)
     {
         if (event->lparam == GUI_KEY_OK)
-            tkey->key = SPINBOX_KEY_SELECT;
+            tkey->key = TEXTSPINBOX_KEY_SELECT;
         else if (event->lparam == GUI_KEY_ESC)
-            tkey->key = SPINBOX_KEY_EXIT;
+            tkey->key = TEXTSPINBOX_KEY_EXIT;
         else if (event->lparam == GUI_KEY_LEFT)
-            tkey->key = SPINBOX_KEY_LEFT;
+            tkey->key = TEXTSPINBOX_KEY_LEFT;
         else if (event->lparam == GUI_KEY_RIGHT)
-            tkey->key = SPINBOX_KEY_RIGHT;
+            tkey->key = TEXTSPINBOX_KEY_RIGHT;
         else if (event->lparam == GUI_KEY_UP)
-            tkey->increment = 1;
+            tkey->key = TEXTSPINBOX_KEY_UP;
         else if (event->lparam == GUI_KEY_DOWN)
-            tkey->increment = -1;
+            tkey->key = TEXTSPINBOX_KEY_DOWN;
     }
     else if (event->spec == GUI_ENCODER_EVENT)
     {
-        tkey->increment = (int16_t)event->lparam;
-    }*/
+        tkey->increment = (int8_t)event->lparam;
+    }
     return 0;
 }
 
@@ -219,34 +240,33 @@ uint8_t guiTextSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
     guiTextSpinBox_t *textSpinBox = (guiTextSpinBox_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     guiTextSpinBoxTranslatedKey_t tkey;
-/*
+
     switch (event.type)
     {
         case GUI_EVENT_DRAW:
-            guiGraph_DrawSpinBox(textSpinBox);
+            guiGraph_DrawTextSpinBox(textSpinBox);
             // Call handler
             guiCore_CallEventHandler(widget, &event);
             // Reset flags - redrawForced will be reset by core
             textSpinBox->redrawFocus = 0;
-            textSpinBox->redrawDigitSelection = 0;
-            textSpinBox->redrawValue = 0;
+            textSpinBox->redrawText= 0;
+            textSpinBox->redrawCharSelection = 0;
             textSpinBox->redrawRequired = 0;
             break;
         case GUI_EVENT_FOCUS:
-            if (SPINBOX_ACCEPTS_FOCUS_EVENT(textSpinBox))
+            if (TEXTSPINBOX_ACCEPTS_FOCUS_EVENT(textSpinBox))
                 guiCore_SetFocused((guiGenericWidget_t *)textSpinBox,1);
             else
                 processResult = GUI_EVENT_DECLINE;      // Cannot accept focus
             break;
         case GUI_EVENT_UNFOCUS:
             guiCore_SetFocused((guiGenericWidget_t *)textSpinBox,0);
-            guiTextSpinBox_SetActive(textSpinBox, 0, 0);        // Do not restore
-            //textSpinBox->keepTouch = 0;
+            guiTextSpinBox_SetActive(textSpinBox, 0);        // Do not restore
             break;
-        case SPINBOX_EVENT_ACTIVATE:
+        case TEXTSPINBOX_EVENT_ACTIVATE:
             if (textSpinBox->isFocused)
             {
-                guiTextSpinBox_SetActive(textSpinBox, 1, 0);
+                guiTextSpinBox_SetActive(textSpinBox, 1);
             }
             // Accept event anyway
             break;
@@ -258,7 +278,7 @@ uint8_t guiTextSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
             break;
         case GUI_EVENT_KEY:
             processResult = GUI_EVENT_DECLINE;
-            if (SPINBOX_ACCEPTS_KEY_EVENT(textSpinBox))
+            if (TEXTSPINBOX_ACCEPTS_KEY_EVENT(textSpinBox))
             {
                 if (textSpinBox->keyTranslator)
                 {
@@ -269,7 +289,7 @@ uint8_t guiTextSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
                     }
                     else if ((tkey.increment != 0) && (textSpinBox->isActive))
                     {
-                        guiTextSpinBox_IncrementValue(textSpinBox, tkey.increment);
+                        guiTextSpinBox_IncrementActiveChar(textSpinBox, tkey.increment);
                         processResult |= GUI_EVENT_ACCEPTED;
                     }
                 }
@@ -282,7 +302,7 @@ uint8_t guiTextSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
         default:
             // Widget cannot process incoming event. Try to find a handler.
             processResult = guiCore_CallEventHandler(widget, &event);
-    }*/
+    }
     return processResult;
 }
 
@@ -296,17 +316,14 @@ uint8_t guiTextSpinBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
 //-------------------------------------------------------//
 void guiTextSpinBox_Initialize(guiTextSpinBox_t *textSpinBox, guiGenericWidget_t *parent)
 {
-  /*  memset(textSpinBox, 0, sizeof(*textSpinBox));
-    textSpinBox->type = WT_SPINBOX;
+    memset(textSpinBox, 0, sizeof(*textSpinBox));
+    textSpinBox->type = WT_TEXTSPINBOX;
     textSpinBox->parent = parent;
     textSpinBox->acceptFocusByTab = 1;
     textSpinBox->isVisible = 1;
     textSpinBox->showFocus = 1;
     textSpinBox->processEvent = guiTextSpinBox_ProcessEvent;
     textSpinBox->keyTranslator = guiTextSpinBox_DefaultKeyTranslator;
-    textSpinBox->minDigitsToDisplay = 1;
-    textSpinBox->maxValue = INT32_MAX;
-    textSpinBox->minValue = INT32_MIN; */
 }
 
 

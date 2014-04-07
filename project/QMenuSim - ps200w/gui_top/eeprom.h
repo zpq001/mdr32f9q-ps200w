@@ -31,7 +31,7 @@
 
 #define EE_GSETTNGS_SIZE				16
 #define EE_PROFILE_SIZE					128		// total: data + name + crc + some free space
-#define EE_PROFILE_NAME_SIZE			11		// 10 chars + \0
+#define EE_PROFILE_NAME_SIZE			13		// 10 chars + \0
 #define EE_CRC_SIZE						2		// using 16-bit simple CRC
 
 #define EE_GSETTINGS_BASE				0

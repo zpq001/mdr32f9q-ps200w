@@ -139,7 +139,7 @@ typedef struct {
 
 
 
-
+uint8_t Converter_GetState(void);
 uint16_t Converter_GetVoltageSetting(uint8_t channel);
 uint16_t Converter_GetVoltageAbsMax(uint8_t channel);
 uint16_t Converter_GetVoltageAbsMin(uint8_t channel);

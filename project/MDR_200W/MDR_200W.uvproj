@@ -653,6 +653,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiMessagePanel1.c</FilePath>
             </File>
+            <File>
+              <FileName>guiEditPanel2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiEditPanel2.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -692,6 +697,11 @@
               <FileName>guiTextLabel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiTextLabel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextSpinBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiTextSpinBox.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1414,6 +1424,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiMessagePanel1.c</FilePath>
             </File>
+            <File>
+              <FileName>guiEditPanel2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiEditPanel2.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1453,6 +1468,11 @@
               <FileName>guiTextLabel.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiTextLabel.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiTextSpinBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiTextSpinBox.c</FilePath>
             </File>
           </Files>
         </Group>

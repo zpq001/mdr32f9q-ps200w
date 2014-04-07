@@ -323,6 +323,84 @@ uint8_t guiGraph_GetStringListVisibleItemCount(guiStringList_t * list)
 }
 
 
+
+//-------------------------------------------------------//
+// Draw textSpinBox
+//
+//
+//-------------------------------------------------------//
+void guiGraph_DrawTextSpinBox(guiTextSpinBox_t * textSpinBox)
+{
+    uint8_t frameStyle;
+    uint8_t framePixelValue;
+    uint8_t charIndex;
+    uint8_t charWidth;
+    uint16_t charOffset;
+    int8_t i;
+    int16_t x,y, y_underline;
+    char c;
+
+    LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+
+    //-----------------------------------------//
+    // Draw background
+    if ((textSpinBox->redrawForced) || (textSpinBox->redrawText) || (textSpinBox->redrawCharSelection))
+    {
+        // Erase rectangle
+        LCD_FillRect(wx+1,wy+1,textSpinBox->width-2,textSpinBox->height-2,FILL_WITH_WHITE);
+    }
+
+
+    //-----------------------------------------//
+    // Draw text value
+    if ((textSpinBox->redrawForced) || (textSpinBox->redrawText) || (textSpinBox->redrawCharSelection))
+    {
+        x = wx + textSpinBox->textLeftOffset;
+        y = wy + textSpinBox->textTopOffset;
+
+        i = 0;
+        charIndex = 0;
+
+        while(i < textSpinBox->textLength)
+        {
+            c = textSpinBox->text[i];
+            if (LCD_GetFontItem(textSpinBox->font, c, &charWidth, &charOffset))
+            {
+                LCD_DrawImage(&textSpinBox->font->data[charOffset], x, y, charWidth, textSpinBox->font->height, IMAGE_MODE_NORMAL);
+                // Draw underline mark
+                if ((i == textSpinBox->activeChar) && (textSpinBox->isActive))
+                {
+                    LCD_SetLineStyle(LINE_STYLE_SOLID);
+                    for (y_underline = y + textSpinBox->font->height + TEXTSPINBOX_UNDERLINE_MARGIN;
+                         y_underline < y + textSpinBox->font->height + TEXTSPINBOX_UNDERLINE_MARGIN + TEXTSPINBOX_UNDERLINE_WIDTH;
+                         y_underline++)
+                        LCD_DrawHorLine(x,y_underline,charWidth,1);
+                }
+                x += charWidth + textSpinBox->font->spacing;
+            }
+            i++;
+        }
+    }
+
+    //-----------------------------------------//
+    // Draw focus / frame
+    if ((textSpinBox->redrawForced) || (textSpinBox->redrawFocus))
+    {
+        if ((textSpinBox->hasFrame) || (textSpinBox->showFocus))
+        {
+            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+            frameStyle = ((textSpinBox->showFocus) && (textSpinBox->isFocused)) ? LINE_STYLE_DOTTED : LINE_STYLE_SOLID;
+            framePixelValue = ((textSpinBox->showFocus) && (textSpinBox->isFocused)) ? 1 : 0;
+            framePixelValue |= (textSpinBox->hasFrame) ? 1 : 0;
+            LCD_SetLineStyle(frameStyle);
+            if (!((textSpinBox->redrawForced) && (framePixelValue == 0)))
+                LCD_DrawRect(wx,wy,textSpinBox->width,textSpinBox->height,framePixelValue);
+        }
+    }
+}
+
+
+
 //-------------------------------------------------------//
 // Draw stringList
 //
@@ -365,7 +443,10 @@ void guiGraph_DrawStringList(guiStringList_t * list)
 
         while (itemsToDisplay--)
         {
+            rect.x1 += STRINGLIST_H_TEXT_MARGIN;
             LCD_PrintStringAligned(list->strings[index], &rect, list->textAlignment, IMAGE_MODE_NORMAL);
+            rect.x1 -= STRINGLIST_H_TEXT_MARGIN;
+
             if (index == list->selectedIndex)
             {
                 // Draw selection

@@ -19,4 +19,6 @@ void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name);
 
 void updateProfileSetup(void);
 
+void hideEditPanel2(char *newProfileName);  // called by edit panel 2
+
 #endif

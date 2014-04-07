@@ -352,7 +352,7 @@ static uint8_t onSpinBoxDrawEvent(void *sender, guiEvent_t *event)
 {
     guiSpinBox_t *spinBox = (guiSpinBox_t *)sender;
 
-    if ((spinBox->redrawFocus) && (spinBox == &spinBox_voltage))
+    if (((spinBox->redrawFocus) || (spinBox->redrawForced)) && (spinBox == &spinBox_voltage))
     {
         if (spinBox->isFocused)
         {
@@ -365,7 +365,7 @@ static uint8_t onSpinBoxDrawEvent(void *sender, guiEvent_t *event)
             LCD_DrawImage((uint8_t*)&selector_tri, 88, 39, 6, 12, IMAGE_MODE_INVERSE);
         }
     }
-    if ((spinBox->redrawFocus) && (spinBox == &spinBox_current))
+    if (((spinBox->redrawFocus) || (spinBox->redrawForced)) && (spinBox == &spinBox_current))
     {
         if (spinBox->isFocused)
         {
@@ -607,6 +607,7 @@ void setGuiFeedbackChannel(uint8_t channel)
 {
     int32_t value;
     masterView.channel = channel;
+	masterView.current_range = Converter_GetCurrentRange(channel);
 
     if (channel == CHANNEL_5V)
         sprintf(textLabel_channel.text, "Ch.5V");

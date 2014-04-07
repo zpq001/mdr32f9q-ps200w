@@ -63,6 +63,11 @@ converter_state_t converter_state;		// main converter control
 //---------------------------------------------//
 // 
 
+uint8_t Converter_GetState(void)
+{
+	return (converter_state.state == CONVERTER_STATE_ON) ? 1 : 0;
+}
+
 uint16_t Converter_GetVoltageSetting(uint8_t channel)
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;

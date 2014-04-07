@@ -22,16 +22,92 @@
 #include "buttons.h"
 #include "encoder.h"
 #include "global_def.h"
+#include "buttons_top.h"
+
+
+/*
+External switch mode:
+	1. Direct ON (action down) /OFF (action up)
+	2. Toggle (by action down)
+	3. Toggle to OFF (by action down)
+	4. Inversion
+*/
+
+extsw_mode_t extsw_mode;
+
+enum ExtSwActions {EXTSW_CMD_NONE, EXTSW_CMD_OFF, EXTSW_CMD_ON};
+
+
+void BTN_SetExtSwMode(uint8_t newMode, uint8_t inversionEnable)
+{
+	taskENTER_CRITICAL();
+	extsw_mode.mode = newMode;
+	extsw_mode.inv = inversionEnable;
+	taskEXIT_CRITICAL();
+}
+
+uint8_t BTN_GetExtSwMode(void)
+{
+	return extsw_mode.mode;
+}
+
+uint8_t BTN_GetExtSwInversion(void)
+{
+	return extsw_mode.inv;
+}
+
+
+void BTN_LoadProfile()
+{
+	taskENTER_CRITICAL();
+	//device_profile->
+	taskEXIT_CRITICAL();
+}
+
+
+
+static uint8_t getExtSwAction(void)
+{
+	uint16_t sw_up;
+	uint16_t sw_down;
+	uint8_t ext_cmd = EXTSW_CMD_NONE;
+	
+	taskENTER_CRITICAL();
+	sw_up = (extsw_mode.inv == 0) ? (buttons.action_up & SW_EXTERNAL) : (buttons.action_down & SW_EXTERNAL);
+	sw_down = (extsw_mode.inv == 0) ? (buttons.action_down & SW_EXTERNAL) : (buttons.action_up & SW_EXTERNAL);
+	switch (extsw_mode.mode)
+	{
+		case EXTSW_DIRECT:
+			if (sw_down) 
+				ext_cmd = EXTSW_CMD_ON;
+			else if (sw_up)
+				ext_cmd = EXTSW_CMD_OFF;
+			break;
+		case EXTSW_TOGGLE:
+			if (sw_down)
+				ext_cmd = (Converter_GetState()) ? EXTSW_CMD_OFF : EXTSW_CMD_ON;
+			break;
+		case EXTSW_TOGGLE_OFF:
+			if (sw_down)
+				ext_cmd = EXTSW_CMD_OFF;
+			break;
+	}
+	taskEXIT_CRITICAL();
+	return ext_cmd;
+}
 
 
 
 void vTaskButtons(void *pvParameters) 
 {
 	uint16_t mask;
+	uint8_t extsw_cmd;
 	dispatch_msg_t dispatcher_msg;
 	
 	// Initialize
 	portTickType lastExecutionTime = xTaskGetTickCount();
+	extsw_mode.inv = 0;
+	extsw_mode.mode = EXTSW_TOGGLE;//EXTSW_DIRECT;
 	
 	while(1)
 	{
@@ -39,6 +115,7 @@ void vTaskButtons(void *pvParameters)
 		
 		ProcessButtons();	
 		UpdateEncoderDelta();
+		extsw_cmd = getExtSwAction();
 		
 		//---------- Converter control -----------//
 		dispatcher_msg.type = DISPATCHER_CONVERTER;
@@ -59,13 +136,13 @@ void vTaskButtons(void *pvParameters)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
 		
-		if ((buttons.action_down & BTN_OFF) || (buttons.action_up & SW_EXTERNAL))
+		if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF))
 		{
 			// Send OFF mesage to converter task
 			dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_OFF;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 		}
-		else if ((buttons.action_down & BTN_ON) || (buttons.action_down & SW_EXTERNAL))
+		else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON))
 		{
 			// Send ON mesage to converter task
 			dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_ON;

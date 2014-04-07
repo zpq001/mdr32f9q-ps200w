@@ -110,11 +110,16 @@ void vTaskDispatcher(void *pvParameters)
 	/* TODO: 
 		-  add GUI menu for external switch
 		-  add GUI menu for UARTs
+		-  add GUI menu for ADC offset
 <done>	-  check if additional EEPROM settings are required
-		-  add GUI input box for user profile name
+<done>	-  add GUI input box for user profile name
 		-  add various sound signals
 		-  clean up GUI (bringing to initial state)
 		-  !!! check and remove voltage spike upon power ON !!!
+		-  check resource sharing - add critical sections (for example, current limit update in converter)
+		-  Add charge function
+		-  Improve cooler control
+		-  Add overheat warning and auto OFF function
 	*/
 	
 	
@@ -169,6 +174,8 @@ void vTaskDispatcher(void *pvParameters)
 					converter_msg.type = CONVERTER_LOAD_PROFILE;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					// Wait for conveter task to complete - TODO
+					// Load profile for buttons
+					// TODO
 					// Send response to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_LOAD;

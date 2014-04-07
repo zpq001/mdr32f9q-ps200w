@@ -239,6 +239,9 @@ void vTaskGUI(void *pvParameters)
 						{
 							// Profile succesfully saved
 							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
+							// Update single record 
+							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
+							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
 						}
 						else
 						{

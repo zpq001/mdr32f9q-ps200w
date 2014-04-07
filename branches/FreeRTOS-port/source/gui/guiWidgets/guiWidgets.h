@@ -22,6 +22,7 @@
 #define WT_TEXTLABEL   0x05
 #define WT_SPINBOX     0x06
 #define WT_STRINGLIST	0x07
+#define WT_TEXTSPINBOX 0x08
 
 // CHECKME - enum?
 
@@ -457,12 +458,13 @@ typedef struct guiTextSpinBox_t {
     const tFont *font;
     uint8_t textAlignment;
     uint8_t hasFrame : 1;
-    uint8_t redrawValue : 1;
-    uint8_t redrawDigitSelection : 1;
+    uint8_t redrawText : 1;
+    uint8_t redrawCharSelection : 1;
     uint8_t isActive : 1;
-    uint8_t activeLetter;
+    uint8_t activeChar;
     char *text;
-    int8_t textRightOffset;
+    uint8_t textLength;
+    int8_t textLeftOffset;
     int8_t textTopOffset;
 
 } guiTextSpinBox_t;

@@ -78,6 +78,7 @@ enum profileEvents {
 void GUI_Init(void);
 
 extern xQueueHandle xQueueGUI;
+extern const gui_msg_t gui_msg_redraw;
 void vTaskGUI(void *pvParameters);
 
 
@@ -92,4 +93,4 @@ void loadProfile(uint8_t index);
 void saveProfile(uint8_t index, char *profileName);
 
 void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
-
+void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode);

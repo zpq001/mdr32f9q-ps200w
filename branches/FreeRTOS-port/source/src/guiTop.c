@@ -57,6 +57,7 @@ static char profileName[EE_PROFILE_NAME_SIZE];
 
 static uint8_t profileOperationInProgress = 0;
 
+const gui_msg_t gui_msg_redraw = {GUI_TASK_REDRAW};
 
 // Blockinbg read from EEPROM task
 static uint8_t readProfileListRecordName(uint8_t index, char *profileName)
@@ -424,5 +425,12 @@ void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentPro
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);
 }
 
+//---------------------------------------------//
+// External switch settings change
+//---------------------------------------------//
+void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode)
+{
 
+
+}
 

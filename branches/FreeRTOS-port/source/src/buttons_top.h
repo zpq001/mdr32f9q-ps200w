@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 
-enum ExtSwModes {EXTSW_DIRECT, EXTSW_TOGGLE, EXTSW_TOGGLE_OFF};
 
 typedef struct {
 	uint8_t enabled;
@@ -10,6 +9,30 @@ typedef struct {
 } extsw_mode_t;
 
 
+
+enum ButtonsTaskMsgTypes {	
+	BUTTONS_TICK = 1, 
+	BUTTONS_EXTSWITCH_SETTINGS
+};
+
+typedef struct {
+	uint8_t type;
+	union {
+		struct {
+			uint8_t enabled;
+			uint8_t inversed;
+			uint8_t mode;
+		} extSwitchSetting;
+	};
+} buttons_msg_t;
+
+
+
+
+
+uint8_t BTN_IsExtSwitchEnabled(void);
+uint8_t BTN_GetExtSwitchInversion(void);
+uint8_t BTN_GetExtSwitchMode(void);
 
 void vTaskButtons(void *pvParameters);
 

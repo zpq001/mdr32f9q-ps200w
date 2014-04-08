@@ -27,6 +27,9 @@
 // TODO: Mutex!!!
 
 
+const buttons_msg_t buttons_sync_msg = {BUTTONS_TICK};
+
+
 /*
 External switch mode:
 	1. Direct ON (action down) /OFF (action up)
@@ -48,17 +51,17 @@ void BTN_SetExtSwMode(uint8_t newMode, uint8_t inversionEnable)
 	taskEXIT_CRITICAL();
 }
 */
-uint8_t BTN_GetExtSwMode(void)
+uint8_t BTN_GetExtSwitchMode(void)
 {
 	return extsw_mode.mode;
 }
 
-uint8_t BTN_GetExtSwInversion(void)
+uint8_t BTN_GetExtSwitchInversion(void)
 {
 	return extsw_mode.inv;
 }
 
-uint8_t BTN_IsExtSwEnabled(void)
+uint8_t BTN_IsExtSwitchEnabled(void)
 {
 	return extsw_mode.enabled;
 }

@@ -35,6 +35,7 @@
 #include "guiTop.h"
 #include "converter.h"
 #include "eeprom.h"
+#include "buttons_top.h"
 
 
 static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);

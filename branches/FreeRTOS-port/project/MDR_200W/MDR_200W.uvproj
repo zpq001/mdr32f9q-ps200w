@@ -703,6 +703,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiTextSpinBox.c</FilePath>
             </File>
+            <File>
+              <FileName>guiRadioButton.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiRadioButton.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1473,6 +1478,11 @@
               <FileName>guiTextSpinBox.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiTextSpinBox.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiRadioButton.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiRadioButton.c</FilePath>
             </File>
           </Files>
         </Group>

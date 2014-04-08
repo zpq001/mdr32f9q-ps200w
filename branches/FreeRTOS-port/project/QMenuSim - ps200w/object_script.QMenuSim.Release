@@ -32,6 +32,7 @@ INPUT(
 ./release\converter.o
 ./release\guiEditPanel2.o
 ./release\guiTextSpinBox.o
+./release\guiRadioButton.o
 ./release\moc_mainwindow.o
 ./release\moc_pixeldisplay.o
 ./release\moc_keydriver.o

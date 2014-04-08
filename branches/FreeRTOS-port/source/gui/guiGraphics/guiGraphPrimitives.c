@@ -350,3 +350,75 @@ void LCD_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t mode)
 }
 
 
+
+void LCD_DrawCircle(int16_t x0, int16_t y0, int16_t radius, uint8_t mode)
+{
+    int16_t x = radius;
+    int16_t y = 0;
+    int16_t xChange = 1 - (radius << 1);
+    int16_t yChange = 0;
+    int16_t radiusError = 0;
+
+    while (x >= y)
+    {
+        LCD_PutPixel(x0 - x, y0 + y, mode);
+        LCD_PutPixel(x0 + x, y0 + y, mode);
+        LCD_PutPixel(x0 - x, y0 - y, mode);
+        LCD_PutPixel(x0 + x, y0 - y, mode);
+
+        LCD_PutPixel(x0 - y, y0 + x, mode);
+        LCD_PutPixel(x0 + y, y0 + x, mode);
+        LCD_PutPixel(x0 - y, y0 - x, mode);
+        LCD_PutPixel(x0 + y, y0 - x, mode);
+
+        y++;
+        radiusError += yChange;
+        yChange += 2;
+        if (((radiusError << 1) + xChange) > 0)
+        {
+            x--;
+            radiusError += xChange;
+            xChange += 2;
+        }
+    }
+}
+
+
+
+
+void LCD_DrawFilledCircle(int16_t x0, int16_t y0, int16_t radius, uint8_t mode)
+{
+    int16_t x = radius;
+    int16_t y = 0;
+    int16_t xChange = 1 - (radius << 1);
+    int16_t yChange = 0;
+    int16_t radiusError = 0;
+    int16_t i;
+
+    while (x >= y)
+    {
+        for (i = x0 - x; i <= x0 + x; i++)
+        {
+            LCD_PutPixel(i, y0 + y, mode);
+            LCD_PutPixel(i, y0 - y, mode);
+        }
+        for (i = x0 - y; i <= x0 + y; i++)
+        {
+            LCD_PutPixel(i, y0 + x, mode);
+            LCD_PutPixel(i, y0 - x, mode);
+        }
+
+        y++;
+        radiusError += yChange;
+        yChange += 2;
+        if (((radiusError << 1) + xChange) > 0)
+        {
+            x--;
+            radiusError += xChange;
+            xChange += 2;
+        }
+    }
+}
+
+
+

@@ -19,11 +19,17 @@
 //#define USE_TOUCH_SUPPORT
 
 
+#define emGUI_HEAP_SIZE             2000        // bytes
+#define emGUI_BYTE_ALIGNMENT        4           // bytes
+#define emGUI_POINTER_SIZE_TYPE     uint32_t
+
+
+
 // Design-specific events
 #define GUI_EVENT_START  0xF0
 #define GUI_EVENT_EEPROM_MESSAGE    0xF1
 
-#define GUI_HEAP_SIZE       2000    // bytes
+
 
 
 

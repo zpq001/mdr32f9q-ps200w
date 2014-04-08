@@ -24,20 +24,22 @@
 #include "global_def.h"
 #include "buttons_top.h"
 
+// TODO: Mutex!!!
+
 
 /*
 External switch mode:
 	1. Direct ON (action down) /OFF (action up)
 	2. Toggle (by action down)
 	3. Toggle to OFF (by action down)
-	4. Inversion
+Additional: Inversion ON/OFF, enabled/disabled
 */
 
 extsw_mode_t extsw_mode;
 
 enum ExtSwActions {EXTSW_CMD_NONE, EXTSW_CMD_OFF, EXTSW_CMD_ON};
 
-
+/*
 void BTN_SetExtSwMode(uint8_t newMode, uint8_t inversionEnable)
 {
 	taskENTER_CRITICAL();
@@ -45,7 +47,7 @@ void BTN_SetExtSwMode(uint8_t newMode, uint8_t inversionEnable)
 	extsw_mode.inv = inversionEnable;
 	taskEXIT_CRITICAL();
 }
-
+*/
 uint8_t BTN_GetExtSwMode(void)
 {
 	return extsw_mode.mode;
@@ -56,6 +58,11 @@ uint8_t BTN_GetExtSwInversion(void)
 	return extsw_mode.inv;
 }
 
+uint8_t BTN_IsExtSwEnabled(void)
+{
+	return extsw_mode.enabled;
+}
+
 
 void BTN_LoadProfile()
 {
@@ -63,6 +70,13 @@ void BTN_LoadProfile()
 	//device_profile->
 	taskEXIT_CRITICAL();
 }
+
+void BTN_SaveProfile()
+{
+
+
+}
+
 
 
 

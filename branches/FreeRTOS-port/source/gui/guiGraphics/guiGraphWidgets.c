@@ -230,6 +230,81 @@ void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox)
 
 }
 
+//-------------------------------------------------------//
+// Draw radioButton
+//
+//
+//-------------------------------------------------------//
+void guiGraph_DrawRadioButton(guiRadioButton_t *button)
+{
+    int8_t y_aligned;
+    int8_t x_aligned;
+    rect_t rect1;
+
+    rect1.x1 = wx;
+    rect1.x2 = wx + button->width - 1;
+    rect1.y1 = wy;
+    rect1.y2 = wy + button->height - 1;
+
+
+    y_aligned = wy + button->height / 2;
+    x_aligned = wx + RADIOBUTTON_RADIUS + 2;
+
+
+    if (button->redrawForced)
+    {
+        // Erase rectangle
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        LCD_FillRect(wx+1,wy+1,button->width-2,button->height-2,FILL_WITH_WHITE);
+
+
+        // Draw string
+        if (button->text)
+        {
+            LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+            LCD_SetFont(button->font);
+            rect1.x1 = wx + 2 + RADIOBUTTON_RADIUS*2 + RADIOBUTTON_TEXT_MARGIN;
+            rect1.y1 = wy + 1;
+            rect1.x2 = wx + button->width - 2;
+            rect1.y2 = wy + button->height - 2;
+            LCD_PrintStringAligned(button->text, &rect1, button->textAlignment, IMAGE_MODE_NORMAL);
+        }
+    }
+
+    //-----------------------------------------//
+    // Draw radiobutton circles
+    if ((button->redrawForced) || (button->redrawCheckedState))
+    {
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        LCD_DrawFilledCircle(x_aligned,y_aligned,RADIOBUTTON_RADIUS, 0);
+        LCD_DrawCircle(x_aligned,y_aligned,RADIOBUTTON_RADIUS, 1);
+        if (button->isChecked)
+        {
+            LCD_DrawFilledCircle(x_aligned,y_aligned,RADIOBUTTON_CHECK_RADIUS, 1);
+        }
+    }
+
+
+
+    //-----------------------------------------//
+    // Draw focus / frame
+    if ((button->redrawForced) || (button->redrawFocus))
+    {
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        if (button->isFocused)
+        {
+          LCD_SetLineStyle(LINE_STYLE_DOTTED);
+          LCD_DrawRect(wx,wy,button->width,button->height,1);
+        }
+        else
+        {
+          LCD_SetLineStyle(LINE_STYLE_SOLID);
+          LCD_DrawRect(wx,wy,button->width,button->height,0);
+        }
+    }
+
+}
+
 
 
 //-------------------------------------------------------//
@@ -444,7 +519,8 @@ void guiGraph_DrawStringList(guiStringList_t * list)
         while (itemsToDisplay--)
         {
             rect.x1 += STRINGLIST_H_TEXT_MARGIN;
-            LCD_PrintStringAligned(list->strings[index], &rect, list->textAlignment, IMAGE_MODE_NORMAL);
+            if (list->strings[index])
+                LCD_PrintStringAligned(list->strings[index], &rect, list->textAlignment, IMAGE_MODE_NORMAL);
             rect.x1 -= STRINGLIST_H_TEXT_MARGIN;
 
             if (index == list->selectedIndex)

@@ -124,16 +124,24 @@ typedef struct {
 #define TMR_NO_RESET        0
 
 
+//-----------------------------------//
+// GUI errors
+#define emGUI_ERROR_OUT_OF_HEAP                 0x01
+#define emGUI_ERROR_OUT_OF_PREALLOCATED_MEMORY  0x02
+#define emGUI_ERROR_NULL_REF                    0x03
 
 // Modifying these pointers should be done with care!
 extern guiGenericWidget_t *rootWidget;         // Root widget must be present
 extern guiGenericWidget_t *focusedWidget;      // Focused widget gets events from keys/encoder/touch
 
-void *gui_malloc(uint32_t wantedSize);
-void *gui_calloc(uint32_t wantedSize);
+void *guiCore_malloc(size_t wantedSize);
+void *guiCore_calloc(size_t wantedSize);
 void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t count);
 void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count);
 uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventHandler_t handler);
+
+// Common error handler
+void guiCore_Error(uint8_t errCode);
 
 //===================================================================//
 //                 GUI core message queue functions
@@ -174,6 +182,7 @@ uint8_t guiCore_CheckWidgetOvelap(guiGenericWidget_t *widget, rect16_t *rect);
 void guiCore_ConvertToAbsoluteXY(guiGenericWidget_t *widget, int16_t *x, int16_t *y);
 void guiCore_ConvertToRelativeXY(guiGenericWidget_t *widget, int16_t *x, int16_t *y);
 guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int16_t x, int16_t y);
+uint8_t guiCore_IsWidgetVisible(guiGenericWidget_t *widget);
 
 //===================================================================//
 //                   Widget collections management                   //

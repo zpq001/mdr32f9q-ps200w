@@ -322,6 +322,26 @@ uint8_t getCurrentRange(uint8_t channel)
 
 
 //---------------------------------------------//
+// Button functions emulation
+//---------------------------------------------//
+uint8_t BTN_GetExtSwitchMode(void)
+{
+    return EXTSW_TOGGLE;
+}
+
+uint8_t BTN_GetExtSwitchInversion(void)
+{
+    return 0;
+}
+
+uint8_t BTN_IsExtSwitchEnabled(void)
+{
+    return 1;
+}
+
+
+
+//---------------------------------------------//
 
 
 // Voltage setting GUI -> HW
@@ -506,6 +526,18 @@ void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentPro
 
 
 }
+
+
+
+void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode)
+{
+
+
+}
+
+
+
+
 
 
 //=================================================================//

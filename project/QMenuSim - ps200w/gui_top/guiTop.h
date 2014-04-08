@@ -102,6 +102,11 @@ uint8_t getOverloadProtectionWarning(void);
 uint16_t getOverloadProtectionThreshold(void);
 uint8_t getCurrentRange(uint8_t channel);
 
+uint8_t BTN_IsExtSwitchEnabled(void);
+uint8_t BTN_GetExtSwitchInversion(void);
+uint8_t BTN_GetExtSwitchMode(void);
+
+
 
 void updateGuiVoltageIndicator(void);
 void updateGuiVoltageSetting(void);
@@ -132,6 +137,7 @@ void loadProfile(uint8_t index);
 void saveProfile(uint8_t index, char *profileName);
 
 void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
+void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode);
 
 #ifdef __cplusplus
 }

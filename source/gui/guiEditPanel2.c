@@ -76,7 +76,7 @@ void guiEditPanel2_Initialize(guiGenericWidget_t *parent)
     nameTextSpinBox.textTopOffset = 2;
     nameTextSpinBox.tabIndex = 1;
     nameTextSpinBox.textLength = EE_PROFILE_NAME_SIZE - 1;
-    nameTextSpinBox.text = gui_calloc(EE_PROFILE_NAME_SIZE);    // + \0
+    nameTextSpinBox.text = guiCore_calloc(EE_PROFILE_NAME_SIZE);    // + \0
     nameTextSpinBox.hasFrame = 1;
     nameTextSpinBox.showFocus = 0;
     nameTextSpinBox.keyTranslator = textSpinBox_KeyTranslator;

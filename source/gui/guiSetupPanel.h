@@ -18,6 +18,7 @@ void setGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnabled, int
 void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name);
 
 void updateProfileSetup(void);
+void updateExtSwitchSettings(uint8_t updateForced);
 
 void hideEditPanel2(char *newProfileName);  // called by edit panel 2
 

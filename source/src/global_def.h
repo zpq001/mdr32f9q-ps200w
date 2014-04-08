@@ -34,6 +34,10 @@
 #define LIMIT_TYPE_HIGH			0x01
 
 
+// External switch modes
+enum ExtSwModes {EXTSW_DIRECT, EXTSW_TOGGLE, EXTSW_TOGGLE_OFF};
+
+
 
 enum senders {
 	sender_UART1 = 1,

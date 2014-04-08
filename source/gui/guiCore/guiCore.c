@@ -62,29 +62,38 @@ guiGenericWidget_t *focusedWidget;      // Focused widget gets events from keys/
 //                                                                   //
 //===================================================================//
 
-static uint8_t gui_heap[GUI_HEAP_SIZE];
-static int32_t allocated_bytes_count;
-
-
 // Inspired by freeRTOS heap1
-void *gui_malloc(uint32_t wantedSize)
+
+
+#define emGUI_BYTE_ALIGNMENT_MASK ( emGUI_BYTE_ALIGNMENT - 1 )
+// A few bytes might be lost to byte aligning the heap start address
+#define emGUI_ADJUSTED_HEAP_SIZE	( emGUI_HEAP_SIZE - emGUI_BYTE_ALIGNMENT )
+
+static unsigned char gui_heap[emGUI_HEAP_SIZE];
+static size_t allocated_bytes_count = (size_t) 0;
+
+
+void *guiCore_malloc(size_t wantedSize)
 {
-    static uint8_t *p_heap = 0;
+    static unsigned char *p_heap = 0;
     void *result = 0;
 
     // Make sure blocks are aligned
-    if (wantedSize & 0x03)
-    {
-        wantedSize += (4 - (wantedSize & 0x03));
-    }
+    #if emGUI_BYTE_ALIGNMENT != 1
+        if (wantedSize & emGUI_BYTE_ALIGNMENT_MASK)
+        {
+            // Adjust allocated block size
+            wantedSize += (emGUI_BYTE_ALIGNMENT - (wantedSize & emGUI_BYTE_ALIGNMENT_MASK));
+        }
+    #endif
 
     if (p_heap == 0)
     {
-        p_heap = (uint8_t *)(((uint32_t)&gui_heap[4]) & (~3));
+        p_heap = (unsigned char *)(((emGUI_POINTER_SIZE_TYPE)&gui_heap[emGUI_BYTE_ALIGNMENT_MASK]) & ((emGUI_POINTER_SIZE_TYPE) ~emGUI_BYTE_ALIGNMENT_MASK));
     }
 
-    // Check there is enough space
-    if( ( ( allocated_bytes_count + wantedSize ) < (GUI_HEAP_SIZE - 4) ) &&
+    // Check if there is enough space
+    if( ( ( allocated_bytes_count + wantedSize ) < emGUI_ADJUSTED_HEAP_SIZE ) &&
         ( ( allocated_bytes_count + wantedSize ) > allocated_bytes_count )	)   // Check for overflow
     {
         // Return the next free byte then increment the index past this block
@@ -95,32 +104,53 @@ void *gui_malloc(uint32_t wantedSize)
     if (result == 0)
     {
         // Trace error
+        guiCore_Error(emGUI_ERROR_OUT_OF_HEAP);
     }
     return result;
 }
 
 
-void *gui_calloc(uint32_t wantedSize)
+void *guiCore_calloc(size_t wantedSize)
 {
-    void *result = gui_malloc(wantedSize);
+    void *result = guiCore_malloc(wantedSize);
     if (result)
     {
-        memset(result,0,wantedSize);
+        memset(result, 0, wantedSize);
     }
     return result;
+}
+
+
+size_t guiCore_GetFreeHeapSize( void )
+{
+    return ( emGUI_ADJUSTED_HEAP_SIZE - allocated_bytes_count );
 }
 
 
 void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t count)
 {
-    container->widgets.count = count;
-    container->widgets.elements = gui_calloc(10 * sizeof(void *));
+    if (container != 0)
+    {
+        container->widgets.count = count;
+        container->widgets.elements = guiCore_calloc(count * sizeof(void *));
+    }
+    else
+    {
+        guiCore_Error(emGUI_ERROR_NULL_REF);
+    }
 }
 
 void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count)
 {
-    widget->handlers.count = count;
-    widget->handlers.elements = gui_calloc(3 * sizeof(guiWidgetHandler_t));
+    if (widget != 0)
+    {
+        widget->handlers.count = count;
+        widget->handlers.elements = guiCore_calloc(count * sizeof(guiWidgetHandler_t));
+    }
+    else
+    {
+        guiCore_Error(emGUI_ERROR_NULL_REF);
+    }
 }
 
 
@@ -146,7 +176,7 @@ uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventH
         }
     }
     // No free space
-    // Trace!
+    guiCore_Error(emGUI_ERROR_OUT_OF_PREALLOCATED_MEMORY);
     return 0;
 }
 
@@ -1017,7 +1047,25 @@ guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int
 }
 
 
-
+//-------------------------------------------------------//
+//  Checks if widget is visible
+//  Returns non-zero if widget is visible itself and
+//      all his parents are visible too.
+//  Note - function does not check if widget is covered by other widget or panel
+//-------------------------------------------------------//
+uint8_t guiCore_IsWidgetVisible(guiGenericWidget_t *widget)
+{
+    // Root widget has no parent
+    while(widget != 0)
+    {
+        // Check visibility
+        if (widget->isVisible == 0)
+            return 0;
+        // Move up the tree
+        widget = widget->parent;
+    }
+    return 1;
+}
 
 
 
@@ -1039,19 +1087,25 @@ guiGenericWidget_t *guiCore_GetTouchedWidgetAtXY(guiGenericWidget_t *widget, int
 uint8_t guiCore_AddWidgetToCollection(guiGenericWidget_t *widget, guiGenericContainer_t *container)
 {
     uint8_t i;
-    if ((widget == 0) || (container == 0))
-        return 0;
-    for (i = 0; i < container->widgets.count; i++)
+    if ((widget != 0) && (container != 0))
     {
-        if (container->widgets.elements[i] == 0)
+        for (i = 0; i < container->widgets.count; i++)
         {
-            // Found free item slot
-            container->widgets.elements[i] = widget;
-            widget->parent = (guiGenericWidget_t *)container;
-            return 1;
+            if (container->widgets.elements[i] == 0)
+            {
+                // Found free item slot
+                container->widgets.elements[i] = widget;
+                widget->parent = (guiGenericWidget_t *)container;
+                return 1;
+            }
         }
     }
-    // No free space
+    else
+    {
+        guiCore_Error(emGUI_ERROR_NULL_REF);
+        return 0;
+    }
+    guiCore_Error(emGUI_ERROR_OUT_OF_PREALLOCATED_MEMORY);
     return 0;
 }
 
@@ -1389,6 +1443,13 @@ void guiCore_DecodeContainerTouchEvent(guiGenericWidget_t *widget, guiEvent_t *t
 }
 
 
+
+
+void guiCore_Error(uint8_t errCode)
+{
+    // One may trace call stack and thus find source of the error
+    while(1);
+}
 
 
 

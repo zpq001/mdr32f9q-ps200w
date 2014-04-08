@@ -24,6 +24,7 @@
 #include "guiSpinBox.h"
 #include "guiStringList.h"
 #include "guiCheckBox.h"
+#include "guiRadioButton.h"
 
 // Other forms and panels
 #include "guiMasterPanel.h"
@@ -66,40 +67,12 @@ static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
 static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event);
+static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event);
 
 static void updateVoltageLimit(uint8_t channel, uint8_t limit_type);
 static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
 static void updateOverloadSetting(void);
 
-
-//--------- Setup panel  ----------//
-#define SETUP_PANEL_ELEMENTS_COUNT 20   // CHECKME - possibly too much
-guiPanel_t     guiSetupPanel;
-static void *guiSetupPanelElements[SETUP_PANEL_ELEMENTS_COUNT];
-guiWidgetHandler_t setupPanelHandlers[2];
-
-//--------- Panel elements ---------//
-// Title label
-static guiTextLabel_t textLabel_title;        // Menu item list title
-
-
-guiStringList_t setupList;
-#define SETUP_LIST_ELEMENTS_COUNT 6
-char *setupListElements[SETUP_LIST_ELEMENTS_COUNT];
-guiWidgetHandler_t setupListHandlers[4];
-
-// Channel setup list
-guiStringList_t chSetupList;
-#define CH_SETUP_LIST_ELEMENTS_COUNT 4
-char *chSsetupListElements[CH_SETUP_LIST_ELEMENTS_COUNT];
-guiWidgetHandler_t chSetupListHandlers[4];
-
-// Profile list
-guiStringList_t profileList;
-#define PROFILE_LIST_ELEMENTS_COUNT     EE_PROFILES_COUNT       // from eeprom module
-char *profileListElements[PROFILE_LIST_ELEMENTS_COUNT];
-char profileListStrings[PROFILE_LIST_ELEMENTS_COUNT][EE_PROFILE_NAME_SIZE];
-guiWidgetHandler_t profileListHandlers[4];
 
 struct {
     uint8_t channel;
@@ -119,35 +92,51 @@ enum setupViewProfileActions {
     PROFILE_ACTION_LOAD
 };
 
+
+//--------- Setup panel  ----------//
+guiPanel_t     guiSetupPanel;
+
+
+//--------- Panel elements ---------//
+// Title label
+static guiTextLabel_t textLabel_title;        // Menu item list title
+
+// List of all settiings
+guiStringList_t setupList;
+
+// Channel setup list
+guiStringList_t chSetupList;
+
+// Profile list
+guiStringList_t profileList;
+
 // Hint label
 static guiTextLabel_t textLabel_hint;        // Menu item hint
 
 // Low and high limit section
 guiCheckBox_t checkBox_ApplyLowLimit;
 guiCheckBox_t checkBox_ApplyHighLimit;
-guiWidgetHandler_t LowLimit_CheckBoxHandlers[2];
-guiWidgetHandler_t HighLimit_CheckBoxHandlers[2];
-
 guiSpinBox_t spinBox_LowLimit;
 guiSpinBox_t spinBox_HighLimit;
-guiWidgetHandler_t LowLimit_SpinBoxHandlers[2];
-guiWidgetHandler_t HighLimit_SpinBoxHandlers[2];
 
 // Overload section
 guiCheckBox_t checkBox_OverloadProtect;
 guiCheckBox_t checkBox_OverloadWarning;
 guiSpinBox_t spinBox_OverloadThreshold;
 guiTextLabel_t textLabel_overloadThresholdHint;
-guiWidgetHandler_t Overload_CheckBoxHandlers[2];
-guiWidgetHandler_t Overload_SpinBoxHandlers[2];
 
 // Profile setup
 guiCheckBox_t checkBox_ProfileSetup1;
 guiCheckBox_t checkBox_ProfileSetup2;
-guiWidgetHandler_t ProfileSetup_CheckBoxHandlers[2];
+
+// External switch section
+guiCheckBox_t checkBox_ExtSwitchEnable;
+guiCheckBox_t checkBox_ExtSwitchInverse;
+guiRadioButton_t radioBtn_ExtSwitchMode1;
+guiRadioButton_t radioBtn_ExtSwitchMode2;
+guiRadioButton_t radioBtn_ExtSwitchMode3;
 
 
-char newProfileName[EE_PROFILE_NAME_SIZE];
 
 //-------------------------------------------------------//
 //  Panel initialization
@@ -155,10 +144,11 @@ char newProfileName[EE_PROFILE_NAME_SIZE];
 //-------------------------------------------------------//
 void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 {
+    uint8_t i;
+
     // Initialize
     guiPanel_Initialize(&guiSetupPanel, parent);
-    guiSetupPanel.widgets.count = SETUP_PANEL_ELEMENTS_COUNT;
-    guiSetupPanel.widgets.elements = guiSetupPanelElements;
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiSetupPanel, 25);
     guiSetupPanel.x = 0;
     guiSetupPanel.y = 0;
     guiSetupPanel.width = 96 * 2;
@@ -166,12 +156,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     guiSetupPanel.showFocus = 1;
     guiSetupPanel.focusFallsThrough = 0;
     guiSetupPanel.keyTranslator = &guiSetupPanel_KeyTranslator;
-    guiSetupPanel.handlers.count = 2;
-    guiSetupPanel.handlers.elements = setupPanelHandlers;
-    guiSetupPanel.handlers.elements[0].eventType = GUI_ON_VISIBLE_CHANGED;
-    guiSetupPanel.handlers.elements[0].handler = *guiSetupPanel_onVisibleChanged;
-    guiSetupPanel.handlers.elements[1].eventType = GUI_ON_FOCUS_CHANGED;
-    guiSetupPanel.handlers.elements[1].handler = *guiSetupPanel_onFocusChanged;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&guiSetupPanel, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&guiSetupPanel, GUI_ON_VISIBLE_CHANGED, guiSetupPanel_onVisibleChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&guiSetupPanel, GUI_ON_FOCUS_CHANGED, guiSetupPanel_onFocusChanged);
 
     // Initialize text label for menu list title
     guiTextLabel_Initialize(&textLabel_title, 0);
@@ -200,24 +187,20 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.y = 11;
     setupList.width = 96;
     setupList.height = 68 - 13;
-    setupList.stringCount = SETUP_LIST_ELEMENTS_COUNT;
-    setupList.strings = setupListElements;
+    setupList.stringCount = 8;
+    setupList.strings = guiCore_calloc(sizeof(char *) * setupList.stringCount);
     setupList.strings[0] = "Channel 5V";
     setupList.strings[1] = "Channel 12V";
     setupList.strings[2] = "Overload setup";
     setupList.strings[3] = "Profile load";
     setupList.strings[4] = "Profile save";
     setupList.strings[5] = "Profile setup";
-    setupList.handlers.count = 4;
-    setupList.handlers.elements = setupListHandlers;
-    setupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
-    setupList.handlers.elements[0].handler = &guiSetupList_onIndexChanged;
-    setupList.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
-    setupList.handlers.elements[1].handler = &guiSetupList_onVisibleChanged;
-    setupList.handlers.elements[2].eventType = GUI_ON_FOCUS_CHANGED;
-    setupList.handlers.elements[2].handler = &guiSetupList_onFocusChanged;
-    setupList.handlers.elements[3].eventType = GUI_EVENT_KEY;
-    setupList.handlers.elements[3].handler = &guiSetupList_onKeyEvent;
+    setupList.strings[6] = "External switch";
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&setupList, 4);
+    guiCore_AddHandler((guiGenericWidget_t *)&setupList, STRINGLIST_INDEX_CHANGED, guiSetupList_onIndexChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&setupList, GUI_ON_VISIBLE_CHANGED, guiSetupList_onVisibleChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&setupList, GUI_ON_FOCUS_CHANGED, guiSetupList_onFocusChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&setupList, GUI_EVENT_KEY, guiSetupList_onKeyEvent);
     setupList.acceptFocusByTab = 0;
     setupList.keyTranslator = &guiSetupList_KeyTranslator;
 
@@ -236,22 +219,16 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.y = 11;
     chSetupList.width = 96;
     chSetupList.height = 68 - 13;
-    chSetupList.stringCount = CH_SETUP_LIST_ELEMENTS_COUNT;
-    chSetupList.strings = chSsetupListElements;
+    chSetupList.stringCount = 4;
+    chSetupList.strings = guiCore_calloc(sizeof(char *) * chSetupList.stringCount);
     chSetupList.strings[0] = "Voltage limit";
     chSetupList.strings[1] = "Current lim. 20A";
     chSetupList.strings[2] = "Current lim. 40A";
-    chSetupList.strings[3] = "******";
-    chSetupList.handlers.count = 4;
-    chSetupList.handlers.elements = chSetupListHandlers;
-    chSetupList.handlers.elements[0].eventType = STRINGLIST_INDEX_CHANGED;
-    chSetupList.handlers.elements[0].handler = &guiChSetupList_onIndexChanged;
-    chSetupList.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
-    chSetupList.handlers.elements[1].handler = &guiChSetupList_onVisibleChanged;
-    chSetupList.handlers.elements[2].eventType = GUI_ON_FOCUS_CHANGED;
-    chSetupList.handlers.elements[2].handler = &guiChSetupList_onFocusChanged;
-    chSetupList.handlers.elements[3].eventType = GUI_EVENT_KEY;
-    chSetupList.handlers.elements[3].handler = &guiChSetupList_onKeyEvent;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&chSetupList, 4);
+    guiCore_AddHandler((guiGenericWidget_t *)&chSetupList, STRINGLIST_INDEX_CHANGED, guiChSetupList_onIndexChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&chSetupList, GUI_ON_VISIBLE_CHANGED, guiChSetupList_onVisibleChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&chSetupList, GUI_ON_FOCUS_CHANGED, guiChSetupList_onFocusChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&chSetupList, GUI_EVENT_KEY, guiChSetupList_onKeyEvent);
     chSetupList.acceptFocusByTab = 0;
     chSetupList.keyTranslator = guiChSetupList_KeyTranslator;
 
@@ -268,25 +245,6 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_hint.font = &font_h10;
     textLabel_hint.isVisible = 0;
 
-    // Common handlers
-    LowLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    LowLimit_CheckBoxHandlers[0].handler = onLowLimitChanged;
-    LowLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    LowLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-    LowLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
-    LowLimit_SpinBoxHandlers[0].handler = onLowLimitChanged;
-    LowLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    LowLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-
-    HighLimit_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    HighLimit_CheckBoxHandlers[0].handler = onHighLimitChanged;
-    HighLimit_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    HighLimit_CheckBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-    HighLimit_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
-    HighLimit_SpinBoxHandlers[0].handler = onHighLimitChanged;
-    HighLimit_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    HighLimit_SpinBoxHandlers[1].handler = guiChSetupList_ChildKeyHandler;
-
 
     //--------------- Limits section ---------------//
 
@@ -300,8 +258,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyLowLimit.isVisible = 0;
     checkBox_ApplyLowLimit.text = "Low: [V]";
     checkBox_ApplyLowLimit.tabIndex = 1;
-    checkBox_ApplyLowLimit.handlers.elements = LowLimit_CheckBoxHandlers;
-    checkBox_ApplyLowLimit.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_ApplyLowLimit, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ApplyLowLimit, CHECKBOX_CHECKED_CHANGED, onLowLimitChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ApplyLowLimit, GUI_EVENT_KEY, guiChSetupList_ChildKeyHandler);
     checkBox_ApplyLowLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
     guiCheckBox_Initialize(&checkBox_ApplyHighLimit, 0);
@@ -314,8 +273,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ApplyHighLimit.isVisible = 0;
     checkBox_ApplyHighLimit.text = "High: [V]";
     checkBox_ApplyHighLimit.tabIndex = 3;
-    checkBox_ApplyHighLimit.handlers.elements = HighLimit_CheckBoxHandlers;
-    checkBox_ApplyHighLimit.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_ApplyHighLimit, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ApplyHighLimit, CHECKBOX_CHECKED_CHANGED, onHighLimitChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ApplyHighLimit, GUI_EVENT_KEY, guiChSetupList_ChildKeyHandler);
     checkBox_ApplyHighLimit.keyTranslator = guiCheckBoxLimit_KeyTranslator;
 
     guiSpinBox_Initialize(&spinBox_LowLimit, 0);
@@ -338,8 +298,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_LowLimit.isVisible = 0;
     spinBox_LowLimit.value = 1;
     guiSpinBox_SetValue(&spinBox_LowLimit, 0, 0);
-    spinBox_LowLimit.handlers.elements = LowLimit_SpinBoxHandlers;
-    spinBox_LowLimit.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_LowLimit, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_LowLimit, SPINBOX_VALUE_CHANGED, onLowLimitChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_LowLimit, GUI_EVENT_KEY, guiChSetupList_ChildKeyHandler);
     spinBox_LowLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
     guiSpinBox_Initialize(&spinBox_HighLimit, 0);
@@ -362,21 +323,12 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_HighLimit.isVisible = 0;
     spinBox_HighLimit.value = 1;
     guiSpinBox_SetValue(&spinBox_HighLimit, 0, 0);
-    spinBox_HighLimit.handlers.elements = HighLimit_SpinBoxHandlers;
-    spinBox_HighLimit.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_HighLimit, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_HighLimit, SPINBOX_VALUE_CHANGED, onHighLimitChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_HighLimit, GUI_EVENT_KEY, guiChSetupList_ChildKeyHandler);
     spinBox_HighLimit.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
     //--------------- Overload section ---------------//
-
-    Overload_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    Overload_CheckBoxHandlers[0].handler = &onOverloadSettingChanged;
-    Overload_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    Overload_CheckBoxHandlers[1].handler = &guiSetupList_ChildKeyHandler;
-
-    Overload_SpinBoxHandlers[0].eventType = SPINBOX_VALUE_CHANGED;
-    Overload_SpinBoxHandlers[0].handler = &onOverloadSettingChanged;
-    Overload_SpinBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    Overload_SpinBoxHandlers[1].handler = &guiSetupList_ChildKeyHandler;
 
     guiTextLabel_Initialize(&textLabel_overloadThresholdHint, 0);
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_overloadThresholdHint, (guiGenericContainer_t *)&guiSetupPanel);
@@ -399,8 +351,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_OverloadProtect.isVisible = 0;
     checkBox_OverloadProtect.text = "Protection";
     checkBox_OverloadProtect.tabIndex = 1;
-    checkBox_OverloadProtect.handlers.elements = Overload_CheckBoxHandlers;
-    checkBox_OverloadProtect.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_OverloadProtect, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_OverloadProtect, CHECKBOX_CHECKED_CHANGED, onOverloadSettingChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_OverloadProtect, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     checkBox_OverloadProtect.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
 
     guiCheckBox_Initialize(&checkBox_OverloadWarning, 0);
@@ -413,8 +366,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_OverloadWarning.isVisible = 0;
     checkBox_OverloadWarning.text = "Warning";
     checkBox_OverloadWarning.tabIndex = 3;
-    checkBox_OverloadWarning.handlers.elements = Overload_CheckBoxHandlers;
-    checkBox_OverloadWarning.handlers.count = 2;
+    checkBox_OverloadWarning.handlers.count = checkBox_OverloadProtect.handlers.count;      // Handlers are shared
+    checkBox_OverloadWarning.handlers.elements = checkBox_OverloadProtect.handlers.elements;
     checkBox_OverloadWarning.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
 
     guiSpinBox_Initialize(&spinBox_OverloadThreshold, 0);
@@ -437,8 +390,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_OverloadThreshold.isVisible = 0;
     spinBox_OverloadThreshold.value = 1;
     guiSpinBox_SetValue(&spinBox_OverloadThreshold, 0, 0);
-    spinBox_OverloadThreshold.handlers.elements = Overload_SpinBoxHandlers;
-    spinBox_OverloadThreshold.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_OverloadThreshold, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_OverloadThreshold, SPINBOX_VALUE_CHANGED, onOverloadSettingChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_OverloadThreshold, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     spinBox_OverloadThreshold.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
 
@@ -459,23 +413,13 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     profileList.y = 0;
     profileList.width = 96;
     profileList.height = 68;
-    profileList.strings = profileListElements;
-    profileList.stringCount = 0;
-    while (profileList.stringCount < PROFILE_LIST_ELEMENTS_COUNT)
-    {
-        profileList.strings[profileList.stringCount] = profileListStrings[profileList.stringCount];
-        profileList.strings[profileList.stringCount++][0] = 0;
-    }
-    profileList.handlers.count = 2;
-    profileList.handlers.elements = profileListHandlers;
-    profileList.handlers.elements[0].eventType = GUI_EVENT_KEY;
-    profileList.handlers.elements[0].handler = &guiProfileList_onKeyEvent;
-    profileList.handlers.elements[1].eventType = GUI_ON_FOCUS_CHANGED;
-    profileList.handlers.elements[1].handler = &guiProfileList_onFocusChanged;
-    profileList.handlers.elements[2].eventType = 0;
-    profileList.handlers.elements[2].handler = 0;
-    profileList.handlers.elements[3].eventType = 0;
-    profileList.handlers.elements[3].handler = 0;
+    profileList.stringCount = EE_PROFILES_COUNT;
+    profileList.strings = guiCore_malloc(sizeof(char *) * profileList.stringCount);
+    for (i=0; i<profileList.stringCount; i++)
+        profileList.strings[i] = guiCore_calloc(EE_PROFILE_NAME_SIZE);
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&profileList, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&profileList, GUI_EVENT_KEY, guiProfileList_onKeyEvent);
+    guiCore_AddHandler((guiGenericWidget_t *)&profileList, GUI_ON_FOCUS_CHANGED, guiProfileList_onFocusChanged);
     profileList.keyTranslator = &guiProfileList_KeyTranslator;
 
     guiCheckBox_Initialize(&checkBox_ProfileSetup1, 0);
@@ -488,8 +432,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ProfileSetup1.isVisible = 0;
     checkBox_ProfileSetup1.text = "Save recent";
     checkBox_ProfileSetup1.tabIndex = 1;
-    checkBox_ProfileSetup1.handlers.elements = ProfileSetup_CheckBoxHandlers;
-    checkBox_ProfileSetup1.handlers.count = 2;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_ProfileSetup1, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ProfileSetup1, CHECKBOX_CHECKED_CHANGED, onProfileSetupChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ProfileSetup1, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     checkBox_ProfileSetup1.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
 
     guiCheckBox_Initialize(&checkBox_ProfileSetup2, 0);
@@ -502,14 +447,80 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ProfileSetup2.isVisible = 0;
     checkBox_ProfileSetup2.text = "Restore";
     checkBox_ProfileSetup2.tabIndex = 2;
-    checkBox_ProfileSetup2.handlers.elements = ProfileSetup_CheckBoxHandlers;
-    checkBox_ProfileSetup2.handlers.count = 2;
+    checkBox_ProfileSetup2.handlers.count = checkBox_ProfileSetup1.handlers.count;      // Handlers are shared
+    checkBox_ProfileSetup2.handlers.elements = checkBox_ProfileSetup1.handlers.elements;
     checkBox_ProfileSetup2.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
 
-    ProfileSetup_CheckBoxHandlers[0].eventType = CHECKBOX_CHECKED_CHANGED;
-    ProfileSetup_CheckBoxHandlers[0].handler = onProfileSetupChanged;
-    ProfileSetup_CheckBoxHandlers[1].eventType = GUI_EVENT_KEY;
-    ProfileSetup_CheckBoxHandlers[1].handler = guiSetupList_ChildKeyHandler;
+    //--------------- External switch section ---------------//
+
+    guiCheckBox_Initialize(&checkBox_ExtSwitchEnable, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ExtSwitchEnable, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_ExtSwitchEnable.font = &font_h10;
+    checkBox_ExtSwitchEnable.x = 96 + 0;
+    checkBox_ExtSwitchEnable.y = 0;
+    checkBox_ExtSwitchEnable.width = 60;
+    checkBox_ExtSwitchEnable.height = 14;
+    checkBox_ExtSwitchEnable.isVisible = 0;
+    checkBox_ExtSwitchEnable.text = "Enable";
+    checkBox_ExtSwitchEnable.tabIndex = 1;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_ExtSwitchEnable, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ExtSwitchEnable, CHECKBOX_CHECKED_CHANGED, onExtSwitchSettingsChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ExtSwitchEnable, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+    checkBox_ExtSwitchEnable.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
+
+    guiCheckBox_Initialize(&checkBox_ExtSwitchInverse, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_ExtSwitchInverse, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_ExtSwitchInverse.font = &font_h10;
+    checkBox_ExtSwitchInverse.x = 96 + 60;
+    checkBox_ExtSwitchInverse.y = 0;
+    checkBox_ExtSwitchInverse.width = 36;
+    checkBox_ExtSwitchInverse.height = 14;
+    checkBox_ExtSwitchInverse.isVisible = 0;
+    checkBox_ExtSwitchInverse.text = "Inv";
+    checkBox_ExtSwitchInverse.tabIndex = 2;
+    checkBox_ExtSwitchInverse.handlers.count = checkBox_ExtSwitchEnable.handlers.count;      // Handlers are shared
+    checkBox_ExtSwitchInverse.handlers.elements = checkBox_ExtSwitchEnable.handlers.elements;
+    checkBox_ExtSwitchInverse.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
+
+    guiRadioButton_Initialize(&radioBtn_ExtSwitchMode1, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&radioBtn_ExtSwitchMode1, (guiGenericContainer_t *)&guiSetupPanel);
+    radioBtn_ExtSwitchMode1.x = 96 + 0;
+    radioBtn_ExtSwitchMode1.y = 20;
+    radioBtn_ExtSwitchMode1.width = 96;
+    radioBtn_ExtSwitchMode1.height = 15;
+    radioBtn_ExtSwitchMode1.isVisible = 0;
+    radioBtn_ExtSwitchMode1.font = &font_h10;
+    radioBtn_ExtSwitchMode1.text = "Direct on/off";
+    radioBtn_ExtSwitchMode1.tabIndex = 3;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&radioBtn_ExtSwitchMode1, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&radioBtn_ExtSwitchMode1, RADIOBUTTON_CHECKED_CHANGED, onExtSwitchSettingsChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&radioBtn_ExtSwitchMode1, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+
+    guiRadioButton_Initialize(&radioBtn_ExtSwitchMode2, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&radioBtn_ExtSwitchMode2, (guiGenericContainer_t *)&guiSetupPanel);
+    radioBtn_ExtSwitchMode2.x = 96 + 0;
+    radioBtn_ExtSwitchMode2.y = 35;
+    radioBtn_ExtSwitchMode2.width = 96;
+    radioBtn_ExtSwitchMode2.height = 15;
+    radioBtn_ExtSwitchMode2.isVisible = 0;
+    radioBtn_ExtSwitchMode2.font = &font_h10;
+    radioBtn_ExtSwitchMode2.text = "Toggle";
+    radioBtn_ExtSwitchMode2.tabIndex = 4;
+    radioBtn_ExtSwitchMode2.handlers.count = radioBtn_ExtSwitchMode1.handlers.count;      // Handlers are shared
+    radioBtn_ExtSwitchMode2.handlers.elements = radioBtn_ExtSwitchMode1.handlers.elements;
+
+    guiRadioButton_Initialize(&radioBtn_ExtSwitchMode3, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&radioBtn_ExtSwitchMode3, (guiGenericContainer_t *)&guiSetupPanel);
+    radioBtn_ExtSwitchMode3.x = 96 + 0;
+    radioBtn_ExtSwitchMode3.y = 50;
+    radioBtn_ExtSwitchMode3.width = 96;
+    radioBtn_ExtSwitchMode3.height = 15;
+    radioBtn_ExtSwitchMode3.isVisible = 0;
+    radioBtn_ExtSwitchMode3.font = &font_h10;
+    radioBtn_ExtSwitchMode3.text = "Toggle OFF";
+    radioBtn_ExtSwitchMode3.tabIndex = 5;
+    radioBtn_ExtSwitchMode3.handlers.count = radioBtn_ExtSwitchMode1.handlers.count;      // Handlers are shared
+    radioBtn_ExtSwitchMode3.handlers.elements = radioBtn_ExtSwitchMode1.handlers.elements;
 
     //---------- Tags ----------//
 
@@ -530,6 +541,13 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
     checkBox_ProfileSetup1.tag = 16;
     checkBox_ProfileSetup2.tag = 16;
+
+    checkBox_ExtSwitchEnable.tag = 17;
+    checkBox_ExtSwitchInverse.tag = 17;
+    radioBtn_ExtSwitchMode1.tag = 17;
+    radioBtn_ExtSwitchMode2.tag = 17;
+    radioBtn_ExtSwitchMode3.tag = 17;
+
 
     // Other
     textLabel_hint.tag = 11;
@@ -674,10 +692,13 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     else
     {
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
+        // Update widgets that become visible
         if (setupList.selectedIndex == 2)
             updateOverloadSetting();
         else if (setupList.selectedIndex == 5)
             updateProfileSetup();
+        else if (setupList.selectedIndex == 6)
+            updateExtSwitchSettings(1);     // update forced
     }
 
     return 0;
@@ -989,9 +1010,7 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
         }
         else
         {
-            // Save profile data to EEPROM
-            //snprintf(newProfileName, EE_PROFILE_NAME_SIZE, "Profile %d", profileList.selectedIndex);	// tap
-            //saveProfile(profileList.selectedIndex, newProfileName);   // TODO: ask for new name before saving
+            // Save profile data to EEPROM (edit name first)
             guiEditPanel2_Show(profileList.strings[profileList.selectedIndex]);
         }
         return GUI_EVENT_ACCEPTED;
@@ -1078,6 +1097,23 @@ static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event)
     return 0;
 }
 
+static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event)
+{
+    uint8_t swEnabled;
+    uint8_t swInverse;
+    uint8_t swMode;
+
+    // Skip radioButton uncheck
+    if ( (((guiGenericWidget_t *)widget)->type != WT_RADIOBUTTON) || (((guiRadioButton_t *)widget)->isChecked != 0) )
+    {
+        swEnabled = checkBox_ExtSwitchEnable.isChecked;
+        swInverse = checkBox_ExtSwitchInverse.isChecked;
+        swMode = (radioBtn_ExtSwitchMode1.isChecked) ? EXTSW_DIRECT :
+                    (radioBtn_ExtSwitchMode2.isChecked ? EXTSW_TOGGLE : EXTSW_TOGGLE_OFF);
+        applyGuiExtSwitchSettings(swEnabled, swInverse, swMode);
+    }
+    return 0;
+}
 
 
 
@@ -1166,6 +1202,34 @@ void updateProfileSetup(void)
     guiCheckbox_SetChecked(&checkBox_ProfileSetup2, restoreRecentProfile, 0);
 }
 
+
+//---------------------------------------------//
+// Called by GUI itself and by top-level
+// Reads external switch settings and updates widgets
+//---------------------------------------------//
+void updateExtSwitchSettings(uint8_t updateForced)      //<-------- CHECKME - correct variant for all GUI<->HW interaction ?
+{
+    uint8_t swEnabled;
+    uint8_t swInverse;
+    uint8_t swMode;
+    // Check any of widgets representing external switch settings
+    if ((updateForced) || (guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ExtSwitchEnable)))
+    {
+        // Get information from system
+        swEnabled = BTN_IsExtSwitchEnabled();
+        swInverse = BTN_GetExtSwitchInversion();
+        swMode = BTN_GetExtSwitchMode();
+        // Update widgets
+        guiCheckbox_SetChecked(&checkBox_ExtSwitchEnable, swEnabled, 0);
+        guiCheckbox_SetChecked(&checkBox_ExtSwitchInverse, swInverse, 0);
+        if (swMode == EXTSW_DIRECT)
+            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode1, 0);
+        else if (swMode == EXTSW_TOGGLE)
+            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode2, 0);
+        else if (swMode == EXTSW_TOGGLE_OFF)
+            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode3, 0);
+    }
+}
 
 
 

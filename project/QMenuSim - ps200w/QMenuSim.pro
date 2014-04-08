@@ -51,7 +51,8 @@ SOURCES += main.cpp\
     gui_top/eeprom.c \
     gui_top/converter.c \
     ../../source/gui/guiEditPanel2.c \
-    ../../source/gui/guiWidgets/guiTextSpinBox.c
+    ../../source/gui/guiWidgets/guiTextSpinBox.c \
+    ../../source/gui/guiWidgets/guiRadioButton.c
     
 
 HEADERS  += mainwindow.h \
@@ -84,7 +85,8 @@ HEADERS  += mainwindow.h \
     gui_top/eeprom.h \
     gui_top/converter.h \
     ../../source/gui/guiEditPanel2.h \
-    ../../source/gui/guiWidgets/guiTextSpinBox.h
+    ../../source/gui/guiWidgets/guiTextSpinBox.h \
+    ../../source/gui/guiWidgets/guiRadioButton.h
     
     
     

@@ -46,6 +46,11 @@
 #define STRINGLIST_V_FRAME_MARGIN 2
 #define STRINGLIST_H_TEXT_MARGIN 4
 
+//---------------------------------------------//
+// Radiobutton
+#define RADIOBUTTON_RADIUS  5
+#define RADIOBUTTON_CHECK_RADIUS  2
+#define RADIOBUTTON_TEXT_MARGIN  5
 
 extern int16_t wx;
 extern int16_t wy;
@@ -59,6 +64,7 @@ void guiGraph_DrawTextLabel(guiTextLabel_t *textLabel);
 void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox);
 void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox);
 void guiGraph_DrawTextSpinBox(guiTextSpinBox_t * textSpinBox);
+void guiGraph_DrawRadioButton(guiRadioButton_t *button);
 void guiGraph_DrawStringList(guiStringList_t * list);
 uint8_t guiGraph_GetStringListVisibleItemCount(guiStringList_t * list);
 

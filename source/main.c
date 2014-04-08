@@ -168,8 +168,6 @@ int main(void)
 	time_profile.max_ticks_in_Systick_hook = 0;
 	time_profile.max_ticks_in_Timer2_ISR = 0;
 	
-	enable_task_ticks = 1;	// enable software timers (in systick hook)
-							// CHECKME
 	
 	xTaskCreate( vTaskGUI, 			( signed char * ) 		"GUI top", 		configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskConverter, 	( signed char * ) 		"Converter", 	configMINIMAL_STACK_SIZE, 	NULL, 2, &xTaskHandle_Converter);
@@ -185,13 +183,16 @@ int main(void)
 	xTaskCreate( vTaskUARTReceiver, 	( signed char * ) 	"UART2 RX", 		256, 				(void *)2, 	1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskUARTTransmitter, 	( signed char * ) 	"UART2 TX", 		256, 				(void *)2, 	1, ( xTaskHandle * ) NULL);
 	
-	
 	xTaskCreate( vTaskSound, 		( signed char * ) 		"Sound driver", configMINIMAL_STACK_SIZE, 	NULL, 1, ( xTaskHandle * ) NULL);
 	xTaskCreate( vTaskEEPROM, 		( signed char * ) 		"EEPROM driver", configMINIMAL_STACK_SIZE, 	NULL, 0, ( xTaskHandle * ) NULL);
 	
+	// Start task synchronizer (using FreeRTOS software timers)
+	Synchronizer_Initialize();
+	Synchronizer_Start();
+	
+	// Start OS
 	vTaskStartScheduler();
 	
-
 	while(1);
 	
 }

@@ -1,14 +1,14 @@
 
 
 #include "systick.h"
-#include "MDR32Fx.h"                      /* MDR32F9x definitions            */
+#include "MDR32Fx.h"                    
 #include "MDR32F9Qx_timer.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "timers.h"
 
-//#include "gui_top.h"
 #include "guiTop.h"
 
 #include "encoder.h"
@@ -21,120 +21,72 @@
 #include "dwt_delay.h"
 #include "sound_driver.h"
 
-/* —четчик 
-volatile uint32_t sysTicks = 0;
-uint32_t ticks_per_us;
-uint16_t beep_cnt;
-*/
 
 // Profiling
 time_profile_t time_profile;
 
-uint8_t enable_task_ticks = 0;
+
+static xTimerHandle xTimers[NUM_TIMERS];
 
 
-//-----------------------------------------------------------------//
-// FreeRTOS tick hook - called from ISR
-// T = 2ms
-//-----------------------------------------------------------------//
-void vApplicationTickHook( void )
+
+//-------------------------------------------------------//
+// Task synchronnizer - 
+// callback function for FreeRTOS software timers task
+//-------------------------------------------------------//
+static void vTimerCallback(xTimerHandle pxTimer)
 {
-	static uint32_t tmr_gui_update = GUI_UPDATE_INTERVAL;
-	static uint32_t tmr_converter_tick = CONVERTER_TICK_INTERVAL;
-	//static uint32_t tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
-	static uint32_t tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
-	portBASE_TYPE xHigherPriorityTaskWokenByPost;
-	uint32_t msg;
-	// Time profiling
-	uint32_t time_mark = DWT_Get();
-	uint32_t ticks_count;
-		
-	// We have not woken a task at the start of the ISR.
-	xHigherPriorityTaskWokenByPost = pdFALSE;
-	
-	if (enable_task_ticks)
+	uint8_t timer_id = (uint8_t)pvTimerGetTimerID(pxTimer);
+	switch (timer_id)
 	{
-		if (--tmr_gui_update == 0)
+		case TIMER_CONVERTER:
+			xQueueSendToBack(xQueueConverter, &converter_tick_message, 0);	// do not wait
+			break;
+		case TIMER_SOUND:
+			xQueueSendToBack(xQueueSound, &sound_driver_sync_msg, 0);	// do not wait
+			break;
+		case TIMER_GUI:
+			xQueueSendToBack(xQueueGUI, &gui_msg_redraw, 0);	
+			break;
+		case TIMER_BUTTONS:
+			
+			break;
+	}
+}
+
+
+void Synchronizer_Initialize(void)
+{
+	uint8_t i;
+	// OS tick = 2ms
+    xTimers[TIMER_CONVERTER] = xTimerCreate((signed char *)"Converter timer", 		50,	pdTRUE, (void *)TIMER_CONVERTER, 	vTimerCallback);
+	xTimers[TIMER_SOUND] = xTimerCreate(	(signed char *)"Sound driver timer", 	5, 	pdTRUE, (void *)TIMER_SOUND, 		vTimerCallback);
+	xTimers[TIMER_GUI] = xTimerCreate(		(signed char *)"GUI timer", 			25,	pdTRUE, (void *)TIMER_GUI, 			vTimerCallback);
+	xTimers[TIMER_BUTTONS] = xTimerCreate(	(signed char *)"Buttons driver timer", 	10,	pdTRUE, (void *)TIMER_BUTTONS, 		vTimerCallback);
+	// Check
+	for (i=0; i<NUM_TIMERS; i++)
+	{
+		if( xTimers[i] == NULL )
 		{
-			msg = GUI_TASK_REDRAW;
-			xQueueSendToBackFromISR(xQueueGUI, &msg, &xHigherPriorityTaskWokenByPost);
-			tmr_gui_update = GUI_UPDATE_INTERVAL;
-		}
-		
-		if (--tmr_converter_tick == 0)
-		{
-			//msg = CONVERTER_TICK;
-			xQueueSendToBackFromISR(xQueueConverter, &converter_tick_message, &xHigherPriorityTaskWokenByPost);
-			tmr_converter_tick = CONVERTER_TICK_INTERVAL;
-		}
-		
-	/*	if (--tmr_dispatcher_tick == 0)
-		{
-			xQueueSendToBackFromISR(xQueueDispatcher, &dispatcher_tick_msg, &xHigherPriorityTaskWokenByPost);
-			tmr_dispatcher_tick = DISPATCHER_TICK_INTERVAL;
-		} */
-		
-		if (--tmr_sound_driver_tick == 0)
-		{
-			xQueueSendToBackFromISR(xQueueSound, &sound_driver_sync_msg, &xHigherPriorityTaskWokenByPost);
-			tmr_sound_driver_tick = SOUND_DRIVER_TICK_INTERVAL;
+			// The timer was not created
+			while(1);	// Stop
 		}
 	}
-	
-	// Force context switching if required
-	// CHECKME
-	portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
-	
-	// Update time
-	ticks_count = DWT_GetDeltaForNow(time_mark);
-	if (ticks_count > time_profile.max_ticks_in_Systick_hook)
-		time_profile.max_ticks_in_Systick_hook = ticks_count;
 }
 
 
-
-
-/*----------------------------------------------------------------------------
-  delays number of tick Systicks
- *----------------------------------------------------------------------------
-void SysTickDelay (uint32_t dlyTicks) {                                              
-  uint32_t nextTicks = sysTicks + dlyTicks;
-
-	while(sysTicks != nextTicks);
-}
-*/
-/*
-void StartBeep(uint16_t time)
+void Synchronizer_Start(void)
 {
-	// Enable channel outputs
-	uint32_t temp = MDR_TIMER1->CH2_CNTRL1;
-	temp &= ~( (3 << TIMER_CH_CNTRL1_SELO_Pos) | (3 << TIMER_CH_CNTRL1_NSELO_Pos));
-	temp |= (TIMER_CH_OutSrc_REF << TIMER_CH_CNTRL1_SELO_Pos) | (TIMER_CH_OutSrc_REF << TIMER_CH_CNTRL1_NSELO_Pos);
-	MDR_TIMER1->CH2_CNTRL1 = temp;
-	// copy counter
-	beep_cnt = time;
+	uint8_t i;
+	for (i=0; i<NUM_TIMERS; i++)
+	{
+		xTimerStart( xTimers[i], portMAX_DELAY );
+	}
 }
 
 
-void StopBeep(void)
-{
-	uint32_t temp = MDR_TIMER1->CH2_CNTRL1;
-	temp &= ~( (3 << TIMER_CH_CNTRL1_SELO_Pos) | (3 << TIMER_CH_CNTRL1_NSELO_Pos));
-	temp |= (TIMER_CH_OutSrc_Only_1 << TIMER_CH_CNTRL1_SELO_Pos) | (TIMER_CH_OutSrc_Only_1 << TIMER_CH_CNTRL1_NSELO_Pos);
-	MDR_TIMER1->CH2_CNTRL1 = temp;
-}
 
-void Beep(uint16_t time)
-{
-	StartBeep(time);
-	while(beep_cnt);
-}
 
-void WaitBeep(void)
-{
-	while(beep_cnt);
-}
-*/
 
 
 
@@ -147,8 +99,6 @@ void WaitBeep(void)
 void Timer2_IRQHandler(void) 
 {
 	static uint16_t hw_adc_counter = HW_ADC_CALL_PERIOD;
-//	static uint16_t hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD - 1;
-//	static uint16_t hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD - 2;
 	uint16_t temp;
 	// Time profiling
 	uint32_t time_mark1 = 0;
@@ -167,44 +117,9 @@ void Timer2_IRQHandler(void)
 	if (--hw_adc_counter == 0)
 	{
 		hw_adc_counter = HW_ADC_CALL_PERIOD;
-		//-------------------------------//
-		// 286
 		Converter_HW_ADCProcess();	// Converter low-level ADC control
-		//-------------------------------//
 	}
-/*	
-	//-------------------------------//
-	// 2369
-	if (--hw_uart2_rx_counter == 0)
-	{
-		hw_uart2_rx_counter = HW_UART2_RX_CALL_PERIOD;
-		//-------------------------------//
-		// 373
-		processUartRX();			// UART2 receiver service
-		//-------------------------------//
-	}
-	if (--hw_uart2_tx_counter == 0)
-	{
-		hw_uart2_tx_counter = HW_UART2_TX_CALL_PERIOD;
-		time_mark1 = DWT_Get();
-		//-------------------------------//
-		// 2320
-		processUartTX();			// UART2 transmitter service
-		//-------------------------------//
-		time_mark2 = DWT_Get();
-	}
-	//-------------------------------//
-*/	
-	
-	//-------------------------------//
-	// 608
 	Converter_HWProcess();			// Converter low-level ON/OFF control and overload handling
-	//-------------------------------//
-	
-	
-	
-	//-------------------------------//
-	// 198
 	ProcessEncoder();				// Poll encoder				
 
 	// Reinit timer2 CCR
@@ -214,7 +129,6 @@ void Timer2_IRQHandler(void)
 	//-------------------------------//
 	
 	time_mark2 = DWT_Get();
-	
 	
 	// Update time
 	ticks_count = DWT_GetDelta(time_mark1, time_mark2);

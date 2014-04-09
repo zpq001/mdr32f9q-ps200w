@@ -29,6 +29,7 @@
 #include "sound_driver.h"
 #include "eeprom.h"
 #include "uart_tx.h"
+#include "buttons_top.h"
 
 xQueueHandle xQueueDispatcher;
 
@@ -93,6 +94,11 @@ void vTaskDispatcher(void *pvParameters)
 	converter_msg.type = CONVERTER_LOAD_PROFILE;
 	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
+	// Load profile for buttons
+	buttons_msg.type = BUTTONS_LOAD_PROFILE;
+	buttons_msg.pxSemaphore = 0;
+	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+					
 	// Wait a bit more
 	vTaskDelay( 250 / portTICK_RATE_MS);
 	
@@ -116,9 +122,9 @@ void vTaskDispatcher(void *pvParameters)
 	
 	
 	/* TODO: 
-		-  add GUI menu for external switch
-		-  add GUI menu for UARTs
-		-  add GUI menu for ADC offset (global settings)
+<done>	-  add GUI menu for external switch
+		-  add GUI menu for UARTs ?
+		-  add GUI menu for DAC offset (global settings) ?
 <done>	-  check if additional EEPROM settings are required
 <done>	-  add GUI input box for user profile name
 		-  add various sound signals

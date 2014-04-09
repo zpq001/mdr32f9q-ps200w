@@ -408,7 +408,6 @@ void guiGraph_DrawTextSpinBox(guiTextSpinBox_t * textSpinBox)
 {
     uint8_t frameStyle;
     uint8_t framePixelValue;
-    uint8_t charIndex;
     uint8_t charWidth;
     uint16_t charOffset;
     int8_t i;
@@ -432,9 +431,7 @@ void guiGraph_DrawTextSpinBox(guiTextSpinBox_t * textSpinBox)
     {
         x = wx + textSpinBox->textLeftOffset;
         y = wy + textSpinBox->textTopOffset;
-
         i = 0;
-        charIndex = 0;
 
         while(i < textSpinBox->textLength)
         {

@@ -23,7 +23,7 @@
 #include "eeprom.h"
 
 #include "global_def.h"
-#include "converter.h"
+//#include "converter.h"
 #include "dispatcher.h"
 
 /// Global settings 
@@ -86,11 +86,6 @@ static void fill_global_settings_by_default(void)
 	global_settings->saveRecentProfile = 1;
 }
 
-static void update_global_settings(void)
-{
-	// Gather configuration from all the modules
-	global_settings->number_of_power_cycles++;
-}
 
 
 static void fill_device_profile_by_default(void)
@@ -137,62 +132,21 @@ static void fill_device_profile_by_default(void)
 	device_profile->converter_profile.overload.warning_enable = 0;
 	device_profile->converter_profile.overload.threshold = (5*1);	// x 200us
 	
+	// Buttons
+	device_profile->buttons_profile.ext_switch_enable = 0;
+	device_profile->buttons_profile.ext_switch_inverse = 0;
+	device_profile->buttons_profile.ext_switch_mode = EXTSW_DIRECT;
+	
 	// Other fields
 	// ...
 }
 
 
-static void update_device_profile(void)
+void EE_GetReadyForProfileSave(void)
 {
 	// Fill whole settings structure with FF's (padding)
 	// These values will be written to EEPROM and used for CRC
-	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));
-	
-	// 5V channel voltage
-	device_profile->converter_profile.ch5v_voltage.setting = Converter_GetVoltageSetting(CHANNEL_5V);
-	device_profile->converter_profile.ch5v_voltage.limit_low = Converter_GetVoltageLimitSetting(CHANNEL_5V, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_voltage.limit_high = Converter_GetVoltageLimitSetting(CHANNEL_5V, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch5v_voltage.enable_low_limit = Converter_GetVoltageLimitState(CHANNEL_5V, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_voltage.enable_high_limit = Converter_GetVoltageLimitState(CHANNEL_5V, LIMIT_TYPE_HIGH);
-	// Current
-	device_profile->converter_profile.ch5v_current.low_range.setting = Converter_GetCurrentSetting(CHANNEL_5V, CURRENT_RANGE_LOW);
-	device_profile->converter_profile.ch5v_current.low_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_current.low_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch5v_current.low_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_current.low_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch5v_current.high_range.setting = Converter_GetCurrentSetting(CHANNEL_5V, CURRENT_RANGE_HIGH);
-	device_profile->converter_profile.ch5v_current.high_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_current.high_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch5v_current.high_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch5v_current.high_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_5V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch5v_current.selected_range = Converter_GetCurrentRange(CHANNEL_5V);
-	
-	// 12V channel voltage
-	device_profile->converter_profile.ch12v_voltage.setting = Converter_GetVoltageSetting(CHANNEL_12V);
-	device_profile->converter_profile.ch12v_voltage.limit_low = Converter_GetVoltageLimitSetting(CHANNEL_12V, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_voltage.limit_high = Converter_GetVoltageLimitSetting(CHANNEL_12V, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch12v_voltage.enable_low_limit = Converter_GetVoltageLimitState(CHANNEL_12V, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_voltage.enable_high_limit = Converter_GetVoltageLimitState(CHANNEL_12V, LIMIT_TYPE_HIGH);
-	// Current
-	device_profile->converter_profile.ch12v_current.low_range.setting = Converter_GetCurrentSetting(CHANNEL_12V, CURRENT_RANGE_LOW);
-	device_profile->converter_profile.ch12v_current.low_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_current.low_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch12v_current.low_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_current.low_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_LOW, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch12v_current.high_range.setting = Converter_GetCurrentSetting(CHANNEL_12V, CURRENT_RANGE_HIGH);
-	device_profile->converter_profile.ch12v_current.high_range.limit_low = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_current.high_range.limit_high = Converter_GetCurrentLimitSetting(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch12v_current.high_range.enable_low_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_LOW);
-	device_profile->converter_profile.ch12v_current.high_range.enable_high_limit = Converter_GetCurrentLimitState(CHANNEL_12V, CURRENT_RANGE_HIGH, LIMIT_TYPE_HIGH);
-	device_profile->converter_profile.ch12v_current.selected_range = Converter_GetCurrentRange(CHANNEL_12V);
-	
-	// Overload
-	device_profile->converter_profile.overload.protection_enable = Converter_GetOverloadProtectionState();
-	device_profile->converter_profile.overload.warning_enable = Converter_GetOverloadProtectionWarning();
-	device_profile->converter_profile.overload.threshold = Converter_GetOverloadProtectionThreshold();
-	
-	// Other fields
-	// ...
+	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));	
 }
 
 
@@ -449,7 +403,7 @@ uint8_t EE_SaveGlobalSettings(void)
 	uint8_t hw_result;
 	uint16_t crc;
 	
-	update_global_settings();
+	global_settings->number_of_power_cycles++;
 	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
 	
 	//-------------------------------//
@@ -464,7 +418,8 @@ uint8_t EE_SaveGlobalSettings(void)
 	return err_code;
 }
 
-
+void Converter_SaveProfile(void);
+void BTN_SaveProfile(void);
 //-------------------------------------------------------//
 // Saves recent profile to EEPROM
 //
@@ -478,7 +433,9 @@ uint8_t EE_SaveRecentProfile(void)
 	if (global_settings->saveRecentProfile)
 	{
 		// Profile save is required
-		update_device_profile();
+		EE_GetReadyForProfileSave();
+		Converter_SaveProfile();
+		BTN_SaveProfile();
 		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
 
 		//-------------------------------//
@@ -703,13 +660,13 @@ void vTaskEEPROM(void *pvParameters)
 				break;
 			
 			case EE_TASK_SAVE_PROFILE:
-				// Gather system state
-				update_device_profile();
-				if (msg.xSemaphorePtr != 0)
-				{
+				// Gather system state - moved to dispatcher
+				//update_device_profile();
+				//if (msg.xSemaphorePtr != 0)
+				//{
 					// Confirm
-					xSemaphoreGive(*msg.xSemaphorePtr);		
-				}
+				//	xSemaphoreGive(*msg.xSemaphorePtr);		
+				//}
 				// Save to EEPROM device
 				dispatcher_msg.type = DISPATCHER_SAVE_PROFILE_RESPONSE;
 				dispatcher_msg.profile_save_response.profileState = EE_SaveDeviceProfile(msg.profile_save_request.index, msg.profile_save_request.newName);

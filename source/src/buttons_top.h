@@ -1,34 +1,32 @@
+
 #include <stdint.h>
-
-
-
-typedef struct {
-	uint8_t enabled;
-	uint8_t inv;
-	uint8_t mode;
-} extsw_mode_t;
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 
 enum ButtonsTaskMsgTypes {	
 	BUTTONS_TICK = 1, 
-	BUTTONS_EXTSWITCH_SETTINGS
+	BUTTONS_EXTSWITCH_SETTINGS,
+	BUTTONS_LOAD_PROFILE,
+	BUTTONS_SAVE_PROFILE
 };
 
 typedef struct {
 	uint8_t type;
+	xSemaphoreHandle *pxSemaphore;
 	union {
 		struct {
-			uint8_t enabled;
-			uint8_t inversed;
+			uint8_t enable;
+			uint8_t inverse;
 			uint8_t mode;
 		} extSwitchSetting;
 	};
 } buttons_msg_t;
 
-
-
-
+extern xQueueHandle xQueueButtons;
+extern const buttons_msg_t buttons_tick_msg;
 
 uint8_t BTN_IsExtSwitchEnabled(void);
 uint8_t BTN_GetExtSwitchInversion(void);

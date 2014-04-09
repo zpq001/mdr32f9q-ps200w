@@ -102,10 +102,16 @@ typedef struct {
 	overload_profile_t overload;
 } converter_profile_t;
 
+typedef struct {
+	uint8_t ext_switch_enable;
+	uint8_t ext_switch_inverse;
+	uint8_t ext_switch_mode;
+} buttons_profile_t;
 
 
 typedef struct {
 	converter_profile_t converter_profile;
+	buttons_profile_t buttons_profile;
 	// other fileds, charging, etc
 
 } device_profile_t;
@@ -167,6 +173,8 @@ extern device_profile_t *device_profile;
 // services power-down sequence
 uint8_t EE_SaveGlobalSettings(void);
 uint8_t EE_SaveRecentProfile(void);
+
+void EE_GetReadyForProfileSave(void);
 
 // General functions
 uint8_t EE_GetProfileState(uint8_t i);

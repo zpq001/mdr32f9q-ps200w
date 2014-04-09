@@ -34,6 +34,7 @@ xQueueHandle xQueueDispatcher;
 
 static eeprom_message_t eeprom_msg;
 static xSemaphoreHandle xSemaphoreEEPROM;
+static xSemaphoreHandle xSemaphoreSync;
 
 
 void vTaskDispatcher(void *pvParameters) 
@@ -44,6 +45,7 @@ void vTaskDispatcher(void *pvParameters)
 	gui_msg_t gui_msg;
 	uint8_t eepromState;
 	uint32_t sound_msg;
+	buttons_msg_t buttons_msg;
 	
 	// Initialize
 	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_msg_t ) );		// Queue can contain 5 elements of type uint32_t
@@ -55,6 +57,12 @@ void vTaskDispatcher(void *pvParameters)
 	
 	vSemaphoreCreateBinary( xSemaphoreEEPROM );
 	if( xSemaphoreEEPROM == 0 )
+    {
+        while(1);
+    }
+	
+	vSemaphoreCreateBinary( xSemaphoreSync );
+	if( xSemaphoreSync == 0 )
     {
         while(1);
     }
@@ -110,13 +118,15 @@ void vTaskDispatcher(void *pvParameters)
 	/* TODO: 
 		-  add GUI menu for external switch
 		-  add GUI menu for UARTs
-		-  add GUI menu for ADC offset
+		-  add GUI menu for ADC offset (global settings)
 <done>	-  check if additional EEPROM settings are required
 <done>	-  add GUI input box for user profile name
 		-  add various sound signals
 		-  clean up GUI (bringing to initial state)
 		-  !!! check and remove voltage spike upon power ON !!!
 		-  check resource sharing - add critical sections (for example, current limit update in converter)
+		-  check UART command interface
+		-  Add percent setting of voltage or current
 		-  Add charge function
 		-  Improve cooler control
 		-  Add overheat warning and auto OFF function
@@ -149,8 +159,6 @@ void vTaskDispatcher(void *pvParameters)
 			
 			//---------------- Test function  --------------//	
 			case DISPATCHER_TEST_FUNC1:
-				//EE_SaveGlobalSettings();
-				//EE_SaveRecentProfile();
 				transmitter_msg.type = UART_SEND_POWER_CYCLES_STAT;
 				if (msg.sender == sender_UART1)
 					xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
@@ -166,16 +174,23 @@ void vTaskDispatcher(void *pvParameters)
 				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);
 				break;
 			case DISPATCHER_LOAD_PROFILE_RESPONSE:
-				// EEPROM task has completed profile data load
-				// Check profile state
+				// EEPROM task has completed profile data loading
+				// Check state
 				if (msg.profile_load_response.profileState == EE_PROFILE_VALID)
 				{
-					// New profile data is loaded
+					// New profile data is loaded. 
 					converter_msg.type = CONVERTER_LOAD_PROFILE;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					// Wait for conveter task to complete - TODO
+					
 					// Load profile for buttons
-					// TODO
+					buttons_msg.type = BUTTONS_LOAD_PROFILE;
+					buttons_msg.pxSemaphore = &xSemaphoreSync;
+					xSemaphoreTake(xSemaphoreSync, 0);
+					xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+					// Wait for task to complete
+					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+					
 					// Send response to GUI
 					gui_msg.type = GUI_TASK_PROFILE_EVENT;
 					gui_msg.profile_event.event = PROFILE_LOAD;
@@ -202,17 +217,34 @@ void vTaskDispatcher(void *pvParameters)
 			
 			//----------------- Save profile ---------------//	
 			case DISPATCHER_SAVE_PROFILE:
+				// Prepare data structure (fills with FFs)
+				EE_GetReadyForProfileSave();		 
+				// Collect information from tasks
+				// Converter task
+				converter_msg.type = CONVERTER_SAVE_PROFILE;
+				converter_msg.pxSemaphore = &xSemaphoreSync;
+				xSemaphoreTake(xSemaphoreSync, 0);
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+				// Wait for task to complete
+				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				
+				// Buttons task
+				buttons_msg.type = BUTTONS_SAVE_PROFILE;
+				buttons_msg.pxSemaphore = &xSemaphoreSync;
+				xSemaphoreTake(xSemaphoreSync, 0);
+				xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+				// Wait for task to complete
+				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				
+				// Ready to write profile data to EEPROM
 				eeprom_msg.type = EE_TASK_SAVE_PROFILE;
 				eeprom_msg.profile_save_request.index  = msg.profile_save.number;
 				eeprom_msg.profile_save_request.newName = msg.profile_save.new_name;
-				xSemaphoreTake(xSemaphoreEEPROM, 0);
 				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);	
-				// Wait while EEPROM task updates it's data structure - to prevent system state change.
-				xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
 				break;
 			case DISPATCHER_SAVE_PROFILE_RESPONSE:
 				// EEPROM task has completed profile data saving
-				// Check profile state
+				// Check state
 				if (msg.profile_save_response.profileState == EE_PROFILE_VALID)
 				{
 					// Profile data is saved
@@ -243,6 +275,7 @@ void vTaskDispatcher(void *pvParameters)
 				
 			//---------------- Setup profile ---------------//		
 			case DISPATCHER_PROFILE_SETUP:
+				// Access directly
 				EE_ApplyProfileSettings(msg.profile_setup.saveRecentProfile, msg.profile_setup.restoreRecentProfile);
 				// Send response to GUI
 				gui_msg.type = GUI_TASK_UPDATE_PROFILE_SETUP;

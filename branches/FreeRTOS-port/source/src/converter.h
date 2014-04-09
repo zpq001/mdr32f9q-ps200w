@@ -2,8 +2,9 @@
 #include "MDR32Fx.h"
 
 #include "FreeRTOS.h"
-#include "queue.h"
 #include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #include "converter_task_def.h"
 
@@ -43,13 +44,15 @@ enum ConverterTaskMsgTypes {
 	CONVERTER_SET_CURRENT_RANGE,
 	CONVERTER_SET_OVERLOAD_PARAMS,
 	CONVERTER_OVERLOADED,
-	CONVERTER_LOAD_PROFILE
+	CONVERTER_LOAD_PROFILE,
+	CONVERTER_SAVE_PROFILE
 };
 
 
 typedef struct {
     uint8_t type;
 	uint8_t sender;
+	xSemaphoreHandle *pxSemaphore;
 	converter_arguments_t a;
 } converter_message_t;
 
@@ -155,6 +158,8 @@ uint8_t Converter_GetOverloadProtectionWarning(void);
 uint16_t Converter_GetOverloadProtectionThreshold(void);
 uint8_t Converter_GetCurrentRange(uint8_t channel);
 uint8_t Converter_GetFeedbackChannel(void);
+
+void Converter_SaveProfile(void);
 
 // TODO: check closed static data - converter_state, etc
 

@@ -49,7 +49,7 @@ static void vTimerCallback(xTimerHandle pxTimer)
 			xQueueSendToBack(xQueueGUI, &gui_msg_redraw, 0);	
 			break;
 		case TIMER_BUTTONS:
-			
+			xQueueSendToBack(xQueueButtons, &buttons_tick_msg, 0);	
 			break;
 	}
 }

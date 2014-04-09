@@ -39,13 +39,14 @@
 #include "eeprom.h"
 
 #include "buttons.h"
+#include "buttons_top.h"
 #include "encoder.h"
 
 
 xQueueHandle xQueueGUI;
 
 static dispatch_msg_t dispatcher_msg;
-
+static buttons_msg_t buttons_msg;
 static eeprom_message_t eeprom_msg;
 
 
@@ -427,10 +428,14 @@ void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentPro
 
 //---------------------------------------------//
 // External switch settings change
+// Direct to button task
 //---------------------------------------------//
 void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode)
 {
-
-
+	buttons_msg.type = BUTTONS_EXTSWITCH_SETTINGS;
+	buttons_msg.extSwitchSetting.enable = swEnable;
+	buttons_msg.extSwitchSetting.inverse = swInverse;
+	buttons_msg.extSwitchSetting.mode = swMode;
+	xQueueSendToBack(xQueueButtons, &buttons_msg, portMAX_DELAY);
 }
 

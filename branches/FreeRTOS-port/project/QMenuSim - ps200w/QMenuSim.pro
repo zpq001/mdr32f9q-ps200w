@@ -84,6 +84,7 @@ HEADERS  += mainwindow.h \
     gui_top/uartParser.h \
     gui_top/eeprom.h \
     gui_top/converter.h \
+    gui_top/buttons_top.h \
     ../../source/gui/guiEditPanel2.h \
     ../../source/gui/guiWidgets/guiTextSpinBox.h \
     ../../source/gui/guiWidgets/guiRadioButton.h

@@ -48,7 +48,7 @@
 
 //---------------------------------------------//
 // Radiobutton
-#define RADIOBUTTON_RADIUS  5
+#define RADIOBUTTON_RADIUS  4
 #define RADIOBUTTON_CHECK_RADIUS  2
 #define RADIOBUTTON_TEXT_MARGIN  5
 

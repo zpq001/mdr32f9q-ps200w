@@ -20,7 +20,7 @@
 #include "dispatcher.h"
 #include "dwt_delay.h"
 #include "sound_driver.h"
-
+#include "buttons_top.h"
 
 // Profiling
 time_profile_t time_profile;

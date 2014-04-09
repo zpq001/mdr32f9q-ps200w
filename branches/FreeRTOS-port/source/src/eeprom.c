@@ -23,7 +23,7 @@
 #include "eeprom.h"
 
 #include "global_def.h"
-//#include "converter.h"
+#include "converter.h"
 #include "dispatcher.h"
 
 /// Global settings 

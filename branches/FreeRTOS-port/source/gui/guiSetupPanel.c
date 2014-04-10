@@ -137,7 +137,13 @@ guiRadioButton_t radioBtn_ExtSwitchMode1;
 guiRadioButton_t radioBtn_ExtSwitchMode2;
 guiRadioButton_t radioBtn_ExtSwitchMode3;
 
-
+// DAC offset section
+guiSpinBox_t spinBox_VoltageDacOffset;
+guiSpinBox_t spinBox_CurrentLowDacOffset;
+guiSpinBox_t spinBox_CurrentHighDacOffset;
+guiTextLabel_t textLabel_VoltageDacOffset;
+guiTextLabel_t textLabel_CurrentLowDacOffset;
+guiTextLabel_t textLabel_CurrentHighDacOffset;
 
 //-------------------------------------------------------//
 //  Panel initialization
@@ -149,7 +155,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
     // Initialize
     guiPanel_Initialize(&guiSetupPanel, parent);
-    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiSetupPanel, 25);
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiSetupPanel, 30);
     guiSetupPanel.x = 0;
     guiSetupPanel.y = 0;
     guiSetupPanel.width = 96 * 2;
@@ -197,6 +203,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.strings[4] = "Profile save";
     setupList.strings[5] = "Profile setup";
     setupList.strings[6] = "External switch";
+    setupList.strings[7] = "DAC offset";
     guiCore_AllocateHandlers((guiGenericWidget_t *)&setupList, 4);
     guiCore_AddHandler((guiGenericWidget_t *)&setupList, STRINGLIST_INDEX_CHANGED, guiSetupList_onIndexChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&setupList, GUI_ON_VISIBLE_CHANGED, guiSetupList_onVisibleChanged);
@@ -523,6 +530,46 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     radioBtn_ExtSwitchMode3.handlers.count = radioBtn_ExtSwitchMode1.handlers.count;      // Handlers are shared
     radioBtn_ExtSwitchMode3.handlers.elements = radioBtn_ExtSwitchMode1.handlers.elements;
 
+
+    //--------------- DAC offset section ---------------//
+    guiSpinBox_Initialize(&spinBox_VoltageDacOffset, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_VoltageDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    spinBox_VoltageDacOffset.x = 96+70;
+    spinBox_VoltageDacOffset.y = 0;
+    spinBox_VoltageDacOffset.width = 26;
+    spinBox_VoltageDacOffset.height = 15;
+    spinBox_VoltageDacOffset.textRightOffset = -2;
+    spinBox_VoltageDacOffset.textTopOffset = 2;
+    spinBox_VoltageDacOffset.tabIndex = 2;
+    spinBox_VoltageDacOffset.font = &font_h10;
+    spinBox_VoltageDacOffset.dotPosition = -1;
+    spinBox_VoltageDacOffset.activeDigit = 0;
+    spinBox_VoltageDacOffset.minDigitsToDisplay = 1;
+    spinBox_VoltageDacOffset.restoreValueOnEscape = 1;
+    spinBox_VoltageDacOffset.maxValue = 100;
+    spinBox_VoltageDacOffset.minValue = -100;
+    spinBox_VoltageDacOffset.showFocus = 1;
+    spinBox_VoltageDacOffset.isVisible = 1;
+    spinBox_VoltageDacOffset.value = 55;      // anything different from value being set by guiSpinBox_SetValue()
+    guiSpinBox_SetValue(&spinBox_VoltageDacOffset, 0, 0);
+    //guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_VoltageDacOffset, 2);
+    //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, SPINBOX_VALUE_CHANGED, onOverloadSettingChanged);
+    //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+    //spinBox_VoltageDacOffset.keyTranslator = guiSpinBoxLimit_KeyTranslator;
+
+    guiTextLabel_Initialize(&textLabel_VoltageDacOffset, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_VoltageDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    textLabel_VoltageDacOffset.x = 96+0;
+    textLabel_VoltageDacOffset.y = 3;
+    textLabel_VoltageDacOffset.width = 40;
+    textLabel_VoltageDacOffset.height = 10;
+    textLabel_VoltageDacOffset.textAlignment = ALIGN_LEFT;
+    textLabel_VoltageDacOffset.text = "Voltage [mV]:";
+    textLabel_VoltageDacOffset.font = &font_h10;
+    textLabel_VoltageDacOffset.isVisible = 0;
+
+
+
     //---------- Tags ----------//
 
     // Group 1
@@ -549,6 +596,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     radioBtn_ExtSwitchMode2.tag = 17;
     radioBtn_ExtSwitchMode3.tag = 17;
 
+    spinBox_VoltageDacOffset.tag = 18;
+    textLabel_VoltageDacOffset.tag = 18;
 
     // Other
     textLabel_hint.tag = 11;

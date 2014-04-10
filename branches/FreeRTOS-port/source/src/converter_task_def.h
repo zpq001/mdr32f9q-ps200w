@@ -46,6 +46,12 @@ typedef union
 		{
 			uint8_t new_channel;
 		} ch_set;
+		struct 
+		{
+			uint8_t voltage_offset;
+            uint8_t current_low_offset;
+            uint8_t current_high_offset;
+        } dac_set;
 } converter_arguments_t;
 
 

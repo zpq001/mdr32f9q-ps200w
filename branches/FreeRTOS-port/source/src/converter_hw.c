@@ -8,7 +8,7 @@
 #include "sound_driver.h"
 #include "converter.h"
 #include "converter_hw.h"
-
+#include "eeprom.h"
 
 
 //-------------------------------------------------------//
@@ -42,9 +42,6 @@
 #define CMD_HW_RESTART_LED_BLINK_TIMER 	0x10
 
 
-
-
-
 volatile static uint8_t state_HWProcess = STATE_HW_OFF;
 volatile static uint8_t ctrl_HWProcess = 0;
 // Global used for communicating with converter control task called from ISR
@@ -56,19 +53,60 @@ extern const converter_message_t converter_overload_msg;
 extern xQueueHandle xQueueConverter;
 
 
+/*	
+	DAC uses some values from global settings structure.
+	global_settings->dac_voltage_offset			- offset for voltage DAC
+	global_settings->dac_current_low_offset		- offset for current DAC, low current range
+	global_settings->dac_current_high_offset	- offset for current DAC, high current range
 
+	Using 12-bit PWM DAC.
+*/
+
+
+//---------------------------------------------//
+// Input is [mV]
+// DAC resolution is 0.005V
+// Maximum voltage setting is 0.005 * 4095 = 20.475V
+// Offset in units of 0.005V
+//---------------------------------------------//
 void SetVoltageDAC(uint16_t val)
 {
+	int32_t res_val;
 	val /= 5;
-	SetVoltagePWMPeriod(val);		// FIXME - we are setting not period but duty
+	// Offset voltage DAC
+	//res_val = (int32_t)val + dac_settings.voltage_offset;		
+	res_val = (int32_t)val + (int32_t)global_settings->dac_voltage_offset;		
+	if (res_val < 0) res_val = 0;				// cannot offset
+	else if (res_val > 4095) res_val = 4095;	// max limit
+	val = (uint16_t)res_val;
+	SetVoltagePWMPeriod(val);		// FIXME - we are setting not period but duty	
 }
 
-
+//---------------------------------------------//
+// Input is [mA]
+// DAC resolution is 0.005A for low range, 0.01A for high range
+// Maximum current setting is 0.005 * 4095 = 20,475A or 0.01 * 4095 = 40.95A
+// Offset in units of 0.005A for low range, 0.01A for high range
+//---------------------------------------------//
 void SetCurrentDAC(uint16_t val, uint8_t current_range)
 {
 	if (current_range == CURRENT_RANGE_HIGH)
-		val /= 2;
-	val /= 5;
+	{
+		val /= 10;
+		// Offset current DAC
+		res_val = (int32_t)val + (int32_t)global_settings->dac_current_low_offset;		
+		if (res_val < 0) res_val = 0;				// cannot offset
+		else if (res_val > 4095) res_val = 4095;	// max limit
+	}
+	else
+	{
+		val /= 5;
+		// Offset current DAC
+		res_val = (int32_t)val + (int32_t)global_settings->dac_current_high_offset;		
+		if (res_val < 0) res_val = 0;				// cannot offset
+		else if (res_val > 4095) res_val = 4095;	// max limit
+	}
+	val = (uint16_t)res_val;
 	SetCurrentPWMPeriod(val);		// FIXME - we are setting not period but duty
 }
 

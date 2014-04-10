@@ -84,6 +84,9 @@ static void fill_global_settings_by_default(void)
 	global_settings->number_of_power_cycles = 0;
 	global_settings->restoreRecentProfile = 1;
 	global_settings->saveRecentProfile = 1;
+	global_settings->dac_voltage_offset = 0;
+	global_settings->dac_current_low_offset = 0;
+	global_settings->dac_current_high_offset = 0;
 }
 
 
@@ -149,7 +152,10 @@ void EE_GetReadyForProfileSave(void)
 	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));	
 }
 
-
+void EE_GetReadyForSystemInit(void)
+{
+	fill_global_settings_by_default();
+}
 
 //=================================================================//
 //	Load routines (from EEPROM)
@@ -403,6 +409,8 @@ uint8_t EE_SaveGlobalSettings(void)
 	uint8_t hw_result;
 	uint16_t crc;
 	
+	//Converter_SaveGlobalSettings();		// <----- update settings structure manualy
+	
 	global_settings->number_of_power_cycles++;
 	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
 	
@@ -434,8 +442,9 @@ uint8_t EE_SaveRecentProfile(void)
 	{
 		// Profile save is required
 		EE_GetReadyForProfileSave();
-		Converter_SaveProfile();
+		Converter_SaveProfile();		// <----- update profile structure manualy
 		BTN_SaveProfile();
+		
 		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
 
 		//-------------------------------//
@@ -556,7 +565,7 @@ void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentPro
 		// Saving profile without restoring is useless
 		saveRecentProfile = 0;
 	} 
-	taskENTER_CRITICAL();
+	taskENTER_CRITICAL();	// FIXME
 	global_settings->saveRecentProfile = saveRecentProfile;
 	global_settings->restoreRecentProfile = restoreRecentProfile;
 	taskEXIT_CRITICAL();
@@ -609,6 +618,7 @@ void vTaskEEPROM(void *pvParameters)
 				state = EE_LoadGlobalSettings();
 				if (state & (EE_GSETTINGS_HW_ERROR | EE_GSETTINGS_CRC_ERROR))
 				{
+					// Loading default settings may be skipped if EE_GetReadyForSystemInit() had been called earlier
 					fill_global_settings_by_default();
 				}
 				// The following function uses profile data structure, so call it before

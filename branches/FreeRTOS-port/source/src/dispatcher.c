@@ -90,8 +90,14 @@ void vTaskDispatcher(void *pvParameters)
 	gui_msg.data.a = (eepromState == 0) ? 1 : 0;	
 	xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 	
+	// Load converter global settings
+	//converter_msg.type = CONVERTER_LOAD_GLOBAL_SETTINGS;
+	//converter_msg.pxSemaphore = 0;
+	//xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	
 	// Load converter profile
 	converter_msg.type = CONVERTER_LOAD_PROFILE;
+	converter_msg.pxSemaphore = 0;
 	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
 	// Load profile for buttons

@@ -8,8 +8,8 @@
 #include "semphr.h"
 
 #include "defines.h"
-#include "converter.h"		// 
-#include "converter_hw.h"		// 
+#include "converter.h"
+#include "converter_hw.h"
 #include "control.h"
 #include "adc.h"
 
@@ -17,11 +17,10 @@
 
 
 // ctrl_ADCProcess bits
-// For ADC task
+// For ADC low-level routine
 #define CMD_ADC_START_VOLTAGE		0x01
 #define CMD_ADC_START_CURRENT		0x02
 #define CMD_ADC_START_DISCON		0x04
-
 
 
 

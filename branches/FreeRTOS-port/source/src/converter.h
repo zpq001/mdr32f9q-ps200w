@@ -45,7 +45,10 @@ enum ConverterTaskMsgTypes {
 	CONVERTER_SET_OVERLOAD_PARAMS,
 	CONVERTER_OVERLOADED,
 	CONVERTER_LOAD_PROFILE,
-	CONVERTER_SAVE_PROFILE
+	CONVERTER_SAVE_PROFILE,
+	//CONVERTER_LOAD_GLOBAL_SETTINGS,
+	//CONVERTER_SAVE_GLOBAL_SETTINGS
+	CONVERTER_SET_DAC_PARAMS
 };
 
 
@@ -129,8 +132,13 @@ typedef struct {
 	uint8_t overload_warning_enable : 1;
 	uint16_t overload_threshold;
 } converter_state_t;
-
-
+/*
+typedef struct {
+	int16_t voltage_offset;
+	int16_t current_low_offset;
+	int16_t current_high_offset;
+} dac_settings_t;
+*/
 
 //-------------------------------------------------------//
 // Converter states
@@ -158,7 +166,10 @@ uint8_t Converter_GetOverloadProtectionWarning(void);
 uint16_t Converter_GetOverloadProtectionThreshold(void);
 uint8_t Converter_GetCurrentRange(uint8_t channel);
 uint8_t Converter_GetFeedbackChannel(void);
+int8_t Converter_GetVoltageDacOffset(void);
+int8_t Converter_GetCurrentDacOffset(uint8_t range);
 
+//void Converter_SaveGlobalSettings(void);
 void Converter_SaveProfile(void);
 
 // TODO: check closed static data - converter_state, etc
@@ -166,6 +177,7 @@ void Converter_SaveProfile(void);
 
 
 extern converter_state_t converter_state;		// main converter control
+extern dac_settings_t dac_settings;
 extern xQueueHandle xQueueConverter;
 extern xTaskHandle xTaskHandle_Converter;
 extern const converter_message_t converter_tick_message;

@@ -120,8 +120,9 @@ typedef struct {
 
 typedef struct {
 	uint32_t number_of_power_cycles;
-	int8_t adc_voltage_offset;
-	int8_t adc_current_offset;
+	int8_t dac_voltage_offset;
+	int8_t dac_current_low_offset;
+	int8_t dac_current_high_offset;
 	uint8_t saveRecentProfile;
 	uint8_t restoreRecentProfile;
 } global_settings_t;
@@ -175,6 +176,7 @@ uint8_t EE_SaveGlobalSettings(void);
 uint8_t EE_SaveRecentProfile(void);
 
 void EE_GetReadyForProfileSave(void);
+void EE_GetReadyForSystemInit(void);
 
 // General functions
 uint8_t EE_GetProfileState(uint8_t i);

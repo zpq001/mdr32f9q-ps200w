@@ -1,3 +1,14 @@
+/**********************************************************
+	Module converter
+
+	Converter settings are shared between global settings
+	and profiles. Converter is initialized to some known
+	default state which is safe. Then global settings and profiles can be loaded.
+	On power off, data that came from global set. must be saved back
+	as well as profile data.
+
+**********************************************************/
+
 
 
 #include <string.h>
@@ -56,7 +67,7 @@ uint32_t adc_msg;
 dispatch_msg_t dispatcher_msg;
 
 converter_state_t converter_state;		// main converter control
-
+dac_settings_t dac_settings;			// DAC calibration offset
 
 
 
@@ -157,6 +168,17 @@ uint8_t Converter_GetCurrentRange(uint8_t channel)
 uint8_t Converter_GetFeedbackChannel(void)
 {
 	return converter_state.channel->CHANNEL;
+}
+
+
+int8_t Converter_GetVoltageDacOffset(void)
+{
+	return global_settings->dac_voltage_offset;
+}
+
+int8_t Converter_GetCurrentDacOffset(uint8_t range)
+{
+	return (range == CURRENT_RANGE_LOW) ? global_settings->dac_set.current_low_offset : global_settings->dac_current_high_offset;
 }
 
 
@@ -426,6 +448,7 @@ static void Converter_LoadProfile(void)
 	converter_state.overload_protection_enable = device_profile->converter_profile.overload.protection_enable;
 	converter_state.overload_warning_enable = device_profile->converter_profile.overload.warning_enable;
 	converter_state.overload_threshold = device_profile->converter_profile.overload.threshold;
+	
 }
 
 
@@ -474,19 +497,41 @@ void Converter_SaveProfile(void)
 	device_profile->converter_profile.overload.protection_enable = Converter_GetOverloadProtectionState();
 	device_profile->converter_profile.overload.warning_enable = Converter_GetOverloadProtectionWarning();
 	device_profile->converter_profile.overload.threshold = Converter_GetOverloadProtectionThreshold();
-	
+
 	// Other fields
 	// ...
 }
 
+
+/*
+static void Converter_LoadGlobalSettings(void)
+{
+	// Read data from global settings
+	dac_settings.voltage_offset = global_settings->dac_voltage_offset;
+	dac_settings.current_low_offset = global_settings->dac_current_low_offset;
+	dac_settings.current_high_offset = global_settings->dac_current_high_offset;
+	// Update DAC output
+	SetVoltageDAC(converter_state.channel->voltage.setting);
+	SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+}
+
+
+void Converter_SaveGlobalSettings(void)
+{
+	global_settings->dac_voltage_offset = dac_settings.voltage_offset;
+	global_settings->dac_current_low_offset = dac_settings.current_low_offset;
+	global_settings->dac_current_high_offset = dac_settings.current_high_offset;
+}
+*/
+	
 // Converter initialization
 void Converter_Init(void)
 {
 	// Set everything to 0
 	memset(&converter_state, 0, sizeof(converter_state));
+	//memset(&dac_settings, 0, sizeof(dac_settings));
 	
 	//---------- Channel 5V ------------//
-	
 	// Common
 	converter_state.channel_5v.CHANNEL = CHANNEL_5V;
 	converter_state.channel_5v.load_state = LOAD_ENABLE;										// dummy - load at 5V channel can not be disabled
@@ -650,6 +695,37 @@ void vTaskConverter(void *pvParameters)
 					xSemaphoreGive(*msg.pxSemaphore);
 				break;
 			//=========================================================================//
+			// Setting DAC offset
+			case CONVERTER_SET_DAC_PARAMS:
+				//taskDISABLE_INTERRUPTS();
+				global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
+				global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
+				global_settings->dac_current_high_offset = msg.a.dac_set.current_high_offset;
+				//taskENABLE_INTERRUPTS();
+				// Update DAC output
+				SetVoltageDAC(converter_state.channel->voltage.setting);
+				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+				// Confirm
+					if (msg.pxSemaphore != 0)
+						xSemaphoreGive(*msg.pxSemaphore);
+				break;
+/*			//=========================================================================//
+			// Loading global settings
+			case CONVERTER_LOAD_GLOBAL_SETTINGS:
+				Converter_LoadGlobalSettings();
+				// Confirm
+				if (msg.pxSemaphore != 0)
+					xSemaphoreGive(*msg.pxSemaphore);
+				break;
+			//=========================================================================//
+			// Saving global settings
+			case CONVERTER_SAVE_GLOBAL_SETTINGS:
+				Converter_SaveGlobalSettings();
+				// Confirm
+				if (msg.pxSemaphore != 0)
+					xSemaphoreGive(*msg.pxSemaphore);
+				break;
+*/			//=========================================================================//
 			// Setting voltage
 			case CONVERTER_SET_VOLTAGE:
 				msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);

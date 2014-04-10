@@ -153,6 +153,9 @@ int main(void)
 	InitButtons();
 	LcdInit();
 
+	// Some modules can use eeprom data structures directly.
+	// Those structures must be initialized.
+	EE_GetReadyForSystemInit();
 	
 	// Enable interrupt for fast low-level control dispatcher
 	// TODO: bring ISR from systick.c to systemfunc.c

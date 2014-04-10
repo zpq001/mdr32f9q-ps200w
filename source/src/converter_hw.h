@@ -17,8 +17,6 @@
 
 
 
-
-
 void SetVoltageDAC(uint16_t val);
 void SetCurrentDAC(uint16_t val, uint8_t current_range);
 

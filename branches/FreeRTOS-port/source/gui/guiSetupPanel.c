@@ -9,6 +9,7 @@
 
 #include <stdio.h>      // due to printf
 #include <stdint.h>
+#include <string.h>
 
 #include "guiFonts.h"
 #include "guiGraphHAL.h"
@@ -537,10 +538,10 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_VoltageDacOffset.x = 96+70;
     spinBox_VoltageDacOffset.y = 0;
     spinBox_VoltageDacOffset.width = 26;
-    spinBox_VoltageDacOffset.height = 15;
+    spinBox_VoltageDacOffset.height = 17;
     spinBox_VoltageDacOffset.textRightOffset = -2;
     spinBox_VoltageDacOffset.textTopOffset = 2;
-    spinBox_VoltageDacOffset.tabIndex = 2;
+    spinBox_VoltageDacOffset.tabIndex = 1;
     spinBox_VoltageDacOffset.font = &font_h10;
     spinBox_VoltageDacOffset.dotPosition = -1;
     spinBox_VoltageDacOffset.activeDigit = 0;
@@ -549,26 +550,42 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_VoltageDacOffset.maxValue = 100;
     spinBox_VoltageDacOffset.minValue = -100;
     spinBox_VoltageDacOffset.showFocus = 1;
-    spinBox_VoltageDacOffset.isVisible = 1;
     spinBox_VoltageDacOffset.value = 55;      // anything different from value being set by guiSpinBox_SetValue()
-    guiSpinBox_SetValue(&spinBox_VoltageDacOffset, 0, 0);
+    guiSpinBox_SetValue(&spinBox_VoltageDacOffset, -100, 0);
     //guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_VoltageDacOffset, 2);
     //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, SPINBOX_VALUE_CHANGED, onOverloadSettingChanged);
     //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     //spinBox_VoltageDacOffset.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
+    memcpy(&spinBox_CurrentLowDacOffset, &spinBox_VoltageDacOffset, sizeof(spinBox_VoltageDacOffset));
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_CurrentLowDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    spinBox_CurrentLowDacOffset.y = 20;
+    spinBox_CurrentLowDacOffset.tabIndex = 2;
+
+    memcpy(&spinBox_CurrentHighDacOffset, &spinBox_VoltageDacOffset, sizeof(spinBox_VoltageDacOffset));
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_CurrentHighDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    spinBox_CurrentHighDacOffset.y = 40;
+    spinBox_CurrentHighDacOffset.tabIndex = 3;
+
     guiTextLabel_Initialize(&textLabel_VoltageDacOffset, 0);
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_VoltageDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
     textLabel_VoltageDacOffset.x = 96+0;
-    textLabel_VoltageDacOffset.y = 3;
+    textLabel_VoltageDacOffset.y = 2;
     textLabel_VoltageDacOffset.width = 40;
     textLabel_VoltageDacOffset.height = 10;
     textLabel_VoltageDacOffset.textAlignment = ALIGN_LEFT;
     textLabel_VoltageDacOffset.text = "Voltage [mV]:";
     textLabel_VoltageDacOffset.font = &font_h10;
-    textLabel_VoltageDacOffset.isVisible = 0;
 
+    memcpy(&textLabel_CurrentLowDacOffset, &textLabel_VoltageDacOffset, sizeof(textLabel_VoltageDacOffset));
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_CurrentLowDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    textLabel_CurrentLowDacOffset.text = "Cur.low [mA]:";
+    textLabel_CurrentLowDacOffset.y = 22;
 
+    memcpy(&textLabel_CurrentHighDacOffset, &textLabel_VoltageDacOffset, sizeof(textLabel_VoltageDacOffset));
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_CurrentHighDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
+    textLabel_CurrentHighDacOffset.text = "Cur.high [mA]:";
+    textLabel_CurrentHighDacOffset.y = 42;
 
     //---------- Tags ----------//
 
@@ -597,7 +614,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     radioBtn_ExtSwitchMode3.tag = 17;
 
     spinBox_VoltageDacOffset.tag = 18;
+    spinBox_CurrentLowDacOffset.tag = 18;
+    spinBox_CurrentHighDacOffset.tag = 18;
     textLabel_VoltageDacOffset.tag = 18;
+    textLabel_CurrentLowDacOffset.tag = 18;
+    textLabel_CurrentHighDacOffset.tag = 18;
 
     // Other
     textLabel_hint.tag = 11;

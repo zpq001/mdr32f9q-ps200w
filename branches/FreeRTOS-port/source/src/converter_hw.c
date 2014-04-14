@@ -65,6 +65,7 @@ extern xQueueHandle xQueueConverter;
 
 //---------------------------------------------//
 // Input is [mV]
+// DAC offset is [mV]
 // DAC resolution is 0.005V
 // Maximum voltage setting is 0.005 * 4095 = 20.475V
 // Offset in units of 0.005V
@@ -75,7 +76,7 @@ void SetVoltageDAC(uint16_t val)
 	val /= 5;
 	// Offset voltage DAC
 	//res_val = (int32_t)val + dac_settings.voltage_offset;		
-	res_val = (int32_t)val + (int32_t)global_settings->dac_voltage_offset;		
+	res_val = (int32_t)val + (int32_t)global_settings->dac_voltage_offset / 5;		
 	if (res_val < 0) res_val = 0;				// cannot offset
 	else if (res_val > 4095) res_val = 4095;	// max limit
 	val = (uint16_t)res_val;
@@ -84,17 +85,19 @@ void SetVoltageDAC(uint16_t val)
 
 //---------------------------------------------//
 // Input is [mA]
+// DAC offset is [mA]
 // DAC resolution is 0.005A for low range, 0.01A for high range
 // Maximum current setting is 0.005 * 4095 = 20,475A or 0.01 * 4095 = 40.95A
 // Offset in units of 0.005A for low range, 0.01A for high range
 //---------------------------------------------//
 void SetCurrentDAC(uint16_t val, uint8_t current_range)
 {
+	int32_t res_val;
 	if (current_range == CURRENT_RANGE_HIGH)
 	{
 		val /= 10;
 		// Offset current DAC
-		res_val = (int32_t)val + (int32_t)global_settings->dac_current_low_offset;		
+		res_val = (int32_t)val + (int32_t)global_settings->dac_current_low_offset / 10;		
 		if (res_val < 0) res_val = 0;				// cannot offset
 		else if (res_val > 4095) res_val = 4095;	// max limit
 	}
@@ -102,7 +105,7 @@ void SetCurrentDAC(uint16_t val, uint8_t current_range)
 	{
 		val /= 5;
 		// Offset current DAC
-		res_val = (int32_t)val + (int32_t)global_settings->dac_current_high_offset;		
+		res_val = (int32_t)val + (int32_t)global_settings->dac_current_high_offset / 5;		
 		if (res_val < 0) res_val = 0;				// cannot offset
 		else if (res_val > 4095) res_val = 4095;	// max limit
 	}

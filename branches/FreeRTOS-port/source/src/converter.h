@@ -132,13 +132,14 @@ typedef struct {
 	uint8_t overload_warning_enable : 1;
 	uint16_t overload_threshold;
 } converter_state_t;
-/*
+
+
 typedef struct {
 	int16_t voltage_offset;
 	int16_t current_low_offset;
 	int16_t current_high_offset;
 } dac_settings_t;
-*/
+
 
 //-------------------------------------------------------//
 // Converter states

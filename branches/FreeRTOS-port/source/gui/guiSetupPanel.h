@@ -20,6 +20,10 @@ void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name);
 void updateProfileSetup(void);
 void updateExtSwitchSettings(uint8_t updateForced);
 
+
+void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
+
+
 void hideEditPanel2(char *newProfileName);  // called by edit panel 2
 
 #endif

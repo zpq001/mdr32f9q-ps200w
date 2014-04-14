@@ -139,6 +139,12 @@ void saveProfile(uint8_t index, char *profileName);
 void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
 void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode);
 
+
+void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
+void guiTop_UpdateDacSettings(void);
+
+
+
 #ifdef __cplusplus
 }
 #endif

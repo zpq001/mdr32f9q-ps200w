@@ -71,3 +71,11 @@ void guiTextLabel_Initialize(guiTextLabel_t *textLabel, guiGenericWidget_t *pare
     textLabel->textAlignment = ALIGN_CENTER;
 }
 
+
+void guiTextLabel_SetText(guiTextLabel_t *textLabel, char *text)
+{
+    textLabel->text = text;
+    textLabel->redrawText = 1;
+    textLabel->redrawRequired = 1;
+}
+

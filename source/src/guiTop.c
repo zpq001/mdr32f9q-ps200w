@@ -439,3 +439,63 @@ void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMo
 	xQueueSendToBack(xQueueButtons, &buttons_msg, portMAX_DELAY);
 }
 
+
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+
+
+
+
+
+//------------------------------------------------------//
+//			DAC offset settings							//
+//------------------------------------------------------//
+
+// Applies GUI DAC offset settings to hardware
+// Called by GUI low level
+void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
+{
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_DAC_PARAMS;
+	dispatcher_msg.converter_cmd.a.dac_set.voltage_offset = v_offset;
+	dispatcher_msg.converter_cmd.a.dac_set.current_low_offset = c_low_offset;
+	dispatcher_msg.converter_cmd.a.dac_set.current_high_offset = c_high_offset;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+}
+
+// Reads DAC offset settings and updates GUI widgets
+// Called from both GUI top and low levels
+void guiTop_UpdateDacSettings(void)
+{
+	int8_t v_offset;
+	int8_t c_low_offset;
+	int8_t c_high_offset;
+	// Using critical section because modifying task has higher priority
+	taskENTER_CRITICAL();
+	v_offset = Converter_GetVoltageDacOffset();
+	c_low_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_LOW);
+	c_high_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_HIGH);
+	taskEXIT_CRITICAL();
+	setGuiDacSettings(v_offset, c_low_offset, c_high_offset);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -698,10 +698,12 @@ void vTaskConverter(void *pvParameters)
 			// Setting DAC offset
 			case CONVERTER_SET_DAC_PARAMS:
 				//taskDISABLE_INTERRUPTS();
+				taskENTER_CRITICAL();
 				global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
 				global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
 				global_settings->dac_current_high_offset = msg.a.dac_set.current_high_offset;
 				//taskENABLE_INTERRUPTS();
+				taskEXIT_CRITICAL();
 				// Update DAC output
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);

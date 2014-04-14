@@ -1376,6 +1376,35 @@ void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name)
 }
 
 
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+//------------------------------------------------------//
+//			DAC offset settings							//
+//------------------------------------------------------//
+static uint8_t onDacSettingsChanged(void *widget, guiEvent_t *event)
+{
+	guiTop_ApplyDacSettings(spinBox_VoltageDacOffset.value,
+							spinBox_CurrentLowDacOffset.value,
+							spinBox_CurrentHighDacOffset.value);
+    return 0;
+}
+
+void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
+{
+	// Check if widgets update is required
+	if (guiCore_IsWidgetVisible((guiGenericWidget_t *)&spinBox_VoltageDacOffset))
+	{
+		// Update if any widget in that group is visible
+		guiSpinBox_SetValue(&spinBox_VoltageDacOffset, v_offset, 0);			// [mV]
+		guiSpinBox_SetValue(&spinBox_CurrentLowDacOffset, c_low_offset, 0);		// [mA]
+		guiSpinBox_SetValue(&spinBox_CurrentHighDacOffset, c_high_offset, 0);	// [mA]
+	}
+}
+
 
 
 

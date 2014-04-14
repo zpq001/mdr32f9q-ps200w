@@ -70,6 +70,7 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
 static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event);
 static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event);
+static uint8_t onDacSettingsChanged(void *widget, guiEvent_t *event);
 
 static void updateVoltageLimit(uint8_t channel, uint8_t limit_type);
 static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
@@ -552,10 +553,10 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_VoltageDacOffset.showFocus = 1;
     spinBox_VoltageDacOffset.value = 55;      // anything different from value being set by guiSpinBox_SetValue()
     guiSpinBox_SetValue(&spinBox_VoltageDacOffset, -100, 0);
-    //guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_VoltageDacOffset, 2);
-    //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, SPINBOX_VALUE_CHANGED, onOverloadSettingChanged);
-    //guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
-    //spinBox_VoltageDacOffset.keyTranslator = guiSpinBoxLimit_KeyTranslator;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_VoltageDacOffset, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, SPINBOX_VALUE_CHANGED, onDacSettingsChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_VoltageDacOffset, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+    spinBox_VoltageDacOffset.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
     memcpy(&spinBox_CurrentLowDacOffset, &spinBox_VoltageDacOffset, sizeof(spinBox_VoltageDacOffset));
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_CurrentLowDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
@@ -566,6 +567,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_CurrentHighDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
     spinBox_CurrentHighDacOffset.y = 40;
     spinBox_CurrentHighDacOffset.tabIndex = 3;
+
 
     guiTextLabel_Initialize(&textLabel_VoltageDacOffset, 0);
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_VoltageDacOffset, (guiGenericContainer_t *)&guiSetupPanel);
@@ -735,19 +737,13 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     if (setupList.selectedIndex == 0)
     {
         setupView.channel = CHANNEL_5V;
-        textLabel_hint.isVisible = 1;
-        textLabel_hint.text = "Ch. 5V setup ...";
-        textLabel_hint.redrawRequired = 1;
-        textLabel_hint.redrawText = 1;
+        guiTextLabel_SetText(&textLabel_hint, "Ch. 5V setup ...");
         guiCore_SetVisible((guiGenericWidget_t *)&textLabel_hint, 1);
     }
     else if (setupList.selectedIndex == 1)
     {
         setupView.channel = CHANNEL_12V;
-        textLabel_hint.isVisible = 1;
-        textLabel_hint.text = "Ch. 12V setup ...";
-        textLabel_hint.redrawRequired = 1;
-        textLabel_hint.redrawText = 1;
+        guiTextLabel_SetText(&textLabel_hint, "Ch. 12V setup ...");
         guiCore_SetVisible((guiGenericWidget_t *)&textLabel_hint, 1);
     }
     else if (setupList.selectedIndex == 3)
@@ -770,6 +766,8 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
             updateProfileSetup();
         else if (setupList.selectedIndex == 6)
             updateExtSwitchSettings(1);     // update forced
+        else if (setupList.selectedIndex == 7)
+            guiTop_UpdateDacSettings();
     }
 
     return 0;
@@ -1026,16 +1024,27 @@ static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEven
     }
     else if (event->spec == GUI_ENCODER_EVENT)
     {
+        tkey->increment = (int16_t)event->lparam;
+
         if (widget == (guiGenericWidget_t *)&spinBox_OverloadThreshold)
         {
             if (spinBox_OverloadThreshold.activeDigit == 0)
                 tkey->increment = (int16_t)event->lparam * 2;
-            else
-                tkey->increment = (int16_t)event->lparam;
         }
-        else
+        else if (widget == (guiGenericWidget_t *)&spinBox_VoltageDacOffset)
         {
-            tkey->increment = (int16_t)event->lparam;
+            if (spinBox_VoltageDacOffset.activeDigit == 0)
+                tkey->increment = (int16_t)event->lparam * 5;
+        }
+        else if (widget == (guiGenericWidget_t *)&spinBox_CurrentLowDacOffset)
+        {
+            if (spinBox_CurrentLowDacOffset.activeDigit == 0)
+                tkey->increment = (int16_t)event->lparam * 5;
+        }
+        else if (widget == (guiGenericWidget_t *)&spinBox_CurrentHighDacOffset)
+        {
+            if (spinBox_CurrentHighDacOffset.activeDigit == 0)
+                tkey->increment = (int16_t)event->lparam * 10;
         }
     }
     return 0;
@@ -1380,6 +1389,8 @@ void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name)
 //===========================================================================//
 //===========================================================================//
 //===========================================================================//
+
+
 
 
 //------------------------------------------------------//

@@ -538,7 +538,39 @@ void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMo
 
 
 
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
 
 
-//=================================================================//
+
+
+//------------------------------------------------------//
+//			DAC offset settings							//
+//------------------------------------------------------//
+int8_t voltage_dac_offset = -5;
+int8_t current_low_dac_offset = -10;
+int8_t current_high_dac_offset = 20;
+
+// Applies GUI DAC offset settings to hardware
+// Called by GUI low level
+void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
+{
+    voltage_dac_offset = v_offset;
+    current_low_dac_offset = c_low_offset;
+    current_high_dac_offset = c_high_offset;
+}
+
+// Reads DAC offset settings and updates GUI widgets
+// Called from both GUI top and low levels
+void guiTop_UpdateDacSettings(void)
+{
+    setGuiDacSettings(voltage_dac_offset, current_low_dac_offset, current_high_dac_offset);
+}
+
+
+
+
+
 

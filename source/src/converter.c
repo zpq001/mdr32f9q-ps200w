@@ -178,7 +178,7 @@ int8_t Converter_GetVoltageDacOffset(void)
 
 int8_t Converter_GetCurrentDacOffset(uint8_t range)
 {
-	return (range == CURRENT_RANGE_LOW) ? global_settings->dac_set.current_low_offset : global_settings->dac_current_high_offset;
+	return (range == CURRENT_RANGE_LOW) ? global_settings->dac_current_low_offset : global_settings->dac_current_high_offset;
 }
 
 

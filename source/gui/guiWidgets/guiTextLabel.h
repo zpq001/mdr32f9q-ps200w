@@ -12,7 +12,7 @@
 
 void guiTextLabel_Initialize(guiTextLabel_t *textLabel, guiGenericWidget_t *parent);
 uint8_t guiTextLabel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event);
-
+void guiTextLabel_SetText(guiTextLabel_t *textLabel, char *text);
 
 
 #endif

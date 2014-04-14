@@ -79,8 +79,9 @@ static void fill_global_settings_by_default(void)
 	// Fill whole settings structure with FF's (padding)
 	// These values will be written to EEPROM and used for CRC
 	memset(global_settings, 0xFFFFFFFF, sizeof(global_settings_t));
-	global_settings->adc_voltage_offset = 0;
-	global_settings->adc_current_offset = 0;
+	global_settings->dac_voltage_offset = 0;
+	global_settings->dac_current_low_offset = 0;
+	global_settings->dac_current_high_offset = 0;
 	global_settings->number_of_power_cycles = 0;
 	global_settings->restoreRecentProfile = 1;
 	global_settings->saveRecentProfile = 1;

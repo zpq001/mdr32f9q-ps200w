@@ -149,7 +149,7 @@ void guiInitialize(void)
     for (i=0; i < EE_PROFILES_COUNT; i++)
     {
         sprintf(profileName, "Profile %d", i);
-        updateGuiProfileListRecord(i, EE_PROFILE_VALID, profileName);
+        setGuiProfileRecordState(i, EE_PROFILE_VALID, profileName);
     }
 
 
@@ -362,11 +362,7 @@ void updateGuiVoltageLimit(uint8_t channel, uint8_t limit_type)
     // TODO
 }
 
-// Voltage limit setting GUI -> HW
-void applyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
-{
-    // TODO
-}
+
 
 
 //-----------------------------------//
@@ -399,11 +395,7 @@ void updateGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_
     // TODO
 }
 
-// Current limit setting GUI -> HW
-void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value)
-{
-    // TODO
-}
+
 
 
 
@@ -474,20 +466,97 @@ void guiUpdateTemperatureIndicator(void)
 
 //-----------------------------------//
 // Other
-void applyGuiOverloadSetting(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold)
+
+
+
+
+
+
+
+
+
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+//------------------------------------------------------//
+//              Voltage/Current limits                  //
+//------------------------------------------------------//
+//struct limSet_t {
+//    uint8_t enabled;
+//    int32_t value;
+//} vlim_low, vlim_high, clim_low, clim_high;
+
+void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
 {
+    // TODO
+    // Should update widgets after processing command by converter - both limit and setting widgets
 }
 
-void updateGuiOverloadSetting(void)
+void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value)
 {
+    // TODO
+    // Should update widgets after processing command by converter - both limit and setting widgets
+}
 
+void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
+{
+    //uint8_t isEnabled = Converter_GetVoltageLimitState(channel, limit_type);
+    //uint16_t value = Converter_GetVoltageLimitSetting(channel, limit_type);
+    //updateLimitWidgets(limit_type, isEnabled, value);
+    setGuiVoltageLimitSetting(channel, limit_type, 0, 0);
+}
+
+void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    //uint8_t isEnabled = Converter_GetCurrentLimitState(channel, range, limit_type);
+    //uint16_t value = Converter_GetCurrentLimitSetting(channel, range, limit_type);
+    //updateLimitWidgets(limit_type, isEnabled, value);
+    setGuiCurrentLimitSetting(channel, range, limit_type, 0, 0);
 }
 
 
-//---------------------------------------------//
-// Requests for profile load
-//---------------------------------------------//
-void loadProfile(uint8_t index)
+
+//------------------------------------------------------//
+//                  Overload                            //
+//------------------------------------------------------//
+uint8_t ovld_protectionEnable, ovld_warningEnable;
+int32_t ovld_threshold;
+
+void guiTop_ApplyGuiOverloadSettings(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold)
+{
+    ovld_protectionEnable = protectionEnable;
+    ovld_warningEnable = warningEnable;
+    ovld_threshold = newThreshold;
+}
+
+void guiTop_UpdateOverloadSettings(void)
+{
+    setGuiOverloadSettings(ovld_protectionEnable, ovld_warningEnable, ovld_threshold);
+}
+
+
+
+//------------------------------------------------------//
+//                  Profiles                            //
+//------------------------------------------------------//
+uint8_t ee_saveRecentProfile, ee_restoreRecentProfile;
+
+void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+{
+    ee_saveRecentProfile = saveRecentProfile;
+    ee_restoreRecentProfile = restoreRecentProfile;
+}
+
+void guiTop_UpdateProfileSettings(void)
+{
+    setGuiProfileSettings(ee_saveRecentProfile, ee_restoreRecentProfile);
+}
+
+// Profile load
+void guiTop_LoadProfile(uint8_t index)
 {
     if (index % 5 == 0)
     {
@@ -511,38 +580,34 @@ void loadProfile(uint8_t index)
     }
 }
 
-//---------------------------------------------//
-// Requests for profile save
-//---------------------------------------------//
-void saveProfile(uint8_t index, char *profileName)
+
+// Profile save
+void guiTop_SaveProfile(uint8_t index, char *profileName)
 {
 
 }
 
 
-void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+
+
+//------------------------------------------------------//
+//			External switch settings					//
+//------------------------------------------------------//
+uint8_t extsw_enable = 1;
+uint8_t extsw_inverse = 1;
+uint8_t extsw_mode = EXTSW_DIRECT;
+
+void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode)
 {
-
-
-
+    extsw_enable = enable;
+    extsw_inverse = inverse;
+    extsw_mode = mode;
 }
 
-
-
-void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode)
+void guiTop_UpdateExtSwitchSettings(void)
 {
-
-
+    setGuiExtSwitchSettings(extsw_enable, extsw_inverse, extsw_mode);
 }
-
-
-
-
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
-
 
 
 

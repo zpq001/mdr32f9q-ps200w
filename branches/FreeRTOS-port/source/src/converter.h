@@ -133,13 +133,13 @@ typedef struct {
 	uint16_t overload_threshold;
 } converter_state_t;
 
-
+/*
 typedef struct {
 	int16_t voltage_offset;
 	int16_t current_low_offset;
 	int16_t current_high_offset;
 } dac_settings_t;
-
+*/
 
 //-------------------------------------------------------//
 // Converter states
@@ -178,7 +178,7 @@ void Converter_SaveProfile(void);
 
 
 extern converter_state_t converter_state;		// main converter control
-extern dac_settings_t dac_settings;
+//extern dac_settings_t dac_settings;
 extern xQueueHandle xQueueConverter;
 extern xTaskHandle xTaskHandle_Converter;
 extern const converter_message_t converter_tick_message;

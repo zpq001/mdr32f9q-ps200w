@@ -67,7 +67,7 @@ uint32_t adc_msg;
 dispatch_msg_t dispatcher_msg;
 
 converter_state_t converter_state;		// main converter control
-dac_settings_t dac_settings;			// DAC calibration offset
+//dac_settings_t dac_settings;			// DAC calibration offset
 
 
 
@@ -616,6 +616,10 @@ void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dis
 	dispatcher_msg->converter_event.err_code = 0;	// need to be filled
 }
 
+
+// TODO:
+//	add check for voltage, current or DAC settings - values should be truncated to 
+//	DAC resolution
 
 
 //---------------------------------------------//

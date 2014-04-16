@@ -136,7 +136,7 @@ void vTaskGUI(void *pvParameters)
 				for (i = 0; i < EE_PROFILES_COUNT; i++)
 				{
 					profileState = readProfileListRecordName(i, profileName);
-					updateGuiProfileListRecord(i, profileState, profileName);
+					setGuiProfileRecordState(i, profileState, profileName);
 				}
 				
 				break;
@@ -196,7 +196,7 @@ void vTaskGUI(void *pvParameters)
 						state = Converter_GetOverloadProtectionState();
 						state2 = Converter_GetOverloadProtectionWarning();
 						value = Converter_GetOverloadProtectionThreshold();
-						setGuiOverloadSetting(state, state2, value);
+						setGuiOverloadSettings(state, state2, value);
 						break;
 				}
 				break;
@@ -233,7 +233,7 @@ void vTaskGUI(void *pvParameters)
 								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);	
 							// Update single record 
 							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
 						}
 						break;
 					case PROFILE_SAVE:
@@ -243,7 +243,7 @@ void vTaskGUI(void *pvParameters)
 							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
 							// Update single record 
 							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
 						}
 						else
 						{
@@ -254,7 +254,7 @@ void vTaskGUI(void *pvParameters)
 								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
 							// Update single record 
 							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							updateGuiProfileListRecord(msg.profile_event.index, profileState, profileName);
+							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
 						}
 						break;
 					case PROFILE_LOAD_RECENT:
@@ -285,7 +285,7 @@ void vTaskGUI(void *pvParameters)
 				
 			case GUI_TASK_UPDATE_PROFILE_SETUP:
 					// Read profile settings and update widgets
-					updateProfileSetup();
+					guiTop_UpdateProfileSettings();
 				break;
 			
 		}
@@ -317,17 +317,7 @@ void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
-void applyGuiVoltageLimit(uint8_t channel, uint8_t type, uint8_t enable, int32_t value)
-{ 
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
-	dispatcher_msg.sender = sender_GUI;
-	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE_LIMIT;
-	dispatcher_msg.converter_cmd.a.vlim_set.channel = channel;
-	dispatcher_msg.converter_cmd.a.vlim_set.type = type;	
-	dispatcher_msg.converter_cmd.a.vlim_set.enable = enable;
-	dispatcher_msg.converter_cmd.a.vlim_set.value = value;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
-}
+
 
 //-------------------------------------------------------//
 //	Current
@@ -342,18 +332,6 @@ void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_curr
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
-void applyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t type, uint8_t enable, int32_t value)
-{ 
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
-	dispatcher_msg.sender = sender_GUI;
-	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_LIMIT;
-	dispatcher_msg.converter_cmd.a.clim_set.channel = channel;
-	dispatcher_msg.converter_cmd.a.clim_set.range = currentRange;
-	dispatcher_msg.converter_cmd.a.clim_set.type = type;	
-	dispatcher_msg.converter_cmd.a.clim_set.enable = enable;
-	dispatcher_msg.converter_cmd.a.clim_set.value = value;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
-}
 
 void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
 {
@@ -365,10 +343,86 @@ void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
-//-------------------------------------------------------//
-//	Other
 
-void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+
+//------------------------------------------------------//
+//              Voltage/Current limits                  //
+//------------------------------------------------------//
+
+void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
+{
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE_LIMIT;
+	dispatcher_msg.converter_cmd.a.vlim_set.channel = channel;
+	dispatcher_msg.converter_cmd.a.vlim_set.type = limit_type;	
+	dispatcher_msg.converter_cmd.a.vlim_set.enable = enable;
+	dispatcher_msg.converter_cmd.a.vlim_set.value = value;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+    // TODO - should update widgets after processing command by converter - both limit and setting widgets
+}
+
+void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value)
+{
+	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_LIMIT;
+	dispatcher_msg.converter_cmd.a.clim_set.channel = channel;
+	dispatcher_msg.converter_cmd.a.clim_set.range = currentRange;
+	dispatcher_msg.converter_cmd.a.clim_set.type = limit_type;	
+	dispatcher_msg.converter_cmd.a.clim_set.enable = enable;
+	dispatcher_msg.converter_cmd.a.clim_set.value = value;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+    // TODO - should update widgets after processing command by converter - both limit and setting widgets
+}
+
+void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
+{
+	uint8_t isEnabled;
+	uint16_t value;
+	taskENTER_CRITICAL();
+    isEnabled = Converter_GetVoltageLimitState(channel, limit_type);
+    value = Converter_GetVoltageLimitSetting(channel, limit_type);
+	taskEXIT_CRITICAL();
+    setGuiVoltageLimitSetting(channel, limit_type, isEnabled, value);
+}
+
+void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+	uint8_t isEnabled;
+	uint16_t value;
+	taskENTER_CRITICAL();
+    isEnabled = Converter_GetCurrentLimitState(channel, range, limit_type);
+    value = Converter_GetCurrentLimitSetting(channel, range, limit_type);
+    taskEXIT_CRITICAL();
+    setGuiCurrentLimitSetting(channel, range, limit_type, isEnabled, value);
+}
+
+
+//------------------------------------------------------//
+//                  Overload                            //
+//------------------------------------------------------//
+
+void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
 { 
 	dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
@@ -379,45 +433,25 @@ void applyGuiOverloadSetting(uint8_t protection_enable, uint8_t warning_enable, 
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
 }
 
-
-
-
-//---------------------------------------------//
-// Requests for profile load
-//---------------------------------------------//
-void loadProfile(uint8_t index)
+void guiTop_UpdateOverloadSettings(void)
 {
-	if (profileOperationInProgress == 0)
-	{
-		dispatcher_msg.type = DISPATCHER_LOAD_PROFILE;
-		dispatcher_msg.profile_load.number = index;
-		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);	
-		// Preserve repeating until answer is received
-		profileOperationInProgress = 1;
-	}
+	uint8_t protectionEnabled, warningEnabled;
+	uint16_t threshold;
+	taskENTER_CRITICAL();
+    protectionEnabled = Converter_GetOverloadProtectionState();
+    warningEnabled = Converter_GetOverloadProtectionWarning();
+    threshold = Converter_GetOverloadProtectionThreshold();
+    taskEXIT_CRITICAL();
+    setGuiOverloadSettings(protectionEnabled, warningEnabled, threshold);
 }
 
 
-//---------------------------------------------//
-// Requests for profile save
-//---------------------------------------------//
-void saveProfile(uint8_t index, char *profileName)
-{
-	if (profileOperationInProgress == 0)
-	{
-		dispatcher_msg.type = DISPATCHER_SAVE_PROFILE;
-		dispatcher_msg.profile_save.number = index;
-		dispatcher_msg.profile_save.new_name = profileName;
-		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
-		// Preserve repeating until answer is received
-		profileOperationInProgress = 1;
-	}
-}
 
-//---------------------------------------------//
-// Profile setup change
-//---------------------------------------------//
-void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+//------------------------------------------------------//
+//                  Profiles                            //
+//------------------------------------------------------//
+
+void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
 {
 	dispatcher_msg.type = DISPATCHER_PROFILE_SETUP;
 	dispatcher_msg.sender = sender_GUI;
@@ -426,28 +460,67 @@ void applyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentPro
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);
 }
 
-//---------------------------------------------//
-// External switch settings change
-// Direct to button task
-//---------------------------------------------//
-void applyGuiExtSwitchSettings(uint8_t swEnable, uint8_t swInverse, uint8_t swMode)
+void guiTop_UpdateProfileSettings(void)
 {
-	buttons_msg.type = BUTTONS_EXTSWITCH_SETTINGS;
-	buttons_msg.extSwitchSetting.enable = swEnable;
-	buttons_msg.extSwitchSetting.inverse = swInverse;
-	buttons_msg.extSwitchSetting.mode = swMode;
-	xQueueSendToBack(xQueueButtons, &buttons_msg, portMAX_DELAY);
+	uint8_t saveRecentProfile, restoreRecentProfile;
+	taskENTER_CRITICAL();
+	saveRecentProfile = EE_IsRecentProfileSavingEnabled();
+    restoreRecentProfile = EE_IsRecentProfileRestoreEnabled();
+	taskEXIT_CRITICAL();
+    setGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
+}
+
+void guiTop_LoadProfile(uint8_t index)
+{
+	if (profileOperationInProgress == 0)
+	{
+		dispatcher_msg.type = DISPATCHER_LOAD_PROFILE;
+		dispatcher_msg.profile_load.number = index;
+		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);	
+		profileOperationInProgress = 1;		// Preserve repeating until answer is received
+	}
+}
+
+void guiTop_SaveProfile(uint8_t index, char *profileName)
+{
+	if (profileOperationInProgress == 0)
+	{
+		dispatcher_msg.type = DISPATCHER_SAVE_PROFILE;
+		dispatcher_msg.profile_save.number = index;
+		dispatcher_msg.profile_save.new_name = profileName;
+		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);		
+		profileOperationInProgress = 1;		// Preserve repeating until answer is received
+	}
 }
 
 
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
 
 
+//------------------------------------------------------//
+//			External switch settings					//
+//------------------------------------------------------//
 
+void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode)
+{
+    buttons_msg.type = BUTTONS_EXTSWITCH_SETTINGS;
+	buttons_msg.extSwitchSetting.enable = enable;
+	buttons_msg.extSwitchSetting.inverse = inverse;
+	buttons_msg.extSwitchSetting.mode = mode;
+	xQueueSendToBack(xQueueButtons, &buttons_msg, portMAX_DELAY);
+}
 
+void guiTop_UpdateExtSwitchSettings(void)
+{
+	uint8_t enable, inverse, mode;
+    // Read settings
+	taskENTER_CRITICAL();
+    enable = BTN_IsExtSwitchEnabled();
+    inverse = BTN_GetExtSwitchInversion();
+    mode = BTN_GetExtSwitchMode();
+	taskEXIT_CRITICAL();
+    // Update widgets
+    setGuiExtSwitchSettings(enable, inverse, mode);
+}
 
 
 

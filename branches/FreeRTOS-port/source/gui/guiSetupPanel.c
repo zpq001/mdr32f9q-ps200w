@@ -67,14 +67,14 @@ static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event);
 
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
-static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event);
-static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event);
+
+static uint8_t onOverloadSettingsChanged(void *widget, guiEvent_t *event);
+static uint8_t onProfileSettingsChanged(void *widget, guiEvent_t *event);
 static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event);
 static uint8_t onDacSettingsChanged(void *widget, guiEvent_t *event);
 
-static void updateVoltageLimit(uint8_t channel, uint8_t limit_type);
-static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
-static void updateOverloadSetting(void);
+
+
 
 
 struct {
@@ -362,7 +362,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_OverloadProtect.text = "Protection";
     checkBox_OverloadProtect.tabIndex = 1;
     guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_OverloadProtect, 2);
-    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_OverloadProtect, CHECKBOX_CHECKED_CHANGED, onOverloadSettingChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_OverloadProtect, CHECKBOX_CHECKED_CHANGED, onOverloadSettingsChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&checkBox_OverloadProtect, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     checkBox_OverloadProtect.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name
 
@@ -401,7 +401,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_OverloadThreshold.value = 1;
     guiSpinBox_SetValue(&spinBox_OverloadThreshold, 0, 0);
     guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_OverloadThreshold, 2);
-    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_OverloadThreshold, SPINBOX_VALUE_CHANGED, onOverloadSettingChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_OverloadThreshold, SPINBOX_VALUE_CHANGED, onOverloadSettingsChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&spinBox_OverloadThreshold, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     spinBox_OverloadThreshold.keyTranslator = guiSpinBoxLimit_KeyTranslator;
 
@@ -443,7 +443,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     checkBox_ProfileSetup1.text = "Save recent";
     checkBox_ProfileSetup1.tabIndex = 1;
     guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_ProfileSetup1, 2);
-    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ProfileSetup1, CHECKBOX_CHECKED_CHANGED, onProfileSetupChanged);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ProfileSetup1, CHECKBOX_CHECKED_CHANGED, onProfileSettingsChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&checkBox_ProfileSetup1, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
     checkBox_ProfileSetup1.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
 
@@ -761,11 +761,11 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
         // Update widgets that become visible
         if (setupList.selectedIndex == 2)
-            updateOverloadSetting();
+            guiTop_UpdateOverloadSettings();
         else if (setupList.selectedIndex == 5)
-            updateProfileSetup();
+            guiTop_UpdateProfileSettings();
         else if (setupList.selectedIndex == 6)
-            updateExtSwitchSettings(1);     // update forced
+            guiTop_UpdateExtSwitchSettings();
         else if (setupList.selectedIndex == 7)
             guiTop_UpdateDacSettings();
     }
@@ -783,7 +783,7 @@ static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     }
     else
     {
-        guiSetupList_onIndexChanged(widget, event);
+        guiSetupList_onIndexChanged(widget, event);     // CHECKME - is this necessary for widgets update?
         textLabel_title.text = "Settings";
         textLabel_title.redrawRequired = 1;
         textLabel_title.redrawText = 1;
@@ -895,8 +895,8 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [V]");
         // Update widgets for voltage
         setupView.view = VIEW_VOLTAGE;
-        updateVoltageLimit(setupView.channel, LIMIT_TYPE_LOW);
-        updateVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH);
+        guiTop_UpdateVoltageLimit(setupView.channel, LIMIT_TYPE_LOW);
+        guiTop_UpdateVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH);
     }
     else if ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2))
     {
@@ -905,8 +905,8 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         // Update widgets for current
         setupView.view = VIEW_CURRENT;
         setupView.currentRange = (chSetupList.selectedIndex == 1) ? CURRENT_RANGE_LOW : CURRENT_RANGE_HIGH;
-        updateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW);
-        updateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH);
+        guiTop_UpdateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW);
+        guiTop_UpdateCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH);
     }
     else
     {
@@ -1086,7 +1086,7 @@ static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event)
         if (setupView.profileAction == PROFILE_ACTION_LOAD)
         {
             // Load profile data from EEPROM
-            loadProfile(profileList.selectedIndex);
+            guiTop_LoadProfile(profileList.selectedIndex);
         }
         else
         {
@@ -1120,7 +1120,7 @@ void hideEditPanel2(char *newProfileName)
     if (newProfileName)
     {
         // New name confirmed
-        saveProfile(profileList.selectedIndex, newProfileName);
+        guiTop_SaveProfile(profileList.selectedIndex, newProfileName);
     }
     guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiEditPanel2, &guiEvent_HIDE);
     guiCore_RequestFocusChange((guiGenericWidget_t *)&profileList);
@@ -1128,84 +1128,18 @@ void hideEditPanel2(char *newProfileName)
 
 
 
-//===========================================================================//
-//  Hardware interface functions
-//===========================================================================//
-
-//-----------------------------------//
-//  GUI -> HW
-//-----------------------------------//
-
-static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
-{
-    uint8_t limEnabled = 0;
-    if (checkBox_ApplyLowLimit.isChecked)
-        limEnabled = 1;
-    if (setupView.view == VIEW_VOLTAGE)
-        applyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
-    else if (setupView.view == VIEW_CURRENT)
-        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
-    return 0;
-}
-
-static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
-{
-    uint8_t limEnabled = 0;
-    if (checkBox_ApplyHighLimit.isChecked)
-        limEnabled = 1;
-    if (setupView.view == VIEW_VOLTAGE)
-        applyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
-    else if (setupView.view == VIEW_CURRENT)
-        applyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
-    return 0;
-}
-
-static uint8_t onOverloadSettingChanged(void *widget, guiEvent_t *event)
-{
-	// Threshold in units of 100us
-    uint8_t protectionEnabled = checkBox_OverloadProtect.isChecked;
-    uint8_t warningEnabled = checkBox_OverloadWarning.isChecked;
-    applyGuiOverloadSetting( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value);
-	return 0;
-}
-
-static uint8_t onProfileSetupChanged(void *widget, guiEvent_t *event)
-{
-    uint8_t saveRecentProfile = checkBox_ProfileSetup1.isChecked;
-    uint8_t restoreRecentProfile = checkBox_ProfileSetup2.isChecked;
-    applyGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
-    return 0;
-}
-
-static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event)
-{
-    uint8_t swEnabled;
-    uint8_t swInverse;
-    uint8_t swMode;
-
-    // Skip radioButton uncheck
-    if ( (((guiGenericWidget_t *)widget)->type != WT_RADIOBUTTON) || (((guiRadioButton_t *)widget)->isChecked != 0) )
-    {
-        swEnabled = checkBox_ExtSwitchEnable.isChecked;
-        swInverse = checkBox_ExtSwitchInverse.isChecked;
-        swMode = (radioBtn_ExtSwitchMode1.isChecked) ? EXTSW_DIRECT :
-                    (radioBtn_ExtSwitchMode2.isChecked ? EXTSW_TOGGLE : EXTSW_TOGGLE_OFF);
-        applyGuiExtSwitchSettings(swEnabled, swInverse, swMode);
-    }
-    return 0;
-}
 
 
+//==========================================================================//
+//==========================================================================//
+//                        Interface to TOP level                            //
+//                                                                          //
+//==========================================================================//
 
-//-----------------------------------//
-// HW -> GUI
-//-----------------------------------//
 
-
-
-/********************************************************************
-  Internal GUI functions
-*********************************************************************/
+//------------------------------------------------------//
+//              Voltage/Current limits                  //
+//------------------------------------------------------//
 
 // Helper fucntion
 static void updateLimitWidgets(uint8_t limit_type, uint8_t isEnabled, int32_t value)
@@ -1222,175 +1156,146 @@ static void updateLimitWidgets(uint8_t limit_type, uint8_t isEnabled, int32_t va
     }
 }
 
-// Helper fucntion
-static void updateOverloadWidgets(uint8_t protectionEnabled, uint8_t warningEnabled, int32_t threshold)
+static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
 {
-    // Threshold in units of 100us
-    guiCheckbox_SetChecked(&checkBox_OverloadProtect, protectionEnabled, 0);
-    guiCheckbox_SetChecked(&checkBox_OverloadWarning, warningEnabled, 0);
-    guiSpinBox_SetValue(&spinBox_OverloadThreshold, threshold * 2, 0);
+    uint8_t limEnabled = checkBox_ApplyLowLimit.isChecked;
+    if (setupView.view == VIEW_VOLTAGE)
+        guiTop_ApplyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+    else if (setupView.view == VIEW_CURRENT)
+        guiTop_ApplyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_LOW, limEnabled, spinBox_LowLimit.value * 10);
+    return 0;
 }
 
-
-
-
-//---------------------------------------------//
-// Called by GUI itself
-// Reads voltage limit and updates widgets
-//---------------------------------------------//
-static void updateVoltageLimit(uint8_t channel, uint8_t limit_type)
+static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
 {
-    uint8_t isEnabled = Converter_GetVoltageLimitState(channel, limit_type);
-    uint16_t value = Converter_GetVoltageLimitSetting(channel, limit_type);
-    updateLimitWidgets(limit_type, isEnabled, value);
+    uint8_t limEnabled = checkBox_ApplyHighLimit.isChecked;
+    if (setupView.view == VIEW_VOLTAGE)
+        guiTop_ApplyGuiVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+    else if (setupView.view == VIEW_CURRENT)
+        guiTop_ApplyGuiCurrentLimit(setupView.channel, setupView.currentRange, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
+    return 0;
 }
 
-
-//---------------------------------------------//
-// Called by GUI itself
-// Reads current limit and updates widgets
-//---------------------------------------------//
-static void updateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
-{
-    uint8_t isEnabled = Converter_GetCurrentLimitState(channel, range, limit_type);
-    uint16_t value = Converter_GetCurrentLimitSetting(channel, range, limit_type);
-    updateLimitWidgets(limit_type, isEnabled, value);
-}
-
-
-//---------------------------------------------//
-// Called by GUI itself
-// Reads overload settings and updates widgets
-//---------------------------------------------//
-static void updateOverloadSetting(void)
-{
-    uint8_t protectionEnabled = Converter_GetOverloadProtectionState();
-    uint8_t warningEnabled = Converter_GetOverloadProtectionWarning();
-    uint16_t threshold = Converter_GetOverloadProtectionThreshold();
-    updateOverloadWidgets(protectionEnabled, warningEnabled, threshold);
-}
-
-//---------------------------------------------//
-// Called by GUI itself and by top-level
-// Reads profile setup settings and updates widgets
-//---------------------------------------------//
-void updateProfileSetup(void)
-{
-    uint8_t saveRecentProfile = EE_IsRecentProfileSavingEnabled();
-    uint8_t restoreRecentProfile = EE_IsRecentProfileRestoreEnabled();
-    guiCheckbox_SetChecked(&checkBox_ProfileSetup1, saveRecentProfile, 0);
-    guiCheckbox_SetChecked(&checkBox_ProfileSetup2, restoreRecentProfile, 0);
-}
-
-
-//---------------------------------------------//
-// Called by GUI itself and by top-level
-// Reads external switch settings and updates widgets
-//---------------------------------------------//
-void updateExtSwitchSettings(uint8_t updateForced)      //<-------- CHECKME - correct variant for all GUI<->HW interaction ?
-{
-    uint8_t swEnabled;
-    uint8_t swInverse;
-    uint8_t swMode;
-    // Check any of widgets representing external switch settings
-    if ((updateForced) || (guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ExtSwitchEnable)))
-    {
-        // Get information from system
-        swEnabled = BTN_IsExtSwitchEnabled();
-        swInverse = BTN_GetExtSwitchInversion();
-        swMode = BTN_GetExtSwitchMode();
-        // Update widgets
-        guiCheckbox_SetChecked(&checkBox_ExtSwitchEnable, swEnabled, 0);
-        guiCheckbox_SetChecked(&checkBox_ExtSwitchInverse, swInverse, 0);
-        if (swMode == EXTSW_DIRECT)
-            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode1, 0);
-        else if (swMode == EXTSW_TOGGLE)
-            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode2, 0);
-        else if (swMode == EXTSW_TOGGLE_OFF)
-            guiRadioButton_CheckExclusive(&radioBtn_ExtSwitchMode3, 0);
-    }
-}
-
-
-
-
-/********************************************************************
-  Top-level GUI functions
-*********************************************************************/
-
-
-//---------------------------------------------//
-// Called by GUI top-level
-// Sets voltage limit widgets to new value
-//---------------------------------------------//
 void setGuiVoltageLimitSetting(uint8_t channel, uint8_t limit_type, uint8_t isEnabled, int32_t value)
 {
     // Check if widgets update is required
-    if ((channel == setupView.channel) && (setupView.view == VIEW_VOLTAGE))
+    if ((channel == setupView.channel) && (setupView.view == VIEW_VOLTAGE) &&
+            guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ApplyLowLimit))
     {
         updateLimitWidgets(limit_type, isEnabled, value);
     }
 }
 
-
-//---------------------------------------------//
-// Called by GUI top-level
-// Sets current limit widgets to new value
-//---------------------------------------------//
 void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type, uint8_t isEnabled, int32_t value)
 {
     // Check if widgets update is required
-    if ((channel == setupView.channel) && (setupView.view == VIEW_CURRENT) && (range == setupView.currentRange))
+    if ((channel == setupView.channel) && (setupView.view == VIEW_CURRENT) && (range == setupView.currentRange) &&
+            guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ApplyLowLimit))
     {
         updateLimitWidgets(limit_type, isEnabled, value);
     }
 }
 
 
-//---------------------------------------------//
-// Called by GUI top-level
-// Sets overload widgets to new value
-//---------------------------------------------//
-void setGuiOverloadSetting(uint8_t protectionEnabled, uint8_t warningEnabled, int32_t threshold)
+//------------------------------------------------------//
+//                  Overload                            //
+//------------------------------------------------------//
+
+static uint8_t onOverloadSettingsChanged(void *widget, guiEvent_t *event)
 {
-    // Check if widgets update is required
-    if (1)
+    // Threshold in units of 100us
+    uint8_t protectionEnabled = checkBox_OverloadProtect.isChecked;
+    uint8_t warningEnabled = checkBox_OverloadWarning.isChecked;
+    guiTop_ApplyGuiOverloadSettings( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value / 2);       // CHECME - /2
+    return 0;
+}
+
+void setGuiOverloadSettings(uint8_t protectionEnabled, uint8_t warningEnabled, int32_t threshold)
+{
+    if (guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_OverloadProtect))
     {
-        updateOverloadWidgets(protectionEnabled, warningEnabled, threshold);
+        // Threshold in units of 100us
+        guiCheckbox_SetChecked(&checkBox_OverloadProtect, protectionEnabled, 0);
+        guiCheckbox_SetChecked(&checkBox_OverloadWarning, warningEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_OverloadThreshold, threshold * 2, 0);
     }
 }
 
 
+//------------------------------------------------------//
+//                  Profiles                            //
+//------------------------------------------------------//
 
-//---------------------------------------------//
-// Called by GUI top-level
-// Updates profile record
-//---------------------------------------------//
-void updateGuiProfileListRecord(uint8_t i, uint8_t profileState, char *name)
+static uint8_t onProfileSettingsChanged(void *widget, guiEvent_t *event)
 {
-	switch (profileState)
-	{
-		case EE_PROFILE_CRC_ERROR:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<empty>");
-			break;
-		case EE_PROFILE_HW_ERROR:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "<hw n/a>");
-			break;
-		default:
-            snprintf(profileList.strings[i], EE_PROFILE_NAME_SIZE, "%s", name);
-			break;
-	}
-	profileList.redrawRequired = 1;
-	profileList.redrawForced = 1;
+    uint8_t saveRecentProfile = checkBox_ProfileSetup1.isChecked;
+    uint8_t restoreRecentProfile = checkBox_ProfileSetup2.isChecked;
+    guiTop_ApplyGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
+    return 0;
+}
+
+void setGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+{
+    if (guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ProfileSetup1))
+    {
+        guiCheckbox_SetChecked(&checkBox_ProfileSetup1, saveRecentProfile, 0);
+        guiCheckbox_SetChecked(&checkBox_ProfileSetup2, restoreRecentProfile, 0);
+    }
+}
+
+void setGuiProfileRecordState(uint8_t index, uint8_t profileState, char *name)
+{
+    // Always update list
+    switch (profileState)
+    {
+        case EE_PROFILE_CRC_ERROR:
+            snprintf(profileList.strings[index], EE_PROFILE_NAME_SIZE, "<empty>");
+            break;
+        case EE_PROFILE_HW_ERROR:
+            snprintf(profileList.strings[index], EE_PROFILE_NAME_SIZE, "<hw n/a>");
+            break;
+        default:
+            snprintf(profileList.strings[index], EE_PROFILE_NAME_SIZE, "%s", name);
+            break;
+    }
+    profileList.redrawRequired = 1;
+    profileList.redrawForced = 1;
 }
 
 
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
 
+//------------------------------------------------------//
+//			External switch settings					//
+//------------------------------------------------------//
+static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event)
+{
+    uint8_t enable, inverse, mode;
+    // Skip radioButton uncheck
+    if ( (((guiGenericWidget_t *)widget)->type != WT_RADIOBUTTON) || (((guiRadioButton_t *)widget)->isChecked != 0) )
+    {
+        enable = checkBox_ExtSwitchEnable.isChecked;
+        inverse = checkBox_ExtSwitchInverse.isChecked;
+        mode = (radioBtn_ExtSwitchMode1.isChecked) ? EXTSW_DIRECT :
+                    (radioBtn_ExtSwitchMode2.isChecked ? EXTSW_TOGGLE : EXTSW_TOGGLE_OFF);
+        guiTop_ApplyExtSwitchSettings(enable, inverse, mode);
+    }
+    return 0;
+}
 
+void setGuiExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode)
+{
+    guiRadioButton_t *btn;
+    // Check any of widgets representing external switch settings
+    if (guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ExtSwitchEnable))
+    {
+        // Update widgets
+        guiCheckbox_SetChecked(&checkBox_ExtSwitchEnable, enable, 0);
+        guiCheckbox_SetChecked(&checkBox_ExtSwitchInverse, inverse, 0);
+        btn = (mode == EXTSW_DIRECT) ? &radioBtn_ExtSwitchMode1 :
+              ((mode == EXTSW_TOGGLE) ? &radioBtn_ExtSwitchMode2 : &radioBtn_ExtSwitchMode3);
+        guiRadioButton_CheckExclusive(btn, 0);
+    }
+}
 
 
 //------------------------------------------------------//

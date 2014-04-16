@@ -131,6 +131,7 @@ void vTaskDispatcher(void *pvParameters)
 <done>	-  add GUI menu for external switch
 		-  add GUI menu for UARTs ?
 		-  add GUI menu for DAC offset (global settings) ?
+		-  add GUI menu for sounds
 <done>	-  check if additional EEPROM settings are required
 <done>	-  add GUI input box for user profile name
 		-  add various sound signals

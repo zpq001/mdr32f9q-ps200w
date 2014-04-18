@@ -387,11 +387,11 @@ static uint8_t onSpinBoxValueChanged(void *sender, guiEvent_t *event)
     guiSpinBox_t *spinBox = (guiSpinBox_t *)sender;
     if (spinBox == &spinBox_voltage)
     {
-        applyGuiVoltageSetting(masterView.channel, spinBox_voltage.value * 10);
+        guiTop_ApplyGuiVoltageSetting(masterView.channel, spinBox_voltage.value * 10);
     }
     else if (spinBox == &spinBox_current)
     {
-        applyGuiCurrentSetting(masterView.channel, masterView.current_range, spinBox_current.value * 10);
+        guiTop_ApplyCurrentSetting(masterView.channel, masterView.current_range, spinBox_current.value * 10);
     }
     return 0;   // doesn't matter
 }
@@ -427,11 +427,11 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
     {
         if ((int16_t)event->lparam < 0)
         {
-            applyGuiCurrentRange(masterView.channel, CURRENT_RANGE_LOW);
+            guiTop_ApplyCurrentRange(masterView.channel, CURRENT_RANGE_LOW);
         }
         else if ((int16_t)event->lparam > 0)
         {
-            applyGuiCurrentRange(masterView.channel, CURRENT_RANGE_HIGH);
+            guiTop_ApplyCurrentRange(masterView.channel, CURRENT_RANGE_HIGH);
         }
     }
     else

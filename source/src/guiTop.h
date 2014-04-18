@@ -82,27 +82,42 @@ extern const gui_msg_t gui_msg_redraw;
 void vTaskGUI(void *pvParameters);
 
 
-void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage);
-void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current);
+
+
 void applyGuiCurrentRange(uint8_t channel, uint8_t new_range);
 
 
+// Indicators
+void guiTop_UpdateGuiVoltageIndicator(void);
+void guiTop_UpdateCurrentIndicator(void);
+void guiTop_UpdatePowerIndicator(void);
+void guiTop_UpdateTemperatureIndicator(void);
+// Voltage setting
+void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage);
+void guiTop_UpdateVoltageSetting(uint8_t channel);
+// Current setting
+void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current);
+void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t currentRange);
+// Limits
 void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value);
 void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value);
 void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type);
 void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
-
+// Current range
+void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range);
+void guiTop_UpdateCurrentRange(uint8_t channel);
+// Overload
 void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold);
 void guiTop_UpdateOverloadSettings(void);
-
+// Profiles
 void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
 void guiTop_UpdateProfileSettings(void);
 void guiTop_LoadProfile(uint8_t index);
 void guiTop_SaveProfile(uint8_t index, char *profileName);
-
+// Extrnal switch
 void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode);
 void guiTop_UpdateExtSwitchSettings(void);
-
+// DAC offset
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
 void guiTop_UpdateDacSettings(void);
 

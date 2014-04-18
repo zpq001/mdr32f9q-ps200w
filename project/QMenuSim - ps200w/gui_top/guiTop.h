@@ -108,32 +108,40 @@ uint8_t BTN_GetExtSwitchMode(void);
 
 
 
-void updateGuiVoltageIndicator(void);
-void updateGuiVoltageSetting(void);
-void updateGuiVoltageLimit(uint8_t channel, uint8_t limit_type);
-void applyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage);
 
 
-void updateGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type);
 
 
-void updateGuiCurrentIndicator(void);
-void updateGuiCurrentSetting(void);
-void applyGuiCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current);
+
 
 void guiUpdateChannelSetting(void);
 void applyGuiChannelSetting(uint8_t new_channel);
 
-void guiUpdateCurrentRange(void);
-void applyGuiCurrentRange(uint8_t channel, uint8_t new_current_range);
 
-void guiUpdatePowerIndicator(void);
-void guiUpdateTemperatureIndicator(void);
+
+
+
+
+
+
+void guiTop_UpdateGuiVoltageIndicator(void);
+void guiTop_UpdateCurrentIndicator(void);
+void guiTop_UpdatePowerIndicator(void);
+void guiTop_UpdateTemperatureIndicator(void);
+
+void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage);
+void guiTop_UpdateVoltageSetting(uint8_t channel);
+
+void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current);
+void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t currentRange);
 
 void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value);
 void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value);
 void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type);
 void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type);
+
+void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range);
+void guiTop_UpdateCurrentRange(uint8_t channel);
 
 void guiTop_ApplyGuiOverloadSettings(uint8_t protectionEnable, uint8_t warningEnable, int32_t newThreshold);
 void guiTop_UpdateOverloadSettings(void);

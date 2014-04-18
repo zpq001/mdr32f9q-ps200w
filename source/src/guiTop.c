@@ -161,52 +161,41 @@ void vTaskGUI(void *pvParameters)
 				switch (msg.converter_event.spec)
 				{
 					case VOLTAGE_SETTING_CHANGE:
-						value = Converter_GetVoltageSetting(msg.converter_event.channel);
-						setGuiVoltageSetting(msg.converter_event.channel, value);
+						guiTop_UpdateVoltageSetting(msg.converter_event.channel);
 						break;
 					case CURRENT_SETTING_CHANGE:
-						value = Converter_GetCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
-						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
+						guiTop_UpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
 					case VOLTAGE_LIMIT_CHANGE:
-						value = Converter_GetVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type);
-						state = Converter_GetVoltageLimitState(msg.converter_event.channel, msg.converter_event.type);
-						setGuiVoltageLimitSetting(msg.converter_event.channel, msg.converter_event.type, state, value);
-						// Update voltage setting too
-						value = Converter_GetVoltageSetting(msg.converter_event.channel);
-						setGuiVoltageSetting(msg.converter_event.channel, value);
+						guiTop_UpdateVoltageLimit(msg.converter_event.channel,  msg.converter_event.type);
+						guiTop_UpdateVoltageSetting(msg.converter_event.channel);
 						break;
 					case CURRENT_LIMIT_CHANGE:
-						value = Converter_GetCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
-						state = Converter_GetCurrentLimitState(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
-						setGuiCurrentLimitSetting(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type, state, value);	
-						// Update current setting too
-						value = Converter_GetCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
-						setGuiCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range, value);
+						guiTop_UpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+						guiTop_UpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
 					case CURRENT_RANGE_CHANGE:
-						value = Converter_GetCurrentRange(msg.converter_event.channel);
-						setGuiCurrentRange(msg.converter_event.channel, value);
+						//value = Converter_GetCurrentRange(msg.converter_event.channel);
+						//setGuiCurrentRange(msg.converter_event.channel, value);
+						guiTop_UpdateCurrentRange(msg.converter_event.channel);
+						guiTop_UpdateCurrentSetting(msg.converter_event.channel, );
 						break;
 					case CHANNEL_CHANGE:
-						value = Converter_GetFeedbackChannel();
+						value = Converter_GetFeedbackChannel();	// FIXME
 						setGuiFeedbackChannel(value);
 						break;
 					case OVERLOAD_SETTING_CHANGE:
-						state = Converter_GetOverloadProtectionState();
-						state2 = Converter_GetOverloadProtectionWarning();
-						value = Converter_GetOverloadProtectionThreshold();
-						setGuiOverloadSettings(state, state2, value);
+						guiTop_UpdateOverloadSettings();
 						break;
 				}
 				break;
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
-				setGuiVoltageIndicator(voltage_adc);
-				setGuiCurrentIndicator(current_adc);
-				setGuiPowerIndicator(power_adc);
+				guiTop_UpdateGuiVoltageIndicator();
+				guiTop_UpdateCurrentIndicator();
+				guiTop_UpdatePowerIndicator();
 				break;
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
-				setGuiTemperatureIndicator(converter_temp_celsius);
+				guiTop_UpdateTemperatureIndicator();
 				break;
 				
 			case GUI_TASK_PROFILE_EVENT:
@@ -305,11 +294,77 @@ void vTaskGUI(void *pvParameters)
 //=================================================================//
 
 
-//-------------------------------------------------------//
-//	Voltage
-void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+//------------------------------------------------------//
+//                  Indicators 		                    //
+//------------------------------------------------------//
+void guiTop_UpdateGuiVoltageIndicator(void)
 {
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	//taskENTER_CRITICAL();
+    setGuiVoltageIndicator(voltage_adc);
+	//taskEXIT_CRITICAL();
+}
+
+// Read ADC current and update GUI
+void guiTop_UpdateCurrentIndicator(void)
+{
+	//taskENTER_CRITICAL();
+    setGuiCurrentIndicator(current_adc);
+	//taskEXIT_CRITICAL();
+}
+
+void guiTop_UpdatePowerIndicator(void)
+{
+	//taskENTER_CRITICAL();
+	setGuiPowerIndicator(power_adc);
+	//taskEXIT_CRITICAL();
+}
+
+void guiTop_UpdateTemperatureIndicator(void)
+{
+	//taskENTER_CRITICAL();
+	setGuiTemperatureIndicator(converter_temp_celsius);
+	//taskEXIT_CRITICAL();
+}
+
+
+
+//------------------------------------------------------//
+//                  Voltage setting                     //
+//------------------------------------------------------//
+
+
+void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
+{
+    dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
 	dispatcher_msg.converter_cmd.a.v_set.channel = channel;	
@@ -317,13 +372,25 @@ void applyGuiVoltageSetting(uint8_t channel, int32_t new_set_voltage)
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
+void guiTop_UpdateVoltageSetting(uint8_t channel)
+{
+    int32_t value;
+	//taskENTER_CRITICAL();
+	value = Converter_GetVoltageSetting(channel);
+	//taskEXIT_CRITICAL();
+	setGuiVoltageSetting(channel, value);
+}
 
 
-//-------------------------------------------------------//
-//	Current
-void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_current)
-{ 
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+
+//------------------------------------------------------//
+//                  Current setting                     //
+//------------------------------------------------------//
+
+// Current setting GUI -> HW
+void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t range, int16_t new_set_current)
+{
+    dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT;
 	dispatcher_msg.converter_cmd.a.c_set.channel = channel;	
@@ -332,35 +399,14 @@ void applyGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t new_set_curr
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
 
-
-void applyGuiCurrentRange(uint8_t channel, uint8_t new_range)
+void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t range)
 {
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
-	dispatcher_msg.sender = sender_GUI;
-	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_RANGE;
-	dispatcher_msg.converter_cmd.a.crange_set.channel = channel;	
-	dispatcher_msg.converter_cmd.a.crange_set.new_range = new_range;	
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	int32_t value;
+	//taskENTER_CRITICAL();
+	value = Converter_GetCurrentSetting(channel, range);
+	//taskEXIT_CRITICAL();
+    setGuiCurrentSetting(channel, range, value);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
-//===========================================================================//
 
 
 
@@ -416,6 +462,31 @@ void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_typ
     taskEXIT_CRITICAL();
     setGuiCurrentLimitSetting(channel, range, limit_type, isEnabled, value);
 }
+
+
+//------------------------------------------------------//
+//                  Current range                       //
+//------------------------------------------------------//
+
+void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
+{
+    dispatcher_msg.type = DISPATCHER_CONVERTER;
+	dispatcher_msg.sender = sender_GUI;
+	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_RANGE;
+	dispatcher_msg.converter_cmd.a.crange_set.channel = channel;	
+	dispatcher_msg.converter_cmd.a.crange_set.new_range = new_current_range;	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+}
+
+void guiTop_UpdateCurrentRange(uint8_t channel)
+{
+	int32_t value;
+	taskENTER_CRITICAL();
+	value = Converter_GetCurrentRange(channel);
+	taskEXIT_CRITICAL();
+	setGuiCurrentRange(channel, value);
+}
+
 
 
 //------------------------------------------------------//

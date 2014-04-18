@@ -761,13 +761,13 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCore_SetVisibleByTag(&guiSetupPanel.widgets, currTag, currTag, ITEMS_IN_RANGE_ARE_VISIBLE);
         // Update widgets that become visible
         if (setupList.selectedIndex == 2)
-            guiTop_UpdateOverloadSettings();
+            {}//guiTop_UpdateOverloadSettings();
         else if (setupList.selectedIndex == 5)
-            guiTop_UpdateProfileSettings();
+            {}//guiTop_UpdateProfileSettings();
         else if (setupList.selectedIndex == 6)
-            guiTop_UpdateExtSwitchSettings();
+            {}//guiTop_UpdateExtSwitchSettings();
         else if (setupList.selectedIndex == 7)
-            guiTop_UpdateDacSettings();
+            {}//guiTop_UpdateDacSettings();
     }
 
     return 0;

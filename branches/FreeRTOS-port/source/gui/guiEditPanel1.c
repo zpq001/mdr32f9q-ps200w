@@ -184,9 +184,9 @@ static uint8_t guiEditPanel1_onKey(void *widget, guiEvent_t *event)
     if (exit_code == 2)
     {
         if (editView.mode == EDIT_MODE_VOLTAGE)
-            applyGuiVoltageSetting(editView.channel, spinBox_Edit.value * 10);
+            guiTop_ApplyGuiVoltageSetting(editView.channel, spinBox_Edit.value * 10);
         else
-            applyGuiCurrentSetting(editView.channel, editView.current_range, spinBox_Edit.value * 10);
+            guiTop_ApplyCurrentSetting(editView.channel, editView.current_range, spinBox_Edit.value * 10);
     }
     if (exit_code)
     {

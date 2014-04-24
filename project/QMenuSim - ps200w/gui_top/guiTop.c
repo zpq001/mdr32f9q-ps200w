@@ -18,7 +18,7 @@
 #include "eeprom.h"
 
 // UART parser test
-#include "uartParser.h"
+#include "converter.h"
 
 // Callback functions
 cbLogPtr addLogCallback;
@@ -42,16 +42,8 @@ guiEvent_t guiEvent;
 //=================================================================//
 //                      Hardware emulation interface               //
 //=================================================================//
-uint16_t voltage_adc;		// [mV]
-uint16_t set_voltage;
-uint16_t current_adc;		// [mA]
-uint16_t set_current;
-uint32_t power_adc;			// [mW]
-int16_t converter_temp_celsius;
 
-uint8_t channel;            // feedback channel
-uint8_t current_range;      // converter max current (20A/40A)
-//=================================================================//
+extern converter_state_t converter_state;
 
 
 
@@ -134,14 +126,16 @@ void guiInitialize(void)
     uint8_t i;
     //char profileName[50];
 
-    set_voltage = 10000;        // mV
-    voltage_adc = set_voltage;
-    set_current = 2000;         // mA
-    current_adc =  set_current;
-    power_adc =       0;        // mW
-    converter_temp_celsius = 25;        // Celsius
-    current_range = GUI_CURRENT_RANGE_LOW;
-    channel = GUI_CHANNEL_12V;
+    // Initial state
+    converter_state.channel = CHANNEL_12V;
+    converter_state.current_range = CURRENT_RANGE_LOW;
+    converter_state.set_voltage = 16000;
+    converter_state.set_current = 4000;
+    converter_state.converter_temp_celsius = 25;
+    converter_state.power_adc = 0;
+    converter_state.vdac_offset = -5;
+    converter_state.cdac_offset = 20;
+
 
     guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
@@ -175,34 +169,12 @@ void guiInitialize(void)
     guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
     guiCore_ProcessMessageQueue();
 
-
-    /*
-    // Profile list init
-    for (i=0; i < EE_PROFILES_COUNT; i++)
-    {
-        sprintf(profileName, "Profile %d", i);
-        setGuiProfileRecordState(i, EE_PROFILE_VALID, profileName);
-    }
-
-
-    // EEPROM
-    guiEvent.type = GUI_EVENT_EEPROM_MESSAGE;
-    //guiEvent.spec = 0;  // EEPROM FAIL
-    guiEvent.spec = 1;  // EEPROM OK
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
+    // Indicators
+    e->code = GUI_UPDATE_ADC_INDICATORS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_TEMPERATURE_INDICATOR;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
     guiCore_ProcessMessageQueue();
-
-
-    guiTop_UpdateVoltageSetting(channel);
-
-    guiTop_UpdateGuiVoltageIndicator();
-    guiTop_UpdateCurrentIndicator();
-    guiTop_UpdatePowerIndicator();
-    guiTop_UpdateTemperatureIndicator();
-    guiUpdateChannelSetting();
-    guiTop_UpdateCurrentRange(channel);
-*/
-
 }
 
 
@@ -252,7 +224,7 @@ void guiEncoderRotated(int32_t delta)
 //=================================================================//
 
 
-
+/*
 
 //---------------------------------------------//
 // NEW HW interface
@@ -326,6 +298,31 @@ uint8_t getCurrentRange(uint8_t channel)
     return 0;
 }
 
+*/
+
+
+
+uint16_t ADC_GetVoltage(void)
+{
+    return converter_state.set_voltage;
+}
+
+uint16_t ADC_GetCurrent(void)
+{
+    return converter_state.set_current;
+}
+
+uint32_t ADC_GetPower(void)
+{
+    return 0;
+}
+
+uint16_t ADC_GetTemperature(void)
+{
+    return converter_state.converter_temp_celsius;
+}
+
+
 
 //---------------------------------------------//
 // Button functions emulation
@@ -390,29 +387,6 @@ void guiUpdateChannelSetting(void)
 //===========================================================================//
 
 
-//------------------------------------------------------//
-//                  Indicators 		                    //
-//------------------------------------------------------//
-void guiTop_UpdateGuiVoltageIndicator(void)
-{
-    //setGuiVoltageIndicator(voltage_adc);
-}
-
-void guiTop_UpdateCurrentIndicator(void)
-{
-    //setGuiCurrentIndicator(current_adc);
-}
-
-void guiTop_UpdatePowerIndicator(void)
-{
-    //setGuiPowerIndicator(power_adc);
-}
-
-void guiTop_UpdateTemperatureIndicator(void)
-{
-    //setGuiTemperatureIndicator(converter_temp_celsius);
-}
-
 
 
 
@@ -422,17 +396,20 @@ void guiTop_UpdateTemperatureIndicator(void)
 
 void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 {
-    set_voltage = new_set_voltage;
-    voltage_adc = set_voltage;
+    converter_state.set_voltage = new_set_voltage;
 
     //------ simulation of actual conveter work ------//
-    guiTop_UpdateGuiVoltageIndicator();
+    my_custom_event_t my_event;
+    my_event.type = GUI_SYSTEM_EVENT;
+    system_event_t *e = &my_event.payload;
+
+    // Master panel
+    e->code = GUI_UPDATE_ADC_INDICATORS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    guiCore_ProcessMessageQueue();
 }
 
-void guiTop_UpdateVoltageSetting(uint8_t channel)
-{
-    //setGuiVoltageSetting(channel, set_voltage);
-}
+
 
 
 
@@ -444,16 +421,17 @@ void guiTop_UpdateVoltageSetting(uint8_t channel)
 // Current setting GUI -> HW
 void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t new_set_current)
 {
-    set_current = new_set_current;
-    current_adc = set_current;
+    converter_state.set_current = new_set_current;
 
     //------ simulation of actual conveter work ------//
-    guiTop_UpdateCurrentIndicator();
-}
+    my_custom_event_t my_event;
+    my_event.type = GUI_SYSTEM_EVENT;
+    system_event_t *e = &my_event.payload;
 
-void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t currentRange)
-{
-    //setGuiCurrentSetting(channel, currentRange, set_voltage);
+    // Master panel
+    e->code = GUI_UPDATE_ADC_INDICATORS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    guiCore_ProcessMessageQueue();
 }
 
 
@@ -496,15 +474,18 @@ void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_typ
 
 void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 {
-    current_range = new_current_range;
+    converter_state.current_range = new_current_range;
     //------ simulation of actual conveter work ------//
-    guiTop_UpdateCurrentRange(channel);
+    my_custom_event_t my_event;
+    my_event.type = GUI_SYSTEM_EVENT;
+    system_event_t *e = &my_event.payload;
+
+    // Master panel
+    e->code = GUI_UPDATE_CURRENT_RANGE;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    guiCore_ProcessMessageQueue();
 }
 
-void guiTop_UpdateCurrentRange(uint8_t channel)
-{
-    //setGuiCurrentRange(channel, current_range);
-}
 
 
 

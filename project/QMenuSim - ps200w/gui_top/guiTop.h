@@ -31,7 +31,10 @@ void registerLcdUpdateCallback(cbLcdUpdatePtr fptr);
 //-----------------------------------//
 
 
-
+uint16_t ADC_GetVoltage(void);
+uint16_t ADC_GetCurrent(void);
+uint32_t ADC_GetPower(void);
+uint16_t ADC_GetTemperature(void);
 
 
 // Functions for top-level

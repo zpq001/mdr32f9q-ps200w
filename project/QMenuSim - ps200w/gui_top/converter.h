@@ -65,7 +65,19 @@ enum ConverterEventSpec {
 #define CONVERTER_STATE_OVERLOADED	0x02
 
 
-
+typedef struct {
+    uint16_t set_voltage;       // [mV]
+    uint16_t set_current;       // [mA]
+    uint32_t power_adc;			// [mW]
+    uint8_t overload_prot_en;
+    uint8_t overload_warn_en;
+    uint16_t overload_threshold;
+    uint8_t channel;
+    uint8_t current_range;
+    int16_t converter_temp_celsius;
+    int8_t vdac_offset;
+    int8_t cdac_offset;
+} converter_state_t;
 
 
 uint16_t Converter_GetVoltageSetting(uint8_t channel);

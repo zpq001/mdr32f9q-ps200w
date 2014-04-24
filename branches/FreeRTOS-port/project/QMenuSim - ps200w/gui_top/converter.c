@@ -81,6 +81,16 @@ uint8_t Converter_GetFeedbackChannel(void)
 }
 
 
+int8_t Converter_GetVoltageDacOffset(void)
+{
+    return 0;
+}
+
+int8_t Converter_GetCurrentDacOffset(uint8_t range)
+{
+    return 0;
+}
+
 //---------------------------------------------//
 
 

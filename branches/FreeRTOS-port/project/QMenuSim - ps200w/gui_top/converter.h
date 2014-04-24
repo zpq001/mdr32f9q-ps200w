@@ -83,6 +83,9 @@ uint8_t Converter_GetOverloadProtectionWarning(void);
 uint16_t Converter_GetOverloadProtectionThreshold(void);
 uint8_t Converter_GetCurrentRange(uint8_t channel);
 uint8_t Converter_GetFeedbackChannel(void);
+int8_t Converter_GetVoltageDacOffset(void);
+int8_t Converter_GetCurrentDacOffset(uint8_t range);
+
 
 // TODO: check closed static data - converter_state, etc
 

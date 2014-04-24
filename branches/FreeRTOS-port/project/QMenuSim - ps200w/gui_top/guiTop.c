@@ -132,7 +132,7 @@ void guiInitialize(void)
     timeMinutes = 0;
     timeSeconds = 0;
     uint8_t i;
-    char profileName[50];
+    //char profileName[50];
 
     set_voltage = 10000;        // mV
     voltage_adc = set_voltage;
@@ -145,6 +145,38 @@ void guiInitialize(void)
 
     guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
+
+    my_custom_event_t my_event;
+    my_event.type = GUI_SYSTEM_EVENT;
+    system_event_t *e = &my_event.payload;
+    e->local_request = 1;
+
+    // Master panel
+    e->code = GUI_UPDATE_CHANNEL;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_CURRENT_RANGE;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_CURRENT_SETTING;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_CURRENT_SETTING;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
+    guiCore_ProcessMessageQueue();
+
+    // Setup panel
+    e->code = GUI_UPDATE_OVERLOAD_SETTINGS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_PROFILE_SETTINGS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_EXTSWITCH_SETTINGS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_DAC_SETTINGS;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
+    e->code = GUI_UPDATE_PROFILE_LIST;
+    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
+    guiCore_ProcessMessageQueue();
+
+
+    /*
     // Profile list init
     for (i=0; i < EE_PROFILES_COUNT; i++)
     {
@@ -169,15 +201,7 @@ void guiInitialize(void)
     guiTop_UpdateTemperatureIndicator();
     guiUpdateChannelSetting();
     guiTop_UpdateCurrentRange(channel);
-
-
-    // Parser test
-//    char *parse_strings[] = {
-//        "key",
-//        "down",
-//        "btn_esc"
-//    };
-//    uart_parse(parse_strings, 3);
+*/
 
 }
 
@@ -352,7 +376,7 @@ uint8_t BTN_IsExtSwitchEnabled(void)
 void guiUpdateChannelSetting(void)
 {
     guiLogEvent("Reading selected feedback channel");
-    setGuiFeedbackChannel(channel);
+    //setGuiFeedbackChannel(channel);
 }
 
 
@@ -371,22 +395,22 @@ void guiUpdateChannelSetting(void)
 //------------------------------------------------------//
 void guiTop_UpdateGuiVoltageIndicator(void)
 {
-    setGuiVoltageIndicator(voltage_adc);
+    //setGuiVoltageIndicator(voltage_adc);
 }
 
 void guiTop_UpdateCurrentIndicator(void)
 {
-    setGuiCurrentIndicator(current_adc);
+    //setGuiCurrentIndicator(current_adc);
 }
 
 void guiTop_UpdatePowerIndicator(void)
 {
-    setGuiPowerIndicator(power_adc);
+    //setGuiPowerIndicator(power_adc);
 }
 
 void guiTop_UpdateTemperatureIndicator(void)
 {
-    setGuiTemperatureIndicator(converter_temp_celsius);
+    //setGuiTemperatureIndicator(converter_temp_celsius);
 }
 
 
@@ -407,7 +431,7 @@ void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 
 void guiTop_UpdateVoltageSetting(uint8_t channel)
 {
-    setGuiVoltageSetting(channel, set_voltage);
+    //setGuiVoltageSetting(channel, set_voltage);
 }
 
 
@@ -429,7 +453,7 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t n
 
 void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t currentRange)
 {
-    setGuiCurrentSetting(channel, currentRange, set_voltage);
+    //setGuiCurrentSetting(channel, currentRange, set_voltage);
 }
 
 
@@ -456,12 +480,12 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
 
 void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
 {
-    setGuiVoltageLimitSetting(channel, limit_type, 0, 0);
+    //setGuiVoltageLimitSetting(channel, limit_type, 0, 0);
 }
 
 void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
 {
-    setGuiCurrentLimitSetting(channel, range, limit_type, 0, 0);
+    //setGuiCurrentLimitSetting(channel, range, limit_type, 0, 0);
 }
 
 
@@ -479,7 +503,7 @@ void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 
 void guiTop_UpdateCurrentRange(uint8_t channel)
 {
-    setGuiCurrentRange(channel, current_range);
+    //setGuiCurrentRange(channel, current_range);
 }
 
 
@@ -499,7 +523,7 @@ void guiTop_ApplyGuiOverloadSettings(uint8_t protectionEnable, uint8_t warningEn
 
 void guiTop_UpdateOverloadSettings(void)
 {
-    setGuiOverloadSettings(ovld_protectionEnable, ovld_warningEnable, ovld_threshold);
+    //setGuiOverloadSettings(ovld_protectionEnable, ovld_warningEnable, ovld_threshold);
 }
 
 
@@ -517,7 +541,7 @@ void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRe
 
 void guiTop_UpdateProfileSettings(void)
 {
-    setGuiProfileSettings(ee_saveRecentProfile, ee_restoreRecentProfile);
+    //setGuiProfileSettings(ee_saveRecentProfile, ee_restoreRecentProfile);
 }
 
 // Profile load
@@ -571,7 +595,7 @@ void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode
 
 void guiTop_UpdateExtSwitchSettings(void)
 {
-    setGuiExtSwitchSettings(extsw_enable, extsw_inverse, extsw_mode);
+    //setGuiExtSwitchSettings(extsw_enable, extsw_inverse, extsw_mode);
 }
 
 
@@ -596,7 +620,17 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
 // Called from both GUI top and low levels
 void guiTop_UpdateDacSettings(void)
 {
-    setGuiDacSettings(voltage_dac_offset, current_low_dac_offset, current_high_dac_offset);
+    //setGuiDacSettings(voltage_dac_offset, current_low_dac_offset, current_high_dac_offset);
+}
+
+
+
+
+// Blockinbg read from EEPROM task
+uint8_t readProfileListRecordName(uint8_t index, char *profileName)
+{
+    sprintf(profileName, "Profile %d", index);
+    return EE_PROFILE_VALID;
 }
 
 

@@ -10,7 +10,7 @@ extern guiPanel_t     guiSetupPanel;
 
 void guiSetupPanel_Initialize(guiGenericWidget_t *parent);
 
-
+/*
 // Voltage/Current limits
 void setGuiVoltageLimitSetting(uint8_t channel, uint8_t limit_type, uint8_t isEnabled, int32_t value);
 void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type, uint8_t isEnabled, int32_t value);
@@ -23,7 +23,7 @@ void setGuiProfileRecordState(uint8_t i, uint8_t profileState, char *name);
 void setGuiExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode);
 // DAC
 void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
-
+*/
 
 void hideEditPanel2(char *newProfileName);  // called by edit panel 2
 

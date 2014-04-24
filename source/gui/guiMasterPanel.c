@@ -39,7 +39,7 @@ masterViev_t masterView;
 static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiMasterPanel_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t guiMasterPanel_onDraw(void *widget, guiEvent_t *event);
-
+static uint8_t guiMasterPanel_onSystemEvent(void *widget, guiEvent_t *event);
 
 static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
@@ -75,7 +75,7 @@ static guiWidgetHandler_t spinBoxHandlers[2];
 #define MASTER_PANEL_ELEMENTS_COUNT 20
 guiPanel_t     guiMasterPanel;
 static void *guiMasterPanelElements[MASTER_PANEL_ELEMENTS_COUNT];
-static guiWidgetHandler_t masterPanelHandlers[2];
+static guiWidgetHandler_t masterPanelHandlers[3];
 
 
 //-------------------------------------------------------//
@@ -98,12 +98,14 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiMasterPanel.widgets.elements[6] = &spinBox_voltage;          // focusable
     guiMasterPanel.widgets.elements[7] = &spinBox_current;          // focusable
 
-    guiMasterPanel.handlers.count = 2;
+    guiMasterPanel.handlers.count = 3;
     guiMasterPanel.handlers.elements = masterPanelHandlers;
     guiMasterPanel.handlers.elements[0].eventType = GUI_ON_FOCUS_CHANGED;
     guiMasterPanel.handlers.elements[0].handler = &guiMasterPanel_onFocusChanged;
     guiMasterPanel.handlers.elements[1].eventType = GUI_EVENT_DRAW;
     guiMasterPanel.handlers.elements[1].handler = &guiMasterPanel_onDraw;
+    guiMasterPanel.handlers.elements[2].eventType = GUI_SYSTEM_EVENT;
+    guiMasterPanel.handlers.elements[2].handler = &guiMasterPanel_onSystemEvent;
     guiMasterPanel.x = 0;
     guiMasterPanel.y = 0;
     guiMasterPanel.width = 96 * 2;
@@ -496,147 +498,152 @@ void hideEditPanel1(void)
 //=================================================================//
 
 
-//-----------------------------------//
-// HW -> GUI
-//-----------------------------------//
-
-
-/********************************************************************
-  Internal GUI functions
-*********************************************************************/
-
-// Helper fucntion
-static void updateVoltageSettingWidgets(int32_t value)
-{
-    guiSpinBox_SetValue(&spinBox_voltage, value/10, 0);     // do not call handler
-}
-
-// Helper fucntion
-static void updateCurrentSettingWidgets(int32_t value)
-{
-    guiSpinBox_SetValue(&spinBox_current, value/10, 0);     // do not call handler
-}
-
-// Helper fucntion
-static void updateCurrentRangeWidgets(uint8_t range)
-{
-    if (range == CURRENT_RANGE_LOW)
-        sprintf(textLabel_currRange.text, "20A");
-    else
-        sprintf(textLabel_currRange.text, "40A");
-    textLabel_currRange.redrawText = 1;
-    textLabel_currRange.redrawRequired = 1;
-}
-
-
-
-
-/********************************************************************
-  Top-level GUI functions
-*********************************************************************/
-
-
-
-void setGuiVoltageIndicator(uint16_t value)
+static void setGuiVoltageIndicator(uint16_t value)
 {
     sprintf(textLabel_voltage.text, "%2.2fv", (float)value/1000);
     textLabel_voltage.redrawText = 1;
     textLabel_voltage.redrawRequired = 1;
 }
 
-void setGuiCurrentIndicator(uint16_t value)
+static void setGuiCurrentIndicator(uint16_t value)
 {
     sprintf(textLabel_current.text, "%2.2fa", (float)value/1000);
     textLabel_current.redrawText = 1;
     textLabel_current.redrawRequired = 1;
 }
 
-void setGuiPowerIndicator(uint32_t value)
+static void setGuiPowerIndicator(uint32_t value)
 {
     sprintf(textLabel_power.text, "%3.2fW", (float)value/1000 );
     textLabel_power.redrawText = 1;
     textLabel_power.redrawRequired = 1;
 }
 
-void setGuiTemperatureIndicator(int16_t value)
+static void setGuiTemperatureIndicator(int16_t value)
 {
     sprintf(textLabel_temperature.text, "%2d%cC", value, 0xb0);
     textLabel_temperature.redrawText = 1;
     textLabel_temperature.redrawRequired = 1;
 }
 
-
-void setGuiVoltageSetting(uint8_t channel, int32_t value)
+static void setGuiVoltageSetting(int32_t value)
 {
-    // Check if widgets update is required
-    if (channel == masterView.channel)
-    {
-        updateVoltageSettingWidgets(value);
-    }
+    guiSpinBox_SetValue(&spinBox_voltage, value/10, 0);     // do not call handler
 }
 
-void setGuiCurrentSetting(uint8_t channel, uint8_t range, int32_t value)
+static void setGuiCurrentSetting(int32_t value)
 {
-    // Check if widgets update is required
-    if ((channel == masterView.channel) && (range == masterView.current_range))
-    {
-        updateCurrentSettingWidgets(value);
-    }
+    guiSpinBox_SetValue(&spinBox_current, value/10, 0);     // do not call handler
 }
 
-void setGuiCurrentRange(uint8_t channel, uint8_t range)
+static void setGuiCurrentRange(uint8_t range)
 {
-    int32_t value;
-    // Check if widgets update is required
-    if (channel == masterView.channel)
-    {
-        masterView.current_range = range;
-        updateCurrentRangeWidgets(range);
-
-        // Also update current settings
-        value = Converter_GetCurrentSetting(channel, masterView.current_range);
-        updateCurrentSettingWidgets(value);
-
-        // Hide edit panel
-        if (guiEditPanel1.isVisible)
-            hideEditPanel1();
-    }
-}
-
-void setGuiFeedbackChannel(uint8_t channel)
-{
-    int32_t value;
-    masterView.channel = channel;
-	masterView.current_range = Converter_GetCurrentRange(channel);
-
-    if (channel == CHANNEL_5V)
-        sprintf(textLabel_channel.text, "Ch.5V");
+    if (range == CURRENT_RANGE_LOW)
+        guiTextLabel_SetText(&textLabel_currRange, "20A");
     else
-        sprintf(textLabel_channel.text, "Ch.12V");
-    textLabel_channel.redrawText = 1;
-    textLabel_channel.redrawRequired = 1;
+        guiTextLabel_SetText(&textLabel_currRange, "40A");
+}
 
-    // Also update voltage settings
-    value = Converter_GetVoltageSetting(channel);
-    updateVoltageSettingWidgets(value);
-
-    // Also update current settings
-    value = Converter_GetCurrentSetting(channel, masterView.current_range);
-    updateCurrentSettingWidgets(value);
-
-    // Also update current range settings
-    masterView.current_range = Converter_GetCurrentRange(channel);
-    updateCurrentRangeWidgets(masterView.current_range);
-
-    // Hide edit panel
-    if (guiEditPanel1.isVisible)
-        hideEditPanel1();
+static void setGuiFeedbackChannel(uint8_t channel)
+{
+    if (channel == CHANNEL_5V)
+        guiTextLabel_SetText(&textLabel_channel, "Ch.5V");
+    else
+        guiTextLabel_SetText(&textLabel_channel, "Ch.12V");
 }
 
 
+//==========================================================================//
+//==========================================================================//
+//                    The NEW interface to TOP level                        //
+//                                                                          //
+//==========================================================================//
+
+extern uint16_t voltage_adc;
+extern uint16_t current_adc;
+extern uint32_t power_adc;
+extern int16_t converter_temp_celsius;
+
+static struct {
+    uint8_t channel;
+    uint8_t current_range;
+    int32_t value32;
+    int32_t value32_2;
+    uint8_t value8u;
+    uint8_t value8u_2;
+} tmp;
+
+static uint8_t guiMasterPanel_onSystemEvent(void *widget, guiEvent_t *event)
+{
+    my_custom_event_t *e = (my_custom_event_t *)event;
+    switch (e->payload.code)
+    {
+        case GUI_UPDATE_VOLTAGE_SETTING:
+        case GUI_UPDATE_VOLTAGE_LIMIT:      // Modifying limit may affect setting
+            if ((e->payload.local_request) || (e->payload.channel == masterView.channel))
+            {
+                taskENTER_CRITICAL();
+                tmp.value32 = Converter_GetVoltageSetting(masterView.channel);
+                taskEXIT_CRITICAL();
+                setGuiVoltageSetting(tmp.value32);
+            }
+            break;
+        case GUI_UPDATE_CURRENT_SETTING:
+        case GUI_UPDATE_CURRENT_LIMIT:      // Modifying limit may affect setting
+            if ((e->payload.local_request) || ((e->payload.channel == masterView.channel) && (e->payload.current_range == masterView.current_range)))
+            {
+                taskENTER_CRITICAL();
+                tmp.value32 = Converter_GetCurrentSetting(masterView.channel, masterView.current_range);
+                taskEXIT_CRITICAL();
+                setGuiCurrentSetting(tmp.value32);
+            }
+            break;
+        case GUI_UPDATE_CURRENT_RANGE:
+            if ((e->payload.local_request) || (e->payload.channel == masterView.channel))
+            {
+                taskENTER_CRITICAL();
+                masterView.current_range = Converter_GetCurrentRange(masterView.channel);
+                tmp.value32 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+                taskEXIT_CRITICAL();
+                setGuiCurrentRange(masterView.current_range);
+                setGuiCurrentSetting(tmp.value32);
+                // Hide edit panel
+                if (guiEditPanel1.isVisible)
+                    hideEditPanel1();
+            }
+            break;
+        case GUI_UPDATE_CHANNEL:
+            taskENTER_CRITICAL();
+            masterView.channel = Converter_GetFeedbackChannel();
+            masterView.current_range = Converter_GetCurrentRange(masterView.channel);
+            tmp.value32 = Converter_GetVoltageSetting(masterView.channel);
+            tmp.value32_2 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+            taskEXIT_CRITICAL();
+            setGuiFeedbackChannel(masterView.channel);
+            setGuiCurrentRange(masterView.current_range);
+            setGuiVoltageSetting(tmp.value32);
+            setGuiCurrentSetting(tmp.value32_2);
+            // Hide edit panel
+            if (guiEditPanel1.isVisible)
+                hideEditPanel1();
+            break;
+        case GUI_UPDATE_ADC_INDICATORS:
+            taskENTER_CRITICAL();
+            setGuiVoltageIndicator(voltage_adc);    // CHECKME - globals ?
+            setGuiCurrentIndicator(current_adc);
+            setGuiPowerIndicator(power_adc);
+            taskEXIT_CRITICAL();
+            break;
+        case GUI_UPDATE_TEMPERATURE_INDICATOR:
+            taskENTER_CRITICAL();
+            setGuiTemperatureIndicator(converter_temp_celsius);
+            taskEXIT_CRITICAL();
+            break;
+    }
 
 
-
+    return 0;
+}
 
 
 

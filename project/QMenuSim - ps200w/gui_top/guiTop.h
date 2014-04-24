@@ -109,7 +109,8 @@ uint8_t BTN_GetExtSwitchMode(void);
 
 
 
-
+#define taskENTER_CRITICAL() ;
+#define taskEXIT_CRITICAL() ;
 
 
 
@@ -157,7 +158,7 @@ void guiTop_UpdateExtSwitchSettings(void);
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
 void guiTop_UpdateDacSettings(void);
 
-
+uint8_t readProfileListRecordName(uint8_t index, char *profileName);
 
 #ifdef __cplusplus
 }

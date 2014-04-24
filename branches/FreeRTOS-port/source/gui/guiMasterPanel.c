@@ -629,14 +629,14 @@ static uint8_t guiMasterPanel_onSystemEvent(void *widget, guiEvent_t *event)
             break;
         case GUI_UPDATE_ADC_INDICATORS:
             taskENTER_CRITICAL();
-            setGuiVoltageIndicator(voltage_adc);    // CHECKME - globals ?
-            setGuiCurrentIndicator(current_adc);
-            setGuiPowerIndicator(power_adc);
+            setGuiVoltageIndicator(ADC_GetVoltage());    // CHECKME - globals ?
+            setGuiCurrentIndicator(ADC_GetCurrent());
+            setGuiPowerIndicator(ADC_GetPower());
             taskEXIT_CRITICAL();
             break;
         case GUI_UPDATE_TEMPERATURE_INDICATOR:
             taskENTER_CRITICAL();
-            setGuiTemperatureIndicator(converter_temp_celsius);
+            setGuiTemperatureIndicator(ADC_GetTemperature());
             taskEXIT_CRITICAL();
             break;
     }

@@ -1315,6 +1315,101 @@ static void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_hig
 //                    The NEW interface to TOP level                        //
 //                                                                          //
 //==========================================================================//
+
+
+void guiUpdateVoltageLimit(system_event_t *e)
+{
+    uint16_t value;
+    uint8_t enable;
+    if ((e->local_request) || (e->channel == setupView.channel))
+    {
+        taskENTER_CRITICAL();
+        if (e->upd_low_limit)
+        {
+            value = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_LOW);
+            enable = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_LOW);
+            updateLimitWidgets(LIMIT_TYPE_LOW, enable, value);
+        }
+        if (e->upd_high_limit)
+        {
+            value = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_HIGH);
+            enable = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_HIGH);
+            updateLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
+        }
+        taskEXIT_CRITICAL();
+    }
+}
+
+
+void guiUpdateCurrentEvent(system_event_t *e)
+{
+    uint16_t value;
+    uint8_t enable;
+    if ((e->local_request) || ((e->channel == setupView.channel) && (e->current_range == setupView.current_range)))
+    {
+        taskENTER_CRITICAL();
+        if (e->payload.upd_low_limit)
+        {
+            value = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
+            enable = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
+            updateLimitWidgets(LIMIT_TYPE_LOW, enable, value);
+        }
+        if (e->payload.upd_high_limit)
+        {
+            value = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
+            enable = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
+            updateLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
+        }
+        taskEXIT_CRITICAL();
+    }
+}
+
+
+void guiUpdateOverloadSettings(void)
+{
+    uint8_t protection_enable, warning_enable;
+    uint16_t threshold;
+    taskENTER_CRITICAL();
+    protection_enable = Converter_GetOverloadProtectionState();
+    warning_enable = Converter_GetOverloadProtectionWarning();
+    threshold = Converter_GetOverloadProtectionThreshold();
+    taskEXIT_CRITICAL();
+    setGuiOverloadSettings(protection_enable, warning_enable, threshold);
+}
+
+
+void guiUpdateProfileSettings(void)
+{
+    uint8_t saveRecentProfile, restoreRecentProfile;
+    taskENTER_CRITICAL();
+    saveRecentProfile = EE_IsRecentProfileSavingEnabled();
+    restoreRecentProfile = EE_IsRecentProfileRestoreEnabled();
+    taskEXIT_CRITICAL();
+    setGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
+}
+
+
+void guiUpdateExtswitchSettings(void)
+{
+    uint8_t enable, inverse, mode;
+    taskENTER_CRITICAL();
+    enable = BTN_IsExtSwitchEnabled();
+    inverse = BTN_GetExtSwitchInversion();
+    mode = BTN_GetExtSwitchMode();
+    taskEXIT_CRITICAL();
+    setGuiExtSwitchSettings(enable, inverse, mode);
+}
+
+
+
+//GUI_UPDATE_DAC_SETTINGS
+//GUI_UPDATE_PROFILE_LIST
+//GUI_UPDATE_PROFILE_LIST_RECORD
+
+
+
+
+
 static struct {
     uint8_t channel;
     uint8_t current_range;
@@ -1411,6 +1506,8 @@ static uint8_t guiSetupPanel_onSystemEvent(void *widget, guiEvent_t *event)
             setGuiProfileRecordState(e->payload.index, tmp.value8u, profileName);
             break;
     }
+
+    return 0;
 }
 
 

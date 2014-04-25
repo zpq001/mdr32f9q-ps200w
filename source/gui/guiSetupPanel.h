@@ -5,26 +5,36 @@
 #include "guiWidgets.h"
 
 
+
+// These values can be ORed and specify limit types to update
+#define UPDATE_LOW_LIMIT    0x01
+#define UPDATE_HIGH_LIMIT   0x02
+
+// These special values are used as arguments for voltage or current limit update when
+// limits for view.channel and view.current_range should be updated
+#define CHANNEL_AUTO        0x10    // any value but not defined channel values
+#define CURRENT_RANGE_AUTO  0x10    // same - any value but not defined current range values
+
+
 extern guiPanel_t     guiSetupPanel;
 
-
 void guiSetupPanel_Initialize(guiGenericWidget_t *parent);
-
-/*
-// Voltage/Current limits
-void setGuiVoltageLimitSetting(uint8_t channel, uint8_t limit_type, uint8_t isEnabled, int32_t value);
-void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type, uint8_t isEnabled, int32_t value);
-// Overload
-void setGuiOverloadSettings(uint8_t protectionEnable, uint8_t warningEnabled, int32_t threshold);
-// Profiles
-void setGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
-void setGuiProfileRecordState(uint8_t i, uint8_t profileState, char *name);
-// External switch
-void setGuiExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode);
-// DAC
-void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
-*/
-
 void hideEditPanel2(char *newProfileName);  // called by edit panel 2
+
+// Voltage/Current limits
+void guiUpdateVoltageLimit(uint8_t channel, uint8_t limit_type);
+void guiUpdateCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type);
+// Overload
+void guiUpdateOverloadSettings(void);
+// Profiles
+void guiUpdateProfileSettings(void);
+void guiUpdateProfileListRecord(uint8_t index);
+void guiUpdateProfileList(void);
+// External switch
+void guiUpdateExtswitchSettings(void);
+// DAC
+void guiUpdateDacSettings(void);
+
+
 
 #endif

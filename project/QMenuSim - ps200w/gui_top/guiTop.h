@@ -31,22 +31,15 @@ void registerLcdUpdateCallback(cbLcdUpdatePtr fptr);
 //-----------------------------------//
 
 
-uint16_t ADC_GetVoltage(void);
-uint16_t ADC_GetCurrent(void);
-uint32_t ADC_GetPower(void);
-uint16_t ADC_GetTemperature(void);
+
 
 
 // Functions for top-level
 void guiInitialize(void);
-void guiUpdateTime(uint8_t hours, uint8_t minutes, uint8_t seconds);
 void guiDrawAll(void);
 
 void guiButtonEvent(uint16_t buttonCode, uint8_t eventType);
-//void guiButtonPressed(uint16_t buttonCode);
-//void guiButtonReleased(uint16_t buttonCode);
 void guiEncoderRotated(int32_t delta);
-
 
 // Functions for calling from GUI
 void guiLogEvent(char *string);
@@ -58,72 +51,6 @@ void guiLogEvent(char *string);
 //=================================================================//
 //                      Hardware emulation interface               //
 //=================================================================//
-
-typedef struct {
-    uint32_t type;
-    union {
-        struct {
-            uint32_t a;
-            uint32_t b;
-        } data;
-        struct {
-            uint8_t limit;
-            uint8_t enable;
-            uint32_t value;
-        } voltage_limit_setting;
-    };
-    //	uint32_t data_a;
-    //	uint32_t data_b;
-} conveter_message_t;
-
-
-
-// SelectedChannel
-#define	GUI_CHANNEL_5V			0x1
-#define	GUI_CHANNEL_12V			0x0
-// CurrentLimit
-#define	GUI_CURRENT_RANGE_HIGH	0x1
-#define	GUI_CURRENT_RANGE_LOW	 	0x0
-// Software limit types
-#define GUI_LIMIT_TYPE_LOW			0x00
-#define GUI_LIMIT_TYPE_HIGH			0x01
-
-
-
-uint16_t getVoltageSetting(uint8_t channel);
-uint16_t getVoltageAbsMax(uint8_t channel);
-uint16_t getVoltageAbsMin(uint8_t channel);
-uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type);
-uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type);
-uint16_t getCurrentSetting(uint8_t channel, uint8_t range);
-uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range);
-uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range);
-uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type);
-uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type);
-uint8_t getOverloadProtectionState(void);
-uint8_t getOverloadProtectionWarning(void);
-uint16_t getOverloadProtectionThreshold(void);
-uint8_t getCurrentRange(uint8_t channel);
-
-uint8_t BTN_IsExtSwitchEnabled(void);
-uint8_t BTN_GetExtSwitchInversion(void);
-uint8_t BTN_GetExtSwitchMode(void);
-
-
-
-
-#define taskENTER_CRITICAL() ;
-#define taskEXIT_CRITICAL() ;
-
-
-
-
-void guiUpdateChannelSetting(void);
-void applyGuiChannelSetting(uint8_t new_channel);
-
-
-
-
 
 
 
@@ -162,6 +89,8 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
 void guiTop_UpdateDacSettings(void);
 
 uint8_t readProfileListRecordName(uint8_t index, char *profileName);
+
+
 
 #ifdef __cplusplus
 }

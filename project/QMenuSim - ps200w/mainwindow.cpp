@@ -273,7 +273,6 @@ void MainWindow::on_touchRelease(void)
 void MainWindow::on_secondsTimer(void)
 {
     t.start();
-    guiUpdateTime(t.hour(),t.minute(),t.second());
     if (ui->checkBox_updMode->checkState())
         on_LCD_update();
 }

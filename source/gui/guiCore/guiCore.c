@@ -140,12 +140,13 @@ void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t
     }
 }
 
-void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count)
+void guiCore_AllocateHandlers(void *widget, uint16_t count)
 {
-    if (widget != 0)
+    guiGenericWidget_t *w = (guiGenericWidget_t *)widget;
+    if (w != 0)
     {
-        widget->handlers.count = count;
-        widget->handlers.elements = guiCore_calloc(count * sizeof(guiWidgetHandler_t));
+        w->handlers.count = count;
+        w->handlers.elements = guiCore_calloc(count * sizeof(guiWidgetHandler_t));
     }
     else
     {
@@ -160,18 +161,19 @@ void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count)
 // Not used items in a collection must be zero
 // If success, function returns non-zero
 //-------------------------------------------------------//
-uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventHandler_t handler)
+uint8_t guiCore_AddHandler(void *widget, uint8_t eventType, eventHandler_t handler)
 {
     uint8_t i;
-    if ((widget == 0) || (handler == 0))
+    guiGenericWidget_t *w = (guiGenericWidget_t *)widget;
+    if ((w == 0) || (handler == 0))
         return 0;
-    for (i = 0; i < widget->handlers.count; i++)
+    for (i = 0; i < w->handlers.count; i++)
     {
-        if (widget->handlers.elements[i].handler == 0)
+        if (w->handlers.elements[i].handler == 0)
         {
             // Found free item slot
-            widget->handlers.elements[i].eventType = eventType;
-            widget->handlers.elements[i].handler = handler;
+            w->handlers.elements[i].eventType = eventType;
+            w->handlers.elements[i].handler = handler;
             return 1;
         }
     }

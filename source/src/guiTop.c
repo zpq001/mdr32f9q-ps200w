@@ -49,116 +49,17 @@ static dispatch_msg_t dispatcher_msg;
 static buttons_msg_t buttons_msg;
 static eeprom_message_t eeprom_msg;
 
-
-
 static xSemaphoreHandle xSemaphoreEEPROM;
-
-
-static char profileName[EE_PROFILE_NAME_SIZE];
 
 static uint8_t profileOperationInProgress = 0;
 
 const gui_msg_t gui_msg_redraw = {GUI_TASK_REDRAW};
 
-// Blockinbg read from EEPROM task
-static uint8_t readProfileListRecordName(uint8_t index, char *profileName)
-{
-	uint8_t profileState;
-	eeprom_msg.type = EE_TASK_GET_PROFILE_NAME;
-	eeprom_msg.profile_name_request.index = index;
-	eeprom_msg.profile_name_request.state = &profileState;
-	eeprom_msg.profile_name_request.name = profileName;
-	xSemaphoreTake(xSemaphoreEEPROM, 0);
-	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
-	// Wait for EEPROM task to complete
-	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
-	return profileState;
-}
 
 
 
 // TODO: set proper min and max for voltage and current spinboxes
 
-
-struct {
-	uint8_t channel;
-	uint8_t current_range;
-	int32_t value32;
-	uint8_t value8u;
-	uint8_t value8u_2;
-} tmp;
-
-enum {	upd_CHANNEL = 				1<<0,
-		upd_CURRENT_RANGE = 		1<<1,
-		upd_VOLTAGE_SETTING = 		1<<2,
-		upd_CURRENT_SETTING = 		1<<3,
-		upd_LOW_CURRENT_LIMIT = 	1<<4,
-		upd_HIGH_CURRENT_LIMIT = 	1<<5,
-		upd_LOW_VOLTAGE_LIMIT = 	1<<6,
-		upd_HIGH_VOLTAGE_LIMIT = 	1<<7,
-		upd_OVERLOAD_SETTINGS = 	1<<8
-		//upd_PROFILE_SETTINGS = 		1<<9
-};
-
-
-				
-void guiTop_UpdateWidgets(uint32_t code)
-{
-	taskENTER_CRITICAL();
-	if (code & upd_CHANNEL) 
-	{
-		tmp.channel = Converter_GetFeedbackChannel();
-		setGuiFeedbackChannel(tmp.channel);
-	}
-	if (code & upd_CURRENT_RANGE) 
-	{
-		tmp.range = Converter_GetCurrentRange(tmp.channel);
-		setGuiCurrentRange(tmp.channel, tmp.range);
-	}
-	if (code & upd_VOLTAGE_SETTING)
-	{	
-		tmp.value32 = Converter_GetVoltageSetting(tmp.channel);
-		setGuiVoltageSetting(tmp.channel, tmp.value32);
-	}
-	if (code & upd_CURRENT_SETTING)	
-	{
-		tmp.value32 = Converter_GetCurrentSetting(tmp.channel, tmp.range);
-		setGuiCurrentSetting(tmp.channel, tmp.range, tmp.value32);
-	}
-	if (code & upd_LOW_CURRENT_LIMIT)
-	{
-		tmp.value32 = Converter_GetCurrentLimitSetting(tmp.channel, tmp.range, LIMIT_TYPE_LOW);
-		tmp.value8 = Converter_GetCurrentLimitState(tmp.channel, tmp.range, LIMIT_TYPE_LOW);
-		setGuiCurrentLimitSetting(tmp.channel, tmp.current_range, LIMIT_TYPE_LOW, tmp.value8, tmp.value32);
-	}
-	if (code & upd_HIGH_CURRENT_LIMIT)
-	{
-		tmp.value32 = Converter_GetCurrentLimitSetting(tmp.channel, tmp.range, LIMIT_TYPE_HIGH);
-		tmp.value8 = Converter_GetCurrentLimitState(tmp.channel, tmp.range, LIMIT_TYPE_HIGH);
-		setGuiCurrentLimitSetting(tmp.channel, tmp.current_range, LIMIT_TYPE_HIGH, tmp.value8, tmp.value32);
-	}
-	if (code & upd_LOW_VOLTAGE_LIMIT)
-	{
-		tmp.value32 = Converter_GetVoltageLimitSetting(tmp.channel, LIMIT_TYPE_LOW);
-		tmp.value8 = Converter_GetVoltageLimitState(tmp.channel, LIMIT_TYPE_LOW);
-		setGuiVoltageLimitSetting(tmp.channel, LIMIT_TYPE_LOW, tmp.value8, tmp.value32);
-	}
-	if (code & upd_HIGH_VOLTAGE_LIMIT)
-	{
-		tmp.value32 = Converter_GetVoltageLimitSetting(tmp.channel, LIMIT_TYPE_HIGH);
-		tmp.value8 = Converter_GetVoltageLimitState(tmp.channel, LIMIT_TYPE_HIGH);
-		setGuiVoltageLimitSetting(tmp.channel, LIMIT_TYPE_HIGH, tmp.value8, tmp.value32);
-	}
-	if (code & upd_OVERLOAD_SETTINGS)
-	{
-		tmp.value8u = Converter_GetOverloadProtectionState();
-		tmp.value8u_2 = Converter_GetOverloadProtectionWarning();
-		tmp.value32 = Converter_GetOverloadProtectionThreshold();
-		setGuiOverloadSettings(tmp.value8u, tmp.value8u_2, tmp.value32);
-	}
-
-	taskEXIT_CRITICAL();
-}
 
 
 
@@ -205,29 +106,19 @@ void vTaskGUI(void *pvParameters)
 		switch (msg.type)
 		{
 			case GUI_TASK_RESTORE_ALL:
-				//value = Converter_GetFeedbackChannel();
-				//setGuiFeedbackChannel(value);
-				
-				guiTop_UpdateWidgets(0xFFFFFFFF);	// update ALL :)
-				guiTop_UpdateDacSettings();
-				guiTop_UpdateExtSwitchSettings();	// TODO: remove visible check from widgets (which do NOT ask for update by themselfs)
-				guiTop_UpdateProfileSettings();
-				
-				// Restore other values from EEPROM
-				// TODO
-				
+				// Initial master panel update
+				guiUpdateChannel();     
+				// Initial setup panel update
+				// Voltage and current limit update is not required - these widgets will get proper values on show
+				guiUpdateOverloadSettings();
+				guiUpdateProfileSettings();
+				guiUpdateExtswitchSettings();
+				guiUpdateDacSettings();
+				guiUpdateProfileList();
 				// Start normal GUI operation
 				guiEvent.type = GUI_EVENT_START;
 				guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMainForm, &guiEvent);
-				guiCore_ProcessMessageQueue();
-
-				// Populate GUI profile list
-				for (i = 0; i < EE_PROFILES_COUNT; i++)
-				{
-					profileState = readProfileListRecordName(i, profileName);
-					setGuiProfileRecordState(i, profileState, profileName);
-				}
-				
+				guiCore_ProcessMessageQueue();	
 				break;
 			case GUI_TASK_REDRAW:
 				guiCore_ProcessTimers();
@@ -250,44 +141,37 @@ void vTaskGUI(void *pvParameters)
 				switch (msg.converter_event.spec)
 				{
 					case VOLTAGE_SETTING_CHANGE:
-						tmp.channel = msg.converter_event.channel;		// parameters are passed through tmp
-						guiTop_UpdateWidgets(upd_VOLTAGE_SETTING);
+						guiUpdateVoltageSetting(msg.converter_event.channel);
 						break;
 					case CURRENT_SETTING_CHANGE:
-						tmp.channel = msg.converter_event.channel;		// parameters are passed through tmp
-						tmp.range = msg.converter_event.current_range;
-						guiTop_UpdateWidgets(upd_CURRENT_SETTING);
+						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
 					case VOLTAGE_LIMIT_CHANGE:
-						tmp.channel = msg.converter_event.channel;
-						temp32u = (msg.converter_event.type == LIMIT_TYPE_LOW) ? upd_LOW_VOLTAGE_LIMIT : upd_HIGH_VOLTAGE_LIMIT;
-						guiTop_UpdateWidgets(temp32u | upd_VOLTAGE_SETTING);
+						guiUpdateVoltageLimit(msg.converter_event.channel, msg.converter_event.type);
+						// Voltage setting may have been changed - update too
+						guiUpdateVoltageSetting(msg.converter_event.channel);
 						break;
 					case CURRENT_LIMIT_CHANGE:
-						tmp.channel = msg.converter_event.channel;
-						tmp.current_range = msg.converter_event.current_range;
-						temp32u = (msg.converter_event.type == LIMIT_TYPE_LOW) ? upd_LOW_CURRENT_LIMIT : upd_HIGH_CURRENT_LIMIT;
-						guiTop_UpdateWidgets(temp32u | upd_CURRENT_SETTING);
+						guiUpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+						// Current setting may have been changed - update too
+						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
 					case CURRENT_RANGE_CHANGE:
-						tmp.channel = msg.converter_event.channel;
-						guiTop_UpdateWidgets(upd_CURRENT_RANGE | upd_CURRENT_SETTING);
+						guiUpdateCurrentRange(msg.converter_event.channel);
 						break;
 					case CHANNEL_CHANGE:
-						guiTop_UpdateWidgets(upd_CHANNEL | upd_CURRENT_RANGE | upd_VOLTAGE_SETTING | upd_CURRENT_SETTING);
+						guiUpdateChannel();
 						break;
 					case OVERLOAD_SETTING_CHANGE:
-						guiTop_UpdateWidgets(upd_OVERLOAD_SETTINGS);
+						guiUpdateOverloadSettings();
 						break;
 				}
 				break;
 			case GUI_TASK_UPDATE_VOLTAGE_CURRENT:
-				guiTop_UpdateGuiVoltageIndicator();
-				guiTop_UpdateCurrentIndicator();
-				guiTop_UpdatePowerIndicator();
+				guiUpdateAdcIndicators();
 				break;
 			case GUI_TASK_UPDATE_TEMPERATURE_INDICATOR:
-				guiTop_UpdateTemperatureIndicator();
+				guiUpdateTemperatureIndicator();
 				break;
 				
 			case GUI_TASK_PROFILE_EVENT:
@@ -301,9 +185,12 @@ void vTaskGUI(void *pvParameters)
 							
 							// Bring GUI to initial state - TODO
 							
-							// Update widgets
-							value = Converter_GetFeedbackChannel();
-							setGuiFeedbackChannel(value);
+							// Update all widgets that display profile data
+							guiUpdateChannel();
+							guiUpdateVoltageLimit(CHANNEL_AUTO, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
+							guiUpdateCurrentLimit(CHANNEL_AUTO, CURRENT_RANGE_AUTO, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
+							guiUpdateOverloadSettings();
+							guiUpdateExtswitchSettings();
 						}
 						else
 						{
@@ -313,8 +200,7 @@ void vTaskGUI(void *pvParameters)
 							else
 								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);	
 							// Update single record 
-							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
+							guiUpdateProfileListRecord(msg.profile_event.index);
 						}
 						break;
 					case PROFILE_SAVE:
@@ -323,8 +209,7 @@ void vTaskGUI(void *pvParameters)
 							// Profile succesfully saved
 							guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
 							// Update single record 
-							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
+							guiUpdateProfileListRecord(msg.profile_event.index);
 						}
 						else
 						{
@@ -334,8 +219,7 @@ void vTaskGUI(void *pvParameters)
 							else
 								guiMessagePanel1_Show(MESSAGE_TYPE_ERROR, MESSAGE_PROFILE_HW_ERROR, 0, 30);
 							// Update single record 
-							profileState = readProfileListRecordName(msg.profile_event.index, profileName);
-							setGuiProfileRecordState(msg.profile_event.index, profileState, profileName);
+							guiUpdateProfileListRecord(msg.profile_event.index);
 						}
 						break;
 					case PROFILE_LOAD_RECENT:
@@ -366,7 +250,7 @@ void vTaskGUI(void *pvParameters)
 				
 			case GUI_TASK_UPDATE_PROFILE_SETUP:
 					// Read profile settings and update widgets
-					guiTop_UpdateProfileSettings();
+					guiUpdateProfileSettings();
 				break;
 			
 		}
@@ -386,38 +270,6 @@ void vTaskGUI(void *pvParameters)
 //===========================================================================//
 
 
-//------------------------------------------------------//
-//                  Indicators 		                    //
-//------------------------------------------------------//
-void guiTop_UpdateGuiVoltageIndicator(void)
-{
-	//taskENTER_CRITICAL();
-    setGuiVoltageIndicator(voltage_adc);
-	//taskEXIT_CRITICAL();
-}
-
-// Read ADC current and update GUI
-void guiTop_UpdateCurrentIndicator(void)
-{
-	//taskENTER_CRITICAL();
-    setGuiCurrentIndicator(current_adc);
-	//taskEXIT_CRITICAL();
-}
-
-void guiTop_UpdatePowerIndicator(void)
-{
-	//taskENTER_CRITICAL();
-	setGuiPowerIndicator(power_adc);
-	//taskEXIT_CRITICAL();
-}
-
-void guiTop_UpdateTemperatureIndicator(void)
-{
-	//taskENTER_CRITICAL();
-	setGuiTemperatureIndicator(converter_temp_celsius);
-	//taskEXIT_CRITICAL();
-}
-
 
 
 //------------------------------------------------------//
@@ -434,16 +286,6 @@ void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 	dispatcher_msg.converter_cmd.a.v_set.value = new_set_voltage;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
-/*
-void guiTop_UpdateVoltageSetting(uint8_t channel)
-{
-    int32_t value;
-	//taskENTER_CRITICAL();
-	value = Converter_GetVoltageSetting(channel);
-	//taskEXIT_CRITICAL();
-	setGuiVoltageSetting(channel, value);
-} */
-
 
 
 //------------------------------------------------------//
@@ -461,16 +303,6 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t range, int16_t new_set_
 	dispatcher_msg.converter_cmd.a.c_set.value = new_set_current;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
-/*
-void guiTop_UpdateCurrentSetting(uint8_t channel, uint8_t range)
-{
-	int32_t value;
-	//taskENTER_CRITICAL();
-	value = Converter_GetCurrentSetting(channel, range);
-	//taskEXIT_CRITICAL();
-    setGuiCurrentSetting(channel, range, value);
-} */
-
 
 
 //------------------------------------------------------//
@@ -504,23 +336,6 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
     // TODO - should update widgets after processing command by converter - both limit and setting widgets
 }
 
-void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
-{
-	uint32_t temp32u = (limit_type == LIMIT_TYPE_LOW) ? upd_LOW_VOLTAGE_LIMIT : upd_HIGH_VOLTAGE_LIMIT;
-	temp32u |= upd_VOLTAGE_SETTING;
-	tmp.channel = channel;				// pass through tmp
-	guiTop_UpdateWidgets(temp32u);
-}
-
-void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
-{
-	uint32_t temp32u = (limit_type == LIMIT_TYPE_LOW) ? upd_LOW_CURRENT_LIMIT : upd_HIGH_CURRENT_LIMIT;
-	temp32u |= upd_CURRENT_SETTING;
-	tmp.channel = channel;				// pass through tmp
-	tmp.current_range = range;
-	guiTop_UpdateWidgets(temp32u);
-}
-
 
 //------------------------------------------------------//
 //                  Current range                       //
@@ -535,16 +350,6 @@ void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 	dispatcher_msg.converter_cmd.a.crange_set.new_range = new_current_range;	
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 }
-/*
-void guiTop_UpdateCurrentRange(uint8_t channel)
-{
-	int32_t value;
-	taskENTER_CRITICAL();
-	value = Converter_GetCurrentRange(channel);
-	taskEXIT_CRITICAL();
-	setGuiCurrentRange(channel, value);
-} */
-
 
 
 //------------------------------------------------------//
@@ -561,18 +366,6 @@ void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_
 	dispatcher_msg.converter_cmd.a.overload_set.threshold = threshold;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
 }
-/*
-void guiTop_UpdateOverloadSettings(void)
-{
-	uint8_t protectionEnabled, warningEnabled;
-	uint16_t threshold;
-	taskENTER_CRITICAL();
-    protectionEnabled = Converter_GetOverloadProtectionState();
-    warningEnabled = Converter_GetOverloadProtectionWarning();
-    threshold = Converter_GetOverloadProtectionThreshold();
-    taskEXIT_CRITICAL();
-    setGuiOverloadSettings(protectionEnabled, warningEnabled, threshold);
-} */
 
 
 
@@ -587,16 +380,6 @@ void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRe
 	dispatcher_msg.profile_setup.saveRecentProfile = saveRecentProfile;
 	dispatcher_msg.profile_setup.restoreRecentProfile = restoreRecentProfile;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);
-}
-
-void guiTop_UpdateProfileSettings(void)
-{
-	uint8_t saveRecentProfile, restoreRecentProfile;
-	taskENTER_CRITICAL();
-	saveRecentProfile = EE_IsRecentProfileSavingEnabled();
-    restoreRecentProfile = EE_IsRecentProfileRestoreEnabled();
-	taskEXIT_CRITICAL();
-    setGuiProfileSettings(saveRecentProfile, restoreRecentProfile);
 }
 
 void guiTop_LoadProfile(uint8_t index)
@@ -622,6 +405,21 @@ void guiTop_SaveProfile(uint8_t index, char *profileName)
 	}
 }
 
+// Blocking read from EEPROM task
+// Possibly should be moved to setupPanel module (from where it's called)
+uint8_t readProfileListRecordName(uint8_t index, char *profileName)
+{
+	uint8_t profileState;
+	eeprom_msg.type = EE_TASK_GET_PROFILE_NAME;
+	eeprom_msg.profile_name_request.index = index;
+	eeprom_msg.profile_name_request.state = &profileState;
+	eeprom_msg.profile_name_request.name = profileName;
+	xSemaphoreTake(xSemaphoreEEPROM, 0);
+	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
+	// Wait for EEPROM task to complete
+	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+	return profileState;
+}
 
 
 
@@ -638,27 +436,12 @@ void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode
 	xQueueSendToBack(xQueueButtons, &buttons_msg, portMAX_DELAY);
 }
 
-void guiTop_UpdateExtSwitchSettings(void)
-{
-	uint8_t enable, inverse, mode;
-    // Read settings
-	taskENTER_CRITICAL();
-    enable = BTN_IsExtSwitchEnabled();
-    inverse = BTN_GetExtSwitchInversion();
-    mode = BTN_GetExtSwitchMode();
-	taskEXIT_CRITICAL();
-    // Update widgets
-    setGuiExtSwitchSettings(enable, inverse, mode);
-}
-
 
 
 //------------------------------------------------------//
 //			DAC offset settings							//
 //------------------------------------------------------//
 
-// Applies GUI DAC offset settings to hardware
-// Called by GUI low level
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
 {
 	dispatcher_msg.type = DISPATCHER_CONVERTER;
@@ -668,22 +451,6 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
 	dispatcher_msg.converter_cmd.a.dac_set.current_low_offset = c_low_offset;
 	dispatcher_msg.converter_cmd.a.dac_set.current_high_offset = c_high_offset;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
-}
-
-// Reads DAC offset settings and updates GUI widgets
-// Called from both GUI top and low levels
-void guiTop_UpdateDacSettings(void)
-{
-	int8_t v_offset;
-	int8_t c_low_offset;
-	int8_t c_high_offset;
-	// Using critical section because modifying task has higher priority
-	taskENTER_CRITICAL();
-	v_offset = Converter_GetVoltageDacOffset();
-	c_low_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_LOW);
-	c_high_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_HIGH);
-	taskEXIT_CRITICAL();
-	setGuiDacSettings(v_offset, c_low_offset, c_high_offset);
 }
 
 

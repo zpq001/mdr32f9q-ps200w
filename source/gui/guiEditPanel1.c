@@ -26,10 +26,16 @@
 #include "guiEditPanel1.h"
 #include "guiMasterPanel.h"
 
-
 #include "guiTop.h"
-#include "converter.h"
 
+#ifdef _GUITESTPROJ_
+#include "taps.h"
+#else
+#include "converter.h"
+#endif  //_GUITESTPROJ_
+
+
+editView_t editView;
 
 
 static uint8_t guiEditPanel1_onDraw(void *widget, guiEvent_t *event);
@@ -40,24 +46,19 @@ static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *eve
 
 
 //--------- Edit panel 1  ----------//
-#define EDIT_PANEL1_ELEMENTS_COUNT 10
 guiPanel_t     guiEditPanel1;
-static void *guiEditPanel1Elements[EDIT_PANEL1_ELEMENTS_COUNT];
-guiWidgetHandler_t editPanelHandlers[4];
-
 
 //--------- Panel elements ---------//
 static guiSpinBox_t spinBox_Edit;
 
 
-editView_t editView;
+
 
 void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
 {
     // Initialize
     guiPanel_Initialize(&guiEditPanel1, parent);
-    guiEditPanel1.widgets.count = EDIT_PANEL1_ELEMENTS_COUNT;
-    guiEditPanel1.widgets.elements = guiEditPanel1Elements;
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiEditPanel1, 10);
     guiEditPanel1.x = 5;
     guiEditPanel1.y = 5;
     guiEditPanel1.width = 96-10;
@@ -65,16 +66,13 @@ void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
     guiEditPanel1.showFocus = 0;
     guiEditPanel1.focusFallsThrough = 0;
     guiEditPanel1.keyTranslator = 0;
-    guiEditPanel1.handlers.count = 3;
-    guiEditPanel1.handlers.elements = editPanelHandlers;
-    guiEditPanel1.handlers.elements[0].eventType = GUI_EVENT_DRAW;
-    guiEditPanel1.handlers.elements[0].handler = *guiEditPanel1_onDraw;
-    guiEditPanel1.handlers.elements[1].eventType = GUI_EVENT_KEY;
-    guiEditPanel1.handlers.elements[1].handler = *guiEditPanel1_onKey;
-    guiEditPanel1.handlers.elements[2].eventType = GUI_ON_FOCUS_CHANGED;
-    guiEditPanel1.handlers.elements[2].handler = *guiEditPanel1_onFocusChanged;
+    guiCore_AllocateHandlers(&guiEditPanel1, 3);
+    guiCore_AddHandler(&guiEditPanel1, GUI_EVENT_DRAW, guiEditPanel1_onDraw);
+    guiCore_AddHandler(&guiEditPanel1, GUI_EVENT_KEY, guiEditPanel1_onKey);
+    guiCore_AddHandler(&guiEditPanel1, GUI_ON_FOCUS_CHANGED, guiEditPanel1_onFocusChanged);
 
     guiSpinBox_Initialize(&spinBox_Edit, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_Edit, (guiGenericContainer_t *)&guiEditPanel1);
     spinBox_Edit.x = 10;
     spinBox_Edit.y = 20;
     spinBox_Edit.width = 40;
@@ -93,9 +91,6 @@ void guiEditPanel1_Initialize(guiGenericWidget_t *parent)
     guiSpinBox_SetValue(&spinBox_Edit, 0, 0);
     spinBox_Edit.keyTranslator = spinBox_KeyTranslator;
 
-
-
-    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_Edit, (guiGenericContainer_t *)&guiEditPanel1);
 }
 
 
@@ -140,16 +135,20 @@ static uint8_t guiEditPanel1_onFocusChanged(void *widget, guiEvent_t *event)
     {
         if (editView.mode == EDIT_MODE_VOLTAGE)
         {
+            taskENTER_CRITICAL();
             spinBox_Edit.maxValue = Converter_GetVoltageAbsMax(editView.channel)/10;
             spinBox_Edit.minValue = Converter_GetVoltageAbsMin(editView.channel)/10;
             value = Converter_GetVoltageSetting(editView.channel);
+            taskEXIT_CRITICAL();
             guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
         }
         else
         {
+            taskENTER_CRITICAL();
             spinBox_Edit.maxValue = Converter_GetCurrentAbsMax(editView.channel, editView.current_range)/10;
             spinBox_Edit.minValue = Converter_GetCurrentAbsMin(editView.channel, editView.current_range)/10;
             value = Converter_GetCurrentSetting(editView.channel, editView.current_range);
+            taskEXIT_CRITICAL();
             guiSpinBox_SetValue(&spinBox_Edit, value/10, 0);
         }
         guiSpinBox_SetActiveDigit(&spinBox_Edit,editView.active_digit);

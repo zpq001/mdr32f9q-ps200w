@@ -16,6 +16,11 @@ int16_t converter_temp_celsius = 0;
 
 static uint32_t gui_msg;
 
+int16_t Service_GetTemperature(void)
+{
+	return converter_temp_celsius;
+}
+
 void vTaskService(void *pvParameters) 
 {
 	uint32_t i;

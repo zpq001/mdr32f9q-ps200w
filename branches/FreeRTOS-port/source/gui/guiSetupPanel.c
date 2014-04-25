@@ -34,16 +34,22 @@
 #include "guiEditPanel2.h"
 
 #include "guiTop.h"
+#include "guiConfig.h"
+
+#ifdef _GUITESTPROJ_
+#include "taps.h"
+#else
 #include "converter.h"
 #include "eeprom.h"
 #include "buttons_top.h"
+#include "service.h"
+#endif  //_GUITESTPROJ_
 
-#include "guiConfig.h"
+
 
 static uint8_t guiSetupPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiSetupPanel_onVisibleChanged(void *widget, guiEvent_t *event);
 static uint8_t guiSetupPanel_onFocusChanged(void *widget, guiEvent_t *event);
-static uint8_t guiSetupPanel_onSystemEvent(void *widget, guiEvent_t *event);
 
 static uint8_t guiSetupList_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiSetupList_onKeyEvent(void *widget, guiEvent_t *event);
@@ -96,6 +102,8 @@ enum setupViewProfileActions {
     PROFILE_ACTION_SAVE,
     PROFILE_ACTION_LOAD
 };
+
+static char profileName[EE_PROFILE_NAME_SIZE];
 
 
 //--------- Setup panel  ----------//
@@ -167,10 +175,9 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     guiSetupPanel.showFocus = 1;
     guiSetupPanel.focusFallsThrough = 0;
     guiSetupPanel.keyTranslator = &guiSetupPanel_KeyTranslator;
-    guiCore_AllocateHandlers((guiGenericWidget_t *)&guiSetupPanel, 3);
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&guiSetupPanel, 2);
     guiCore_AddHandler((guiGenericWidget_t *)&guiSetupPanel, GUI_ON_VISIBLE_CHANGED, guiSetupPanel_onVisibleChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&guiSetupPanel, GUI_ON_FOCUS_CHANGED, guiSetupPanel_onFocusChanged);
-    guiCore_AddHandler((guiGenericWidget_t *)&guiSetupPanel, GUI_SYSTEM_EVENT, guiSetupPanel_onSystemEvent);
 
 
     // Initialize text label for menu list title
@@ -629,6 +636,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     // Other
     textLabel_hint.tag = 11;
 
+    // Add other widgets
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiEditPanel2, (guiGenericContainer_t *)&guiSetupPanel);
 }
 
 
@@ -788,9 +797,7 @@ static uint8_t guiSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     else
     {
         guiSetupList_onIndexChanged(widget, event);     // CHECKME - is this necessary for widgets update?
-        textLabel_title.text = "Settings";
-        textLabel_title.redrawRequired = 1;
-        textLabel_title.redrawText = 1;
+        guiTextLabel_SetText(&textLabel_title, "Settings");
     }
     return 0;
 }
@@ -899,8 +906,7 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         guiCheckBox_SetText(&checkBox_ApplyHighLimit, "High: [V]");
         // Update widgets for voltage
         setupView.view = VIEW_VOLTAGE;
-        guiTop_UpdateVoltageLimit(setupView.channel, LIMIT_TYPE_LOW);
-        guiTop_UpdateVoltageLimit(setupView.channel, LIMIT_TYPE_HIGH);
+        guiUpdateVoltageLimit(setupView.channel, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
     }
     else if ((chSetupList.selectedIndex == 1) || (chSetupList.selectedIndex == 2))
     {
@@ -909,8 +915,7 @@ static uint8_t guiChSetupList_onIndexChanged(void *widget, guiEvent_t *event)
         // Update widgets for current
         setupView.view = VIEW_CURRENT;
         setupView.current_range = (chSetupList.selectedIndex == 1) ? CURRENT_RANGE_LOW : CURRENT_RANGE_HIGH;
-        guiTop_UpdateCurrentLimit(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
-        guiTop_UpdateCurrentLimit(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
+        guiUpdateCurrentLimit(setupView.channel, setupView.current_range, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
     }
     else
     {
@@ -1134,31 +1139,15 @@ void hideEditPanel2(char *newProfileName)
 
 
 
-//==========================================================================//
-//==========================================================================//
-//                        Interface to TOP level                            //
-//                                                                          //
-//==========================================================================//
+//=================================================================//
+//          Functions for widgets access
+//
+//=================================================================//
 
 
 //------------------------------------------------------//
 //              Voltage/Current limits                  //
 //------------------------------------------------------//
-
-// Helper fucntion
-static void updateLimitWidgets(uint8_t limit_type, uint8_t isEnabled, int32_t value)
-{
-    if (limit_type == LIMIT_TYPE_LOW)
-    {
-        guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
-        guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
-    }
-    else
-    {
-        guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
-        guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);
-    }
-}
 
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event)
 {
@@ -1179,27 +1168,21 @@ static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event)
         guiTop_ApplyGuiCurrentLimit(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH, limEnabled, spinBox_HighLimit.value * 10);
     return 0;
 }
-/*
-void setGuiVoltageLimitSetting(uint8_t channel, uint8_t limit_type, uint8_t isEnabled, int32_t value)
-{
-    // Check if widgets update is required
-    if ((channel == setupView.channel) && (setupView.view == VIEW_VOLTAGE) &&
-            guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ApplyLowLimit))
-    {
-        updateLimitWidgets(limit_type, isEnabled, value);
-    }
-}
 
-void setGuiCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type, uint8_t isEnabled, int32_t value)
+
+static void setGuiLimitWidgets(uint8_t limit_type, uint8_t isEnabled, int32_t value)
 {
-    // Check if widgets update is required
-    if ((channel == setupView.channel) && (setupView.view == VIEW_CURRENT) && (range == setupView.current_range) &&
-            guiCore_IsWidgetVisible((guiGenericWidget_t *)&checkBox_ApplyLowLimit))
+    if (limit_type == LIMIT_TYPE_LOW)
     {
-        updateLimitWidgets(limit_type, isEnabled, value);
+        guiCheckbox_SetChecked(&checkBox_ApplyLowLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_LowLimit, value / 10, 0);
+    }
+    else
+    {
+        guiCheckbox_SetChecked(&checkBox_ApplyHighLimit, isEnabled, 0);
+        guiSpinBox_SetValue(&spinBox_HighLimit, value / 10, 0);
     }
 }
-*/
 
 //------------------------------------------------------//
 //                  Overload                            //
@@ -1210,7 +1193,7 @@ static uint8_t onOverloadSettingsChanged(void *widget, guiEvent_t *event)
     // Threshold in units of 100us
     uint8_t protectionEnabled = checkBox_OverloadProtect.isChecked;
     uint8_t warningEnabled = checkBox_OverloadWarning.isChecked;
-    guiTop_ApplyGuiOverloadSettings( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value / 2);       // CHECME - /2
+    guiTop_ApplyGuiOverloadSettings( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value / 2);
     return 0;
 }
 
@@ -1317,48 +1300,50 @@ static void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_hig
 //==========================================================================//
 
 
-void guiUpdateVoltageLimit(system_event_t *e)
+void guiUpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
 {
     uint16_t value;
     uint8_t enable;
-    if ((e->local_request) || (e->channel == setupView.channel))
+    // CHECKME - add visibility check ?
+    if (channel == setupView.channel)
     {
         taskENTER_CRITICAL();
-        if (e->upd_low_limit)
+        if (limit_type & UPDATE_LOW_LIMIT)
         {
             value = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_LOW);
             enable = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_LOW);
-            updateLimitWidgets(LIMIT_TYPE_LOW, enable, value);
+            setGuiLimitWidgets(LIMIT_TYPE_LOW, enable, value);
         }
-        if (e->upd_high_limit)
+        if (limit_type & UPDATE_HIGH_LIMIT)
         {
             value = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_HIGH);
             enable = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_HIGH);
-            updateLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
+            setGuiLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
         }
         taskEXIT_CRITICAL();
     }
 }
 
 
-void guiUpdateCurrentEvent(system_event_t *e)
+void guiUpdateCurrentLimit(uint8_t channel, uint8_t current_range, uint8_t limit_type)
 {
     uint16_t value;
     uint8_t enable;
-    if ((e->local_request) || ((e->channel == setupView.channel) && (e->current_range == setupView.current_range)))
+    // CHECKME - add visibility check ?
+    if ((channel == setupView.channel) && (current_range == setupView.current_range))
     {
         taskENTER_CRITICAL();
-        if (e->payload.upd_low_limit)
+        if (limit_type & UPDATE_LOW_LIMIT)
         {
             value = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
             enable = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
-            updateLimitWidgets(LIMIT_TYPE_LOW, enable, value);
+            setGuiLimitWidgets(LIMIT_TYPE_LOW, enable, value);
         }
-        if (e->payload.upd_high_limit)
+        if (limit_type & UPDATE_HIGH_LIMIT)
         {
             value = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
             enable = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
-            updateLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
+            setGuiLimitWidgets(LIMIT_TYPE_HIGH, enable, value);
         }
         taskEXIT_CRITICAL();
     }
@@ -1389,6 +1374,25 @@ void guiUpdateProfileSettings(void)
 }
 
 
+void guiUpdateProfileListRecord(uint8_t index)
+{
+    uint8_t profileState;
+    profileState = readProfileListRecordName(index, profileName);
+    setGuiProfileRecordState(index, profileState, profileName);
+}
+
+
+void guiUpdateProfileList(void)
+{
+    uint8_t i, profileState;;
+    for (i = 0; i < EE_PROFILES_COUNT; i++)
+    {
+        profileState = readProfileListRecordName(i, profileName);
+        setGuiProfileRecordState(i, profileState, profileName);
+    }
+}
+
+
 void guiUpdateExtswitchSettings(void)
 {
     uint8_t enable, inverse, mode;
@@ -1401,114 +1405,22 @@ void guiUpdateExtswitchSettings(void)
 }
 
 
-
-//GUI_UPDATE_DAC_SETTINGS
-//GUI_UPDATE_PROFILE_LIST
-//GUI_UPDATE_PROFILE_LIST_RECORD
-
-
-
-
-
-static struct {
-    uint8_t channel;
-    uint8_t current_range;
-    int32_t value32;
-    uint8_t value8u;
-    uint8_t value8u_2;
-} tmp;
-
-static char profileName[EE_PROFILE_NAME_SIZE];
-
-static uint8_t guiSetupPanel_onSystemEvent(void *widget, guiEvent_t *event)
+void guiUpdateDacSettings(void)
 {
-    my_custom_event_t *e = (my_custom_event_t *)event;
-    switch (e->spec)
-    {
-        case GUI_UPDATE_VOLTAGE_LIMIT:
-            if ((e->payload.local_request) || (e->payload.channel == setupView.channel))
-            {
-                taskENTER_CRITICAL();
-                if (e->payload.upd_low_limit)
-                {
-                    tmp.value32 = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_LOW);
-                    tmp.value8u = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_LOW);
-                    updateLimitWidgets(LIMIT_TYPE_LOW, tmp.value8u, tmp.value32);
-                }
-                if (e->payload.upd_high_limit)
-                {
-                    tmp.value32 = Converter_GetVoltageLimitSetting(setupView.channel, LIMIT_TYPE_HIGH);
-                    tmp.value8u = Converter_GetVoltageLimitState(setupView.channel, LIMIT_TYPE_HIGH);
-                    updateLimitWidgets(LIMIT_TYPE_HIGH, tmp.value8u, tmp.value32);
-                }
-                taskEXIT_CRITICAL();
-            }
-            break;
-        case GUI_UPDATE_CURRENT_LIMIT:
-            if ((e->payload.local_request) || ((e->payload.channel == setupView.channel) && (e->payload.current_range == setupView.current_range)))
-            {
-                taskENTER_CRITICAL();
-                if (e->payload.upd_low_limit)
-                {
-                    tmp.value32 = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
-                    tmp.value8u = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_LOW);
-                    updateLimitWidgets(LIMIT_TYPE_LOW, tmp.value8u, tmp.value32);
-                }
-                if (e->payload.upd_high_limit)
-                {
-                    tmp.value32 = Converter_GetCurrentLimitSetting(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
-                    tmp.value8u = Converter_GetCurrentLimitState(setupView.channel, setupView.current_range, LIMIT_TYPE_HIGH);
-                    updateLimitWidgets(LIMIT_TYPE_HIGH, tmp.value8u, tmp.value32);
-                }
-                taskEXIT_CRITICAL();
-            }
-            break;
-        case GUI_UPDATE_OVERLOAD_SETTINGS:
-            taskENTER_CRITICAL();
-            tmp.value8u = Converter_GetOverloadProtectionState();
-            tmp.value8u_2 = Converter_GetOverloadProtectionWarning();
-            tmp.value32 = Converter_GetOverloadProtectionThreshold();
-            taskEXIT_CRITICAL();
-            setGuiOverloadSettings(tmp.value8u, tmp.value8u_2, tmp.value32);
-            break;
-        case GUI_UPDATE_PROFILE_SETTINGS:
-            taskENTER_CRITICAL();
-            tmp.value8u = EE_IsRecentProfileSavingEnabled();
-            tmp.value8u_2 = EE_IsRecentProfileRestoreEnabled();
-            taskEXIT_CRITICAL();
-            setGuiProfileSettings(tmp.value8u, tmp.value8u_2);
-            break;
-        case GUI_UPDATE_EXTSWITCH_SETTINGS:
-            taskENTER_CRITICAL();
-            tmp.value8u = BTN_IsExtSwitchEnabled();
-            tmp.value8u_2 = BTN_GetExtSwitchInversion();
-            tmp.value32 = BTN_GetExtSwitchMode();
-            taskEXIT_CRITICAL();
-            setGuiExtSwitchSettings(tmp.value8u, tmp.value8u_2, tmp.value32);
-            break;
-        case GUI_UPDATE_DAC_SETTINGS:
-            taskENTER_CRITICAL();
-            tmp.value8u = Converter_GetVoltageDacOffset();
-            tmp.value8u_2 = Converter_GetCurrentDacOffset(CURRENT_RANGE_LOW);
-            tmp.value32 = Converter_GetCurrentDacOffset(CURRENT_RANGE_HIGH);
-            taskEXIT_CRITICAL();
-            setGuiDacSettings(tmp.value8u, tmp.value8u_2, tmp.value32);
-            break;
-        case GUI_UPDATE_PROFILE_LIST:
-            for (tmp.value8u_2 = 0; tmp.value8u_2 < EE_PROFILES_COUNT; tmp.value8u_2++)
-            {
-                tmp.value8u = readProfileListRecordName(tmp.value8u_2, profileName);
-                setGuiProfileRecordState(tmp.value8u_2, tmp.value8u, profileName);
-            }
-            break;
-        case GUI_UPDATE_PROFILE_LIST_RECORD:
-            tmp.value8u = readProfileListRecordName(e->payload.index, profileName);
-            setGuiProfileRecordState(e->payload.index, tmp.value8u, profileName);
-            break;
-    }
-
-    return 0;
+    int8_t v_offset, c_low_offset, c_high_offset;
+    taskENTER_CRITICAL();
+    v_offset = Converter_GetVoltageDacOffset();
+    c_low_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_LOW);
+    c_high_offset = Converter_GetCurrentDacOffset(CURRENT_RANGE_HIGH);
+    taskEXIT_CRITICAL();
+    setGuiDacSettings(v_offset, c_low_offset, c_high_offset);
 }
+
+
+
+
+
+
 
 
 

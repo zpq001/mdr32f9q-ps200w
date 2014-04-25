@@ -30,8 +30,8 @@
 // Design-specific events
 #define GUI_EVENT_START  0xF0
 #define GUI_EVENT_EEPROM_MESSAGE    0xF1
-#define GUI_SYSTEM_EVENT            0xF2
-
+//#define GUI_SYSTEM_EVENT            0xF2
+/*
 // System events
 enum {
     //GUI_UPDATE_INITIAL = 0x01,
@@ -69,7 +69,7 @@ typedef struct {
     uint8_t spec;
     system_event_t payload;
 } my_custom_event_t;
-
+*/
 
 
 

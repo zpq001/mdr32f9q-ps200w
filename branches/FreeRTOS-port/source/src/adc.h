@@ -17,10 +17,10 @@
 
 extern xQueueHandle xQueueADC;
 
-extern uint16_t voltage_adc;		// [mV]
-extern uint16_t current_adc;		// [mA]
-extern uint32_t power_adc;			// [mW]
 
+uint16_t ADC_GetVoltage(void);
+uint16_t ADC_GetCurrent(void);
+uint32_t ADC_GetPower(void);
 
 void vTaskADC(void *pvParameters);
 void Converter_HW_ADCProcess(void);

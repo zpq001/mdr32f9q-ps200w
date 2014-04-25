@@ -1,8 +1,6 @@
 
 
-
-
-extern int16_t converter_temp_celsius;
+int16_t Service_GetTemperature(void);
 
 void vTaskService(void *pvParameters);
 

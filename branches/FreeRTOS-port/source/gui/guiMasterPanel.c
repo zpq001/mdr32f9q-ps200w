@@ -23,14 +23,22 @@
 #include "guiTextLabel.h"
 #include "guiSpinBox.h"
 
-// Other forms and panels - in order to switch between them
+// Other forms and panels
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiEditPanel1.h"
 #include "guiMessagePanel1.h"
 
 #include "guiTop.h"
+
+
+#ifdef _GUITESTPROJ_
+#include "taps.h"
+#else
 #include "converter.h"
+#include "eeprom.h"
+#include "adc.h"
+#endif  //_GUITESTPROJ_
 
 
 masterViev_t masterView;
@@ -39,7 +47,6 @@ masterViev_t masterView;
 static uint8_t guiMasterPanel_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 static uint8_t guiMasterPanel_onFocusChanged(void *widget, guiEvent_t *event);
 static uint8_t guiMasterPanel_onDraw(void *widget, guiEvent_t *event);
-static uint8_t guiMasterPanel_onSystemEvent(void *widget, guiEvent_t *event);
 
 static uint8_t spinBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
 
@@ -51,31 +58,20 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event);
 
 
 
-//--------- Form elements ---------//
-static guiTextLabel_t textLabel_voltage;        // Measured voltage
-static char label_voltage_data[10];
-static guiTextLabel_t textLabel_current;        // Measured current
-static char label_current_data[10];
-static guiTextLabel_t textLabel_power;          // Measured power
-static char label_power_data[10];
-static guiTextLabel_t textLabel_temperature;    // Converter temperature
-static char label_temperature_data[10];
-static guiTextLabel_t textLabel_channel;        // Feedback channel
-static char label_channel_data[10];
-static guiTextLabel_t textLabel_currRange;      // Current limit
-static char label_currLimit_data[10];
-static guiWidgetHandler_t textLabelHandlers[2];
-
-static guiSpinBox_t spinBox_voltage;            // Voltage setting
-static guiSpinBox_t spinBox_current;            // Current setting
-static guiWidgetHandler_t spinBoxHandlers[2];
-
 
 //--------- Master panel  ---------//
-#define MASTER_PANEL_ELEMENTS_COUNT 20
 guiPanel_t     guiMasterPanel;
-static void *guiMasterPanelElements[MASTER_PANEL_ELEMENTS_COUNT];
-static guiWidgetHandler_t masterPanelHandlers[3];
+
+//--------- Panel elements --------//
+static guiTextLabel_t textLabel_voltage;        // Measured voltage
+static guiTextLabel_t textLabel_current;        // Measured current
+static guiTextLabel_t textLabel_power;          // Measured power
+static guiTextLabel_t textLabel_temperature;    // Converter temperature
+static guiTextLabel_t textLabel_channel;        // Feedback channel
+static guiTextLabel_t textLabel_currRange;      // Current limit
+static guiSpinBox_t spinBox_voltage;            // Voltage setting
+static guiSpinBox_t spinBox_current;            // Current setting
+
 
 
 //-------------------------------------------------------//
@@ -86,26 +82,7 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
 {
     // Initialize form
     guiPanel_Initialize(&guiMasterPanel, parent);
-    guiMasterPanel.widgets.count = MASTER_PANEL_ELEMENTS_COUNT;
-    guiMasterPanel.widgets.elements = guiMasterPanelElements;
-
-    guiMasterPanel.widgets.elements[0] = &textLabel_voltage;
-    guiMasterPanel.widgets.elements[1] = &textLabel_current;
-    guiMasterPanel.widgets.elements[2] = &textLabel_power;
-    guiMasterPanel.widgets.elements[3] = &textLabel_temperature;
-    guiMasterPanel.widgets.elements[4] = &textLabel_channel;
-    guiMasterPanel.widgets.elements[5] = &textLabel_currRange;      // focusable!
-    guiMasterPanel.widgets.elements[6] = &spinBox_voltage;          // focusable
-    guiMasterPanel.widgets.elements[7] = &spinBox_current;          // focusable
-
-    guiMasterPanel.handlers.count = 3;
-    guiMasterPanel.handlers.elements = masterPanelHandlers;
-    guiMasterPanel.handlers.elements[0].eventType = GUI_ON_FOCUS_CHANGED;
-    guiMasterPanel.handlers.elements[0].handler = &guiMasterPanel_onFocusChanged;
-    guiMasterPanel.handlers.elements[1].eventType = GUI_EVENT_DRAW;
-    guiMasterPanel.handlers.elements[1].handler = &guiMasterPanel_onDraw;
-    guiMasterPanel.handlers.elements[2].eventType = GUI_SYSTEM_EVENT;
-    guiMasterPanel.handlers.elements[2].handler = &guiMasterPanel_onSystemEvent;
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiMasterPanel, 20);
     guiMasterPanel.x = 0;
     guiMasterPanel.y = 0;
     guiMasterPanel.width = 96 * 2;
@@ -113,80 +90,85 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     guiMasterPanel.showFocus = 0;
     guiMasterPanel.focusFallsThrough = 0;
     guiMasterPanel.keyTranslator = &guiMasterPanel_KeyTranslator;
+    guiCore_AllocateHandlers(&guiMasterPanel, 2);
+    guiCore_AddHandler(&guiMasterPanel, GUI_ON_FOCUS_CHANGED, guiMasterPanel_onFocusChanged);
+    guiCore_AddHandler(&guiMasterPanel, GUI_EVENT_DRAW, guiMasterPanel_onDraw);
 
     // Initialize text label for measured voltage display
     guiTextLabel_Initialize(&textLabel_voltage, (guiGenericWidget_t *)&guiMasterPanel);
-    //guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_voltage, (guiGenericContainer_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_voltage, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_voltage.x = 1;
     textLabel_voltage.y = 0;
     textLabel_voltage.width = 94;
     textLabel_voltage.height = 32;
     textLabel_voltage.textAlignment = ALIGN_TOP_RIGHT;
-    textLabel_voltage.text = label_voltage_data;
+    textLabel_voltage.text = guiCore_calloc(10);
     textLabel_voltage.font = &font_h32;
 
     // Initialize text label for measured current display
     guiTextLabel_Initialize(&textLabel_current, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_current, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_current.x = 96 + 1;
     textLabel_current.y = 0;
     textLabel_current.width = 94;
     textLabel_current.height = 32;
     textLabel_current.textAlignment = ALIGN_TOP_RIGHT;
-    textLabel_current.text = label_current_data;
+    textLabel_current.text = guiCore_calloc(10);
     textLabel_current.font = &font_h32;
 
     // Initialize text label for measured power display
     guiTextLabel_Initialize(&textLabel_power, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_power, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_power.x = 96 + 43;
     textLabel_power.y = 57;
     textLabel_power.width = 52;
     textLabel_power.height = 11;
     textLabel_power.textAlignment = ALIGN_TOP_RIGHT;
-    textLabel_power.text = label_power_data;
+    textLabel_power.text = guiCore_calloc(10);
     textLabel_power.font = &font_h11;
 
     // Initialize text label for temperature display
     guiTextLabel_Initialize(&textLabel_temperature, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_temperature, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_temperature.x = 55;
     textLabel_temperature.y = 57;
     textLabel_temperature.width = 40;
     textLabel_temperature.height = 11;
     textLabel_temperature.textAlignment = ALIGN_TOP_LEFT;
-    textLabel_temperature.text = label_temperature_data;
+    textLabel_temperature.text = guiCore_calloc(10);
     textLabel_temperature.font = &font_h11;
 
     // Initialize text label for feedback channel display
     guiTextLabel_Initialize(&textLabel_channel, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_channel, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_channel.x = 1;
     textLabel_channel.y = 57;
     textLabel_channel.width = 45;
     textLabel_channel.height = 11;
     textLabel_channel.textAlignment = ALIGN_TOP_LEFT;
-    textLabel_channel.text = label_channel_data;
+    textLabel_channel.text = guiCore_calloc(10);
     textLabel_channel.font = &font_h11;
 
     // Initialize text label for current limit display and control
     guiTextLabel_Initialize(&textLabel_currRange, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_currRange, (guiGenericContainer_t *)&guiMasterPanel);
     textLabel_currRange.x = 96+1;
     textLabel_currRange.y = 57;
     textLabel_currRange.width = 25;
     textLabel_currRange.height = 11;
     textLabel_currRange.textAlignment = ALIGN_TOP_LEFT;
-    textLabel_currRange.text = label_currLimit_data;
+    textLabel_currRange.text = guiCore_calloc(10);
     textLabel_currRange.font = &font_h11;
     textLabel_currRange.acceptFocusByTab = 1;
     textLabel_currRange.tabIndex = 13;
     textLabel_currRange.showFocus = 0;
-    // Handlers:
-    textLabelHandlers[0].eventType = GUI_EVENT_DRAW;
-    textLabelHandlers[0].handler = onTextLabelDrawEvent;
-    textLabelHandlers[1].eventType = GUI_EVENT_KEY;
-    textLabelHandlers[1].handler = onTextLabelKeyEncoderEvent;
-    textLabel_currRange.handlers.count = 2;
-    textLabel_currRange.handlers.elements = textLabelHandlers;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&textLabel_currRange, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&textLabel_currRange, GUI_EVENT_DRAW, onTextLabelDrawEvent);
+    guiCore_AddHandler((guiGenericWidget_t *)&textLabel_currRange, GUI_EVENT_KEY, onTextLabelKeyEncoderEvent);
 
-
+    // Initialize spinbox for voltage setting
     guiSpinBox_Initialize(&spinBox_voltage, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_voltage, (guiGenericContainer_t *)&guiMasterPanel);
     spinBox_voltage.x = 30;
     spinBox_voltage.y = 33;
     spinBox_voltage.width = 45;
@@ -203,8 +185,13 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_voltage.minValue = -1;
     spinBox_voltage.showFocus = 0;
     spinBox_voltage.keyTranslator = &spinBox_KeyTranslator;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&spinBox_voltage, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_voltage, GUI_EVENT_DRAW, onSpinBoxDrawEvent);
+    guiCore_AddHandler((guiGenericWidget_t *)&spinBox_voltage, SPINBOX_VALUE_CHANGED, onSpinBoxValueChanged);
 
+    // Initialize spinbox for current setting
     guiSpinBox_Initialize(&spinBox_current, (guiGenericWidget_t *)&guiMasterPanel);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&spinBox_current, (guiGenericContainer_t *)&guiMasterPanel);
     spinBox_current.x = 96+30;
     spinBox_current.y = 33;
     spinBox_current.width = 45;
@@ -221,18 +208,11 @@ void guiMasterPanel_Initialize(guiGenericWidget_t *parent)
     spinBox_current.minValue = -1;
     spinBox_current.showFocus = 0;
     spinBox_current.keyTranslator = &spinBox_KeyTranslator;
-
-    spinBoxHandlers[0].eventType = GUI_EVENT_DRAW;
-    spinBoxHandlers[0].handler = onSpinBoxDrawEvent;
-    spinBoxHandlers[1].eventType = SPINBOX_VALUE_CHANGED;
-    spinBoxHandlers[1].handler = onSpinBoxValueChanged;
-    spinBox_voltage.handlers.count = 2;
-    spinBox_voltage.handlers.elements = spinBoxHandlers;
-    spinBox_current.handlers.count = 2;
-    spinBox_current.handlers.elements = spinBoxHandlers;
+    spinBox_current.handlers.count = spinBox_voltage.handlers.count;        // handlers are shared
+    spinBox_current.handlers.elements = spinBox_voltage.handlers.elements;
 
 
-    // Add widgets
+    // Add other widgets
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiEditPanel1, (guiGenericContainer_t *)&guiMasterPanel);
 }
 
@@ -446,8 +426,6 @@ static uint8_t onTextLabelKeyEncoderEvent(void *sender, guiEvent_t *event)
 
 
 //-------------------------//
-// TODO: add current view
-// TODO: check update funtions (U, I, limits) calling
 
 void showEditPanel1(void)
 {
@@ -494,7 +472,8 @@ void hideEditPanel1(void)
 
 
 //=================================================================//
-//  Hardware interface functions
+//          Functions for widgets access
+//
 //=================================================================//
 
 
@@ -559,91 +538,82 @@ static void setGuiFeedbackChannel(uint8_t channel)
 //                                                                          //
 //==========================================================================//
 
-extern uint16_t voltage_adc;
-extern uint16_t current_adc;
-extern uint32_t power_adc;
-extern int16_t converter_temp_celsius;
-
-static struct {
-    uint8_t channel;
-    uint8_t current_range;
-    int32_t value32;
-    int32_t value32_2;
-    uint8_t value8u;
-    uint8_t value8u_2;
-} tmp;
-
-static uint8_t guiMasterPanel_onSystemEvent(void *widget, guiEvent_t *event)
+void guiUpdateVoltageSetting(uint8_t channel)
 {
-    my_custom_event_t *e = (my_custom_event_t *)event;
-    switch (e->payload.code)
+    int32_t value;
+    if (channel == masterView.channel)
     {
-        case GUI_UPDATE_VOLTAGE_SETTING:
-        case GUI_UPDATE_VOLTAGE_LIMIT:      // Modifying limit may affect setting
-            if ((e->payload.local_request) || (e->payload.channel == masterView.channel))
-            {
-                taskENTER_CRITICAL();
-                tmp.value32 = Converter_GetVoltageSetting(masterView.channel);
-                taskEXIT_CRITICAL();
-                setGuiVoltageSetting(tmp.value32);
-            }
-            break;
-        case GUI_UPDATE_CURRENT_SETTING:
-        case GUI_UPDATE_CURRENT_LIMIT:      // Modifying limit may affect setting
-            if ((e->payload.local_request) || ((e->payload.channel == masterView.channel) && (e->payload.current_range == masterView.current_range)))
-            {
-                taskENTER_CRITICAL();
-                tmp.value32 = Converter_GetCurrentSetting(masterView.channel, masterView.current_range);
-                taskEXIT_CRITICAL();
-                setGuiCurrentSetting(tmp.value32);
-            }
-            break;
-        case GUI_UPDATE_CURRENT_RANGE:
-            if ((e->payload.local_request) || (e->payload.channel == masterView.channel))
-            {
-                taskENTER_CRITICAL();
-                masterView.current_range = Converter_GetCurrentRange(masterView.channel);
-                tmp.value32 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
-                taskEXIT_CRITICAL();
-                setGuiCurrentRange(masterView.current_range);
-                setGuiCurrentSetting(tmp.value32);
-                // Hide edit panel
-                if (guiEditPanel1.isVisible)
-                    hideEditPanel1();
-            }
-            break;
-        case GUI_UPDATE_CHANNEL:
-            taskENTER_CRITICAL();
-            masterView.channel = Converter_GetFeedbackChannel();
-            masterView.current_range = Converter_GetCurrentRange(masterView.channel);
-            tmp.value32 = Converter_GetVoltageSetting(masterView.channel);
-            tmp.value32_2 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
-            taskEXIT_CRITICAL();
-            setGuiFeedbackChannel(masterView.channel);
-            setGuiCurrentRange(masterView.current_range);
-            setGuiVoltageSetting(tmp.value32);
-            setGuiCurrentSetting(tmp.value32_2);
-            // Hide edit panel
-            if (guiEditPanel1.isVisible)
-                hideEditPanel1();
-            break;
-        case GUI_UPDATE_ADC_INDICATORS:
-            taskENTER_CRITICAL();
-            setGuiVoltageIndicator(ADC_GetVoltage());    // CHECKME - globals ?
-            setGuiCurrentIndicator(ADC_GetCurrent());
-            setGuiPowerIndicator(ADC_GetPower());
-            taskEXIT_CRITICAL();
-            break;
-        case GUI_UPDATE_TEMPERATURE_INDICATOR:
-            taskENTER_CRITICAL();
-            setGuiTemperatureIndicator(ADC_GetTemperature());
-            taskEXIT_CRITICAL();
-            break;
+        taskENTER_CRITICAL();
+        value = Converter_GetVoltageSetting(masterView.channel);
+        taskEXIT_CRITICAL();
+        setGuiVoltageSetting(value);
     }
-
-
-    return 0;
 }
+
+void guiUpdateCurrentSetting(uint8_t channel, uint8_t current_range)
+{
+    int32_t value;
+    if ((channel == masterView.channel) && (current_range == masterView.current_range))
+    {
+        taskENTER_CRITICAL();
+        value = Converter_GetCurrentSetting(masterView.channel, masterView.current_range);
+        taskEXIT_CRITICAL();
+        setGuiCurrentSetting(value);
+    }
+}
+
+void guiUpdateCurrentRange(uint8_t channel)
+{
+    int32_t value;
+    if (channel == masterView.channel)
+    {
+        taskENTER_CRITICAL();
+        masterView.current_range = Converter_GetCurrentRange(masterView.channel);
+        value = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+        taskEXIT_CRITICAL();
+        setGuiCurrentRange(masterView.current_range);
+        setGuiCurrentSetting(value);
+        // Hide edit panel
+        if (guiEditPanel1.isVisible)
+            hideEditPanel1();
+    }
+}
+
+void guiUpdateChannel(void)
+{
+    int32_t value1, value2;
+    taskENTER_CRITICAL();
+    masterView.channel = Converter_GetFeedbackChannel();
+    masterView.current_range = Converter_GetCurrentRange(masterView.channel);
+    value1 = Converter_GetVoltageSetting(masterView.channel);
+    value2 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+    taskEXIT_CRITICAL();
+    setGuiFeedbackChannel(masterView.channel);
+    setGuiCurrentRange(masterView.current_range);
+    setGuiVoltageSetting(value1);
+    setGuiCurrentSetting(value2);
+    // Hide edit panel
+    if (guiEditPanel1.isVisible)
+        hideEditPanel1();
+}
+
+void guiUpdateAdcIndicators(void)
+{
+    taskENTER_CRITICAL();
+    setGuiVoltageIndicator( ADC_GetVoltage() );
+    setGuiCurrentIndicator( ADC_GetCurrent() );
+    setGuiPowerIndicator( ADC_GetPower() );
+    taskEXIT_CRITICAL();
+}
+
+void guiUpdateTemperatureIndicator(void)
+{
+    taskENTER_CRITICAL();
+    setGuiTemperatureIndicator( Service_GetTemperature() );
+    taskEXIT_CRITICAL();
+}
+
+
 
 
 

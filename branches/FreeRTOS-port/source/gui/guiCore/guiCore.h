@@ -137,8 +137,8 @@ extern guiGenericWidget_t *focusedWidget;      // Focused widget gets events fro
 void *guiCore_malloc(size_t wantedSize);
 void *guiCore_calloc(size_t wantedSize);
 void guiCore_AllocateWidgetCollection(guiGenericContainer_t *container, uint16_t count);
-void guiCore_AllocateHandlers(guiGenericWidget_t *widget, uint16_t count);
-uint8_t guiCore_AddHandler(guiGenericWidget_t *widget, uint8_t eventType, eventHandler_t handler);
+void guiCore_AllocateHandlers(void *widget, uint16_t count);
+uint8_t guiCore_AddHandler(void *widget, uint8_t eventType, eventHandler_t handler);
 
 // Common error handler
 void guiCore_Error(uint8_t errCode);

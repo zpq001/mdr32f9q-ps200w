@@ -9,6 +9,8 @@ QT       += core gui
 TARGET = QMenuSim
 TEMPLATE = app
 
+DEFINES += _GUITESTPROJ_
+
 INCLUDEPATH = ./
 INCLUDEPATH += ./gui_top/
 INCLUDEPATH += ../common/
@@ -46,10 +48,7 @@ SOURCES += main.cpp\
     ../../source/gui/guiMasterPanel.c \
     ../../source/gui/guiEditPanel1.c \
 	../../source/gui/guiMessagePanel1.c \
-    gui_top/uartParser.c	\
     gui_top/guiTop.c \
-    gui_top/eeprom.c \
-    gui_top/converter.c \
     ../../source/gui/guiEditPanel2.c \
     ../../source/gui/guiWidgets/guiTextSpinBox.c \
     ../../source/gui/guiWidgets/guiRadioButton.c
@@ -81,10 +80,7 @@ HEADERS  += mainwindow.h \
     ../../source/src/global_def.h \
 	../../source/gui/guiConfig.h \
 	gui_top/guiTop.h \
-    gui_top/uartParser.h \
-    gui_top/eeprom.h \
-    gui_top/converter.h \
-    gui_top/buttons_top.h \
+	gui_top/taps.h \
     ../../source/gui/guiEditPanel2.h \
     ../../source/gui/guiWidgets/guiTextSpinBox.h \
     ../../source/gui/guiWidgets/guiRadioButton.h

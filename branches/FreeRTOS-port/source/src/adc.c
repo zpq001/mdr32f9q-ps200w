@@ -39,6 +39,23 @@ xQueueHandle xQueueADC;
 xSemaphoreHandle xSemaphoreADC;
 
 
+uint16_t ADC_GetVoltage(void)
+{
+	return voltage_adc;
+}
+
+uint16_t ADC_GetCurrent(void)
+{
+	return current_adc;
+}
+
+uint32_t ADC_GetPower(void)
+{
+	return power_adc;
+}
+
+
+
 void vTaskADC(void *pvParameters) 
 {
 	uint32_t msg;

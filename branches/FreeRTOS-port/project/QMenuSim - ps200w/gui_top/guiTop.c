@@ -15,10 +15,9 @@
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
 #include "guiMessagePanel1.h"
-#include "eeprom.h"
 
 // UART parser test
-#include "converter.h"
+#include "taps.h"
 
 // Callback functions
 cbLogPtr addLogCallback;
@@ -29,23 +28,24 @@ uint8_t lcd0_buffer[DISPLAY_BUFFER_SIZE];
 uint8_t lcd1_buffer[DISPLAY_BUFFER_SIZE];
 
 
-uint8_t timeHours;
-uint8_t timeMinutes;
-uint8_t timeSeconds;
-
 uint8_t gui_started = 0;
 
 guiEvent_t guiEvent;
 
 
-//=================================================================//
-//=================================================================//
-//                      Hardware emulation interface               //
-//=================================================================//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Hardware state variables
 
-extern converter_state_t converter_state;
+converter_state_t converter_state;
+uint8_t ee_saveRecentProfile = 0, ee_restoreRecentProfile = 1;
+uint8_t extsw_enable = 1;
+uint8_t extsw_inverse = 0;
+uint8_t extsw_mode = EXTSW_DIRECT;
+int8_t voltage_dac_offset = -5;
+int8_t current_low_dac_offset = -10;
+int8_t current_high_dac_offset = 20;
 
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
 
@@ -110,22 +110,8 @@ static void guiDrawIsComplete(void)
 // Commands to GUI
 
 
-void guiUpdateTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
-{
-    timeHours = hours;
-    timeMinutes = minutes;
-    timeSeconds = seconds;
-}
-
-
 void guiInitialize(void)
 {
-    timeHours = 0;
-    timeMinutes = 0;
-    timeSeconds = 0;
-    uint8_t i;
-    //char profileName[50];
-
     // Initial state
     converter_state.channel = CHANNEL_12V;
     converter_state.current_range = CURRENT_RANGE_LOW;
@@ -135,46 +121,27 @@ void guiInitialize(void)
     converter_state.power_adc = 0;
     converter_state.vdac_offset = -5;
     converter_state.cdac_offset = 20;
-
+    converter_state.overload_prot_en = 1;
+    converter_state.overload_warn_en = 0;
+    converter_state.overload_threshold = 4;     // 2x [100 us]
 
     guiMainForm_Initialize();
     guiCore_Init((guiGenericWidget_t *)&guiMainForm);
 
-    my_custom_event_t my_event;
-    my_event.type = GUI_SYSTEM_EVENT;
-    system_event_t *e = &my_event.payload;
-    e->local_request = 1;
+    // Initial master panel update
+    guiUpdateChannel();     // updates all master panel elements
 
-    // Master panel
-    e->code = GUI_UPDATE_CHANNEL;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_CURRENT_RANGE;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_CURRENT_SETTING;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_CURRENT_SETTING;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
+    // Initial setup panel update
+    // Voltage and current limit update is not required - these widgets will get proper values on show
+    guiUpdateOverloadSettings();
+    guiUpdateProfileSettings();
+    guiUpdateExtswitchSettings();
+    guiUpdateDacSettings();
+    guiUpdateProfileList();
 
-    // Setup panel
-    e->code = GUI_UPDATE_OVERLOAD_SETTINGS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_PROFILE_SETTINGS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_EXTSWITCH_SETTINGS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_DAC_SETTINGS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_PROFILE_LIST;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiSetupPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
-
-    // Indicators
-    e->code = GUI_UPDATE_ADC_INDICATORS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    e->code = GUI_UPDATE_TEMPERATURE_INDICATOR;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
+    // Simulation of ADC and service tasks work
+    guiUpdateAdcIndicators();
+    guiUpdateTemperatureIndicator();
 }
 
 
@@ -182,14 +149,12 @@ void guiInitialize(void)
 void guiDrawAll(void)
 {
     guiCore_ProcessTimers();
-    //addLogCallback(LOG_FROM_TOP, "Redrawing GUI");
     guiCore_RedrawAll();
-    // Update display(s)
     guiDrawIsComplete();
 }
 
 
-// No touch support
+//~~~~~~~ No touch support
 
 
 void guiButtonEvent(uint16_t buttonCode, uint8_t eventType)
@@ -224,84 +189,9 @@ void guiEncoderRotated(int32_t delta)
 //=================================================================//
 
 
-/*
-
 //---------------------------------------------//
-// NEW HW interface
-uint16_t getVoltageSetting(uint8_t channel)
-{
-    return set_voltage;
-}
-
-uint16_t getVoltageAbsMax(uint8_t channel)
-{
-    return 2000;
-}
-
-uint16_t getVoltageAbsMin(uint8_t channel)
-{
-    return 0;
-}
-
-uint16_t getVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
-{
-    return 0;
-}
-
-uint8_t getVoltageLimitState(uint8_t channel, uint8_t limit_type)
-{
-    return 0;
-}
-
-uint16_t getCurrentSetting(uint8_t channel, uint8_t range)
-{
-    return set_current;
-}
-
-uint16_t getCurrentAbsMax(uint8_t channel, uint8_t range)
-{
-    return 4000;
-}
-
-uint16_t getCurrentAbsMin(uint8_t channel, uint8_t range)
-{
-    return 0;
-}
-
-uint16_t getCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type)
-{
-    return 0;
-}
-
-uint8_t getCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type)
-{
-    return 0;
-}
-
-uint8_t getOverloadProtectionState(void)
-{
-    return 0;
-}
-
-uint8_t getOverloadProtectionWarning(void)
-{
-    return 0;
-}
-
-uint16_t getOverloadProtectionThreshold(void)
-{
-    return 0;
-}
-
-uint8_t getCurrentRange(uint8_t channel)
-{
-    return 0;
-}
-
-*/
-
-
-
+// ADC functions emulation
+//---------------------------------------------//
 uint16_t ADC_GetVoltage(void)
 {
     return converter_state.set_voltage;
@@ -317,7 +207,11 @@ uint32_t ADC_GetPower(void)
     return 0;
 }
 
-uint16_t ADC_GetTemperature(void)
+
+//---------------------------------------------//
+// Service functions emulation
+//---------------------------------------------//
+int16_t Service_GetTemperature(void)
 {
     return converter_state.converter_temp_celsius;
 }
@@ -329,54 +223,126 @@ uint16_t ADC_GetTemperature(void)
 //---------------------------------------------//
 uint8_t BTN_GetExtSwitchMode(void)
 {
-    return EXTSW_TOGGLE;
+    return extsw_mode;
 }
 
 uint8_t BTN_GetExtSwitchInversion(void)
 {
-    return 0;
+    return extsw_inverse;
 }
 
 uint8_t BTN_IsExtSwitchEnabled(void)
 {
-    return 1;
+    return extsw_enable;
 }
+
+//---------------------------------------------//
+// EEPROM functions emulation
+//---------------------------------------------//
+uint8_t EE_IsRecentProfileSavingEnabled(void)
+{
+    return ee_saveRecentProfile;
+}
+
+uint8_t EE_IsRecentProfileRestoreEnabled(void)
+{
+    return ee_restoreRecentProfile;
+}
+
 
 
 
 //---------------------------------------------//
+// Emulation of converter task
+//---------------------------------------------//
 
-
-//guiLogEvent("Reading voltage ADC");
-
-
-
-
-
-
-//-----------------------------------//
-// Current
-
-
-
-
-
-
-
-
-
-
-//-----------------------------------//
-// Feedback channel
-
-// Read selected feedback channel and update LCD
-void guiUpdateChannelSetting(void)
+uint16_t Converter_GetVoltageSetting(uint8_t channel)
 {
-    guiLogEvent("Reading selected feedback channel");
-    //setGuiFeedbackChannel(channel);
+    return converter_state.set_voltage;
+}
+
+uint16_t Converter_GetVoltageAbsMax(uint8_t channel)
+{
+    return 20000;
+}
+
+uint16_t Converter_GetVoltageAbsMin(uint8_t channel)
+{
+    return 0;
+}
+
+uint16_t Converter_GetVoltageLimitSetting(uint8_t channel, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t Converter_GetVoltageLimitState(uint8_t channel, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint16_t Converter_GetCurrentSetting(uint8_t channel, uint8_t range)
+{
+    return converter_state.set_current;
+}
+
+uint16_t Converter_GetCurrentAbsMax(uint8_t channel, uint8_t range)
+{
+    return 40000;
+}
+
+uint16_t Converter_GetCurrentAbsMin(uint8_t channel, uint8_t range)
+{
+    return 0;
+}
+
+uint16_t Converter_GetCurrentLimitSetting(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t Converter_GetCurrentLimitState(uint8_t channel, uint8_t range, uint8_t limit_type)
+{
+    return 0;
+}
+
+uint8_t Converter_GetOverloadProtectionState(void)
+{
+    return converter_state.overload_prot_en;
+}
+
+uint8_t Converter_GetOverloadProtectionWarning(void)
+{
+    return converter_state.overload_warn_en;
+}
+
+uint16_t Converter_GetOverloadProtectionThreshold(void)
+{
+    return converter_state.overload_threshold;
+}
+
+uint8_t Converter_GetCurrentRange(uint8_t channel)
+{
+    return converter_state.current_range;
+}
+
+uint8_t Converter_GetFeedbackChannel(void)
+{
+    return converter_state.channel;
 }
 
 
+int8_t Converter_GetVoltageDacOffset(void)
+{
+    return converter_state.vdac_offset;
+}
+
+int8_t Converter_GetCurrentDacOffset(uint8_t range)
+{
+    return converter_state.cdac_offset;
+}
+
+//---------------------------------------------//
 
 
 
@@ -385,8 +351,6 @@ void guiUpdateChannelSetting(void)
 //===========================================================================//
 //===========================================================================//
 //===========================================================================//
-
-
 
 
 
@@ -399,18 +363,8 @@ void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
     converter_state.set_voltage = new_set_voltage;
 
     //------ simulation of actual conveter work ------//
-    my_custom_event_t my_event;
-    my_event.type = GUI_SYSTEM_EVENT;
-    system_event_t *e = &my_event.payload;
-
-    // Master panel
-    e->code = GUI_UPDATE_ADC_INDICATORS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
+    guiUpdateAdcIndicators();
 }
-
-
-
 
 
 
@@ -424,14 +378,7 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t n
     converter_state.set_current = new_set_current;
 
     //------ simulation of actual conveter work ------//
-    my_custom_event_t my_event;
-    my_event.type = GUI_SYSTEM_EVENT;
-    system_event_t *e = &my_event.payload;
-
-    // Master panel
-    e->code = GUI_UPDATE_ADC_INDICATORS;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
+    guiUpdateAdcIndicators();
 }
 
 
@@ -439,10 +386,6 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t n
 //------------------------------------------------------//
 //              Voltage/Current limits                  //
 //------------------------------------------------------//
-//struct limSet_t {
-//    uint8_t enabled;
-//    int32_t value;
-//} vlim_low, vlim_high, clim_low, clim_high;
 
 void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
 {
@@ -456,15 +399,6 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
     // Should update widgets after processing command by converter - both limit and setting widgets
 }
 
-void guiTop_UpdateVoltageLimit(uint8_t channel, uint8_t limit_type)
-{
-    //setGuiVoltageLimitSetting(channel, limit_type, 0, 0);
-}
-
-void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_type)
-{
-    //setGuiCurrentLimitSetting(channel, range, limit_type, 0, 0);
-}
 
 
 
@@ -475,17 +409,10 @@ void guiTop_UpdateCurrentLimit(uint8_t channel, uint8_t range, uint8_t limit_typ
 void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 {
     converter_state.current_range = new_current_range;
+
     //------ simulation of actual conveter work ------//
-    my_custom_event_t my_event;
-    my_event.type = GUI_SYSTEM_EVENT;
-    system_event_t *e = &my_event.payload;
-
-    // Master panel
-    e->code = GUI_UPDATE_CURRENT_RANGE;
-    guiCore_AddMessageToQueue((guiGenericWidget_t *)&guiMasterPanel, (guiEvent_t *)&my_event);
-    guiCore_ProcessMessageQueue();
+    guiUpdateCurrentRange(channel);
 }
-
 
 
 
@@ -502,17 +429,12 @@ void guiTop_ApplyGuiOverloadSettings(uint8_t protectionEnable, uint8_t warningEn
     ovld_threshold = newThreshold;
 }
 
-void guiTop_UpdateOverloadSettings(void)
-{
-    //setGuiOverloadSettings(ovld_protectionEnable, ovld_warningEnable, ovld_threshold);
-}
 
 
 
 //------------------------------------------------------//
 //                  Profiles                            //
 //------------------------------------------------------//
-uint8_t ee_saveRecentProfile, ee_restoreRecentProfile;
 
 void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
 {
@@ -520,9 +442,12 @@ void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRe
     ee_restoreRecentProfile = restoreRecentProfile;
 }
 
-void guiTop_UpdateProfileSettings(void)
+
+// Blockinbg read from EEPROM task
+uint8_t readProfileListRecordName(uint8_t index, char *profileName)
 {
-    //setGuiProfileSettings(ee_saveRecentProfile, ee_restoreRecentProfile);
+    sprintf(profileName, "Profile %d", index);
+    return EE_PROFILE_VALID;
 }
 
 // Profile load
@@ -548,13 +473,20 @@ void guiTop_LoadProfile(uint8_t index)
     {
         guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_RESTORED_RECENT, 0, 30);
     }
+
+    // Update all widgets that display profile data
+    guiUpdateChannel();
+    guiUpdateVoltageLimit(CHANNEL_AUTO, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
+    guiUpdateCurrentLimit(CHANNEL_AUTO, CURRENT_RANGE_AUTO, UPDATE_LOW_LIMIT | UPDATE_HIGH_LIMIT);
+    guiUpdateOverloadSettings();
+    guiUpdateExtswitchSettings();
 }
 
 
 // Profile save
 void guiTop_SaveProfile(uint8_t index, char *profileName)
 {
-
+    guiMessagePanel1_Show(MESSAGE_TYPE_INFO, MESSAGE_PROFILE_SAVED, 0, 30);
 }
 
 
@@ -563,9 +495,6 @@ void guiTop_SaveProfile(uint8_t index, char *profileName)
 //------------------------------------------------------//
 //			External switch settings					//
 //------------------------------------------------------//
-uint8_t extsw_enable = 1;
-uint8_t extsw_inverse = 1;
-uint8_t extsw_mode = EXTSW_DIRECT;
 
 void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode)
 {
@@ -574,46 +503,17 @@ void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode
     extsw_mode = mode;
 }
 
-void guiTop_UpdateExtSwitchSettings(void)
-{
-    //setGuiExtSwitchSettings(extsw_enable, extsw_inverse, extsw_mode);
-}
-
-
 
 //------------------------------------------------------//
 //			DAC offset settings							//
 //------------------------------------------------------//
-int8_t voltage_dac_offset = -5;
-int8_t current_low_dac_offset = -10;
-int8_t current_high_dac_offset = 20;
 
-// Applies GUI DAC offset settings to hardware
-// Called by GUI low level
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
 {
     voltage_dac_offset = v_offset;
     current_low_dac_offset = c_low_offset;
     current_high_dac_offset = c_high_offset;
 }
-
-// Reads DAC offset settings and updates GUI widgets
-// Called from both GUI top and low levels
-void guiTop_UpdateDacSettings(void)
-{
-    //setGuiDacSettings(voltage_dac_offset, current_low_dac_offset, current_high_dac_offset);
-}
-
-
-
-
-// Blockinbg read from EEPROM task
-uint8_t readProfileListRecordName(uint8_t index, char *profileName)
-{
-    sprintf(profileName, "Profile %d", index);
-    return EE_PROFILE_VALID;
-}
-
 
 
 

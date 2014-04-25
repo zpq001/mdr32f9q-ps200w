@@ -29,6 +29,7 @@
 //#include "guiTop.h"
 
 
+messageView_t messageView;
 
 
 static uint8_t guiMessagePanel1_onDraw(void *widget, guiEvent_t *event);
@@ -37,41 +38,31 @@ static uint8_t guiMessagePanel1_KeyTranslator(guiGenericWidget_t *widget, guiEve
 static uint8_t guiMessagePanel1_onTimer(void *widget, guiEvent_t *event);
 
 
-//--------- Edit panel 1  ----------//
-#define MESSAGE_PANEL1_ELEMENTS_COUNT 10
+//-------- Message panel 1 ---------//
 guiPanel_t     guiMessagePanel1;
-static void *guiMessagePanel1Elements[MESSAGE_PANEL1_ELEMENTS_COUNT];
-guiWidgetHandler_t messagePanelHandlers[3];
-
 
 //--------- Panel elements ---------//
+// none
 
 
-messageView_t messageView;
 
 void guiMessagePanel1_Initialize(guiGenericWidget_t *parent)
 {
     // Initialize
     guiPanel_Initialize(&guiMessagePanel1, parent);
-    guiMessagePanel1.widgets.count = MESSAGE_PANEL1_ELEMENTS_COUNT;
-    guiMessagePanel1.widgets.elements = guiMessagePanel1Elements;
+    // Panel has no widgets
     guiMessagePanel1.x = 3;
     guiMessagePanel1.y = 3;
     guiMessagePanel1.width = 96-6;
     guiMessagePanel1.height = 68-12;
     guiMessagePanel1.showFocus = 0;
     guiMessagePanel1.focusFallsThrough = 0;
-    guiMessagePanel1.keyTranslator = &guiMessagePanel1_KeyTranslator;
-    guiMessagePanel1.handlers.count = 2;
-    guiMessagePanel1.handlers.elements = messagePanelHandlers;
-    guiMessagePanel1.handlers.elements[0].eventType = GUI_EVENT_DRAW;
-    guiMessagePanel1.handlers.elements[0].handler = *guiMessagePanel1_onDraw;
-    //guiMessagePanel1.handlers.elements[1].eventType = GUI_ON_VISIBLE_CHANGED;
-    //guiMessagePanel1.handlers.elements[1].handler = *guiMessagePanel1_onVisibleChanged;
-    guiMessagePanel1.handlers.elements[1].eventType = GUI_EVENT_TIMER;
-    guiMessagePanel1.handlers.elements[1].handler = *guiMessagePanel1_onTimer;
     guiMessagePanel1.isVisible = 0;
     guiMessagePanel1.frame = 0;
+    guiMessagePanel1.keyTranslator = &guiMessagePanel1_KeyTranslator;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&guiMessagePanel1, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&guiMessagePanel1, GUI_EVENT_DRAW, guiMessagePanel1_onDraw);
+    guiCore_AddHandler((guiGenericWidget_t *)&guiMessagePanel1, GUI_EVENT_TIMER, guiMessagePanel1_onTimer);
 
     guiCore_TimerInit(GUI_MESSAGE_PANEL_TIMER, 20, TMR_RUN_ONCE, (guiGenericWidget_t *)&guiMessagePanel1, 0);
 }

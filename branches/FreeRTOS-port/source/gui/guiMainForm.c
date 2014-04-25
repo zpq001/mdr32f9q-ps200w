@@ -40,7 +40,7 @@
 #include "guiPanel.h"
 #include "guiTextLabel.h"
 
-// Other forms and panels - in order to switch between them
+// Other forms and panels
 #include "guiMainForm.h"
 #include "guiMasterPanel.h"
 #include "guiSetupPanel.h"
@@ -48,42 +48,28 @@
 #include "guiEditPanel2.h"
 #include "guiMessagePanel1.h"
 
+
 extern void guiLogEvent(char *string);
 
 
 static uint8_t guiMainForm_ProcessEvents(guiGenericWidget_t *widget, guiEvent_t event);
 
 
-//--------- Form elements ---------//
-//static guiTextLabel_t textLabel_voltage;
-//static char textLabel_voltage_data[10];
-
-//static guiTextLabel_t textLabel_current;
-//static char textLabel_current_data[10];
-
-
 //----------- GUI Form  -----------//
-#define MAIN_FORM_ELEMENTS_COUNT 3
 guiPanel_t     guiMainForm;
-static void *guiMainFormElements[MAIN_FORM_ELEMENTS_COUNT];
 static uint8_t greetingFlags = 0;
 
 
 void guiMainForm_Initialize(void)
 {
     // Initialize form
-    guiPanel_Initialize(&guiMainForm, 0);
-    guiMainForm.processEvent = guiMainForm_ProcessEvents;
-    guiMainForm.widgets.count = MAIN_FORM_ELEMENTS_COUNT;
-    guiMainForm.widgets.elements = guiMainFormElements;
-    guiMainForm.widgets.elements[0] = &guiMasterPanel;
-    guiMainForm.widgets.elements[1] = &guiSetupPanel;
-
+    guiPanel_Initialize(&guiMainForm, 0);   // no parent => root
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiMainForm, 3);
     guiMainForm.x = 0;
     guiMainForm.y = 0;
     guiMainForm.width = 96 * 2;
     guiMainForm.height = 68;
-
+    guiMainForm.processEvent = guiMainForm_ProcessEvents;
 
     // Other panels are all initialized to be invisible
     guiMasterPanel_Initialize((guiGenericWidget_t *)&guiMainForm);
@@ -92,9 +78,10 @@ void guiMainForm_Initialize(void)
     guiMessagePanel1_Initialize((guiGenericWidget_t *)&guiSetupPanel);    //
     guiEditPanel2_Initialize((guiGenericWidget_t *)&guiSetupPanel);
 
-    // Add widgets
+    // Add other widgets
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiMasterPanel, (guiGenericContainer_t *)&guiMainForm);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiSetupPanel, (guiGenericContainer_t *)&guiMainForm);
     guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiMessagePanel1, (guiGenericContainer_t *)&guiMainForm);
-    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&guiEditPanel2, (guiGenericContainer_t *)&guiSetupPanel);
 }
 
 
@@ -145,7 +132,7 @@ static uint8_t guiMainForm_ProcessEvents(struct guiGenericWidget_t *widget, guiE
             guiMainForm.redrawFocus = 0;
             guiMainForm.redrawRequired = 0;
             break;
-        case GUI_EVENT_KEY:
+          case GUI_EVENT_KEY:
             if ((event.spec == GUI_KEY_EVENT_HOLD) && (event.lparam == GUI_KEY_ESC))
             {
                 if (guiMasterPanel.isVisible)

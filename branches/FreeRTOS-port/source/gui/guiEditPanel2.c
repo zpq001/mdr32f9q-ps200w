@@ -26,10 +26,16 @@
 #include "guiEditPanel2.h"
 #include "guiSetupPanel.h"
 
-
 #include "guiTop.h"
+
+#ifdef _GUITESTPROJ_
+#include "taps.h"
+#else
 #include "converter.h"
 #include "eeprom.h"
+#endif  //_GUITESTPROJ_
+
+
 
 
 static uint8_t guiEditPanel2_onDraw(void *widget, guiEvent_t *event);

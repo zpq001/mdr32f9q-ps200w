@@ -19,6 +19,7 @@
 #include "systemfunc.h"
 #include "dispatcher.h"
 #include "converter.h"
+#include "guiTop.h"
 
 
 
@@ -166,6 +167,9 @@ static uint8_t UART_read_rx_stream(uint8_t uart_num, char **rx_string, uint16_t 
 
 
 
+static xSemaphoreHandle xSemaphoreConverter1, xSemaphoreConverter2;
+
+
 
 void vTaskUARTReceiver(void *pvParameters) 
 {
@@ -184,6 +188,22 @@ void vTaskUARTReceiver(void *pvParameters)
     arg_t exeFuncArgs[MAX_FUNCTION_ARGUMENTS];
 	
 	portTickType lastExecutionTime = xTaskGetTickCount();
+	
+	//------------//
+	vSemaphoreCreateBinary( xSemaphoreConverter1 );
+	if( xSemaphoreConverter1 == 0 )
+    {
+        while(1);
+    }
+	xSemaphoreTake(xSemaphoreConverter1, 0);
+	
+	vSemaphoreCreateBinary( xSemaphoreConverter2 );
+	if( xSemaphoreConverter2 == 0 )
+    {
+        while(1);
+    }
+	xSemaphoreTake(xSemaphoreConverter2, 0);
+	//------------//
 	
 	// Start operation
 	UART_init_and_start_RX_DMA(my_uart_num);
@@ -243,11 +263,16 @@ void vTaskUARTReceiver(void *pvParameters)
 
 
 
+
+
 // This is a huge switch-based procedure for executing commands
 // received from UARTs.
 // Possibly there is a better way to implement it.
 static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 {
+	converter_message_t converter_msg;
+	xSemaphoreHandle *xSem = (uart_num == 1) ? &xSemaphoreConverter1 : &xSemaphoreConverter2;
+	gui_msg_t gui_msg;
 	dispatch_msg_t dispatcher_msg;
 	uart_transmiter_msg_t transmitter_msg;
 	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
@@ -278,10 +303,21 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 						// Set voltage
 						if (args[3].type != 0)
 						{
-							dispatcher_msg.type = DISPATCHER_CONVERTER;
-							dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
-							dispatcher_msg.converter_cmd.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							dispatcher_msg.converter_cmd.a.v_set.value = (int32_t)args[3].data32u;
+							//dispatcher_msg.type = DISPATCHER_CONVERTER;
+							//dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
+							//dispatcher_msg.converter_cmd.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							//dispatcher_msg.converter_cmd.a.v_set.value = (int32_t)args[3].data32u;
+							
+							converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
+							converter_msg.type = CONVERTER_SET_VOLTAGE;
+							converter_msg.pxSemaphore = xSem;
+							converter_msg.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							converter_msg.a.v_set.value = (int32_t)args[3].data32u;
+							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+							// Wait
+							xSemaphoreTake(*xSem, portMAX_DELAY);
+							// Ack
+							transmitter_msg.type = UART_RESPONSE_OK;
 						}
 						else
 						{
@@ -321,9 +357,10 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 		case UART_CMD_KEY:
 			if ((args[0].type != 0) && (args[1].type != 0))
 			{
-				dispatcher_msg.type = DISPATCHER_BUTTONS;
-				dispatcher_msg.key_event.code = args[1].flag;
-				dispatcher_msg.key_event.event_type = args[0].flag;
+				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
+				gui_msg.key_event.event = args[0].flag;
+				gui_msg.key_event.code = args[1].flag;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 				transmitter_msg.type = UART_RESPONSE_OK;
 			}
 			else
@@ -338,8 +375,9 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 		case UART_CMD_ENCODER:
 			if (args[0].type != 0)
 			{
-				dispatcher_msg.type = DISPATCHER_ENCODER;
-				dispatcher_msg.encoder_event.delta = args[0].data32;
+				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
+				gui_msg.encoder_event.delta = args[0].data32;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 				transmitter_msg.type = UART_RESPONSE_OK;
 			}
 			else

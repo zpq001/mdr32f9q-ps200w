@@ -665,7 +665,9 @@ void vTaskConverter(void *pvParameters)
 				}
 				converter_state.state = CONVERTER_STATE_OFF;		// Reset overloaded flag (if set)
 				// Load profile data
+				taskENTER_CRITICAL();
 				Converter_LoadProfile();
+				taskEXIT_CRITICAL();
 				// Wait until current feedback switching is allowed
 				while(Converter_IsReady() == 0) 
 					vTaskDelay(1);	
@@ -684,11 +686,8 @@ void vTaskConverter(void *pvParameters)
 					err_code = CMD_ERROR;
 					Converter_TurnOff();
 				} 
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = PROFILE_LOADED;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 			break;
 			//=========================================================================//
 			// Saving profile
@@ -701,19 +700,17 @@ void vTaskConverter(void *pvParameters)
 			//=========================================================================//
 			// Setting DAC offset
 			case CONVERTER_SET_DAC_PARAMS:
-				//taskDISABLE_INTERRUPTS();
 				taskENTER_CRITICAL();
 				global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
 				global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
 				global_settings->dac_current_high_offset = msg.a.dac_set.current_high_offset;
-				//taskENABLE_INTERRUPTS();
 				taskEXIT_CRITICAL();
 				// Update DAC output
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 				// Confirm
-					if (msg.pxSemaphore != 0)
-						xSemaphoreGive(*msg.pxSemaphore);
+				if (msg.pxSemaphore != 0)
+					xSemaphoreGive(*msg.pxSemaphore);
 				break;
 /*			//=========================================================================//
 			// Loading global settings
@@ -735,12 +732,16 @@ void vTaskConverter(void *pvParameters)
 			// Setting voltage
 			case CONVERTER_SET_VOLTAGE:
 				msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);
+				taskENTER_CRITICAL();
 				err_code = Converter_SetVoltage(msg.a.v_set.channel, msg.a.v_set.value);
+				taskEXIT_CRITICAL();
 				// Apply new setting to hardware. CHECKME: charge state
 				if (msg.a.v_set.channel == converter_state.channel->CHANNEL)
 				{
 					SetVoltageDAC(converter_state.channel->voltage.setting);
 				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = VOLTAGE_SETTING_CHANGE;
@@ -753,13 +754,17 @@ void vTaskConverter(void *pvParameters)
 			case CONVERTER_SET_CURRENT:
 				msg.a.c_set.channel = Converter_ValidateChannel(msg.a.c_set.channel);
 				msg.a.c_set.range = Converter_ValidateCurrentRange(msg.a.c_set.range);
+				taskENTER_CRITICAL();
 				err_code = Converter_SetCurrent(msg.a.c_set.channel, msg.a.c_set.range, msg.a.c_set.value);
+				taskEXIT_CRITICAL();
 				// Apply new setting to hardware. CHECKME: charge state
 				if ((msg.a.c_set.channel == converter_state.channel->CHANNEL) && 
 					(msg.a.c_set.range == converter_state.channel->current->RANGE))
 				{
 					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = CURRENT_SETTING_CHANGE;
@@ -772,13 +777,17 @@ void vTaskConverter(void *pvParameters)
 			// Setting voltage limit
 			case CONVERTER_SET_VOLTAGE_LIMIT:
 				msg.a.vlim_set.channel = Converter_ValidateChannel(msg.a.vlim_set.channel);
+				taskENTER_CRITICAL();
 				err_code = Converter_SetVoltageLimit(msg.a.vlim_set.channel, msg.a.vlim_set.type, 
 									msg.a.vlim_set.value, msg.a.vlim_set.enable);
+				taskEXIT_CRITICAL();
 				// Apply new setting to hardware. CHECKME: charge state				
 				if (msg.a.vlim_set.channel == converter_state.channel->CHANNEL)
 				{
 					SetVoltageDAC(converter_state.channel->voltage.setting);
 				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGE;
@@ -791,15 +800,19 @@ void vTaskConverter(void *pvParameters)
 			// Setting current limit
 			case CONVERTER_SET_CURRENT_LIMIT:
 				msg.a.clim_set.channel = Converter_ValidateChannel(msg.a.clim_set.channel);
-				msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);				
+				msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);		
+				taskENTER_CRITICAL();			
 				err_code = Converter_SetCurrentLimit(msg.a.clim_set.channel, msg.a.clim_set.range, msg.a.clim_set.type, 
 									msg.a.clim_set.value, msg.a.clim_set.enable);
+				taskEXIT_CRITICAL();
 				// Apply new setting to hardware. CHECKME: charge state	
 				if ((msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
 					(msg.a.clim_set.range == converter_state.channel->current->RANGE))
 				{
 					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = CURRENT_LIMIT_CHANGE;
@@ -828,8 +841,10 @@ void vTaskConverter(void *pvParameters)
 					temp8u = Converter_SetFeedBackChannel(msg.a.ch_set.new_channel);
 					if (temp8u == CONVERTER_CMD_OK)
 					{
+						taskENTER_CRITICAL();	
 						converter_state.channel = (msg.a.ch_set.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
 												&converter_state.channel_12v;
+						taskEXIT_CRITICAL();
 						while(Converter_IsReady() == 0) 
 							vTaskDelay(1);	
 						// Apply new channel current range setting to hardware
@@ -860,7 +875,8 @@ void vTaskConverter(void *pvParameters)
 					// Trying to set channel that is already selected.
 					err_code = VALUE_BOUND_BY_ABS_MAX;
 				}
-				
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = CHANNEL_CHANGE;
@@ -892,7 +908,9 @@ void vTaskConverter(void *pvParameters)
 							temp8u = Converter_SetCurrentRange(msg.a.crange_set.new_range);
 							if (temp8u == CONVERTER_CMD_OK)
 							{
+								taskENTER_CRITICAL();
 								c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+								taskEXIT_CRITICAL();
 								SetCurrentDAC(c->current->setting, c->current->RANGE);
 								err_code = CMD_OK;
 							}
@@ -912,7 +930,9 @@ void vTaskConverter(void *pvParameters)
 					else
 					{
 						// Setting current range of the non-active channel
+						taskENTER_CRITICAL();
 						c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+						taskEXIT_CRITICAL();
 						err_code = CMD_OK;
 					}
 				}
@@ -921,7 +941,8 @@ void vTaskConverter(void *pvParameters)
 					// Trying to set current range that is already selected.
 					err_code = VALUE_BOUND_BY_ABS_MAX;
 				}
-				
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = CURRENT_RANGE_CHANGE;
@@ -932,8 +953,12 @@ void vTaskConverter(void *pvParameters)
 			//=========================================================================//
 			// Setting overload protection parameters
 			case CONVERTER_SET_OVERLOAD_PARAMS:
+				taskENTER_CRITICAL();
 				err_code = Converter_SetOverloadProtection( msg.a.overload_set.protection_enable, msg.a.overload_set.warning_enable, 
 													msg.a.overload_set.threshold);
+				taskEXIT_CRITICAL();
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = OVERLOAD_SETTING_CHANGE;

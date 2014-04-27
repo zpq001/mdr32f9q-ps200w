@@ -14,6 +14,9 @@
 
 
 
+extern uint8_t analyze_shutdown;
+
+
 void my_DMA_GlobalInit(void);
 void my_DMA_ChannelInit(uint8_t DMA_Channel, DMA_ChannelInitTypeDef *DMA_ChannelInitStruct);
 

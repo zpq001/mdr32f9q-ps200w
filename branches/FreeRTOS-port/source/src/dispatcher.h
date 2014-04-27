@@ -28,7 +28,8 @@ enum DispatcherTaskMsgTypes {
 	
 	DISPATCHER_PROFILE_SETUP,
 	
-	DISPATCHER_TEST_FUNC1
+	DISPATCHER_TEST_FUNC1,
+	DISPATCHER_SHUTDOWN
 };
 
 
@@ -93,6 +94,7 @@ typedef struct {
 
 extern xQueueHandle xQueueDispatcher;
 extern const dispatch_msg_t dispatcher_tick_msg;
+extern const dispatch_msg_t dispatcher_shutdown_msg;
 
 void vTaskDispatcher(void *pvParameters);
 

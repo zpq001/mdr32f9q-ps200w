@@ -25,15 +25,15 @@ External switch mode:
 #include "task.h"
 #include "queue.h"
 
-#include "dispatcher.h"
+//#include "dispatcher.h"
 #include "converter.h"
 #include "buttons.h"
 #include "encoder.h"
 #include "global_def.h"
 #include "buttons_top.h"
+#include "guiTop.h"
 #include "eeprom.h"
 
-// TODO: Mutex!!!
 
 enum ExtSwActions {EXTSW_CMD_NONE, EXTSW_CMD_OFF, EXTSW_CMD_ON};
 
@@ -43,8 +43,14 @@ static struct extsw_mode_t {
 	uint8_t mode;
 } extsw_mode;
 
+static uint8_t operation_enable;
+
+static converter_message_t converter_msg;
+static gui_msg_t gui_msg;
+
 xQueueHandle xQueueButtons;
 const buttons_msg_t buttons_tick_msg = {BUTTONS_TICK};
+
 
 
 
@@ -65,13 +71,11 @@ uint8_t BTN_IsExtSwitchEnabled(void)
 
 
 // Read configuration from profile structure
-void BTN_LoadProfile(void)
+static void BTN_LoadProfile(void)
 {
-	//taskENTER_CRITICAL();
 	extsw_mode.enable = device_profile->buttons_profile.ext_switch_enable;
 	extsw_mode.inverse = device_profile->buttons_profile.ext_switch_inverse;
 	extsw_mode.mode = device_profile->buttons_profile.ext_switch_mode;
-	//taskEXIT_CRITICAL();
 }
 
 // Write configuration into profile structure
@@ -121,21 +125,22 @@ void vTaskButtons(void *pvParameters)
 {
 	uint16_t mask;
 	uint8_t extsw_cmd;
-	dispatch_msg_t dispatcher_msg;
 	buttons_msg_t msg;
 	
 	// Initialize
 	xQueueButtons = xQueueCreate( 5, sizeof( buttons_msg_t ) );		
 	if( xQueueButtons == 0 )
-	{
-		// Queue was not created and must not be used.
 		while(1);
-	}
 	
 	// Default initialization
 	extsw_mode.enable = 0;
 	extsw_mode.inverse = 0;
 	extsw_mode.mode = EXTSW_DIRECT;
+	
+	converter_msg.sender = sender_BUTTONS;
+	converter_msg.pxSemaphore = 0;
+	
+	operation_enable = 0;
 	
 	while(1)
 	{
@@ -143,91 +148,90 @@ void vTaskButtons(void *pvParameters)
 		switch(msg.type)
 		{
 			case BUTTONS_EXTSWITCH_SETTINGS:
-				// Buttons task is the one who can write settings
+				taskENTER_CRITICAL();
 				extsw_mode.enable = msg.extSwitchSetting.enable;
 				extsw_mode.inverse = msg.extSwitchSetting.inverse;
 				extsw_mode.mode = msg.extSwitchSetting.mode;
+				taskEXIT_CRITICAL();
 				// Confirm
-				if (msg.pxSemaphore != 0)
-					xSemaphoreGive(*msg.pxSemaphore);	
+				if (msg.pxSemaphore != 0)	xSemaphoreGive(*msg.pxSemaphore);	
 				break;
 			case BUTTONS_LOAD_PROFILE:
 				// Read settings from profile data structure
+				taskENTER_CRITICAL();
 				BTN_LoadProfile();
+				taskEXIT_CRITICAL();
 				// Confirm
-				if (msg.pxSemaphore != 0)
-					xSemaphoreGive(*msg.pxSemaphore);
+				if (msg.pxSemaphore != 0)	xSemaphoreGive(*msg.pxSemaphore);
 				break;
 			case BUTTONS_SAVE_PROFILE:
 				// Write settings to profile data structure
 				BTN_SaveProfile();
 				// Confirm
-				if (msg.pxSemaphore != 0)
-					xSemaphoreGive(*msg.pxSemaphore);
+				if (msg.pxSemaphore != 0)	xSemaphoreGive(*msg.pxSemaphore);
+				break;
+			case BUTTONS_START_OPERATION:
+				operation_enable = 1;
 				break;
 			case BUTTONS_TICK:
+				if (!operation_enable)
+					break;
 				ProcessButtons();	
 				UpdateEncoderDelta();
 				extsw_cmd = getExtSwAction();
 				//---------- Converter control -----------//
-				dispatcher_msg.type = DISPATCHER_CONVERTER;
 				
 				// Feedback channel select
 				if (buttons.action_down & SW_CHANNEL)
 				{
 					// Send switch channel to 5V message
-					dispatcher_msg.converter_cmd.msg_type = CONVERTER_SWITCH_CHANNEL;
-					dispatcher_msg.converter_cmd.a.ch_set.new_channel = CHANNEL_5V;
-					xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+					converter_msg.a.ch_set.new_channel = CHANNEL_5V;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				else if (buttons.action_up & SW_CHANNEL)
 				{
 					// Send switch channel to 12V message
-					dispatcher_msg.converter_cmd.msg_type = CONVERTER_SWITCH_CHANNEL;
-					dispatcher_msg.converter_cmd.a.ch_set.new_channel = CHANNEL_12V;
-					xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+					converter_msg.a.ch_set.new_channel = CHANNEL_12V;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				
 				if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF))
 				{
 					// Send OFF mesage to converter task
-					dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_OFF;
-					xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+					converter_msg.type = CONVERTER_TURN_OFF;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON))
 				{
 					// Send ON mesage to converter task
-					dispatcher_msg.converter_cmd.msg_type = CONVERTER_TURN_ON;
-					xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+					converter_msg.type = CONVERTER_TURN_ON;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				
 				
 				// Serialize button events
-				dispatcher_msg.type = DISPATCHER_BUTTONS;
+				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
 				mask = 0x0001;
 				while(mask)
 				{
-					dispatcher_msg.key_event.code = mask;
+					gui_msg.key_event.code = mask;
 					
 					if (buttons.action_down & mask)
 					{
-						dispatcher_msg.key_event.event_type = BTN_EVENT_DOWN;
-						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+						gui_msg.key_event.event = BTN_EVENT_DOWN;
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
-				/*	if (buttons.action_up & mask)
-					{
-						dispatcher_msg.key_event.event_type = BTN_EVENT_UP;
-						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-					} */
 					if (buttons.action_up_short & mask)
 					{
-						dispatcher_msg.key_event.event_type = BTN_EVENT_UP_SHORT;
-						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+						gui_msg.key_event.event = BTN_EVENT_UP_SHORT;
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					if (buttons.action_hold & mask)
 					{
-						dispatcher_msg.key_event.event_type = BTN_EVENT_HOLD;
-						xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+						gui_msg.key_event.event = BTN_EVENT_HOLD;
+						xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 					}
 					mask <<= 1;
 				}
@@ -235,9 +239,9 @@ void vTaskButtons(void *pvParameters)
 				// Send encoder events to GUI
 				if (encoder_delta)
 				{
-					dispatcher_msg.type = DISPATCHER_ENCODER;
-					dispatcher_msg.encoder_event.delta = encoder_delta;
-					xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+					gui_msg.type = GUI_TASK_PROCESS_ENCODER;
+					gui_msg.encoder_event.delta = encoder_delta;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				}
 				break;
 		}

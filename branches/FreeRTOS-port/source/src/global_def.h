@@ -44,7 +44,9 @@ enum senders {
 	sender_UART2,
 
 	sender_GUI,
-	sender_CONVERTER
+	sender_CONVERTER,
+	
+	sender_BUTTONS
 };
 
 

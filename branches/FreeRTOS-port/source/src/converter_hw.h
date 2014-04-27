@@ -8,6 +8,9 @@
 #define CMD_HW_OFF_BY_ADC		0x01
 #define CMD_HW_ON_BY_ADC		0x02
 
+// shutdown to HW process bits
+#define CMD_HW_OFF_SHUTDOWN		0x01
+
 
 // Low-level converter driver return values
 #define CONVERTER_CMD_OK			0x10
@@ -16,6 +19,8 @@
 #define CONVERTER_ILLEGAL_ON_STATE	0x13
 
 
+
+extern volatile uint8_t cmd_shutdown_to_HWProcess;
 
 void SetVoltageDAC(uint16_t val);
 void SetCurrentDAC(uint16_t val, uint8_t current_range);

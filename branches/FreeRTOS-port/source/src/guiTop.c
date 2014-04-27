@@ -46,10 +46,12 @@
 xQueueHandle xQueueGUI;
 
 static dispatch_msg_t dispatcher_msg;
+static converter_message_t converter_msg;
 static buttons_msg_t buttons_msg;
 static eeprom_message_t eeprom_msg;
 
 static xSemaphoreHandle xSemaphoreEEPROM;
+static xSemaphoreHandle xSemaphoreConverter;
 
 static uint8_t profileOperationInProgress = 0;
 
@@ -87,6 +89,14 @@ void vTaskGUI(void *pvParameters)
     {
         while(1);
     }
+	xSemaphoreTake(xSemaphoreEEPROM, 0);
+	
+	vSemaphoreCreateBinary( xSemaphoreConverter );
+	if( xSemaphoreConverter == 0 )
+    {
+        while(1);
+    }
+	xSemaphoreTake(xSemaphoreConverter, 0);
 	
 	// Common fields
 	eeprom_msg.sender = sender_GUI;
@@ -247,12 +257,12 @@ void vTaskGUI(void *pvParameters)
 				profileOperationInProgress = 0;
 				break;
 				
-				
+			/*	
 			case GUI_TASK_UPDATE_PROFILE_SETUP:
 					// Read profile settings and update widgets
 					guiUpdateProfileSettings();
 				break;
-			
+			*/
 		}
 	}
 }
@@ -269,7 +279,17 @@ void vTaskGUI(void *pvParameters)
 //===========================================================================//
 //===========================================================================//
 
-
+enum {NO_SEMPHR = 0, USE_SEMPHR = 1};
+	
+static void prepareConverterMsg(uint8_t msg_type, uint8_t use_semaphore)
+{
+	converter_msg.type = msg_type;
+	converter_msg.sender = sender_GUI;
+	if (use_semaphore == USE_SEMPHR)
+		converter_msg.pxSemaphore = &xSemaphoreConverter;
+	else
+		converter_msg.pxSemaphore = 0;
+}
 
 
 //------------------------------------------------------//
@@ -279,12 +299,22 @@ void vTaskGUI(void *pvParameters)
 
 void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 {
+	/*
     dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE;
 	dispatcher_msg.converter_cmd.a.v_set.channel = channel;	
 	dispatcher_msg.converter_cmd.a.v_set.value = new_set_voltage;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
+	
+	prepareConverterMsg(CONVERTER_SET_VOLTAGE, USE_SEMPHR);
+	converter_msg.a.v_set.channel = channel;
+	converter_msg.a.v_set.value = new_set_voltage;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update voltage
+	guiUpdateVoltageSetting(channel);
 }
 
 
@@ -295,13 +325,24 @@ void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 // Current setting GUI -> HW
 void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t range, int16_t new_set_current)
 {
+	/*
     dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT;
 	dispatcher_msg.converter_cmd.a.c_set.channel = channel;	
 	dispatcher_msg.converter_cmd.a.c_set.range = range;	
 	dispatcher_msg.converter_cmd.a.c_set.value = new_set_current;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	*/
+	
+	prepareConverterMsg(CONVERTER_SET_CURRENT, USE_SEMPHR);
+	converter_msg.a.c_set.channel = channel;
+	converter_msg.a.c_set.range = range;
+	converter_msg.a.c_set.value = new_set_current;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update current
+	guiUpdateCurrentSetting(channel, range);
 }
 
 
@@ -311,20 +352,32 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t range, int16_t new_set_
 
 void guiTop_ApplyGuiVoltageLimit(uint8_t channel, uint8_t limit_type, uint8_t enable, int16_t value)
 {
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	/*dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_VOLTAGE_LIMIT;
 	dispatcher_msg.converter_cmd.a.vlim_set.channel = channel;
 	dispatcher_msg.converter_cmd.a.vlim_set.type = limit_type;	
 	dispatcher_msg.converter_cmd.a.vlim_set.enable = enable;
 	dispatcher_msg.converter_cmd.a.vlim_set.value = value;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
     // TODO - should update widgets after processing command by converter - both limit and setting widgets
+	
+	prepareConverterMsg(CONVERTER_SET_VOLTAGE_LIMIT, USE_SEMPHR);
+	converter_msg.a.vlim_set.channel = channel;
+	converter_msg.a.vlim_set.type = limit_type;
+	converter_msg.a.vlim_set.enable = enable;
+	converter_msg.a.vlim_set.value = value;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update both voltage setting and limit
+	guiUpdateVoltageLimit(channel, limit_type);
+	guiUpdateVoltageSetting(channel);
 }
 
 void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t limit_type, uint8_t enable, int16_t value)
 {
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	/*dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_LIMIT;
 	dispatcher_msg.converter_cmd.a.clim_set.channel = channel;
@@ -332,8 +385,21 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
 	dispatcher_msg.converter_cmd.a.clim_set.type = limit_type;	
 	dispatcher_msg.converter_cmd.a.clim_set.enable = enable;
 	dispatcher_msg.converter_cmd.a.clim_set.value = value;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
     // TODO - should update widgets after processing command by converter - both limit and setting widgets
+	
+	prepareConverterMsg(CONVERTER_SET_CURRENT_LIMIT, USE_SEMPHR);
+	converter_msg.a.clim_set.channel = channel;
+	converter_msg.a.clim_set.range = currentRange;
+	converter_msg.a.clim_set.type = limit_type;
+	converter_msg.a.clim_set.enable = enable;
+	converter_msg.a.clim_set.value = value;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update both current setting and limit
+	guiUpdateCurrentLimit(channel, currentRange, limit_type);
+	guiUpdateCurrentSetting(channel, currentRange);
 }
 
 
@@ -343,12 +409,21 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
 
 void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 {
-    dispatcher_msg.type = DISPATCHER_CONVERTER;
+    /*dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_CURRENT_RANGE;
 	dispatcher_msg.converter_cmd.a.crange_set.channel = channel;	
 	dispatcher_msg.converter_cmd.a.crange_set.new_range = new_current_range;	
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
+	
+	prepareConverterMsg(CONVERTER_SET_CURRENT_RANGE, USE_SEMPHR);
+	converter_msg.a.crange_set.channel = channel;
+	converter_msg.a.crange_set.new_range = new_current_range;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update current range
+	guiUpdateCurrentRange(channel);
 }
 
 
@@ -358,13 +433,19 @@ void guiTop_ApplyCurrentRange(uint8_t channel, uint8_t new_current_range)
 
 void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_enable, int32_t threshold)
 { 
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	/*dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_OVERLOAD_PARAMS;
 	dispatcher_msg.converter_cmd.a.overload_set.protection_enable = protection_enable;
 	dispatcher_msg.converter_cmd.a.overload_set.warning_enable = warning_enable;
 	dispatcher_msg.converter_cmd.a.overload_set.threshold = threshold;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		*/
+
+	prepareConverterMsg(CONVERTER_SET_OVERLOAD_PARAMS, NO_SEMPHR);
+	converter_msg.a.overload_set.protection_enable = protection_enable;
+	converter_msg.a.overload_set.warning_enable = warning_enable;
+	converter_msg.a.overload_set.threshold = threshold;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 }
 
 
@@ -375,11 +456,20 @@ void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_
 
 void guiTop_ApplyGuiProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
 {
-	dispatcher_msg.type = DISPATCHER_PROFILE_SETUP;
+	/*dispatcher_msg.type = DISPATCHER_PROFILE_SETUP;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.profile_setup.saveRecentProfile = saveRecentProfile;
 	dispatcher_msg.profile_setup.restoreRecentProfile = restoreRecentProfile;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY); */
+	
+	eeprom_msg.type = EE_TASK_PROFILE_SETTINGS;
+	eeprom_msg.profile_settings.saveRecentProfile = saveRecentProfile;
+	eeprom_msg.profile_settings.restoreRecentProfile = restoreRecentProfile;
+	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
+	// Wait for EEPROM task to complete
+	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+	// Settings may have been applied not exactly - update
+	guiUpdateProfileSettings();
 }
 
 void guiTop_LoadProfile(uint8_t index)
@@ -414,7 +504,6 @@ uint8_t readProfileListRecordName(uint8_t index, char *profileName)
 	eeprom_msg.profile_name_request.index = index;
 	eeprom_msg.profile_name_request.state = &profileState;
 	eeprom_msg.profile_name_request.name = profileName;
-	xSemaphoreTake(xSemaphoreEEPROM, 0);
 	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
 	// Wait for EEPROM task to complete
 	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
@@ -444,13 +533,19 @@ void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode
 
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset)
 {
-	dispatcher_msg.type = DISPATCHER_CONVERTER;
+	/*dispatcher_msg.type = DISPATCHER_CONVERTER;
 	dispatcher_msg.sender = sender_GUI;
 	dispatcher_msg.converter_cmd.msg_type = CONVERTER_SET_DAC_PARAMS;
 	dispatcher_msg.converter_cmd.a.dac_set.voltage_offset = v_offset;
 	dispatcher_msg.converter_cmd.a.dac_set.current_low_offset = c_low_offset;
 	dispatcher_msg.converter_cmd.a.dac_set.current_high_offset = c_high_offset;
-	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
+	
+	prepareConverterMsg(CONVERTER_SET_OVERLOAD_PARAMS, NO_SEMPHR);
+	converter_msg.a.dac_set.voltage_offset = v_offset;
+	converter_msg.a.dac_set.current_low_offset = c_low_offset;
+	converter_msg.a.dac_set.current_high_offset = c_high_offset;
+	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 }
 
 

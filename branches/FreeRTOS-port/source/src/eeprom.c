@@ -410,8 +410,6 @@ uint8_t EE_SaveGlobalSettings(void)
 	uint8_t hw_result;
 	uint16_t crc;
 	
-	//Converter_SaveGlobalSettings();		// <----- update settings structure manualy
-	
 	global_settings->number_of_power_cycles++;
 	crc = get_crc16((uint8_t *)&global_settings_data, sizeof(global_settings_t), 0xFFFF);
 	
@@ -427,8 +425,7 @@ uint8_t EE_SaveGlobalSettings(void)
 	return err_code;
 }
 
-void Converter_SaveProfile(void);
-void BTN_SaveProfile(void);
+
 //-------------------------------------------------------//
 // Saves recent profile to EEPROM
 //
@@ -441,11 +438,7 @@ uint8_t EE_SaveRecentProfile(void)
 	
 	if (global_settings->saveRecentProfile)
 	{
-		// Profile save is required
-		EE_GetReadyForProfileSave();
-		Converter_SaveProfile();		// <----- update profile structure manualy
-		BTN_SaveProfile();
-		
+		// Structure device_profile_data must be already prepared
 		crc = get_crc16((uint8_t *)&device_profile_data, sizeof(device_profile_t), 0xFFFF);
 
 		//-------------------------------//
@@ -559,17 +552,15 @@ uint8_t EE_IsRecentProfileRestoreEnabled(void)
 	return global_settings->restoreRecentProfile;
 }
 
-void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
+static void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile)
 {
 	if ((restoreRecentProfile == 0) && (saveRecentProfile == 1))
 	{
 		// Saving profile without restoring is useless
 		saveRecentProfile = 0;
 	} 
-	taskENTER_CRITICAL();	// FIXME
 	global_settings->saveRecentProfile = saveRecentProfile;
 	global_settings->restoreRecentProfile = restoreRecentProfile;
-	taskEXIT_CRITICAL();
 }
 
 
@@ -595,6 +586,8 @@ xQueueHandle xQueueEEPROM;
 static eeprom_message_t msg;
 static dispatch_msg_t dispatcher_msg;
 
+uint8_t eeprom_is_busy = 0;
+
 
 void vTaskEEPROM(void *pvParameters) 
 {
@@ -611,7 +604,9 @@ void vTaskEEPROM(void *pvParameters)
 	
 	while(1)
 	{
+		eeprom_is_busy = 0;
 		xQueueReceive(xQueueEEPROM, &msg, portMAX_DELAY);
+		eeprom_is_busy = 1;
 		switch (msg.type)
 		{
 			case EE_TASK_INITIAL_LOAD:
@@ -642,6 +637,17 @@ void vTaskEEPROM(void *pvParameters)
 				}
 				// Provide feedback
 				*msg.initial_load.state = state;
+				// Confirm operation
+				if (msg.xSemaphorePtr != 0)
+				{
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				}
+				break;
+				
+			case EE_TASK_SHUTDOWN_SAVE:
+				// Note - profile data structure and global settings mut NOT be modified during operation
+				*msg.shutdown_save_result.global_settings_errcode = EE_SaveGlobalSettings();
+				*msg.shutdown_save_result.recent_profile_errcode = EE_SaveRecentProfile();
 				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
 				{
@@ -683,6 +689,17 @@ void vTaskEEPROM(void *pvParameters)
 				dispatcher_msg.profile_save_response.profileState = EE_SaveDeviceProfile(msg.profile_save_request.index, msg.profile_save_request.newName);
 				dispatcher_msg.profile_save_response.index = msg.profile_save_request.index;	// return passed index
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
+				break;
+			
+			case EE_TASK_PROFILE_SETTINGS:
+				taskENTER_CRITICAL();
+				EE_ApplyProfileSettings(msg.profile_settings.saveRecentProfile, msg.profile_settings.restoreRecentProfile);
+				taskEXIT_CRITICAL();
+				// Confirm operation
+				if (msg.xSemaphorePtr != 0)
+				{
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				}
 				break;
 		}
 	}

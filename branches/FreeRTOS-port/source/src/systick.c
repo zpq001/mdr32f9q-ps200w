@@ -25,9 +25,7 @@
 // Profiling
 time_profile_t time_profile;
 
-
 static xTimerHandle xTimers[NUM_TIMERS];
-
 
 
 //-------------------------------------------------------//
@@ -113,7 +111,9 @@ void Timer2_IRQHandler(void)
 	else
 		PORT_SetBits(MDR_PORTA, 1<<TXD1);
 */	
+	
 	ProcessPowerOff();				// Check AC line disconnection
+	
 	if (--hw_adc_counter == 0)
 	{
 		hw_adc_counter = HW_ADC_CALL_PERIOD;

@@ -38,6 +38,7 @@
 #include "converter.h"
 #include "eeprom.h"
 #include "adc.h"
+#include "service.h"
 #endif  //_GUITESTPROJ_
 
 
@@ -569,7 +570,7 @@ void guiUpdateCurrentRange(uint8_t channel)
     {
         taskENTER_CRITICAL();
         masterView.current_range = Converter_GetCurrentRange(masterView.channel);
-        value = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+        value = Converter_GetCurrentSetting(masterView.channel, masterView.current_range);
         taskEXIT_CRITICAL();
         setGuiCurrentRange(masterView.current_range);
         setGuiCurrentSetting(value);
@@ -586,7 +587,7 @@ void guiUpdateChannel(void)
     masterView.channel = Converter_GetFeedbackChannel();
     masterView.current_range = Converter_GetCurrentRange(masterView.channel);
     value1 = Converter_GetVoltageSetting(masterView.channel);
-    value2 = Converter_GetCurrentSetting(masterView.current_range, masterView.current_range);
+    value2 = Converter_GetCurrentSetting(masterView.channel, masterView.current_range);
     taskEXIT_CRITICAL();
     setGuiFeedbackChannel(masterView.channel);
     setGuiCurrentRange(masterView.current_range);

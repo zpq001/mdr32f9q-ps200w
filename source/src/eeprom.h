@@ -133,9 +133,11 @@ typedef struct {
 
 enum {
 	EE_TASK_INITIAL_LOAD,
+	EE_TASK_SHUTDOWN_SAVE,
 	EE_TASK_GET_PROFILE_NAME,
 	EE_TASK_LOAD_PROFILE,
-	EE_TASK_SAVE_PROFILE
+	EE_TASK_SAVE_PROFILE,
+	EE_TASK_PROFILE_SETTINGS
 };
 
 
@@ -160,6 +162,14 @@ typedef struct {
 			uint8_t index;
 			char *newName;
         } profile_save_request;
+		struct {
+			uint8_t saveRecentProfile;
+			uint8_t restoreRecentProfile;
+		} profile_settings;
+		struct {
+			uint8_t *global_settings_errcode;
+			uint8_t *recent_profile_errcode;
+		} shutdown_save_result;
 	};
 } eeprom_message_t;
 
@@ -169,6 +179,8 @@ extern xQueueHandle xQueueEEPROM;
 
 extern global_settings_t *global_settings;
 extern device_profile_t *device_profile;
+
+extern uint8_t eeprom_is_busy;
 
 // These two are special functions for calling from routine which
 // services power-down sequence
@@ -182,7 +194,6 @@ void EE_GetReadyForSystemInit(void);
 uint8_t EE_GetProfileState(uint8_t i);
 uint8_t EE_IsRecentProfileSavingEnabled(void);
 uint8_t EE_IsRecentProfileRestoreEnabled(void);
-void EE_ApplyProfileSettings(uint8_t saveRecentProfile, uint8_t restoreRecentProfile);
 
 void vTaskEEPROM(void *pvParameters);
 

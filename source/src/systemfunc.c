@@ -30,6 +30,8 @@
 
 #include "control.h"
 #include "led.h"
+#include "dispatcher.h"
+#include "converter_hw.h"
 
 //#include "fonts.h"
 
@@ -37,6 +39,8 @@
 extern DMA_CtrlDataTypeDef DMA_ControlTable[];
 void DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr);
 
+
+uint8_t analyze_shutdown = 0;
 
 
 // Globally initializes DMA controller
@@ -47,7 +51,7 @@ void my_DMA_GlobalInit(void)
 	MDR_DMA->CTRL_BASE_PTR = (uint32_t)DMA_ControlTable;
 	/* DMA configuration register */
 	//MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || 0 /*DMA_InitStruct->DMA_ProtCtrl*/;		// CHECKME
-	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE || DMA_AHB_Privileged;
+	MDR_DMA->CFG = DMA_CFG_MASTER_ENABLE | DMA_AHB_Privileged;
 }
 
 // Operates similar to SPL function DMA_Init(), but:
@@ -813,11 +817,32 @@ void LcdSetBacklight(uint16_t value)
 
 void ProcessPowerOff(void)
 {
-	uint32_t time_delay;
-	uint8_t ee_status1, ee_status2;
+	portBASE_TYPE xHigherPriorityTaskWokenByPost = pdFALSE;
 	
-	if (GetACLineStatus() == OFFLINE)
-	{	
+	if (analyze_shutdown)
+	{
+		if (GetACLineStatus() == OFFLINE)
+		{	
+			// Disable most power-consuming source - converter
+			// There is external pull-down that will disable converter
+			//MDR_PORTF->OE &= ~(1<<EN);						// input
+			//MDR_PORTF->PULL &= ~((1<<EN) | (1<<(EN+16)));	// no pull up/down
+			// Set low-level FSM-based converter control to disable output
+			cmd_shutdown_to_HWProcess = 1;
+			
+			// Send message to dispatcher
+			xQueueSendToFrontFromISR(xQueueDispatcher, &dispatcher_shutdown_msg, &xHigherPriorityTaskWokenByPost);
+			
+			// Disable further checks
+			analyze_shutdown = 0;
+			
+			// Force context switching if required
+			portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
+		}
+	}
+	
+	
+	/*
 		__disable_irq();
 
 		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
@@ -885,8 +910,11 @@ void ProcessPowerOff(void)
 
 		// DIE
 		while(1);
-	}
+		
+	} */
 }
+
+
 
 
 struct {

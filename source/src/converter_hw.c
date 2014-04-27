@@ -32,6 +32,7 @@
 #define STATE_HW_OFF					0x02
 #define STATE_HW_OVERLOADED				0x04
 #define STATE_HW_OFF_BY_ADC				0x08
+#define STATE_HW_OFF_BY_SHUTDOWN		0x20
 #define STATE_HW_SAFE_TIMER_EXPIRED		0x10
 
 // ctrl_HWProcess bits
@@ -46,6 +47,7 @@ volatile static uint8_t state_HWProcess = STATE_HW_OFF;
 volatile static uint8_t ctrl_HWProcess = 0;
 // Global used for communicating with converter control task called from ISR
 volatile uint8_t cmd_ADC_to_HWProcess = 0;
+volatile uint8_t cmd_shutdown_to_HWProcess = 0;
 
 // Externs
 extern converter_state_t converter_state;
@@ -289,13 +291,17 @@ void Converter_HWProcess(void)
 	static uint16_t overload_warning_counter = 0;
 	uint8_t raw_overload_flag;
 	uint8_t led_state;
-
+	
+	// First check shutdown
+	if (cmd_shutdown_to_HWProcess)
+		state_HWProcess |= STATE_HW_OFF_BY_SHUTDOWN;
+		
 	//-------------------------------//
 	// Get converter status and process overload timers
 	
 	// Due to hardware specialty overload input is active when converter is powered off
 	// Overload timeout counter reaches 0 when converter has been enabled for OVERLOAD_IGNORE_TIMEOUT ticks
-	if ((state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC)) || 0/*(converter_state.overload_protection_enable == 0)*/)
+	if ((state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC | STATE_HW_OFF_BY_SHUTDOWN)) || 0/*(converter_state.overload_protection_enable == 0)*/)
 		overload_ignore_counter = OVERLOAD_IGNORE_TIMEOUT;
 	else if (overload_ignore_counter != 0)
 		overload_ignore_counter--;
@@ -375,11 +381,12 @@ void Converter_HWProcess(void)
 	// Reset commands
 	ctrl_HWProcess = 0;
 	cmd_ADC_to_HWProcess = 0;
+	cmd_shutdown_to_HWProcess = 0;
 
 	//-------------------------------//
 	// Apply converter state
 	// TODO - check IRQ disable while accessing converter control port (MDR_PORTF) for write
-	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC))
+	if (state_HWProcess & (STATE_HW_OFF | STATE_HW_OFF_BY_ADC | STATE_HW_OFF_BY_SHUTDOWN))
 		SetConverterState(CONVERTER_OFF);
 	else if (state_HWProcess & STATE_HW_ON)
 		SetConverterState(CONVERTER_ON);
@@ -389,7 +396,7 @@ void Converter_HWProcess(void)
 	// Uses raw converter state and top-level conveter status
 	// TODO - check IRQ disable while accessing LED port (MDR_PORTB) for write
 	led_state = 0;
-	if ((state_HWProcess & STATE_HW_ON) && (led_blink_counter == 0))
+	if (((state_HWProcess & (STATE_HW_ON | STATE_HW_OFF_BY_SHUTDOWN)) == STATE_HW_ON) && (led_blink_counter == 0))
 		led_state |= LED_GREEN;
 	if ((raw_overload_flag == OVERLOAD) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
 		led_state |= LED_RED;

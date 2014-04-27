@@ -13,6 +13,7 @@
 
 
 #include "MDR32Fx.h" 
+#include "MDR32F9Qx_port.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -20,6 +21,11 @@
 
 #include <string.h>
 
+#include "lcd_1202.h"
+#include "guiGraphHAL.h"
+#include "guiFonts.h"
+#include "guiGraphPrimitives.h"
+#include "dwt_delay.h"
 
 #include "key_def.h"
 #include "converter.h"
@@ -30,12 +36,15 @@
 #include "eeprom.h"
 #include "uart_tx.h"
 #include "buttons_top.h"
+#include "systemfunc.h"
 
 xQueueHandle xQueueDispatcher;
 
 static eeprom_message_t eeprom_msg;
 static xSemaphoreHandle xSemaphoreEEPROM;
 static xSemaphoreHandle xSemaphoreSync;
+
+const dispatch_msg_t dispatcher_shutdown_msg = {DISPATCHER_SHUTDOWN};
 
 
 void vTaskDispatcher(void *pvParameters) 
@@ -48,6 +57,10 @@ void vTaskDispatcher(void *pvParameters)
 	uint32_t sound_msg;
 	buttons_msg_t buttons_msg;
 	
+	// Temporary
+	uint32_t time_delay;
+	uint8_t ee_status1, ee_status2;
+	
 	// Initialize
 	xQueueDispatcher = xQueueCreate( 10, sizeof( dispatch_msg_t ) );		// Queue can contain 5 elements of type uint32_t
 	if( xQueueDispatcher == 0 )
@@ -58,15 +71,13 @@ void vTaskDispatcher(void *pvParameters)
 	
 	vSemaphoreCreateBinary( xSemaphoreEEPROM );
 	if( xSemaphoreEEPROM == 0 )
-    {
         while(1);
-    }
+	xSemaphoreTake(xSemaphoreEEPROM, 0);
 	
 	vSemaphoreCreateBinary( xSemaphoreSync );
 	if( xSemaphoreSync == 0 )
-    {
         while(1);
-    }
+	xSemaphoreTake(xSemaphoreSync, 0);
 	
 	//---------- Task init sequence ----------//
 	// Tasks suspended on this moment:
@@ -79,7 +90,6 @@ void vTaskDispatcher(void *pvParameters)
 	eeprom_msg.type = EE_TASK_INITIAL_LOAD;
 	eeprom_msg.initial_load.state = &eepromState;
 	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
-	xSemaphoreTake(xSemaphoreEEPROM, 0);
 	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
 	// Wait for EEPROM task to complete
 	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
@@ -126,11 +136,18 @@ void vTaskDispatcher(void *pvParameters)
 	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
+	analyze_shutdown = 1;
+	
+	// Start buttons
+	buttons_msg.type = BUTTONS_START_OPERATION;
+	buttons_msg.pxSemaphore = 0;
+	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+	
 	
 	/* TODO: 
 <done>	-  add GUI menu for external switch
 		-  add GUI menu for UARTs ?
-		-  add GUI menu for DAC offset (global settings) ?
+<done>	-  add GUI menu for DAC offset (global settings) ?
 		-  add GUI menu for sounds
 <done>	-  check if additional EEPROM settings are required
 <done>	-  add GUI input box for user profile name
@@ -153,7 +170,7 @@ void vTaskDispatcher(void *pvParameters)
 		
 		switch (msg.type)
 		{
-			//---------------- Button event ----------------//	
+	/*		//---------------- Button event ----------------//	
 			case DISPATCHER_BUTTONS:
 				// Send button events to GUI
 				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
@@ -168,8 +185,8 @@ void vTaskDispatcher(void *pvParameters)
 				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
 				gui_msg.encoder_event.delta = msg.encoder_event.delta;
 				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				break;
-			
+				break;	
+*/			
 			//---------------- Test function  --------------//	
 			case DISPATCHER_TEST_FUNC1:
 				transmitter_msg.type = UART_SEND_POWER_CYCLES_STAT;
@@ -181,6 +198,7 @@ void vTaskDispatcher(void *pvParameters)
 				
 			//----------------- Load profile ---------------//	
 			case DISPATCHER_LOAD_PROFILE:
+				// CHECKME - eeprom_op_in_progress, local for this task
 				// Send to EEPROM task command to read profile data
 				eeprom_msg.type = EE_TASK_LOAD_PROFILE;
 				eeprom_msg.profile_load_request.index = msg.profile_load.number;
@@ -193,13 +211,14 @@ void vTaskDispatcher(void *pvParameters)
 				{
 					// New profile data is loaded. 
 					converter_msg.type = CONVERTER_LOAD_PROFILE;
+					converter_msg.pxSemaphore = &xSemaphoreSync;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-					// Wait for conveter task to complete - TODO
+					// Wait for task to complete
+					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 					
 					// Load profile for buttons
 					buttons_msg.type = BUTTONS_LOAD_PROFILE;
 					buttons_msg.pxSemaphore = &xSemaphoreSync;
-					xSemaphoreTake(xSemaphoreSync, 0);
 					xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
 					// Wait for task to complete
 					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
@@ -236,7 +255,6 @@ void vTaskDispatcher(void *pvParameters)
 				// Converter task
 				converter_msg.type = CONVERTER_SAVE_PROFILE;
 				converter_msg.pxSemaphore = &xSemaphoreSync;
-				xSemaphoreTake(xSemaphoreSync, 0);
 				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				// Wait for task to complete
 				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
@@ -244,7 +262,6 @@ void vTaskDispatcher(void *pvParameters)
 				// Buttons task
 				buttons_msg.type = BUTTONS_SAVE_PROFILE;
 				buttons_msg.pxSemaphore = &xSemaphoreSync;
-				xSemaphoreTake(xSemaphoreSync, 0);
 				xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
 				// Wait for task to complete
 				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
@@ -285,15 +302,6 @@ void vTaskDispatcher(void *pvParameters)
 					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				break;
-				
-			//---------------- Setup profile ---------------//		
-			case DISPATCHER_PROFILE_SETUP:
-				// Access directly
-				EE_ApplyProfileSettings(msg.profile_setup.saveRecentProfile, msg.profile_setup.restoreRecentProfile);
-				// Send response to GUI
-				gui_msg.type = GUI_TASK_UPDATE_PROFILE_SETUP;
-				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
-			break;
 			
 			//-------------- Converter command -------------//
 			case DISPATCHER_CONVERTER:
@@ -311,13 +319,16 @@ void vTaskDispatcher(void *pvParameters)
 				// income_msg.converter_event.sender provides information about message origin.
 				// Other fields provide information about converter message process status
 				
-				// Always notify GUI
-				gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
-				gui_msg.converter_event.spec = msg.converter_event.spec;
-				gui_msg.converter_event.channel = msg.converter_event.channel;
-				gui_msg.converter_event.current_range = msg.converter_event.range;
-				gui_msg.converter_event.type = msg.converter_event.limit_type;
-				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				// Notify GUI
+				if (msg.converter_event.msg_sender != sender_GUI)
+				{
+					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.spec = msg.converter_event.spec;
+					gui_msg.converter_event.channel = msg.converter_event.channel;
+					gui_msg.converter_event.current_range = msg.converter_event.range;
+					gui_msg.converter_event.type = msg.converter_event.limit_type;
+					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				}
 				
 				// Sound feedback
 				if ( (msg.converter_event.msg_sender != sender_UART1) && (msg.converter_event.msg_sender != sender_UART2) )
@@ -362,15 +373,108 @@ void vTaskDispatcher(void *pvParameters)
 				}
 			
 				// Serial feedback
-				if ( (msg.converter_event.msg_sender == sender_UART1) || (msg.converter_event.msg_sender == sender_UART2) )
+		/*		if ( (msg.converter_event.msg_sender == sender_UART1) || (msg.converter_event.msg_sender == sender_UART2) )
 				{
 					transmitter_msg.type = UART_RESPONSE_OK;
 					if (msg.converter_event.msg_sender == sender_UART1)
 						xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
 					else
 						xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
-				}
+				} */
 			
+			
+				break;
+				
+			case DISPATCHER_SHUTDOWN:
+				// Converter is already disabled - so we have enough time to save settings.
+				// We can suspend unnecessary tasks (like UARTs, service, etc) here - check if required
+			
+				// EEPROM task can be busy - wait until it is free
+				while (eeprom_is_busy)
+					vTaskDelay(1);	
+				
+				// Save recent profile and global settings to EEPROM device
+				
+				// Prepare data structure (fills with FFs)
+				EE_GetReadyForProfileSave();		 
+				// Collect information from tasks
+				// Converter task
+				converter_msg.type = CONVERTER_SAVE_PROFILE;
+				converter_msg.pxSemaphore = &xSemaphoreSync;
+				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+				// Wait for task to complete
+				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				
+				// Buttons task
+				buttons_msg.type = BUTTONS_SAVE_PROFILE;
+				buttons_msg.pxSemaphore = &xSemaphoreSync;
+				xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+				// Wait for task to complete
+				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				
+				// Ready to write profile data to EEPROM
+				eeprom_msg.type = EE_TASK_SHUTDOWN_SAVE;
+				eeprom_msg.xSemaphorePtr = &xSemaphoreSync;
+				eeprom_msg.shutdown_save_result.global_settings_errcode = &ee_status1;
+				eeprom_msg.shutdown_save_result.recent_profile_errcode = &ee_status2;
+				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);	
+				// Wait for task to complete
+				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				
+				// Now system can be shut down completely
+				__disable_irq();
+			
+				time_delay = DWT_StartDelayUs(5000);
+
+				// Disable power consumers
+				//LcdSetBacklight(0);
+				SetCoolerSpeed(0);
+				SetVoltagePWMPeriod(0);
+				SetCurrentPWMPeriod(0);
+
+				// Put power off message
+				LCD_FillWholeBuffer(0);
+				LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+				LCD_SetFont(&font_h10_bold);
+				LCD_PrintString("Power OFF", 0, 0, IMAGE_MODE_NORMAL);
+				// Print EEPROM status messages
+				LCD_PrintString("Settings", 96+0, 0, IMAGE_MODE_NORMAL);
+				LCD_PrintString("Profile", 96+0, 34, IMAGE_MODE_NORMAL);
+				LCD_SetFont(&font_h10);
+				if (ee_status1 == EE_OK)
+					LCD_PrintString("saved OK", 96+25, 12, IMAGE_MODE_NORMAL);
+				else
+					LCD_PrintString("NOT saved", 96+25, 12, IMAGE_MODE_NORMAL);
+				if (ee_status2 == EE_OK)
+					LCD_PrintString("saved OK", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+				else if (ee_status2 == EE_NOT_REQUIRED)
+					LCD_PrintString("not requried", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+				else
+					LCD_PrintString("NOT saved", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
+				LcdUpdateBothByCore(lcdBuffer);
+				
+				// Delay is required for converter to completely turn off.
+				while(DWT_DelayInProgress(time_delay));
+
+				// Set converter hardware to default
+				SetFeedbackChannel(CHANNEL_12V);
+				SetCurrentRange(CURRENT_RANGE_LOW); 
+				SetOutputLoad(LOAD_ENABLE); 
+				
+				// Wait a bit more
+				time_delay = DWT_StartDelayUs(1000000);
+				while(DWT_DelayInProgress(time_delay));
+
+				// Disable all ports
+				PORT_DeInit(MDR_PORTA);
+				PORT_DeInit(MDR_PORTB);
+				PORT_DeInit(MDR_PORTC);
+				PORT_DeInit(MDR_PORTD);
+				PORT_DeInit(MDR_PORTE);
+				PORT_DeInit(MDR_PORTF);
+
+				// DIE
+				while(1);	
 			
 				break;
 			

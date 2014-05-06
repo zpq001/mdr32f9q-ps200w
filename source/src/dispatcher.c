@@ -69,10 +69,12 @@ void vTaskDispatcher(void *pvParameters)
 		while(1);
 	}
 	
+	// If EEPROM semaphore is taken, it means that EEPROM task is doing something - saving or loading profile.
+	// If this semaphore is set, EEPROM task is free
 	vSemaphoreCreateBinary( xSemaphoreEEPROM );
 	if( xSemaphoreEEPROM == 0 )
         while(1);
-	xSemaphoreTake(xSemaphoreEEPROM, 0);
+	//xSemaphoreTake(xSemaphoreEEPROM, 0);
 	
 	vSemaphoreCreateBinary( xSemaphoreSync );
 	if( xSemaphoreSync == 0 )
@@ -89,10 +91,10 @@ void vTaskDispatcher(void *pvParameters)
 	// Read EEPROM and restore global settings and recent profile
 	eeprom_msg.type = EE_TASK_INITIAL_LOAD;
 	eeprom_msg.initial_load.state = &eepromState;
-	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
+	eeprom_msg.xSemaphorePtr = &xSemaphoreSync;
 	xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);
 	// Wait for EEPROM task to complete
-	xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+	xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 	
 	// EEPROM status 
 	gui_msg.type = GUI_TASK_EEPROM_STATE;
@@ -136,13 +138,14 @@ void vTaskDispatcher(void *pvParameters)
 	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
-	analyze_shutdown = 1;
+	analyze_shutdown = 1;	// FIXME
 	
 	// Start buttons
 	buttons_msg.type = BUTTONS_START_OPERATION;
 	buttons_msg.pxSemaphore = 0;
 	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
 	
+	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
 	
 	/* TODO: 
 <done>	-  add GUI menu for external switch
@@ -170,23 +173,6 @@ void vTaskDispatcher(void *pvParameters)
 		
 		switch (msg.type)
 		{
-	/*		//---------------- Button event ----------------//	
-			case DISPATCHER_BUTTONS:
-				// Send button events to GUI
-				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
-				gui_msg.key_event.event = msg.key_event.event_type;
-				gui_msg.key_event.code = msg.key_event.code;
-				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				break;
-				
-			//---------------- Encoder event ---------------//	
-			case DISPATCHER_ENCODER:
-				// Send encoder events to GUI
-				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
-				gui_msg.encoder_event.delta = msg.encoder_event.delta;
-				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
-				break;	
-*/			
 			//---------------- Test function  --------------//	
 			case DISPATCHER_TEST_FUNC1:
 				transmitter_msg.type = UART_SEND_POWER_CYCLES_STAT;
@@ -198,11 +184,14 @@ void vTaskDispatcher(void *pvParameters)
 				
 			//----------------- Load profile ---------------//	
 			case DISPATCHER_LOAD_PROFILE:
-				// CHECKME - eeprom_op_in_progress, local for this task
-				// Send to EEPROM task command to read profile data
-				eeprom_msg.type = EE_TASK_LOAD_PROFILE;
-				eeprom_msg.profile_load_request.index = msg.profile_load.number;
-				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);
+				// Semaphore is used for shutdown routine sync
+				if (xSemaphoreTake(xSemaphoreEEPROM, 0) == pdTRUE)
+				{			
+					// Send to EEPROM task command to read profile data
+					eeprom_msg.type = EE_TASK_LOAD_PROFILE;
+					eeprom_msg.profile_load_request.index = msg.profile_load.number;
+					xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);
+				}
 				break;
 			case DISPATCHER_LOAD_PROFILE_RESPONSE:
 				// EEPROM task has completed profile data loading
@@ -249,28 +238,33 @@ void vTaskDispatcher(void *pvParameters)
 			
 			//----------------- Save profile ---------------//	
 			case DISPATCHER_SAVE_PROFILE:
-				// Prepare data structure (fills with FFs)
-				EE_GetReadyForProfileSave();		 
-				// Collect information from tasks
-				// Converter task
-				converter_msg.type = CONVERTER_SAVE_PROFILE;
-				converter_msg.pxSemaphore = &xSemaphoreSync;
-				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-				// Wait for task to complete
-				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				// Semaphore is used for shutdown routine sync
+				if (xSemaphoreTake(xSemaphoreEEPROM, 0) == pdTRUE)
+				{			
+					// Prepare data structure (fills with FFs)
+					EE_GetReadyForProfileSave();	
 				
-				// Buttons task
-				buttons_msg.type = BUTTONS_SAVE_PROFILE;
-				buttons_msg.pxSemaphore = &xSemaphoreSync;
-				xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
-				// Wait for task to complete
-				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+					// Collect information from tasks:
+					// Converter task
+					converter_msg.type = CONVERTER_SAVE_PROFILE;
+					converter_msg.pxSemaphore = &xSemaphoreSync;
+					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
+					// Wait for task to complete
+					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 				
-				// Ready to write profile data to EEPROM
-				eeprom_msg.type = EE_TASK_SAVE_PROFILE;
-				eeprom_msg.profile_save_request.index  = msg.profile_save.number;
-				eeprom_msg.profile_save_request.newName = msg.profile_save.new_name;
-				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);	
+					// Buttons task
+					buttons_msg.type = BUTTONS_SAVE_PROFILE;
+					buttons_msg.pxSemaphore = &xSemaphoreSync;
+					xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+					// Wait for task to complete
+					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+					
+					// Ready to write profile data to EEPROM
+					eeprom_msg.type = EE_TASK_SAVE_PROFILE;
+					eeprom_msg.profile_save_request.index  = msg.profile_save.number;
+					eeprom_msg.profile_save_request.newName = msg.profile_save.new_name;
+					xQueueSendToBack(xQueueEEPROM, &eeprom_msg, 0);	
+				}
 				break;
 			case DISPATCHER_SAVE_PROFILE_RESPONSE:
 				// EEPROM task has completed profile data saving
@@ -390,8 +384,7 @@ void vTaskDispatcher(void *pvParameters)
 				// We can suspend unnecessary tasks (like UARTs, service, etc) here - check if required
 			
 				// EEPROM task can be busy - wait until it is free
-				while (eeprom_is_busy)
-					vTaskDelay(1);	
+				xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
 				
 				// Save recent profile and global settings to EEPROM device
 				
@@ -414,12 +407,11 @@ void vTaskDispatcher(void *pvParameters)
 				
 				// Ready to write profile data to EEPROM
 				eeprom_msg.type = EE_TASK_SHUTDOWN_SAVE;
-				eeprom_msg.xSemaphorePtr = &xSemaphoreSync;
 				eeprom_msg.shutdown_save_result.global_settings_errcode = &ee_status1;
 				eeprom_msg.shutdown_save_result.recent_profile_errcode = &ee_status2;
 				xQueueSendToBack(xQueueEEPROM, &eeprom_msg, portMAX_DELAY);	
 				// Wait for task to complete
-				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
+				xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
 				
 				// Now system can be shut down completely
 				__disable_irq();

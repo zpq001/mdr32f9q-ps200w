@@ -91,7 +91,6 @@ static void fill_global_settings_by_default(void)
 }
 
 
-
 static void fill_device_profile_by_default(void)
 {	
 	// 5V channel voltage
@@ -146,17 +145,8 @@ static void fill_device_profile_by_default(void)
 }
 
 
-void EE_GetReadyForProfileSave(void)
-{
-	// Fill whole settings structure with FF's (padding)
-	// These values will be written to EEPROM and used for CRC
-	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));	
-}
 
-void EE_GetReadyForSystemInit(void)
-{
-	fill_global_settings_by_default();
-}
+
 
 //=================================================================//
 //	Load routines (from EEPROM)
@@ -164,11 +154,15 @@ void EE_GetReadyForSystemInit(void)
 
 
 
-//-------------------------------------------------------//
-// Return:
-//		EE_GSETTINGS_HW_ERROR if there was an hardware error for global settings
-//  	EE_GSETTINGS_CRC_ERROR if there was CRC error for global settings
-//-------------------------------------------------------//
+
+/**
+@brief	Reads global settings from EEPROM device 
+			into global_settings_data structure
+@return EE_OK - if operation has completed correctly
+@return	EE_GSETTINGS_CRC_ERROR - if EEPROM stores incorrect data
+@return	EE_GSETTINGS_HW_ERROR - if there was hardware error
+@note	Caller should take care for data atomic access
+*/
 static uint8_t EE_LoadGlobalSettings(void)
 {
 	uint8_t err_code = EE_OK;
@@ -202,12 +196,15 @@ static uint8_t EE_LoadGlobalSettings(void)
 }
 
 
-//-------------------------------------------------------//
-// Profile name for recent profile is ignored
-// Return:
-//		EE_PROFILE_HW_ERROR if there was an hardware error for recent profile
-//		EE_PROFILE_CRC_ERROR if there was CRC error for recent profile
-//-------------------------------------------------------//
+/**
+@brief	Reads recent profile data from EEPROM device 
+			into device_profile_data structure
+@return EE_OK - if operation has completed correctly
+@return	EE_PROFILE_CRC_ERROR - if EEPROM stores incorrect data
+@return	EE_PROFILE_HW_ERROR - if there was hardware error
+@note	Caller should take care for data atomic access.
+			Profile name for recent profile is ignored and not read.
+*/
 static uint8_t EE_LoadRecentProfile(void)
 {
 	uint8_t err_code = EE_OK;
@@ -241,11 +238,18 @@ static uint8_t EE_LoadRecentProfile(void)
 }
 
 
-//-------------------------------------------------------//
-// Loads data from specified profile into device_profile_data structure
-//
-//
-//-------------------------------------------------------//
+/**
+@brief	Reads specified profile data from EEPROM device 
+			into device_profile_data structure. 
+@details	Profile name is read to device_profile_name char array.
+@param[in] i - index of profile to load.
+@return EE_OK - if operation has completed correctly
+@return	EE_PROFILE_CRC_ERROR - if EEPROM stores incorrect data
+@return	EE_PROFILE_HW_ERROR - if there was hardware error
+@return EE_WRONG_ARGUMENT - if index is illegal
+@note	Caller should take care for data atomic access.
+		Profile state store in profile_info[i] is also updated by this function
+*/
 static uint8_t EE_LoadDeviceProfile(uint8_t i)
 {	
 	uint8_t err_code;
@@ -297,10 +301,17 @@ static uint8_t EE_LoadDeviceProfile(uint8_t i)
 
 
 
-//-------------------------------------------------------//
-// Return:
-//		none
-//-------------------------------------------------------//
+/**
+@brief	Function reads all profiles stored in EEPROM to check which are valid (except recent profile).
+@return none - results are saved in profile_info[] array
+@note Function utilizes global_settings_data and device_profile_name as temporary buffers.
+	Profile state profile_info[i] get folowing values:
+	EE_PROFILE_VALID - if profile data is valid,
+	EE_PROFILE_CRC_ERROR - if profile data CRC is broken,
+	EE_PROFILE_HW_ERROR - if there was hardware error.
+	
+	TODO: check if this function can be replaced with simple for-looop where EE_LoadDeviceProfile() is called
+*/
 static void EE_ExamineProfiles(void)
 {
 	uint8_t hw_result;
@@ -345,12 +356,19 @@ static void EE_ExamineProfiles(void)
 
 
 
-//-------------------------------------------------------//
-//	Returns name of a profile
-//	profile_info[i] must be filled correctly before calling.
-//	Function always read EE_PROFILE_NAME_SIZE characters from EEPROM
-//	filled string is always terminated with \0
-//-------------------------------------------------------//
+
+/**
+@brief	Reads specified profile name from EEPROM device
+@param[in] i - index of profile to load.
+@param[in] str_to_fill - destination string. Must have length EE_PROFILE_NAME_SIZE or more.
+@return EE_OK - if operation has completed correctly
+@return	EE_PROFILE_CRC_ERROR - if EEPROM stores incorrect data
+@return	EE_PROFILE_HW_ERROR - if there was hardware error
+@return EE_WRONG_ARGUMENT - if index is illegal.
+@note	Function does not check CRC. Instead, profile_info[i] is first analyzed. 
+		Function will try to read name string only if i-th profile state is EE_PROFILE_VALID.
+		Profile state stored in profile_info[i] is also updated by this function (in case of EEPROM hardware error)
+*/
 static uint8_t EE_GetProfileName(uint8_t i, char *str_to_fill)
 {
 	uint8_t err_code;
@@ -526,6 +544,20 @@ static uint8_t EE_SaveDeviceProfile(uint8_t i, char *name)
 
 
 
+void EE_GetReadyForProfileSave(void)
+{
+	// Fill whole settings structure with FF's (padding)
+	// These values will be written to EEPROM and used for CRC
+	memset(device_profile, 0xFFFFFFFF, sizeof(device_profile_t));	
+}
+
+void EE_GetReadyForSystemInit(void)
+{
+	fill_global_settings_by_default();
+}
+
+
+
 uint8_t EE_GetProfileState(uint8_t i)
 {
 	uint8_t err_code;
@@ -586,7 +618,6 @@ xQueueHandle xQueueEEPROM;
 static eeprom_message_t msg;
 static dispatch_msg_t dispatcher_msg;
 
-uint8_t eeprom_is_busy = 0;
 
 
 void vTaskEEPROM(void *pvParameters) 
@@ -604,9 +635,7 @@ void vTaskEEPROM(void *pvParameters)
 	
 	while(1)
 	{
-		eeprom_is_busy = 0;
 		xQueueReceive(xQueueEEPROM, &msg, portMAX_DELAY);
-		eeprom_is_busy = 1;
 		switch (msg.type)
 		{
 			case EE_TASK_INITIAL_LOAD:
@@ -639,9 +668,7 @@ void vTaskEEPROM(void *pvParameters)
 				*msg.initial_load.state = state;
 				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
-				{
-					xSemaphoreGive(*msg.xSemaphorePtr);		
-				}
+					xSemaphoreGive(*msg.xSemaphorePtr);	
 				break;
 				
 			case EE_TASK_SHUTDOWN_SAVE:
@@ -650,43 +677,42 @@ void vTaskEEPROM(void *pvParameters)
 				*msg.shutdown_save_result.recent_profile_errcode = EE_SaveRecentProfile();
 				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
-				{
-					xSemaphoreGive(*msg.xSemaphorePtr);		
-				}
+					xSemaphoreGive(*msg.xSemaphorePtr);	
 				break;
 				
 			case EE_TASK_GET_PROFILE_NAME:
 				*msg.profile_name_request.state = EE_GetProfileName(msg.profile_name_request.index, msg.profile_name_request.name);
+				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
-				{
-					// Confirm
-					xSemaphoreGive(*msg.xSemaphorePtr);		
-				}
+					xSemaphoreGive(*msg.xSemaphorePtr);	
 				break;
 			
 			case EE_TASK_LOAD_PROFILE:
-				dispatcher_msg.type = DISPATCHER_LOAD_PROFILE_RESPONSE;
-				dispatcher_msg.profile_load_response.profileState = EE_GetProfileState(msg.profile_load_request.index);
-				if (dispatcher_msg.profile_load_response.profileState == EE_PROFILE_VALID)
+				// Load from EEPROM device
+				state = EE_GetProfileState(msg.profile_load_request.index);
+				if (state == EE_PROFILE_VALID)
 				{
-					dispatcher_msg.profile_load_response.profileState = EE_LoadDeviceProfile(msg.profile_load_request.index);
+					state = EE_LoadDeviceProfile(msg.profile_load_request.index);
 				}
-				// Confirm
+				// Confirm operation
+				if (msg.xSemaphorePtr != 0)
+					xSemaphoreGive(*msg.xSemaphorePtr);		
+				// Notify dispatcher
+				dispatcher_msg.type = DISPATCHER_LOAD_PROFILE_RESPONSE;
 				dispatcher_msg.profile_load_response.index = msg.profile_load_request.index;	// return passed index
+				dispatcher_msg.profile_load_response.profileState = state;
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		
 				break;
 			
 			case EE_TASK_SAVE_PROFILE:
-				// Gather system state - moved to dispatcher
-				//update_device_profile();
-				//if (msg.xSemaphorePtr != 0)
-				//{
-					// Confirm
-				//	xSemaphoreGive(*msg.xSemaphorePtr);		
-				//}
 				// Save to EEPROM device
+				state = EE_SaveDeviceProfile(msg.profile_save_request.index, msg.profile_save_request.newName);
+				// Confirm operation
+				if (msg.xSemaphorePtr != 0)
+					xSemaphoreGive(*msg.xSemaphorePtr);	
+				// Notify dispatcher
 				dispatcher_msg.type = DISPATCHER_SAVE_PROFILE_RESPONSE;
-				dispatcher_msg.profile_save_response.profileState = EE_SaveDeviceProfile(msg.profile_save_request.index, msg.profile_save_request.newName);
+				dispatcher_msg.profile_save_response.profileState = state;
 				dispatcher_msg.profile_save_response.index = msg.profile_save_request.index;	// return passed index
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 				break;
@@ -697,9 +723,7 @@ void vTaskEEPROM(void *pvParameters)
 				taskEXIT_CRITICAL();
 				// Confirm operation
 				if (msg.xSemaphorePtr != 0)
-				{
-					xSemaphoreGive(*msg.xSemaphorePtr);		
-				}
+					xSemaphoreGive(*msg.xSemaphorePtr);
 				break;
 		}
 	}

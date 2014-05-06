@@ -180,7 +180,6 @@ extern xQueueHandle xQueueEEPROM;
 extern global_settings_t *global_settings;
 extern device_profile_t *device_profile;
 
-extern uint8_t eeprom_is_busy;
 
 // These two are special functions for calling from routine which
 // services power-down sequence

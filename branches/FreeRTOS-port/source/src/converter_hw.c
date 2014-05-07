@@ -1,6 +1,7 @@
 
 #include "MDR32Fx.h" 
 
+#include "FreeRTOS.h"
 
 #include "systemfunc.h"
 #include "control.h"
@@ -9,6 +10,7 @@
 #include "converter.h"
 #include "converter_hw.h"
 #include "eeprom.h"
+#include "dispatcher.h"
 
 
 //-------------------------------------------------------//
@@ -291,10 +293,22 @@ void Converter_HWProcess(void)
 	static uint16_t overload_warning_counter = 0;
 	uint8_t raw_overload_flag;
 	uint8_t led_state;
+	portBASE_TYPE xHigherPriorityTaskWokenByPost = pdFALSE;
 	
 	// First check shutdown
-	if (cmd_shutdown_to_HWProcess)
-		state_HWProcess |= STATE_HW_OFF_BY_SHUTDOWN;
+	if ((GetACLineStatus() == OFFLINE) && ((state_HWProcess & STATE_HW_OFF_BY_SHUTDOWN) == 0))
+	{	
+		if (xQueueDispatcher != 0)
+		{
+			// Notify top-level controller
+			if (xQueueSendToFrontFromISR(xQueueDispatcher, &dispatcher_shutdown_msg, &xHigherPriorityTaskWokenByPost) == pdPASS)
+			{
+				// Send message just once
+				state_HWProcess |= STATE_HW_OFF_BY_SHUTDOWN;
+			}
+		}
+	}
+	
 		
 	//-------------------------------//
 	// Get converter status and process overload timers
@@ -430,6 +444,9 @@ void Converter_HWProcess(void)
 	{
 		overload_warning_counter--;
 	}
+	
+	// Force context switching if required
+	portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
 }
 
 

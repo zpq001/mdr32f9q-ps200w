@@ -40,7 +40,6 @@ extern DMA_CtrlDataTypeDef DMA_ControlTable[];
 void DMA_CtrlDataInit(DMA_CtrlDataInitTypeDef *DMA_ctrl_data_ptr, DMA_CtrlDataTypeDef *DMA_ctrl_table_ptr);
 
 
-uint8_t analyze_shutdown = 0;
 
 
 // Globally initializes DMA controller
@@ -811,107 +810,6 @@ void LcdSetBacklight(uint16_t value)
 {
 	if (value>100) value = 100;
 		MDR_TIMER3->CCR1 = value;
-}
-
-
-
-void ProcessPowerOff(void)
-{
-	portBASE_TYPE xHigherPriorityTaskWokenByPost = pdFALSE;
-	
-	if (analyze_shutdown)
-	{
-		if (GetACLineStatus() == OFFLINE)
-		{	
-			// Disable most power-consuming source - converter
-			// There is external pull-down that will disable converter
-			//MDR_PORTF->OE &= ~(1<<EN);						// input
-			//MDR_PORTF->PULL &= ~((1<<EN) | (1<<(EN+16)));	// no pull up/down
-			// Set low-level FSM-based converter control to disable output
-			cmd_shutdown_to_HWProcess = 1;
-			
-			// Send message to dispatcher
-			xQueueSendToFrontFromISR(xQueueDispatcher, &dispatcher_shutdown_msg, &xHigherPriorityTaskWokenByPost);
-			
-			// Disable further checks
-			analyze_shutdown = 0;
-			
-			// Force context switching if required
-			portEND_SWITCHING_ISR(xHigherPriorityTaskWokenByPost);
-		}
-	}
-	
-	
-	/*
-		__disable_irq();
-
-		SetConverterState(CONVERTER_OFF);		// safe because we're stopping in this function
-
-		//SysTickStop();
-		//StopBeep();
-
-		time_delay = DWT_StartDelayUs(5000);
-
-		// Disable power consumers
-		//LcdSetBacklight(0);
-		SetCoolerSpeed(0);
-		SetVoltagePWMPeriod(0);
-		SetCurrentPWMPeriod(0);
-
-		// Put power off message
-		LCD_FillWholeBuffer(0);
-		LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
-		LCD_SetFont(&font_h10_bold);
-		LCD_PrintString("Power OFF", 0, 0, IMAGE_MODE_NORMAL);
-		LcdUpdateBothByCore(lcdBuffer);
-		
-		// Delay is required for converter to completely turn off.
-		while(DWT_DelayInProgress(time_delay));
-
-		// Set converter hardware to default
-		SetFeedbackChannel(CHANNEL_12V);
-		SetCurrentRange(CURRENT_RANGE_LOW); 
-		SetOutputLoad(LOAD_ENABLE); 
-	
-		// Save device settings and profile
-		ee_status1 = EE_SaveGlobalSettings();
-		ee_status2 = EE_SaveRecentProfile();
-		
-		// Print EEPROM status messages
-		LCD_PrintString("Settings", 96+0, 0, IMAGE_MODE_NORMAL);
-		LCD_PrintString("Profile", 96+0, 34, IMAGE_MODE_NORMAL);
-		LCD_SetFont(&font_h10);
-		
-		if (ee_status1 == EE_OK)
-			LCD_PrintString("saved OK", 96+25, 12, IMAGE_MODE_NORMAL);
-		else
-			LCD_PrintString("NOT saved", 96+25, 12, IMAGE_MODE_NORMAL);
-		
-		if (ee_status2 == EE_OK)
-			LCD_PrintString("saved OK", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
-		else if (ee_status2 == EE_NOT_REQUIRED)
-			LCD_PrintString("not requried", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
-		else
-			LCD_PrintString("NOT saved", 96+25, 34 + 12, IMAGE_MODE_NORMAL);
-		
-		LcdUpdateBothByCore(lcdBuffer);
-		
-		// Wait a bit more
-		time_delay = DWT_StartDelayUs(1000000);
-		while(DWT_DelayInProgress(time_delay));
-
-		// Disable all ports
-		PORT_DeInit(MDR_PORTA);
-		PORT_DeInit(MDR_PORTB);
-		PORT_DeInit(MDR_PORTC);
-		PORT_DeInit(MDR_PORTD);
-		PORT_DeInit(MDR_PORTE);
-		PORT_DeInit(MDR_PORTF);
-
-		// DIE
-		while(1);
-		
-	} */
 }
 
 

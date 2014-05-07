@@ -56,6 +56,7 @@ void vTaskDispatcher(void *pvParameters)
 	uint8_t eepromState;
 	uint32_t sound_msg;
 	buttons_msg_t buttons_msg;
+	uint8_t eeprom_op_in_progress = 0;
 	
 	// Temporary
 	uint32_t time_delay;
@@ -88,6 +89,11 @@ void vTaskDispatcher(void *pvParameters)
 	// Provide some time for hardware to stay idle
 	vTaskDelay( 100 / portTICK_RATE_MS);
 	
+	// Start buttons task - this will apply converter channel selection
+	buttons_msg.type = BUTTONS_START_OPERATION;
+	buttons_msg.pxSemaphore = 0;
+	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+	
 	// Read EEPROM and restore global settings and recent profile
 	eeprom_msg.type = EE_TASK_INITIAL_LOAD;
 	eeprom_msg.initial_load.state = &eepromState;
@@ -96,7 +102,7 @@ void vTaskDispatcher(void *pvParameters)
 	// Wait for EEPROM task to complete
 	xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 	
-	// EEPROM status 
+	// Display EEPROM status 
 	gui_msg.type = GUI_TASK_EEPROM_STATE;
 	// 1 = OK, 0 = FAIL
 	gui_msg.data.a = (eepromState == 0) ? 1 : 0;	
@@ -116,7 +122,7 @@ void vTaskDispatcher(void *pvParameters)
 	buttons_msg.type = BUTTONS_LOAD_PROFILE;
 	buttons_msg.pxSemaphore = 0;
 	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
-					
+	
 	// Wait a bit more
 	vTaskDelay( 250 / portTICK_RATE_MS);
 	
@@ -131,19 +137,18 @@ void vTaskDispatcher(void *pvParameters)
 	gui_msg.profile_event.index = msg.profile_load_response.index;
 	xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 	
-	// Some tasks stay suspended. Start them.  - TODO
-	// UART?
-	
 	// Sound notification
 	sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 	xQueueSendToBack(xQueueSound, &sound_msg, 0);
 	
-	analyze_shutdown = 1;	// FIXME
-	
-	// Start buttons
-	buttons_msg.type = BUTTONS_START_OPERATION;
-	buttons_msg.pxSemaphore = 0;
+	// Enable ON/OFF converter control
+	buttons_msg.type = BUTTONS_ENABLE_ON_OFF_CONTROL;
 	xQueueSendToBack(xQueueButtons, &buttons_msg, 0);
+	
+	// Some tasks stay suspended. Start them.  - TODO
+	// UART?
+	
+	analyze_shutdown = 1;	// FIXME
 	
 	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
 	
@@ -184,9 +189,11 @@ void vTaskDispatcher(void *pvParameters)
 				
 			//----------------- Load profile ---------------//	
 			case DISPATCHER_LOAD_PROFILE:
-				// Semaphore is used for shutdown routine sync
-				if (xSemaphoreTake(xSemaphoreEEPROM, 0) == pdTRUE)
+				if (eeprom_op_in_progress == 0)
 				{			
+					eeprom_op_in_progress = 1;
+					// Semaphore is used for shutdown routine sync
+					xSemaphoreTake(xSemaphoreEEPROM, 0);
 					// Send to EEPROM task command to read profile data
 					eeprom_msg.type = EE_TASK_LOAD_PROFILE;
 					eeprom_msg.profile_load_request.index = msg.profile_load.number;
@@ -212,35 +219,33 @@ void vTaskDispatcher(void *pvParameters)
 					// Wait for task to complete
 					xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 					
-					// Send response to GUI
-					gui_msg.type = GUI_TASK_PROFILE_EVENT;
-					gui_msg.profile_event.event = PROFILE_LOAD;
-					gui_msg.profile_event.err_code = msg.profile_load_response.profileState;
-					gui_msg.profile_event.index = msg.profile_load_response.index;
-					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
-					// Send response to sound task
+					// Response to sound task
 					sound_msg = SND_CONV_CMD_OK | SND_CONVERTER_PRIORITY_NORMAL;
-					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
 				else
 				{
-					// Send response ERROR to GUI
-					gui_msg.type = GUI_TASK_PROFILE_EVENT;
-					gui_msg.profile_event.event = PROFILE_LOAD;
-					gui_msg.profile_event.err_code = msg.profile_load_response.profileState;
-					gui_msg.profile_event.index = msg.profile_load_response.index;
-					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
-					// Send response to sound task
 					sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
-					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
+				// Send response to sound task
+				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+				// Send response to GUI
+				gui_msg.type = GUI_TASK_PROFILE_EVENT;
+				gui_msg.profile_event.event = PROFILE_LOAD;
+				gui_msg.profile_event.err_code = msg.profile_load_response.profileState;
+				gui_msg.profile_event.index = msg.profile_load_response.index;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+				// Reset protection flag
+				eeprom_op_in_progress = 0;
 				break;
 			
 			//----------------- Save profile ---------------//	
 			case DISPATCHER_SAVE_PROFILE:
-				// Semaphore is used for shutdown routine sync
-				if (xSemaphoreTake(xSemaphoreEEPROM, 0) == pdTRUE)
+				if (eeprom_op_in_progress == 0)
 				{			
+					eeprom_op_in_progress = 1;
+					// Semaphore is used for shutdown routine sync
+					xSemaphoreTake(xSemaphoreEEPROM, 0);
+					
 					// Prepare data structure (fills with FFs)
 					EE_GetReadyForProfileSave();	
 				
@@ -271,30 +276,22 @@ void vTaskDispatcher(void *pvParameters)
 				// Check state
 				if (msg.profile_save_response.profileState == EE_PROFILE_VALID)
 				{
-					// Profile data is saved
-					// Send response to GUI
-					gui_msg.type = GUI_TASK_PROFILE_EVENT;
-					gui_msg.profile_event.event = PROFILE_SAVE;
-					gui_msg.profile_event.err_code = msg.profile_save_response.profileState;
-					gui_msg.profile_event.index = msg.profile_save_response.index;
-					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
-					// Send response to sound task
 					sound_msg = SND_CONV_CMD_OK | SND_CONVERTER_PRIORITY_NORMAL;
-					xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 				}
 				else
 				{
-					// Profile data cannot be saved
-					// Send response to GUI
-					gui_msg.type = GUI_TASK_PROFILE_EVENT;
-					gui_msg.profile_event.event = PROFILE_SAVE;
-					gui_msg.profile_event.err_code = msg.profile_save_response.profileState;
-					gui_msg.profile_event.index = msg.profile_save_response.index;
-					xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
-					// Send response to sound task
 					sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
-					xQueueSendToBack(xQueueSound, &sound_msg, 0);
 				}
+				// Send response to GUI
+				gui_msg.type = GUI_TASK_PROFILE_EVENT;
+				gui_msg.profile_event.event = PROFILE_SAVE;
+				gui_msg.profile_event.err_code = msg.profile_save_response.profileState;
+				gui_msg.profile_event.index = msg.profile_save_response.index;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+				// Send response to sound task
+				xQueueSendToBack(xQueueSound, &sound_msg, 0);
+				// Reset protection flag
+				eeprom_op_in_progress = 0;
 				break;
 			
 			//-------------- Converter command -------------//
@@ -382,14 +379,16 @@ void vTaskDispatcher(void *pvParameters)
 			case DISPATCHER_SHUTDOWN:
 				// Converter is already disabled - so we have enough time to save settings.
 				// We can suspend unnecessary tasks (like UARTs, service, etc) here - check if required
-			
-				// EEPROM task can be busy - wait until it is free
-				xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
-				
+				if (eeprom_op_in_progress)
+				{			
+					// EEPROM task is busy - wait until it is free
+					xSemaphoreTake(xSemaphoreEEPROM, portMAX_DELAY);
+				}
 				// Save recent profile and global settings to EEPROM device
 				
 				// Prepare data structure (fills with FFs)
-				EE_GetReadyForProfileSave();		 
+				EE_GetReadyForProfileSave();		
+				
 				// Collect information from tasks
 				// Converter task
 				converter_msg.type = CONVERTER_SAVE_PROFILE;

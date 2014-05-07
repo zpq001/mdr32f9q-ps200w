@@ -632,7 +632,6 @@ void vTaskEEPROM(void *pvParameters)
 		while(1);
 	}
 	
-	
 	while(1)
 	{
 		xQueueReceive(xQueueEEPROM, &msg, portMAX_DELAY);
@@ -649,7 +648,6 @@ void vTaskEEPROM(void *pvParameters)
 				// The following function uses profile data structure, so call it before
 				// restoring recent profile
 				EE_ExamineProfiles();
-				
 				// Restore recent profile
 				if (global_settings->restoreRecentProfile)
 				{

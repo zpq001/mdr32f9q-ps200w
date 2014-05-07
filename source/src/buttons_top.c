@@ -44,7 +44,7 @@ static struct extsw_mode_t {
 } extsw_mode;
 
 static uint8_t operation_enable;
-
+static uint8_t enable_on_off;
 static converter_message_t converter_msg;
 static gui_msg_t gui_msg;
 
@@ -141,6 +141,7 @@ void vTaskButtons(void *pvParameters)
 	converter_msg.pxSemaphore = 0;
 	
 	operation_enable = 0;
+	enable_on_off = 0;
 	
 	while(1)
 	{
@@ -173,6 +174,9 @@ void vTaskButtons(void *pvParameters)
 			case BUTTONS_START_OPERATION:
 				operation_enable = 1;
 				break;
+			case BUTTONS_ENABLE_ON_OFF_CONTROL:
+				enable_on_off = 1;
+				break;
 			case BUTTONS_TICK:
 				if (!operation_enable)
 					break;
@@ -197,17 +201,20 @@ void vTaskButtons(void *pvParameters)
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				
-				if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF))
-				{
-					// Send OFF mesage to converter task
-					converter_msg.type = CONVERTER_TURN_OFF;
-					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-				}
-				else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON))
-				{
-					// Send ON mesage to converter task
-					converter_msg.type = CONVERTER_TURN_ON;
-					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+				if (enable_on_off)
+				{				
+					if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF))
+					{
+						// Send OFF mesage to converter task
+						converter_msg.type = CONVERTER_TURN_OFF;
+						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					}
+					else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON))
+					{
+						// Send ON mesage to converter task
+						converter_msg.type = CONVERTER_TURN_ON;
+						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					}
 				}
 				
 				

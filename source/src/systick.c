@@ -112,7 +112,6 @@ void Timer2_IRQHandler(void)
 		PORT_SetBits(MDR_PORTA, 1<<TXD1);
 */	
 	
-	ProcessPowerOff();				// Check AC line disconnection
 	
 	if (--hw_adc_counter == 0)
 	{

@@ -6,6 +6,8 @@
 	Written by: AvegaWanderer 10.2013
 **********************************************************/
 #include "MDR32Fx.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "defines.h"
 #include "dwt_delay.h"
@@ -117,7 +119,10 @@ void ProcessButtons(void)
 	btn_type_t current_bit;
 	uint8_t i;
 	
+	taskENTER_CRITICAL();
 	UpdateRawButtonState();
+	taskEXIT_CRITICAL();
+	
 	raw_current = raw_button_state ^ RAW_BUTTON_INVERSE_MASK;
 	#ifdef NOT_USE_JTAG_BUTTONS
 	raw_current &= ~BTN_JTAG_MASK;

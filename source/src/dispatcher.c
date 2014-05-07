@@ -38,7 +38,7 @@
 #include "buttons_top.h"
 #include "systemfunc.h"
 
-xQueueHandle xQueueDispatcher;
+xQueueHandle xQueueDispatcher = 0;
 
 static eeprom_message_t eeprom_msg;
 static xSemaphoreHandle xSemaphoreEEPROM;
@@ -148,7 +148,6 @@ void vTaskDispatcher(void *pvParameters)
 	// Some tasks stay suspended. Start them.  - TODO
 	// UART?
 	
-	analyze_shutdown = 1;	// FIXME
 	
 	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
 	
@@ -168,6 +167,7 @@ void vTaskDispatcher(void *pvParameters)
 		-  Add charge function
 		-  Improve cooler control
 		-  Add overheat warning and auto OFF function
+		
 	*/
 	
 	
@@ -294,15 +294,6 @@ void vTaskDispatcher(void *pvParameters)
 				eeprom_op_in_progress = 0;
 				break;
 			
-			//-------------- Converter command -------------//
-			case DISPATCHER_CONVERTER:
-				converter_msg.type = msg.converter_cmd.msg_type; 
-				converter_msg.sender = msg.sender;
-				memcpy(&converter_msg.a, &msg.converter_cmd.a, sizeof(converter_arguments_t));
-				// TODO: disable turn ON to converter for N ms after power-on
-				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
-				break;
-			
 			//------------- Converter response -------------//
 			case DISPATCHER_CONVERTER_EVENT:
 				// Converter has processed a message and returned feedback (or generated message itself):
@@ -405,6 +396,9 @@ void vTaskDispatcher(void *pvParameters)
 				xSemaphoreTake(xSemaphoreSync, portMAX_DELAY);
 				
 				// Ready to write profile data to EEPROM
+				// Sem can be already taken while waiting for EEPROM task to complete previous operation, so
+				// do not block on it
+				xSemaphoreTake(xSemaphoreEEPROM, 0);
 				eeprom_msg.type = EE_TASK_SHUTDOWN_SAVE;
 				eeprom_msg.shutdown_save_result.global_settings_errcode = &ee_status1;
 				eeprom_msg.shutdown_save_result.recent_profile_errcode = &ee_status2;

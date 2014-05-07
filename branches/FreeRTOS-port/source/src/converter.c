@@ -986,6 +986,8 @@ void vTaskConverter(void *pvParameters)
 					// Converter is already ON
 					err_code = CMD_OK;
 				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
@@ -998,6 +1000,8 @@ void vTaskConverter(void *pvParameters)
 				Converter_TurnOff();
 				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
 				err_code = CMD_OK;
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 				// Send notification to dispatcher
 				fillDispatchMessage(&msg, &dispatcher_msg);
 				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;

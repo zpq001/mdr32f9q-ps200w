@@ -37,6 +37,8 @@
 // External switch modes
 enum ExtSwModes {EXTSW_DIRECT, EXTSW_TOGGLE, EXTSW_TOGGLE_OFF};
 
+// UART parity modes - those values come from StdPeriph UART library
+enum MyUartParity {PARITY_NO = 0x0, PARITY_ODD = 0x2, PARITY_EVEN = 0x6};
 
 
 enum senders {

@@ -156,6 +156,80 @@ void guiGraph_DrawTextLabel(guiTextLabel_t *textLabel)
 }
 
 
+
+
+//-------------------------------------------------------//
+// Draw a selectTextBox
+//
+//
+//-------------------------------------------------------//
+void guiGraph_DrawSelectTextBox(guiSelectTextBox_t *selectTextBox)
+{
+    rect_t rect;
+
+    //-----------------------------------------//
+    // Draw background and text
+    if (selectTextBox->redrawForced)
+    {
+        // Erase rectangle
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        LCD_FillRect(wx,wy,selectTextBox->width,selectTextBox->height,FILL_WITH_WHITE);
+
+        // Draw string
+        LCD_SetPixelOutputMode(PIXEL_MODE_OR);
+        LCD_SetFont(selectTextBox->font);
+        rect.x1 = wx + 0;
+        rect.y1 = wy + 0;
+        rect.x2 = wx + selectTextBox->width - 1;
+        rect.y2 = wy + selectTextBox->height - 1;
+        if (selectTextBox->selectedIndex < selectTextBox->stringCount)
+        {
+            if (selectTextBox->stringList[selectTextBox->selectedIndex])
+            {
+                LCD_PrintStringAligned(selectTextBox->stringList[selectTextBox->selectedIndex], &rect, ALIGN_CENTER, IMAGE_MODE_NORMAL);
+            }
+
+            // Draw active state
+            if (selectTextBox->isActive)
+            {
+                if (selectTextBox->selectedIndex > 0)
+                    LCD_DrawImage(selector_tri, wx, wy, 6, 12, IMAGE_MODE_NORMAL);
+                if (selectTextBox->selectedIndex < selectTextBox->stringCount - 1)
+                    LCD_DrawImage(selector_tri_xrev, wx + selectTextBox->width - 6, wy, 6, 12, IMAGE_MODE_NORMAL);
+            }
+        }
+        else
+        {
+            LCD_PrintStringAligned("?", &rect, ALIGN_CENTER, IMAGE_MODE_NORMAL);
+        }
+
+    }
+
+
+    //-----------------------------------------//
+    // Draw focus
+    if (((selectTextBox->redrawForced) || (selectTextBox->redrawFocus)) &&
+            (selectTextBox->showFocus) && (selectTextBox->isActive == 0))
+    {
+        LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
+        if (selectTextBox->isFocused)
+        {
+            LCD_SetLineStyle(LINE_STYLE_DOTTED);
+            LCD_DrawRect(wx,wy,selectTextBox->width,selectTextBox->height,1);
+        }
+        else
+        {
+            LCD_SetLineStyle(LINE_STYLE_SOLID);
+            if (selectTextBox->hasFrame)
+                LCD_DrawRect(wx,wy,selectTextBox->width,selectTextBox->height,1);
+            else
+                LCD_DrawRect(wx,wy,selectTextBox->width,selectTextBox->height,0);
+        }
+    }
+}
+
+
+
 //-------------------------------------------------------//
 // Draw checkbox
 //

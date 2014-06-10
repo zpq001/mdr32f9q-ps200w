@@ -51,7 +51,8 @@ SOURCES += main.cpp\
     gui_top/guiTop.c \
     ../../source/gui/guiEditPanel2.c \
     ../../source/gui/guiWidgets/guiTextSpinBox.c \
-    ../../source/gui/guiWidgets/guiRadioButton.c
+    ../../source/gui/guiWidgets/guiRadioButton.c \
+    ../../source/gui/guiWidgets/guiSelectTextBox.c
     
 
 HEADERS  += mainwindow.h \
@@ -83,7 +84,8 @@ HEADERS  += mainwindow.h \
 	gui_top/taps.h \
     ../../source/gui/guiEditPanel2.h \
     ../../source/gui/guiWidgets/guiTextSpinBox.h \
-    ../../source/gui/guiWidgets/guiRadioButton.h
+    ../../source/gui/guiWidgets/guiRadioButton.h \
+    ../../source/gui/guiWidgets/guiSelectTextBox.h
     
     
     

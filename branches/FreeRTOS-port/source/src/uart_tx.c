@@ -19,6 +19,7 @@
 #include "eeprom.h"
 
 #include "uart_tx.h"
+#include "uart_rx.h"
 
 #include "guiTop.h"		// button codes
 
@@ -187,6 +188,7 @@ void vTaskUARTTransmitter(void *pvParameters)
 	char *uart_tx_data_buffer = (my_uart_num == 1) ? uart1_tx_data_buff : uart2_tx_data_buff;
 	DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
 	uart_transmiter_msg_t msg;
+	xSemaphoreHandle *hwUART_mutex = (my_uart_num == 1) ? &hwUART1_mutex : &hwUART2_mutex;
 	
 	char *string_to_send;
 	uint16_t length;
@@ -247,8 +249,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 		
 		if ((string_to_send != 0) && (length != 0))
 		{
-			// Transfer data
-			UART_do_tx_DMA(MDR_UARTx, &DMA_PriCtrlStr, string_to_send, length);
+			if ((*hwUART_mutex != 0) && (xSemaphoreTake(*hwUART_mutex, 0) == pdTRUE))
+			{
+				// Transfer data
+				UART_do_tx_DMA(MDR_UARTx, &DMA_PriCtrlStr, string_to_send, length);
+				xSemaphoreGive(*hwUART_mutex);
+			}
 		}
 
 		// Free memory if required

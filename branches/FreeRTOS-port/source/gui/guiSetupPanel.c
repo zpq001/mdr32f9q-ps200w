@@ -26,6 +26,7 @@
 #include "guiStringList.h"
 #include "guiCheckBox.h"
 #include "guiRadioButton.h"
+#include "guiSelectTextBox.h"
 
 // Other forms and panels
 #include "guiMasterPanel.h"
@@ -73,6 +74,8 @@ static uint8_t guiProfileList_KeyTranslator(guiGenericWidget_t *widget, guiEvent
 static uint8_t guiProfileList_onKeyEvent(void *widget, guiEvent_t *event);
 static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event);
 
+static uint8_t guiSelectTextBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+
 static uint8_t onLowLimitChanged(void *widget, guiEvent_t *event);
 static uint8_t onHighLimitChanged(void *widget, guiEvent_t *event);
 
@@ -80,7 +83,7 @@ static uint8_t onOverloadSettingsChanged(void *widget, guiEvent_t *event);
 static uint8_t onProfileSettingsChanged(void *widget, guiEvent_t *event);
 static uint8_t onExtSwitchSettingsChanged(void *widget, guiEvent_t *event);
 static uint8_t onDacSettingsChanged(void *widget, guiEvent_t *event);
-
+static uint8_t onUartSettingsChanged(void *widget, guiEvent_t *event);
 
 
 
@@ -90,6 +93,7 @@ struct {
     uint8_t current_range;
     uint8_t view;
     uint8_t profileAction;
+    uint8_t uart_num;
 } setupView;
 
 enum setupViewModes {
@@ -157,6 +161,12 @@ guiTextLabel_t textLabel_VoltageDacOffset;
 guiTextLabel_t textLabel_CurrentLowDacOffset;
 guiTextLabel_t textLabel_CurrentHighDacOffset;
 
+// UART section
+guiCheckBox_t checkBox_UartEnable;
+guiSelectTextBox_t selectTextBox_UartParity;
+guiSelectTextBox_t selectTextBox_UartBaudrate;
+guiTextLabel_t textLabel_Uart;
+
 //-------------------------------------------------------//
 //  Panel initialization
 //
@@ -167,7 +177,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
 
     // Initialize
     guiPanel_Initialize(&guiSetupPanel, parent);
-    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiSetupPanel, 30);
+    guiCore_AllocateWidgetCollection((guiGenericContainer_t *)&guiSetupPanel, 40);
     guiSetupPanel.x = 0;
     guiSetupPanel.y = 0;
     guiSetupPanel.width = 96 * 2;
@@ -207,7 +217,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.y = 11;
     setupList.width = 96;
     setupList.height = 68 - 13;
-    setupList.stringCount = 8;
+    setupList.stringCount = 10;
     setupList.strings = guiCore_calloc(sizeof(char *) * setupList.stringCount);
     setupList.strings[0] = "Channel 5V";
     setupList.strings[1] = "Channel 12V";
@@ -217,6 +227,8 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     setupList.strings[5] = "Profile setup";
     setupList.strings[6] = "External switch";
     setupList.strings[7] = "DAC offset";
+    setupList.strings[8] = "UART 1";
+    setupList.strings[9] = "UART 2";
     guiCore_AllocateHandlers((guiGenericWidget_t *)&setupList, 4);
     guiCore_AddHandler((guiGenericWidget_t *)&setupList, STRINGLIST_INDEX_CHANGED, guiSetupList_onIndexChanged);
     guiCore_AddHandler((guiGenericWidget_t *)&setupList, GUI_ON_VISIBLE_CHANGED, guiSetupList_onVisibleChanged);
@@ -600,6 +612,87 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_CurrentHighDacOffset.text = "Cur.high [mA]:";
     textLabel_CurrentHighDacOffset.y = 42;
 
+    //--------------- UART section ---------------//
+
+    guiCheckBox_Initialize(&checkBox_UartEnable, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&checkBox_UartEnable, (guiGenericContainer_t *)&guiSetupPanel);
+    checkBox_UartEnable.font = &font_h10;
+    checkBox_UartEnable.x = 96 + 5;
+    checkBox_UartEnable.y = 0;
+    checkBox_UartEnable.width = 60;
+    checkBox_UartEnable.height = 14;
+    checkBox_UartEnable.isVisible = 0;
+    checkBox_UartEnable.text = "Enable";
+    checkBox_UartEnable.tabIndex = 1;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&checkBox_UartEnable, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_UartEnable, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+    guiCore_AddHandler((guiGenericWidget_t *)&checkBox_UartEnable, CHECKBOX_CHECKED_CHANGED, onUartSettingsChanged);
+    checkBox_UartEnable.keyTranslator = guiCheckBoxLimit_KeyTranslator;        // CHECKME - name;
+
+    guiSelectTextBox_Initialize(&selectTextBox_UartParity, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&selectTextBox_UartParity, (guiGenericContainer_t *)&guiSetupPanel);
+    selectTextBox_UartParity.font = &font_h10;
+    selectTextBox_UartParity.x = 96 + 2;
+    selectTextBox_UartParity.y = 18;
+    selectTextBox_UartParity.width = 92;
+    selectTextBox_UartParity.height = 14;
+    selectTextBox_UartParity.isVisible = 0;
+    selectTextBox_UartParity.tabIndex = 2;
+    selectTextBox_UartParity.restoreIndexOnEscape = 1;
+    selectTextBox_UartParity.stringCount = 3;
+    selectTextBox_UartParity.stringList = guiCore_calloc(sizeof(char *) * selectTextBox_UartParity.stringCount);
+    selectTextBox_UartParity.stringList[0] = "Parity NO";
+    selectTextBox_UartParity.stringList[1] = "Parity ODD";
+    selectTextBox_UartParity.stringList[2] = "Parity EVEN";
+    selectTextBox_UartParity.valueList = guiCore_calloc(sizeof(uint8_t) * selectTextBox_UartParity.stringCount);
+    ((uint8_t *)selectTextBox_UartParity.valueList)[0] = PARITY_NO;
+    ((uint8_t *)selectTextBox_UartParity.valueList)[1] = PARITY_ODD;
+    ((uint8_t *)selectTextBox_UartParity.valueList)[2] = PARITY_EVEN;
+    guiCore_AllocateHandlers((guiGenericWidget_t *)&selectTextBox_UartParity, 2);
+    guiCore_AddHandler((guiGenericWidget_t *)&selectTextBox_UartParity, GUI_EVENT_KEY, guiSetupList_ChildKeyHandler);
+    guiCore_AddHandler((guiGenericWidget_t *)&selectTextBox_UartParity, SELECTTEXTBOX_ACTIVE_CHANGED, onUartSettingsChanged);
+    selectTextBox_UartParity.keyTranslator = guiSelectTextBox_KeyTranslator;
+
+    guiSelectTextBox_Initialize(&selectTextBox_UartBaudrate, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&selectTextBox_UartBaudrate, (guiGenericContainer_t *)&guiSetupPanel);
+    selectTextBox_UartBaudrate.font = &font_h10;
+    selectTextBox_UartBaudrate.x = 96 + 2;
+    selectTextBox_UartBaudrate.y = 36;
+    selectTextBox_UartBaudrate.width = 92;
+    selectTextBox_UartBaudrate.height = 14;
+    selectTextBox_UartBaudrate.isVisible = 0;
+    selectTextBox_UartBaudrate.tabIndex = 3;
+    selectTextBox_UartBaudrate.restoreIndexOnEscape = 1;
+    selectTextBox_UartBaudrate.stringCount = 5;
+    selectTextBox_UartBaudrate.stringList = guiCore_calloc(sizeof(char *) * selectTextBox_UartBaudrate.stringCount);
+    selectTextBox_UartBaudrate.stringList[0] = "9600 bps";
+    selectTextBox_UartBaudrate.stringList[1] = "19200 bps";
+    selectTextBox_UartBaudrate.stringList[2] = "38400 bps";
+    selectTextBox_UartBaudrate.stringList[3] = "57600 bps";
+    selectTextBox_UartBaudrate.stringList[4] = "115.2 kbps";
+    selectTextBox_UartBaudrate.valueList = guiCore_calloc(sizeof(uint32_t) * selectTextBox_UartBaudrate.stringCount);
+    ((uint32_t *)selectTextBox_UartBaudrate.valueList)[0] = 9600;
+    ((uint32_t *)selectTextBox_UartBaudrate.valueList)[1] = 19200;
+    ((uint32_t *)selectTextBox_UartBaudrate.valueList)[2] = 38400;
+    ((uint32_t *)selectTextBox_UartBaudrate.valueList)[3] = 57600;
+    ((uint32_t *)selectTextBox_UartBaudrate.valueList)[4] = 115200;
+    selectTextBox_UartBaudrate.handlers.elements = selectTextBox_UartParity.handlers.elements;  // Handlers are shared
+    selectTextBox_UartBaudrate.handlers.count = selectTextBox_UartParity.handlers.count;
+    selectTextBox_UartBaudrate.keyTranslator = guiSelectTextBox_KeyTranslator;
+
+    guiTextLabel_Initialize(&textLabel_Uart, 0);
+    guiCore_AddWidgetToCollection((guiGenericWidget_t *)&textLabel_Uart, (guiGenericContainer_t *)&guiSetupPanel);
+    textLabel_Uart.x = 96;
+    textLabel_Uart.y = 55;
+    textLabel_Uart.width = 96;
+    textLabel_Uart.height = 10;
+    textLabel_Uart.textAlignment = ALIGN_LEFT;
+    textLabel_Uart.text = "(8 bit, 1 stop)";
+    textLabel_Uart.font = &font_h10;
+    textLabel_Uart.textAlignment = ALIGN_CENTER;
+
+
+
     //---------- Tags ----------//
 
     // Group 1
@@ -632,6 +725,11 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     textLabel_VoltageDacOffset.tag = 18;
     textLabel_CurrentLowDacOffset.tag = 18;
     textLabel_CurrentHighDacOffset.tag = 18;
+
+    checkBox_UartEnable.tag = 19;     // takes tags 19,20
+    selectTextBox_UartParity.tag = 19;
+    selectTextBox_UartBaudrate.tag = 19;
+    textLabel_Uart.tag = 19;
 
     // Other
     textLabel_hint.tag = 11;
@@ -768,6 +866,18 @@ static uint8_t guiSetupList_onIndexChanged(void *widget, guiEvent_t *event)
     {
         setupView.profileAction = PROFILE_ACTION_SAVE;
         guiCore_SetVisible((guiGenericWidget_t *)&profileList, 1);
+    }
+    else if (setupList.selectedIndex == 8)
+    {
+        setupView.uart_num = 1;
+        guiCore_SetVisibleByTag(&guiSetupPanel.widgets, 19, 20, ITEMS_IN_RANGE_ARE_VISIBLE);
+        guiUpdateUartSettings(setupView.uart_num);
+    }
+    else if (setupList.selectedIndex == 9)
+    {
+        setupView.uart_num = 2;
+        guiCore_SetVisibleByTag(&guiSetupPanel.widgets, 19, 20, ITEMS_IN_RANGE_ARE_VISIBLE);
+        guiUpdateUartSettings(setupView.uart_num);
     }
     else
     {
@@ -1061,7 +1171,6 @@ static uint8_t guiSpinBoxLimit_KeyTranslator(guiGenericWidget_t *widget, guiEven
 
 
 
-
 //-------------------------//
 // guiProfileList
 
@@ -1123,6 +1232,43 @@ static uint8_t guiProfileList_onFocusChanged(void *widget, guiEvent_t *event)
     }
     return 0;
 }
+
+
+static uint8_t guiSelectTextBox_KeyTranslator(guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey)
+{
+    guiSelectTextBoxTranslatedKey_t *tkey = (guiSelectTextBoxTranslatedKey_t *)translatedKey;
+    tkey->key = 0;
+    if (event->spec == GUI_KEY_EVENT_DOWN)
+    {
+        if (event->lparam == GUI_KEY_OK)
+            tkey->key = SELECTTEXTBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_LEFT)
+            tkey->key = SELECTTEXTBOX_KEY_PREV;
+        else if (event->lparam == GUI_KEY_RIGHT)
+            tkey->key = SELECTTEXTBOX_KEY_NEXT;
+    }
+    else if (event->spec == GUI_KEY_EVENT_UP_SHORT)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+            tkey->key = SELECTTEXTBOX_KEY_SELECT;
+        else if (event->lparam == GUI_KEY_ESC)
+            tkey->key = SELECTTEXTBOX_KEY_EXIT;
+    }
+    else if (event->spec == GUI_KEY_EVENT_HOLD)
+    {
+        if (event->lparam == GUI_KEY_ENCODER)
+            tkey->key = SELECTTEXTBOX_KEY_EXIT;
+    }
+    else if (event->spec == GUI_ENCODER_EVENT)
+    {
+        if ((int8_t)event->lparam < 0)
+            tkey->key = SELECTTEXTBOX_KEY_PREV;
+        else if ((int8_t)event->lparam > 0)
+            tkey->key = SELECTTEXTBOX_KEY_NEXT;
+    }
+    return 0;
+}
+
 
 void hideEditPanel2(char *newProfileName)
 {
@@ -1293,6 +1439,27 @@ static void setGuiDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_hig
 
 
 
+//------------------------------------------------------//
+//              UART settings							//
+//------------------------------------------------------//
+static uint8_t onUartSettingsChanged(void *widget, guiEvent_t *event)
+{
+    reqUartSettings_t s;
+    guiSelectTextBox_t *box = (guiSelectTextBox_t *)widget;
+    //if ((((guiGenericWidget_t*)widget)->type = WT_CHECKBOX) || ((box->isActive == 0) && (box->newIndexAccepted)))
+	if (((box->isActive == 0) && (box->newIndexAccepted)))
+    {
+        s.enable = checkBox_UartEnable.isChecked;
+        s.parity = ((uint8_t *)selectTextBox_UartParity.valueList)[selectTextBox_UartParity.selectedIndex];
+        s.brate = ((uint32_t *)selectTextBox_UartBaudrate.valueList)[selectTextBox_UartBaudrate.selectedIndex];
+        s.uart_num = setupView.uart_num;
+        guiTop_ApplyUartSettings(&s);
+    }
+    return 0;
+}
+
+
+
 //==========================================================================//
 //==========================================================================//
 //                    The NEW interface to TOP level                        //
@@ -1416,6 +1583,42 @@ void guiUpdateDacSettings(void)
     setGuiDacSettings(v_offset, c_low_offset, c_high_offset);
 }
 
+
+
+//-------------------------------------------------------//
+
+void guiUpdateUartSettings(uint8_t uart_num)
+{
+    reqUartSettings_t req;
+    void *p_temp;
+    uint8_t i;
+    if (uart_num == setupView.uart_num)
+    {
+        req.uart_num = uart_num;
+        guiTop_GetUartSettings(&req);
+        guiCheckbox_SetChecked(&checkBox_UartEnable, req.enable, 0);
+        // Set parity
+        p_temp = selectTextBox_UartParity.valueList;
+        for (i = 0; i < selectTextBox_UartParity.stringCount; i++)
+        {
+            if (((uint8_t *)p_temp)[i] == req.parity)
+            {
+                guiSelectTextBox_SetIndex(&selectTextBox_UartParity, i, 0);
+                break;
+            }
+        }
+        // Set baudrate
+        p_temp = selectTextBox_UartBaudrate.valueList;
+        for (i = 0; i < selectTextBox_UartBaudrate.stringCount; i++)
+        {
+            if (((uint32_t *)p_temp)[i] == req.brate)
+            {
+                guiSelectTextBox_SetIndex(&selectTextBox_UartBaudrate, i, 0);
+                break;
+            }
+        }
+    }
+}
 
 
 

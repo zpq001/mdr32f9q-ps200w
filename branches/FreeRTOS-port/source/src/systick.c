@@ -21,6 +21,7 @@
 #include "dwt_delay.h"
 #include "sound_driver.h"
 #include "buttons_top.h"
+#include "uart_rx.h"
 
 // Profiling
 time_profile_t time_profile;
@@ -49,6 +50,10 @@ static void vTimerCallback(xTimerHandle pxTimer)
 		case TIMER_BUTTONS:
 			xQueueSendToBack(xQueueButtons, &buttons_tick_msg, 0);	
 			break;
+		case TIMER_UART_RX:
+			xQueueSendToBack(xQueueUART1RX, &uart_rx_tick_msg, 0);	
+			xQueueSendToBack(xQueueUART2RX, &uart_rx_tick_msg, 0);	
+			break;
 	}
 }
 
@@ -61,6 +66,7 @@ void Synchronizer_Initialize(void)
 	xTimers[TIMER_SOUND] = xTimerCreate(	(signed char *)"Sound driver timer", 	5, 	pdTRUE, (void *)TIMER_SOUND, 		vTimerCallback);
 	xTimers[TIMER_GUI] = xTimerCreate(		(signed char *)"GUI timer", 			25,	pdTRUE, (void *)TIMER_GUI, 			vTimerCallback);
 	xTimers[TIMER_BUTTONS] = xTimerCreate(	(signed char *)"Buttons driver timer", 	10,	pdTRUE, (void *)TIMER_BUTTONS, 		vTimerCallback);
+	xTimers[TIMER_UART_RX] = xTimerCreate(	(signed char *)"UART RX timer", 		5,	pdTRUE, (void *)TIMER_UART_RX, 		vTimerCallback);
 	// Check
 	for (i=0; i<NUM_TIMERS; i++)
 	{

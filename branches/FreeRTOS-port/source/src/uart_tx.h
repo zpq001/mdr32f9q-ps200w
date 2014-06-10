@@ -30,6 +30,7 @@ typedef struct {
 
 //---------------------------------------------//
 // Task message definitions
+
 enum uart_tx_msg_type_t {	
 	UART_RESPONSE_OK = 1, 
 	UART_RESPONSE_UNKNOWN_CMD, 
@@ -41,7 +42,10 @@ enum uart_tx_msg_type_t {
 	UART_SEND_DATA,
 	UART_SEND_ALLOCATED_DATA,
 	UART_SEND_PROFILING,
-	UART_SEND_POWER_CYCLES_STAT
+	UART_SEND_POWER_CYCLES_STAT,
+	
+	UART_TX_START,
+	UART_TX_STOP
 };
 
 

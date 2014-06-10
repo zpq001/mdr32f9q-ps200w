@@ -35,6 +35,7 @@
 #include "sound_driver.h"
 #include "eeprom.h"
 #include "uart_tx.h"
+#include "uart_rx.h"
 #include "buttons_top.h"
 #include "systemfunc.h"
 
@@ -43,7 +44,7 @@ xQueueHandle xQueueDispatcher = 0;
 static eeprom_message_t eeprom_msg;
 static xSemaphoreHandle xSemaphoreEEPROM;
 static xSemaphoreHandle xSemaphoreSync;
-
+static uart_receiver_msg_t uart_rx_msg;
 const dispatch_msg_t dispatcher_shutdown_msg = {DISPATCHER_SHUTDOWN};
 
 
@@ -147,7 +148,9 @@ void vTaskDispatcher(void *pvParameters)
 	
 	// Some tasks stay suspended. Start them.  - TODO
 	// UART?
-	
+	uart_rx_msg.type = UART_INITIAL_START;
+	xQueueSendToBack(xQueueUART1RX, &uart_rx_msg, 0);
+	xQueueSendToBack(xQueueUART2RX, &uart_rx_msg, 0);
 	
 	eeprom_msg.xSemaphorePtr = &xSemaphoreEEPROM;
 	

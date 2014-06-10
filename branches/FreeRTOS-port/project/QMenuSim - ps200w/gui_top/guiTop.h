@@ -92,6 +92,19 @@ uint8_t readProfileListRecordName(uint8_t index, char *profileName);
 
 
 
+typedef struct {
+    uint8_t uart_num;
+    uint8_t enable;
+    uint8_t parity;
+    uint32_t brate;
+} reqUartSettings_t;
+
+
+void guiTop_ApplyUartSettings(reqUartSettings_t *s);
+void guiTop_GetUartSettings(reqUartSettings_t *req);
+
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -142,6 +142,8 @@ void guiInitialize(void)
     // Simulation of ADC and service tasks work
     guiUpdateAdcIndicators();
     guiUpdateTemperatureIndicator();
+
+    guiUpdateUartSettings(0);
 }
 
 
@@ -514,6 +516,41 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
     current_low_dac_offset = c_low_offset;
     current_high_dac_offset = c_high_offset;
 }
+
+
+
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+
+
+
+//------------------------------------------------------//
+//                          UART                        //
+//------------------------------------------------------//
+void guiTop_ApplyUartSettings(reqUartSettings_t *s)
+{
+
+}
+
+
+void guiTop_GetUartSettings(reqUartSettings_t *req)
+{
+    if (req->uart_num == 1)
+    {
+        req->enable = 1;
+        req->parity = PARITY_ODD;
+        req->brate = 19200;
+    }
+    else
+    {
+        req->enable = 0;
+        req->parity = PARITY_EVEN;
+        req->brate = 115200;
+    }
+}
+
 
 
 

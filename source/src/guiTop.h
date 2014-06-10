@@ -73,6 +73,13 @@ enum profileEvents {
 };
 
 
+typedef struct {
+    uint8_t uart_num;
+    uint8_t enable;
+    uint8_t parity;
+    uint32_t brate;
+} reqUartSettings_t;
+
 
 
 void GUI_Init(void);
@@ -106,7 +113,8 @@ void guiTop_ApplyExtSwitchSettings(uint8_t enable, uint8_t inverse, uint8_t mode
 void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high_offset);
 
 
-
+void guiTop_ApplyUartSettings(reqUartSettings_t *s);
+void guiTop_GetUartSettings(reqUartSettings_t *req);
 
 
 

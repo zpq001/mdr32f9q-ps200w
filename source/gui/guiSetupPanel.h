@@ -34,7 +34,8 @@ void guiUpdateProfileList(void);
 void guiUpdateExtswitchSettings(void);
 // DAC
 void guiUpdateDacSettings(void);
-
+// UART
+void guiUpdateUartSettings(uint8_t uart_num);
 
 
 #endif

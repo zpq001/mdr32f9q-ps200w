@@ -11,11 +11,12 @@
 
 
 // Task synch timing
-#define NUM_TIMERS			4
+#define NUM_TIMERS			5
 #define TIMER_CONVERTER		0
 #define TIMER_SOUND			1
 #define TIMER_GUI			2
 #define TIMER_BUTTONS		3
+#define TIMER_UART_RX		4
 
 
 

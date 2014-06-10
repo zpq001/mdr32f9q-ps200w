@@ -708,6 +708,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiRadioButton.c</FilePath>
             </File>
+            <File>
+              <FileName>guiSelectTextBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiSelectTextBox.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1483,6 +1488,11 @@
               <FileName>guiRadioButton.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\gui\guiWidgets\guiRadioButton.c</FilePath>
+            </File>
+            <File>
+              <FileName>guiSelectTextBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\gui\guiWidgets\guiSelectTextBox.c</FilePath>
             </File>
           </Files>
         </Group>

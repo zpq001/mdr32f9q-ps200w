@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "global_def.h"
 #include "key_def.h"		// button codes
@@ -20,6 +21,7 @@
 #include "dispatcher.h"
 #include "converter.h"
 #include "guiTop.h"
+#include "eeprom.h"
 
 
 
@@ -31,6 +33,7 @@ static uint16_t 				uart1_rx_data_buff[RX_BUFFER_SIZE];
 static uint16_t 				uart2_rx_data_buff[RX_BUFFER_SIZE];
 static uart_dma_rx_buffer_t 	uart1_rx_dma_buffer;
 static uart_dma_rx_buffer_t 	uart2_rx_dma_buffer;
+
 // Saved DMA configuration for fast reload in ISR
 uint32_t UART1_RX_saved_TCB[3];
 uint32_t UART2_RX_saved_TCB[3];
@@ -42,6 +45,8 @@ static char uart2_received_msg[RX_MESSAGE_MAX_LENGTH];
 
 
 static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args);
+
+
 
 
 static void UART_Init_RX_buffer(uart_dma_rx_buffer_t *rx_buffer, uint16_t *data, uint32_t size)
@@ -110,7 +115,7 @@ static void UART_init_RX_DMA(MDR_UART_TypeDef *MDR_UARTx, uart_dma_rx_buffer_t *
 }
 
 
-
+// Initializes DMA for UART receive
 static void UART_init_and_start_RX_DMA(uint8_t uart_num)
 {
 	if (uart_num == 1)
@@ -120,9 +125,7 @@ static void UART_init_and_start_RX_DMA(uint8_t uart_num)
 		// Setup DMA channel
 		UART_init_RX_DMA(MDR_UART1, &uart1_rx_dma_buffer, UART1_RX_saved_TCB);
 		// Enable DMA channel
-		DMA_Cmd(DMA_Channel_UART1_RX, ENABLE);
-		// Enable UARTn DMA Rx request
-		UART_DMACmd(MDR_UART1, UART_DMA_RXE, ENABLE);
+		DMA_Cmd(DMA_Channel_UART1_RX, ENABLE);	
 	}
 	else
 	{
@@ -132,10 +135,33 @@ static void UART_init_and_start_RX_DMA(uint8_t uart_num)
 		UART_init_RX_DMA(MDR_UART2, &uart2_rx_dma_buffer, UART2_RX_saved_TCB);
 		// Enable DMA channel
 		DMA_Cmd(DMA_Channel_UART2_RX, ENABLE);
-		// Enable UARTn DMA Rx request
-		UART_DMACmd(MDR_UART2, UART_DMA_RXE, ENABLE);
 	}
 }
+
+
+static void UART_start_RX(MDR_UART_TypeDef *MDR_UARTx)
+{
+	// Enable UARTn
+	UART_Cmd(MDR_UARTx, ENABLE);
+	// Enable UARTn DMA Rx request
+	UART_DMACmd(MDR_UARTx, UART_DMA_RXE, ENABLE);
+}
+
+
+static void UART_stop_RX(MDR_UART_TypeDef *MDR_UARTx)
+{	
+	// Disable UARTn DMA Rx request
+	UART_DMACmd(MDR_UARTx, UART_DMA_RXE, DISABLE);
+	
+	// Wait until current symbol is completely received - how?		
+	while (UART_GetFlagStatus(MDR_UARTx, UART_FLAG_TXFE) == RESET) {};
+	while (UART_GetFlagStatus(MDR_UARTx, UART_FLAG_BUSY) == SET) {};
+		
+	// Disable UARTn
+	UART_Cmd(MDR_UARTx, DISABLE);
+}
+
+
 
 
 // Reads UART RX stream that is filled by DMA for num_of_chars_to_read symbols.
@@ -164,22 +190,53 @@ static uint8_t UART_read_rx_stream(uint8_t uart_num, char **rx_string, uint16_t 
 	return 0;
 }
 
+// Cleans UART RX stream
+static void UART_clean_rx_stream(uint8_t uart_num)
+{
+	uint16_t dummy_word;
+	uart_dma_rx_buffer_t *dma_buf_ptr = (uart_num == 1) ? &uart1_rx_dma_buffer : &uart2_rx_dma_buffer;
+	while(UART_Get_from_RX_buffer(dma_buf_ptr, &dummy_word));
+}
+
+
+
+void UART_Get_comm_params(uint8_t uart_num, uart_param_request_t *r)
+{
+	uartx_settings_t *my_uart_settings = (uart_num == 1) ? &uart_settings.uart1 : &uart_settings.uart2;
+	r->enable = my_uart_settings->enable;
+	r->brate = my_uart_settings->baudRate;
+	r->parity = my_uart_settings->parity;
+}
+
 
 
 
 static xSemaphoreHandle xSemaphoreConverter1, xSemaphoreConverter2;
 
+xSemaphoreHandle hwUART1_mutex;
+xSemaphoreHandle hwUART2_mutex;
 
 
-void vTaskUARTReceiver(void *pvParameters) 
+xQueueHandle xQueueUART1RX, xQueueUART2RX;
+
+uart_receiver_msg_t uart_rx_tick_msg = {UART_RX_TICK};
+
+
+void vTaskUARTReceiver(void *pvParameters)
 {
 	// Uart number for task is passed by argument
 	uint8_t my_uart_num = (uint32_t)pvParameters;
+	xQueueHandle *xQueueUARTx = (my_uart_num == 1) ? &xQueueUART1RX : &xQueueUART2RX;
+	MDR_UART_TypeDef *MDR_UARTx = (my_uart_num == 1) ? MDR_UART1 : MDR_UART2;
+	uartx_settings_t *my_uart_settings = (my_uart_num == 1) ? &uart_settings.uart1 : &uart_settings.uart2;
+	uart_receiver_msg_t msg;
+	xSemaphoreHandle *hwUART_mutex = (my_uart_num == 1) ? &hwUART1_mutex : &hwUART2_mutex;
 	char *received_msg = (my_uart_num == 1) ? uart1_received_msg : uart2_received_msg;
 	char *received_msg_ptr = received_msg;
 	uint16_t chars_to_read = RX_MESSAGE_MAX_LENGTH;
 	uint16_t msg_length = 0;
 	uint8_t analyze_message;
+	uint8_t rx_enable = 0;
 	// Parser stuff
 	char *argv[MAX_WORDS_IN_MESSAGE];		// Array of pointers to separate words
 	uint16_t argc = 0;						// Count of words in message
@@ -187,7 +244,10 @@ void vTaskUARTReceiver(void *pvParameters)
 	uint8_t exeFunc;
     arg_t exeFuncArgs[MAX_FUNCTION_ARGUMENTS];
 	
-	portTickType lastExecutionTime = xTaskGetTickCount();
+	// Initialize OS items
+	*xQueueUARTx = xQueueCreate( 5, sizeof( uart_receiver_msg_t ) );
+	if( *xQueueUARTx == 0 )
+		while(1);
 	
 	//------------//
 	vSemaphoreCreateBinary( xSemaphoreConverter1 );
@@ -203,54 +263,107 @@ void vTaskUARTReceiver(void *pvParameters)
         while(1);
     }
 	xSemaphoreTake(xSemaphoreConverter2, 0);
+	
+	// Create mutex that will be used for UART TX task synchronization
+	// It must be initially taken
+	taskENTER_CRITICAL();
+	*hwUART_mutex = xSemaphoreCreateMutex();
+	if( *hwUART_mutex == 0 )
+		while(1); 
+	xSemaphoreTake(*hwUART_mutex, 0);
+	taskEXIT_CRITICAL();
+	
 	//------------//
 	
-	// Start operation
+	// Start DMA operation
 	UART_init_and_start_RX_DMA(my_uart_num);
+	
 	
 	while(1)
 	{
-		vTaskDelayUntil(&lastExecutionTime, 5);		// 10ms period
-
-		analyze_message = UART_read_rx_stream(my_uart_num, &received_msg_ptr, &chars_to_read);
-		if (analyze_message)
+		xQueueReceive(*xQueueUARTx, &msg, portMAX_DELAY);
+		switch (msg.type)
 		{
-			msg_length = RX_MESSAGE_MAX_LENGTH - chars_to_read;
-			
-			// Split message string into argument words
-			argc = 0;
-			searchWord = 1;
-			for (i=0; i<msg_length; i++)
-			{
-				if ( (received_msg[i] == ' ') || (received_msg[i] == '\t') || 
-					 (received_msg[i] == '\n') || (received_msg[i] == '\r'))
+			case UART_INITIAL_START:
+				// Read global settings, setup UART hardware and start listening if required
+				HW_UART_Set_Comm_Params(MDR_UARTx, my_uart_settings->baudRate, my_uart_settings->parity);
+				if (my_uart_settings->enable)
 				{
-					received_msg[i] = 0;
+					UART_start_RX(MDR_UARTx);
+					rx_enable = 1;
+					xSemaphoreGive(*hwUART_mutex);
+				}
+				break;
+			case UART_APPLY_NEW_SETTINGS:
+				// First have to stop TX
+				xSemaphoreTake(*hwUART_mutex, portMAX_DELAY);
+				UART_stop_RX(MDR_UARTx);
+				// CHECKME - stop RX before waiting for TX mutex to avoid DMA RX buffer overflow
+				// Reset buffer items
+				UART_clean_rx_stream(my_uart_num);
+				chars_to_read = RX_MESSAGE_MAX_LENGTH;
+				received_msg_ptr = received_msg;
+				// Apply settings
+				HW_UART_Set_Comm_Params(MDR_UARTx, msg.brate, msg.parity);
+				// TODO: analyze return code
+				my_uart_settings->baudRate = msg.brate;
+				my_uart_settings->parity = msg.parity;
+				my_uart_settings->enable = msg.enable;
+				if (my_uart_settings->enable)
+				{
+					UART_start_RX(MDR_UARTx);
+					rx_enable = 1;
+					xSemaphoreGive(*hwUART_mutex);
+				}
+				else
+				{
+					rx_enable = 0;
+				}
+				break;
+			case UART_RX_TICK:
+				if (rx_enable == 0)
+					break;
+				analyze_message = UART_read_rx_stream(my_uart_num, &received_msg_ptr, &chars_to_read);
+				if (analyze_message)
+				{
+					msg_length = RX_MESSAGE_MAX_LENGTH - chars_to_read;
+					
+					// Split message string into argument words
+					argc = 0;
 					searchWord = 1;
-				}
-				else if (searchWord)
-				{
-					argv[argc++] = &received_msg[i];
-					searchWord = 0;
-				}
-			}
-			
-			if (argc > 0)
-			{
-				// Clear parsedArguments to function -
-				// actualy fill args[i].type with ATYPE_NONE
-				memset(exeFuncArgs, 0, sizeof(exeFuncArgs));
-				
-				// Parse string into function and arguments
-				exeFunc = parse_argv(argv, argc, exeFuncArgs);
-			
-				// Execute function
-				execute_command(exeFunc, my_uart_num, exeFuncArgs);
-			}
-			
-			chars_to_read = RX_MESSAGE_MAX_LENGTH;
-			received_msg_ptr = received_msg;
-		}		
+					for (i=0; i<msg_length; i++)
+					{
+						if ( (received_msg[i] == ' ') || (received_msg[i] == '\t') || 
+							 (received_msg[i] == '\n') || (received_msg[i] == '\r'))
+						{
+							received_msg[i] = 0;
+							searchWord = 1;
+						}
+						else if (searchWord)
+						{
+							argv[argc++] = &received_msg[i];
+							searchWord = 0;
+						}
+					}
+					
+					if (argc > 0)
+					{
+						// Clear parsedArguments to function -
+						// actualy fill args[i].type with ATYPE_NONE
+						memset(exeFuncArgs, 0, sizeof(exeFuncArgs));
+						
+						// Parse string into function and arguments
+						exeFunc = parse_argv(argv, argc, exeFuncArgs);
+					
+						// Execute function
+						execute_command(exeFunc, my_uart_num, exeFuncArgs);
+					}
+					
+					chars_to_read = RX_MESSAGE_MAX_LENGTH;
+					received_msg_ptr = received_msg;
+				}	
+				break;
+		}	
 	}
 }
 

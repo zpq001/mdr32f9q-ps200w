@@ -30,6 +30,7 @@ INPUT(
 ./debug\guiEditPanel2.o
 ./debug\guiTextSpinBox.o
 ./debug\guiRadioButton.o
+./debug\guiSelectTextBox.o
 ./debug\moc_mainwindow.o
 ./debug\moc_pixeldisplay.o
 ./debug\moc_keydriver.o

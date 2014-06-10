@@ -15,14 +15,15 @@
 
 
 // Widget types
-#define WT_PANEL       0x01
-#define WT_BUTTON      0x02
-#define WT_CHECKBOX    0x03
-#define WT_RADIOBUTTON 0x04
-#define WT_TEXTLABEL   0x05
-#define WT_SPINBOX     0x06
-#define WT_STRINGLIST	0x07
-#define WT_TEXTSPINBOX 0x08
+#define WT_PANEL            0x01
+#define WT_BUTTON           0x02
+#define WT_CHECKBOX         0x03
+#define WT_RADIOBUTTON      0x04
+#define WT_TEXTLABEL        0x05
+#define WT_SPINBOX          0x06
+#define WT_STRINGLIST       0x07
+#define WT_TEXTSPINBOX      0x08
+#define WT_SELECTTEXTBOX    0x09
 
 // CHECKME - enum?
 
@@ -522,6 +523,59 @@ typedef struct guiStringList_t {
 
 
 } guiStringList_t;
+
+
+typedef struct guiSelectTextBox_t {
+    //----- Inherited from generic widget -----//
+    // Widget type (starting with WT_)
+    uint8_t type;
+    // Pointer to parent widget
+    struct guiGenericWidget_t *parent;
+    // Bit properties:
+    uint8_t acceptFocusByTab : 1;
+    uint8_t acceptTouch : 1;
+    uint8_t isContainer : 1;
+    // Bit state flags:
+    uint8_t isFocused : 1;
+    uint8_t isVisible : 1;
+    uint8_t updateRequired : 1;
+    uint8_t redrawRequired : 1;
+    uint8_t redrawForced : 1;
+    uint8_t redrawFocus : 1;
+    uint8_t showFocus : 1;
+    uint8_t keepTouch : 1;
+    // Properties
+    uint8_t tag;
+    uint8_t tabIndex;
+    int16_t x;
+    int16_t y;
+    uint16_t width;
+    uint16_t height;
+    // Event processing function
+    uint8_t (*processEvent)(struct guiGenericWidget_t *pWidget, guiEvent_t event);
+    // Handler table
+    guiHandlerTable_t handlers;
+    // Key translator
+    uint8_t (*keyTranslator)(struct guiGenericWidget_t *widget, guiEvent_t *event, void *translatedKey);
+    //-----------------------------------------//
+
+    const tFont *font;
+    uint8_t hasFrame : 1;
+    uint8_t redrawText : 1;
+    uint8_t isActive : 1;
+    uint8_t restoreIndexOnEscape : 1;
+    uint8_t newIndexAccepted : 1;
+
+    uint8_t selectedIndex;
+    uint8_t savedIndex;
+    uint8_t stringCount;
+    char **stringList;
+    void *valueList;
+
+
+} guiSelectTextBox_t;
+
+
 
 
 #endif

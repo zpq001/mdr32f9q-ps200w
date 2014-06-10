@@ -42,6 +42,7 @@
 #include "buttons_top.h"
 #include "encoder.h"
 
+#include "uart_rx.h"
 
 xQueueHandle xQueueGUI;
 
@@ -441,11 +442,15 @@ void guiTop_ApplyGuiOverloadSettings(uint8_t protection_enable, uint8_t warning_
 	dispatcher_msg.converter_cmd.a.overload_set.threshold = threshold;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);		*/
 
-	prepareConverterMsg(CONVERTER_SET_OVERLOAD_PARAMS, NO_SEMPHR);
+	prepareConverterMsg(CONVERTER_SET_OVERLOAD_PARAMS, USE_SEMPHR);
 	converter_msg.a.overload_set.protection_enable = protection_enable;
 	converter_msg.a.overload_set.warning_enable = warning_enable;
 	converter_msg.a.overload_set.threshold = threshold;
 	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+	// Wait
+	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
+	// Converter is done. Update overload settings
+	guiUpdateOverloadSettings();
 }
 
 
@@ -553,7 +558,38 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
 
 
 
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
+//===========================================================================//
 
+
+void guiTop_ApplyUartSettings(reqUartSettings_t *s)
+{
+	uart_receiver_msg_t uart_msg;
+	uart_msg.type = UART_APPLY_NEW_SETTINGS;
+	uart_msg.enable = s->enable;
+	uart_msg.parity = s->parity;
+	uart_msg.brate = s->brate;
+	if (s->uart_num == 1)
+		xQueueSendToBack(xQueueUART1RX, &uart_msg, portMAX_DELAY);
+	else
+		xQueueSendToBack(xQueueUART2RX, &uart_msg, portMAX_DELAY);
+}
+
+//------------------------------------------------------//
+//                          UART                        //
+//------------------------------------------------------//
+void guiTop_GetUartSettings(reqUartSettings_t *req)
+{
+	uart_param_request_t params;
+	taskENTER_CRITICAL();
+	UART_Get_comm_params(req->uart_num,  &params);
+	taskEXIT_CRITICAL();
+	req->enable = params.enable;
+	req->parity = params.parity;
+	req->brate = params.brate;
+}
 
 
 

@@ -61,6 +61,7 @@ void guiGraph_OffsetBaseXY(int16_t dx, int16_t dy);
 
 void guiGraph_DrawPanel(guiPanel_t *panel);
 void guiGraph_DrawTextLabel(guiTextLabel_t *textLabel);
+void guiGraph_DrawSelectTextBox(guiSelectTextBox_t *selectTextBox);
 void guiGraph_DrawCheckBox(guiCheckBox_t * checkBox);
 void guiGraph_DrawSpinBox(guiSpinBox_t * spinBox);
 void guiGraph_DrawTextSpinBox(guiTextSpinBox_t * textSpinBox);

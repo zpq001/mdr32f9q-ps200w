@@ -24,6 +24,7 @@ void Setup_CPU_Clock(void);
 void HW_NVIC_init(void);
 void HW_PortInit(void);
 void HW_UARTInit(void);
+void HW_UART_Set_Comm_Params(MDR_UART_TypeDef* UARTx, uint32_t buadRate, uint8_t parity);
 void HW_SSPInit(void);
 void HW_I2CInit(void);
 void HW_ADCInit(void);

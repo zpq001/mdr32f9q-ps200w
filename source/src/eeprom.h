@@ -116,6 +116,12 @@ typedef struct {
 
 } device_profile_t;
 
+typedef struct {
+	uint8_t enable;
+	uint8_t parity;
+	uint32_t baudRate;
+} uartx_settings_t;
+
 
 
 typedef struct {
@@ -127,6 +133,11 @@ typedef struct {
 	uint8_t restoreRecentProfile;
 } global_settings_t;
 
+// Temporary, will be moved into global settings
+typedef struct {
+	uartx_settings_t uart1;
+	uartx_settings_t uart2;
+} uart_settings_t;
 
 
 //---------------------------------------------//
@@ -180,6 +191,7 @@ extern xQueueHandle xQueueEEPROM;
 extern global_settings_t *global_settings;
 extern device_profile_t *device_profile;
 
+extern uart_settings_t uart_settings;
 
 // These two are special functions for calling from routine which
 // services power-down sequence

@@ -399,51 +399,54 @@ void HW_PortInit(void)
 // Setup UART modules
 // HCLK = 32 MHz
 //
-// UART2 CLK = 16 MHz
+// UARTx CLK = 16 MHz
 //-----------------------------------------------------------------//
 void HW_UARTInit(void)
 {
-	BaudRateStatus initStatus;
-	UART_InitTypeDef sUART;
-	UART_StructInit(&sUART);
+	//--------------- UART1 INIT ---------------//
+	UART_DeInit(MDR_UART1);
+	UART_BRGInit(MDR_UART1, UART_HCLKdiv1);
+	//UART_Cmd(MDR_UART1,ENABLE);
 	
 	//--------------- UART2 INIT ---------------//
 	UART_DeInit(MDR_UART2);
-	
-	sUART.UART_BaudRate                           = 115200;
-	sUART.UART_WordLength                         = UART_WordLength8b;
-	sUART.UART_StopBits                           = UART_StopBits1;
-	sUART.UART_Parity                             = UART_Parity_No;
-	sUART.UART_FIFOMode                           = UART_FIFO_ON;
-	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
-	
-	UART_BRGInit(MDR_UART2,UART_HCLKdiv1);
-	initStatus = UART_Init(MDR_UART2,&sUART);
-	UART_Cmd(MDR_UART2,ENABLE);
-	
-	//--------------- UART1 INIT ---------------//
-	UART_DeInit(MDR_UART1);
-	
-	sUART.UART_BaudRate                           = 115200;
-	sUART.UART_WordLength                         = UART_WordLength8b;
-	sUART.UART_StopBits                           = UART_StopBits1;
-	sUART.UART_Parity                             = UART_Parity_No;
-	sUART.UART_FIFOMode                           = UART_FIFO_ON;
-	sUART.UART_HardwareFlowControl                = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE );
-	
-	UART_BRGInit(MDR_UART1,UART_HCLKdiv1);
-	initStatus = UART_Init(MDR_UART1,&sUART);
-	UART_Cmd(MDR_UART1,ENABLE);
+	UART_BRGInit(MDR_UART2, UART_HCLKdiv1);
+	//UART_Cmd(MDR_UART2,ENABLE);
 	
 	//------------ UART DMA features------------//
-	UART_DMAConfig(MDR_UART1,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		// ?
-	UART_DMAConfig(MDR_UART2,UART_IT_FIFO_LVL_8words,UART_IT_FIFO_LVL_8words);		//
-	
-	/* Enable UART1 DMA Rx and Tx request */
-//	UART_DMACmd(MDR_UART1,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
-	/* Enable UART2 DMA Rx and Tx request */
-//	UART_DMACmd(MDR_UART2,(UART_DMA_RXE | UART_DMA_TXE), ENABLE);
+	UART_DMAConfig(MDR_UART1, UART_IT_FIFO_LVL_8words, UART_IT_FIFO_LVL_8words);		// ?
+	UART_DMAConfig(MDR_UART2, UART_IT_FIFO_LVL_8words, UART_IT_FIFO_LVL_8words);		//
 }
+
+
+//-----------------------------------------------------------------//
+// Set UART communication params
+// UARTx = MDR_UART1 / MDR_UART2
+// buadRate = integer, fo example, 9600 or 115200
+// parity = UART_Parity_No / UART_Parity_Odd / UART_Parity_Even
+//-----------------------------------------------------------------//
+void HW_UART_Set_Comm_Params(MDR_UART_TypeDef* UARTx, uint32_t buadRate, uint8_t parity)
+{
+	BaudRateStatus initStatus;
+	UART_InitTypeDef UART_cfg;
+	
+	UART_DeInit(UARTx);
+	
+	UART_cfg.UART_BaudRate = buadRate;
+	UART_cfg.UART_WordLength = UART_WordLength8b;
+	UART_cfg.UART_StopBits = UART_StopBits1;
+	UART_cfg.UART_Parity = parity;
+	UART_cfg.UART_FIFOMode = UART_FIFO_ON;
+	UART_cfg.UART_HardwareFlowControl = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE; 
+	
+	initStatus = UART_Init(UARTx, &UART_cfg);
+	//UART_Cmd(UARTx, ENABLE);
+}
+
+
+
+
+
 
 //-----------------------------------------------------------------//
 // Setup DMA

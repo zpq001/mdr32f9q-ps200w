@@ -32,7 +32,7 @@ static void UpdateRawButtonState(void)
 	// disable output for leds
 	MDR_PORTB->OE &= ~(1<<LGREEN | 1<<LRED);
 	// Start delay
-	time_delay = DWT_StartDelayUs(10);
+	time_delay = DWT_StartDelayUs(15);
 	// get other buttons by delay time
 	temp = MDR_PORTA->RXTX;
 	if (! (temp & (1<<ENC_BTN)) )

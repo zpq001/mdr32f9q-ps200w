@@ -5,17 +5,7 @@
 #include "queue.h"
 #include "semphr.h"
 
-typedef struct {
-	uint16_t read_index;
-	uint16_t size;
-	uint16_t *data;
-} uart_dma_rx_buffer_t;
-
-
 //---------------------------------------------//
-// Buffer settings
-#define RX_BUFFER_SIZE			200		// Filled by DMA in cyclical way
-#define EMPTY_DATA				0xFFFF
 
 // Parser settings
 #define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length

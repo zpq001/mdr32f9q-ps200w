@@ -573,6 +573,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\source\src\eeprom.c</FilePath>
             </File>
+            <File>
+              <FileName>isr_user_handlers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\isr_user_handlers.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_hw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_hw.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1353,6 +1363,16 @@
               <FileName>eeprom.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\source\src\eeprom.c</FilePath>
+            </File>
+            <File>
+              <FileName>isr_user_handlers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\isr_user_handlers.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_hw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\source\src\uart_hw.c</FilePath>
             </File>
           </Files>
         </Group>

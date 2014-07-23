@@ -1446,8 +1446,8 @@ static uint8_t onUartSettingsChanged(void *widget, guiEvent_t *event)
 {
     reqUartSettings_t s;
     guiSelectTextBox_t *box = (guiSelectTextBox_t *)widget;
-    //if ((((guiGenericWidget_t*)widget)->type = WT_CHECKBOX) || ((box->isActive == 0) && (box->newIndexAccepted)))
-	if (((box->isActive == 0) && (box->newIndexAccepted)))
+    if ((((guiGenericWidget_t*)widget)->type == WT_CHECKBOX) || ((box->isActive == 0) && (box->newIndexAccepted)))
+	//if (((box->isActive == 0) && (box->newIndexAccepted)))
     {
         s.enable = checkBox_UartEnable.isChecked;
         s.parity = ((uint8_t *)selectTextBox_UartParity.valueList)[selectTextBox_UartParity.selectedIndex];

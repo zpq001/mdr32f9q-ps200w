@@ -411,56 +411,7 @@
           <Name>-O463 -S0 -C0 -FO7 -FD20000000 -FC800 -FN1 -FF0MDR32F9x -FS08000000 -FL020000)</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint>
-        <Bp>
-          <Number>0</Number>
-          <Type>0</Type>
-          <LineNumber>182</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134239086</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\source\src\uart_rx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>92</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134238390</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\source\src\uart_rx.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>270</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134242210</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>E:\EXlam\ARM Projects Keil\mdr32f9q-ps200w\source\src\uart_hw.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\MDR_200W\../../source/src/uart_hw.c\270</Expression>
-        </Bp>
-      </Breakpoint>
+      <Breakpoint/>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -761,10 +712,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>137</ColumnNumber>
+      <ColumnNumber>135</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>159</TopLine>
+      <CurrentLine>176</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -825,10 +776,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>16</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>22</TopLine>
+      <CurrentLine>61</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\converter.c</PathWithFileName>
       <FilenameWithoutPath>converter.c</FilenameWithoutPath>
@@ -859,7 +810,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>146</TopLine>
+      <TopLine>147</TopLine>
       <CurrentLine>159</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\dispatcher.c</PathWithFileName>
@@ -905,10 +856,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>10</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>556</TopLine>
-      <CurrentLine>588</CurrentLine>
+      <CurrentLine>573</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\guiTop.c</PathWithFileName>
       <FilenameWithoutPath>guiTop.c</FilenameWithoutPath>
@@ -1081,10 +1032,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>44</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>99</TopLine>
-      <CurrentLine>100</CurrentLine>
+      <TopLine>134</TopLine>
+      <CurrentLine>157</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_rx.c</PathWithFileName>
       <FilenameWithoutPath>uart_rx.c</FilenameWithoutPath>
@@ -1099,8 +1050,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>122</TopLine>
-      <CurrentLine>157</CurrentLine>
+      <TopLine>138</TopLine>
+      <CurrentLine>151</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_tx.c</PathWithFileName>
       <FilenameWithoutPath>uart_tx.c</FilenameWithoutPath>
@@ -1131,7 +1082,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>4</TopLine>
+      <TopLine>5</TopLine>
       <CurrentLine>18</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\isr_user_handlers.c</PathWithFileName>
@@ -1147,8 +1098,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>70</TopLine>
-      <CurrentLine>85</CurrentLine>
+      <TopLine>146</TopLine>
+      <CurrentLine>175</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\src\uart_hw.c</PathWithFileName>
       <FilenameWithoutPath>uart_hw.c</FilenameWithoutPath>
@@ -1249,10 +1200,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>38</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>368</TopLine>
+      <CurrentLine>407</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\library\FreeRTOS\Source\queue.c</PathWithFileName>
       <FilenameWithoutPath>queue.c</FilenameWithoutPath>
@@ -1267,8 +1218,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>2124</TopLine>
+      <CurrentLine>2136</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\library\FreeRTOS\Source\tasks.c</PathWithFileName>
       <FilenameWithoutPath>tasks.c</FilenameWithoutPath>
@@ -1353,10 +1304,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>5</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>1425</TopLine>
+      <CurrentLine>1452</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\source\gui\guiSetupPanel.c</PathWithFileName>
       <FilenameWithoutPath>guiSetupPanel.c</FilenameWithoutPath>

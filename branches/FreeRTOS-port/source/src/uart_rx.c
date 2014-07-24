@@ -154,7 +154,8 @@ void vTaskUARTReceiver(void *pvParameters)
 				// Disable receiver. After that there may be some data in the buffer.
 				UART_Stop_RX(ctx->uart_num);
 				// Get mutex for TX UART - prevent TX UART task from using hardware
-				xSemaphoreTake(*ctx->hwUART_mutex, portMAX_DELAY);
+				if (xSemaphoreGetMutexHolder(*ctx->hwUART_mutex) != xTaskGetCurrentTaskHandle())
+					xSemaphoreTake(*ctx->hwUART_mutex, portMAX_DELAY);
 				// Wait until UART transmitter is done and turn UART off
 				UART_Disable(ctx->uart_num);
 				// Reset receive buffer items

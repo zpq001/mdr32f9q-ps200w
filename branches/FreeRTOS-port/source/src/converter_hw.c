@@ -326,7 +326,7 @@ void Converter_HWProcess(void)
 		raw_overload_flag = NORMAL;
 	
 	if (raw_overload_flag == NORMAL)
-		overload_counter = converter_state.overload_threshold;
+		overload_counter = converter_state.overload_threshold / 2;
 	else if (overload_counter != 0)
 		overload_counter--;
 	

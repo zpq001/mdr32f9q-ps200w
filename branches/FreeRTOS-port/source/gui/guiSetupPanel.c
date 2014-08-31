@@ -252,7 +252,7 @@ void guiSetupPanel_Initialize(guiGenericWidget_t *parent)
     chSetupList.y = 11;
     chSetupList.width = 96;
     chSetupList.height = 68 - 13;
-    chSetupList.stringCount = 4;
+    chSetupList.stringCount = 3;
     chSetupList.strings = guiCore_calloc(sizeof(char *) * chSetupList.stringCount);
     chSetupList.strings[0] = "Voltage limit";
     chSetupList.strings[1] = "Current lim. 20A";
@@ -1049,11 +1049,9 @@ static uint8_t guiChSetupList_onVisibleChanged(void *widget, guiEvent_t *event)
     {
         guiChSetupList_onIndexChanged(widget, event);
         if (setupView.channel == CHANNEL_5V)
-            textLabel_title.text = "5V channel";
+            guiTextLabel_SetText(&textLabel_title, "5V channel");
         else
-            textLabel_title.text = "12V channel";
-        textLabel_title.redrawRequired = 1;
-        textLabel_title.redrawText = 1;
+            guiTextLabel_SetText(&textLabel_title, "12V channel");
     }
     return 0;
 }
@@ -1339,7 +1337,7 @@ static uint8_t onOverloadSettingsChanged(void *widget, guiEvent_t *event)
     // Threshold in units of 100us
     uint8_t protectionEnabled = checkBox_OverloadProtect.isChecked;
     uint8_t warningEnabled = checkBox_OverloadWarning.isChecked;
-    guiTop_ApplyGuiOverloadSettings( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value / 2);
+    guiTop_ApplyGuiOverloadSettings( protectionEnabled, warningEnabled, spinBox_OverloadThreshold.value);
     return 0;
 }
 
@@ -1348,7 +1346,7 @@ static void setGuiOverloadSettings(uint8_t protectionEnabled, uint8_t warningEna
     // Threshold in units of 100us
     guiCheckbox_SetChecked(&checkBox_OverloadProtect, protectionEnabled, 0);
     guiCheckbox_SetChecked(&checkBox_OverloadWarning, warningEnabled, 0);
-    guiSpinBox_SetValue(&spinBox_OverloadThreshold, threshold * 2, 0);
+    guiSpinBox_SetValue(&spinBox_OverloadThreshold, threshold, 0);
 }
 
 

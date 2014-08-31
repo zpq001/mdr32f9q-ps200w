@@ -1,8 +1,30 @@
 #ifndef __GUI_SELECT_TEXT_BOX_H_
 #define __GUI_SELECT_TEXT_BOX_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+#include "guiFonts.h"
+
+// Widget type ID - must be unique!
+#define WT_SELECTTEXTBOX    0x09
+
+
+typedef struct guiSelectTextBox_t {
+    //----- Inherited from generic widget -----//
+    GENERIC_WIDGET_PATTERN
+    //------- Widget - specific fields --------//
+    const tFont *font;
+    uint8_t hasFrame : 1;
+    uint8_t redrawText : 1;
+    uint8_t isActive : 1;
+    uint8_t restoreIndexOnEscape : 1;
+    uint8_t newIndexAccepted : 1;
+
+    uint8_t selectedIndex;
+    uint8_t savedIndex;
+    uint8_t stringCount;
+    char **stringList;
+    void *valueList;
+} guiSelectTextBox_t;
 
 
 // Widget-specific events

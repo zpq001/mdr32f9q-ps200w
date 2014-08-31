@@ -9,7 +9,7 @@
 // SelectedChannel
 #define	CHANNEL_5V			0x1
 #define	CHANNEL_12V			0x0
-// CurrentLimit
+// CurrentRange
 #define	CURRENT_RANGE_HIGH	0x1
 #define	CURRENT_RANGE_LOW 	0x0
 // LoadDisable

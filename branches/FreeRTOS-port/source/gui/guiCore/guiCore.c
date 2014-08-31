@@ -37,7 +37,7 @@ Through message queue:
 // Predefined constant events - saves stack a bit
 const guiEvent_t guiEvent_INIT = {GUI_EVENT_INIT, 0, 0, 0};
 const guiEvent_t guiEvent_DRAW = {GUI_EVENT_DRAW, 0, 0, 0};
-#ifdef CFG_USE_UPDATE
+#ifdef emGUI_USE_UPDATE
 const guiEvent_t guiEvent_UPDATE = {GUI_EVENT_UPDATE, 0, 0, 0};
 #endif
 const guiEvent_t guiEvent_HIDE = {GUI_EVENT_HIDE, 0, 0, 0};
@@ -45,9 +45,9 @@ const guiEvent_t guiEvent_SHOW = {GUI_EVENT_SHOW, 0, 0, 0};
 const guiEvent_t guiEvent_UNFOCUS = {GUI_EVENT_UNFOCUS, 0, 0, 0};
 const guiEvent_t guiEvent_FOCUS = {GUI_EVENT_FOCUS, 0, 0, 0};
 
-#ifdef GUI_CFG_USE_TIMERS
+#ifdef emGUI_USE_TIMERS
 // Total count of timers should be defined in guiConfig.h
-guiTimer_t guiTimers[GUI_TIMER_COUNT];
+guiTimer_t guiTimers[emGUI_TIMERS_COUNT];
 #endif
 
 guiMsgQueue_t guiMsgQueue;
@@ -201,13 +201,13 @@ uint8_t guiCore_AddHandler(void *widget, uint8_t eventType, eventHandler_t handl
 //-------------------------------------------------------//
 uint8_t guiCore_AddMessageToQueue(const guiGenericWidget_t *target, const guiEvent_t *event)
 {
-    if (guiMsgQueue.count < GUI_CORE_QUEUE_SIZE)
+    if (guiMsgQueue.count < emGUI_CORE_QUEUE_SIZE)
     {
         guiMsgQueue.queue[guiMsgQueue.tail].event = *event;
         guiMsgQueue.queue[guiMsgQueue.tail].target = (guiGenericWidget_t *)target;
         guiMsgQueue.count++;
         guiMsgQueue.tail++;
-        if (guiMsgQueue.tail == GUI_CORE_QUEUE_SIZE)
+        if (guiMsgQueue.tail == emGUI_CORE_QUEUE_SIZE)
             guiMsgQueue.tail = 0;
         return 1;
      }
@@ -228,7 +228,7 @@ uint8_t guiCore_GetMessageFromQueue(guiGenericWidget_t **target, guiEvent_t *eve
         *event = guiMsgQueue.queue[guiMsgQueue.head].event;
         guiMsgQueue.count--;
         guiMsgQueue.head++;
-        if (guiMsgQueue.head == GUI_CORE_QUEUE_SIZE)
+        if (guiMsgQueue.head == emGUI_CORE_QUEUE_SIZE)
             guiMsgQueue.head = 0;
         return 1;
     }
@@ -298,7 +298,7 @@ void guiCore_PostEventToFocused(guiEvent_t event)
 //===================================================================//
 
 
-#ifdef GUI_CFG_USE_TIMERS
+#ifdef emGUI_USE_TIMERS
 //-------------------------------------------------------//
 //  Initializes GUI core timer
 //  Timer is identified by timerID which is simply index
@@ -307,7 +307,7 @@ void guiCore_PostEventToFocused(guiEvent_t event)
 //-------------------------------------------------------//
 void guiCore_TimerInit(uint8_t timerID, uint16_t period, uint8_t runOnce, guiGenericWidget_t *target, void (*handler)(uint8_t))
 {
-    if (timerID >= GUI_TIMER_COUNT)
+    if (timerID >= emGUI_TIMERS_COUNT)
         return;
     guiTimers[timerID].top = period;
     guiTimers[timerID].counter = 0;
@@ -326,7 +326,7 @@ void guiCore_TimerInit(uint8_t timerID, uint16_t period, uint8_t runOnce, guiGen
 //-------------------------------------------------------//
 void guiCore_TimerStart(uint8_t timerID, uint8_t doReset)
 {
-    if (timerID >= GUI_TIMER_COUNT)
+    if (timerID >= emGUI_TIMERS_COUNT)
         return;
     if (doReset)
         guiTimers[timerID].counter = 0;
@@ -342,7 +342,7 @@ void guiCore_TimerStart(uint8_t timerID, uint8_t doReset)
 //-------------------------------------------------------//
 void guiCore_TimerStop(uint8_t timerID, uint8_t doReset)
 {
-    if (timerID >= GUI_TIMER_COUNT)
+    if (timerID >= emGUI_TIMERS_COUNT)
         return;
     if (doReset)
         guiTimers[timerID].counter = 0;
@@ -361,7 +361,7 @@ void guiCore_TimerStop(uint8_t timerID, uint8_t doReset)
 void guiCore_TimerProcess(uint8_t timerID)
 {
     guiEvent_t event = {GUI_EVENT_TIMER, 0, 0, 0};
-    if (timerID >= GUI_TIMER_COUNT)
+    if (timerID >= emGUI_TIMERS_COUNT)
         return;
     if (guiTimers[timerID].isEnabled)
     {
@@ -409,9 +409,9 @@ void guiCore_Init(guiGenericWidget_t *guiRootWidget)
     guiMsgQueue.head = 0;
     guiMsgQueue.tail = 0;
 
-#ifdef GUI_CFG_USE_TIMERS
+#ifdef emGUI_USE_TIMERS
     // Disable all timers
-    for (i=0; i<GUI_TIMER_COUNT; i++)
+    for (i=0; i<emGUI_TIMERS_COUNT; i++)
     {
         guiTimers[i].isEnabled = 0;
     }
@@ -420,7 +420,7 @@ void guiCore_Init(guiGenericWidget_t *guiRootWidget)
     // Set root and focused widget and send initialize event
     // Root widget must set focus in itself or other widget
     // depending on design. If focus is not set, no keyboard
-    // and encoder events will get processed.
+    // and encoder events will get processed. ~~~
     rootWidget = guiRootWidget;
     focusedWidget = 0;
     guiCore_AddMessageToQueue(rootWidget, &guiEvent_INIT);
@@ -481,7 +481,7 @@ void guiCore_RedrawAll(void)
                     nextWidget->redrawRequired = 1;
                 }
                 ///////////////////////////
-#ifdef USE_Z_ORDER_REDRAW
+#ifdef emGUI_USE_Z_ORDER_REDRAW
                 if ((widget->redrawForced == 0) &&(nextWidget->redrawRequired))
                 {
                     // Widget will be redrawn - make overlapping widgets with higher Z index redraw too
@@ -683,7 +683,7 @@ void guiCore_RedrawAll(void)
         }
 
         /////////////////////////
-#ifdef USE_Z_ORDER_REDRAW
+#ifdef emGUI_USE_Z_ORDER_REDRAW
         // Analyze parent's flag
         if (widget->redrawForced == 0)
         {
@@ -729,7 +729,7 @@ void guiCore_ProcessTouchEvent(int16_t x, int16_t y, uint8_t touchState)
     event.spec = touchState;
     event.lparam = (uint16_t)x;
     event.hparam = (uint16_t)y;
-#ifdef ALWAYS_PASS_TOUCH_TO_FOCUSED
+#ifdef emGUI_ALWAYS_PASS_TOUCH_TO_FOCUSED
     guiCore_AddMessageToQueue(focusedWidget, &event);
 #else
     if ((focusedWidget != 0) && (focusedWidget->keepTouch))
@@ -775,7 +775,7 @@ void guiCore_ProcessEncoderEvent(int16_t increment)
 void guiCore_ProcessTimers(void)
 {
     uint8_t i;
-    for (i=0; i<GUI_TIMER_COUNT; i++)
+    for (i=0; i<emGUI_TIMERS_COUNT; i++)
     {
         guiCore_TimerProcess(i);
     }
@@ -851,7 +851,7 @@ void guiCore_BroadcastEvent(guiEvent_t event, uint8_t(*validator)(guiGenericWidg
     }
 }
 
-#ifdef CFG_USE_UPDATE
+#ifdef emGUI_USE_UPDATE
 //-------------------------------------------------------//
 //  Top function for GUI elements update
 //

@@ -30,7 +30,7 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args);
 
 void UART_Get_comm_params(uint8_t uart_num, uart_param_request_t *r)
 {
-	uartx_settings_t *my_uart_settings = (uart_num == 1) ? &uart_settings.uart1 : &uart_settings.uart2;
+	uartx_settings_t *my_uart_settings = (uart_num == 1) ? &global_settings->uart1 : &global_settings->uart2;
 	r->enable = my_uart_settings->enable;
 	r->brate = my_uart_settings->baudRate;
 	r->parity = my_uart_settings->parity;
@@ -102,7 +102,7 @@ void vTaskUARTReceiver(void *pvParameters)
 	uart_receiver_msg_t msg;
 	UART_RX_Task_Context_t *ctx = ((uint32_t)pvParameters == 1) ? &UART1_Task_Context : &UART2_Task_Context;
 	UART_RX_Parser_Stuff_t parser;
-	uartx_settings_t *my_uart_settings = (ctx->uart_num == 1) ? &uart_settings.uart1 : &uart_settings.uart2;
+	uartx_settings_t *my_uart_settings = (ctx->uart_num == 1) ? &global_settings->uart1 : &global_settings->uart2;
 	uint8_t i;
 	
 	// Initialize OS items
@@ -165,9 +165,11 @@ void vTaskUARTReceiver(void *pvParameters)
 				// Apply settings
 				UART_Enable(ctx->uart_num, msg.brate, msg.parity);
 				// TODO: analyze return code
+				taskENTER_CRITICAL();
 				my_uart_settings->baudRate = msg.brate;
 				my_uart_settings->parity = msg.parity;
 				my_uart_settings->enable = msg.enable;
+				taskEXIT_CRITICAL();
 				if (my_uart_settings->enable)
 				{
 					// Enables UART and allows RX requests to DMA

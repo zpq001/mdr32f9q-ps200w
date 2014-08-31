@@ -5,6 +5,14 @@
 #include "guiGraphPrimitives.h"
 #include "guiWidgets.h"
 
+#include "guiPanel.h"
+#include "guiTextLabel.h"
+#include "guiCheckBox.h"
+#include "guiSpinBox.h"
+#include "guiStringList.h"
+#include "guiSelectTextBox.h"
+#include "guiTextSpinBox.h"
+#include "guiRadioButton.h"
 
 
 #define FRAME_NONE                      0x00

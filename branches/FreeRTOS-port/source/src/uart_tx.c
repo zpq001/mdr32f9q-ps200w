@@ -14,31 +14,46 @@
 #include "systick.h"
 #include "stdint.h"
 #include "dispatcher.h"
-#include "buttons.h"
 #include "systemfunc.h"
 #include "eeprom.h"
 #include "uart_hw.h"
 #include "uart_tx.h"
 #include "uart_rx.h"
-#include "guiTop.h"		// button codes
 
 
-
-
-	
-extern uint32_t UART1_RX_saved_TCB[];
-extern uint32_t UART2_RX_saved_TCB[];
-
-
-// Transmitter buffers
-static char 	uart1_tx_data_buff[TX_BUFFER_SIZE];
-static char 	uart2_tx_data_buff[TX_BUFFER_SIZE];
-
+// OS stuff
 xQueueHandle xQueueUART1TX;
 xQueueHandle xQueueUART2TX;
-
 static xSemaphoreHandle xSemaphoreUART1TX;
 static xSemaphoreHandle xSemaphoreUART2TX;
+
+
+// Transmitter tasks context
+typedef struct {
+	const uint8_t uart_num;
+	xQueueHandle *xQueue;
+	xSemaphoreHandle *hwUART_mutex;			// used for sync with RX task
+	xSemaphoreHandle *xSemaphoreTx;			// used as sync with TX DMA done ISR
+	char tx_data_buffer[TX_BUFFER_SIZE];	// Transmitter buffer
+} UART_TX_Task_Context_t;
+
+
+
+static UART_TX_Task_Context_t UART1_TX_Task_Context = {
+	1,				// uart number
+	&xQueueUART1TX,
+	&hwUART1_mutex,
+	&xSemaphoreUART1TX,
+	{0}
+};
+
+static UART_TX_Task_Context_t UART2_TX_Task_Context = {
+	2,				// uart number
+	&xQueueUART2TX,
+	&hwUART2_mutex,
+	&xSemaphoreUART2TX,
+	{0}
+};
 
 
 static const uart_string_table_record_t uart_tx_table[] = {
@@ -98,25 +113,20 @@ static void UART_sendStrAlloc(char *str)
 
 
 //-------------------------------------------------------//
-// Callbacks from ISR
+// Callback from ISR
 
 static uint8_t UART_TX_Done(uint8_t uart_num)
 {
 	portBASE_TYPE xHPTaskWoken = pdFALSE;
-	if (uart_num == 1)
-		xSemaphoreGiveFromISR( xSemaphoreUART1TX, &xHPTaskWoken );
-	else
-		xSemaphoreGiveFromISR( xSemaphoreUART2TX, &xHPTaskWoken );
-
+	UART_TX_Task_Context_t *ctx = (uart_num == 1) ? &UART1_TX_Task_Context : &UART2_TX_Task_Context;
+	xSemaphoreGiveFromISR( *ctx->xSemaphoreTx, &xHPTaskWoken );
 	return (uint8_t)xHPTaskWoken;
 }
 
 
 
-static void UART_do_tx_DMA(uint8_t uart_num, char *string, uint16_t length)
+static void UART_do_tx_DMA(UART_TX_Task_Context_t *ctx, char *string, uint16_t length)
 {
-	char *uart_tx_data_buffer = (uart_num == 1) ? uart1_tx_data_buff : uart2_tx_data_buff;
-	xSemaphoreHandle *xSemaphoreUARTx = (uart_num == 1) ? &xSemaphoreUART1TX : &xSemaphoreUART2TX;
 	uint32_t dma_address;
 	uint16_t dma_count;
 	
@@ -126,10 +136,10 @@ static void UART_do_tx_DMA(uint8_t uart_num, char *string, uint16_t length)
 		{
 			// DMA cannot read from program memory, copy data to temporary buffer and send from it
 			dma_count = (length > TX_BUFFER_SIZE) ? TX_BUFFER_SIZE : length;
-			strncpy(uart_tx_data_buffer, string, dma_count);
+			strncpy(ctx->tx_data_buffer, string, dma_count);
 			length -= dma_count;
 			string += dma_count;
-			dma_address = (uint32_t)uart_tx_data_buffer;
+			dma_address = (uint32_t)ctx->tx_data_buffer;
 		}
 		else
 		{
@@ -138,10 +148,10 @@ static void UART_do_tx_DMA(uint8_t uart_num, char *string, uint16_t length)
 			length = 0;
 		}
 		
-		UART_Send_Data(uart_num, (char *)dma_address, dma_count);
+		UART_Send_Data(ctx->uart_num, (char *)dma_address, dma_count);
 
 		// Wait for DMA
-		xSemaphoreTake(*xSemaphoreUARTx, portMAX_DELAY);
+		xSemaphoreTake(*ctx->xSemaphoreTx, portMAX_DELAY);
 	}
 }
 
@@ -152,38 +162,32 @@ static void UART_do_tx_DMA(uint8_t uart_num, char *string, uint16_t length)
 void vTaskUARTTransmitter(void *pvParameters) 
 {
 	// Uart number for task is passed by argument
-	uint8_t my_uart_num = (uint32_t)pvParameters;
-	xQueueHandle *xQueueUARTx = (my_uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
-	xSemaphoreHandle *xSemaphoreUARTx = (my_uart_num == 1) ? &xSemaphoreUART1TX : &xSemaphoreUART2TX;
-//	MDR_UART_TypeDef *MDR_UARTx = (my_uart_num == 1) ? MDR_UART1 : MDR_UART2;
-	char *uart_tx_data_buffer = (my_uart_num == 1) ? uart1_tx_data_buff : uart2_tx_data_buff;
+	UART_TX_Task_Context_t *ctx = ((uint32_t)pvParameters == 1) ? &UART1_TX_Task_Context : &UART2_TX_Task_Context;
 	uart_transmiter_msg_t msg;
-	xSemaphoreHandle *hwUART_mutex = (my_uart_num == 1) ? &hwUART1_mutex : &hwUART2_mutex;
-	
 	char *string_to_send;
 	uint16_t length;
 	
 	// UART and DMA initialization is performed by UART RX task, which is the main UART control task.
 	// Here we should only setup TX done callbacks
-	UART_Register_TX_Done_Callback(my_uart_num, UART_TX_Done);
+	UART_Register_TX_Done_Callback(ctx->uart_num, UART_TX_Done);
 	
 	// Initialize OS items
-	*xQueueUARTx = xQueueCreate( 10, sizeof( uart_transmiter_msg_t ) );
-	if( *xQueueUARTx == 0 )
+	*ctx->xQueue = xQueueCreate( 10, sizeof( uart_transmiter_msg_t ) );
+	if( *ctx->xQueue == 0 )
 	{
 		while(1);		// Queue was not created and must not be used.
 	}
 	// Semaphore is posted in DMA callback called from ISR to indicate DMA transfer finish
-	vSemaphoreCreateBinary( *xSemaphoreUARTx );
-	if( *xSemaphoreUARTx == 0 )
+	vSemaphoreCreateBinary( *ctx->xSemaphoreTx );
+	if( *ctx->xSemaphoreTx == 0 )
     {
         while(1);
     }
-	xSemaphoreTake(*xSemaphoreUARTx, 0);	
+	xSemaphoreTake(*ctx->xSemaphoreTx, 0);	
 	
 	while(1)
 	{
-		xQueueReceive(*xQueueUARTx, &msg, portMAX_DELAY);
+		xQueueReceive(*ctx->xQueue, &msg, portMAX_DELAY);
 		string_to_send = 0;
 		switch (msg.type)
 		{
@@ -198,18 +202,18 @@ void vTaskUARTTransmitter(void *pvParameters)
 				length = msg.length;
 				break;
 			case UART_SEND_PROFILING:
-				string_to_send = uart_tx_data_buffer;
+				string_to_send = ctx->tx_data_buffer;
 				length = 0;
 				sprintf(string_to_send,"Systick hook max ticks: %d\r",time_profile.max_ticks_in_Systick_hook);
-				UART_do_tx_DMA(my_uart_num, string_to_send, strlen(string_to_send));
+				UART_do_tx_DMA(ctx, string_to_send, strlen(string_to_send));
 				sprintf(string_to_send,"Timer2 ISR max ticks: %d\r",time_profile.max_ticks_in_Timer2_ISR);
-				UART_do_tx_DMA(my_uart_num, string_to_send, strlen(string_to_send));
+				UART_do_tx_DMA(ctx, string_to_send, strlen(string_to_send));
 				break;
 			case UART_SEND_POWER_CYCLES_STAT:
-				string_to_send = uart_tx_data_buffer;
+				string_to_send = ctx->tx_data_buffer;
 				length = 0;
 				sprintf(string_to_send,"Power on/off cycles: %d\r", global_settings->number_of_power_cycles);
-				UART_do_tx_DMA(my_uart_num, string_to_send, strlen(string_to_send));
+				UART_do_tx_DMA(ctx, string_to_send, strlen(string_to_send));
 				break;
 			default:
 				// Get string from predefined response table
@@ -220,11 +224,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 		
 		if ((string_to_send != 0) && (length != 0))
 		{
-			if ((*hwUART_mutex != 0) && (xSemaphoreTake(*hwUART_mutex, 0) == pdTRUE))
+			// Check if UART is enabled - the mutex is controlled by RX task
+			if ((*ctx->hwUART_mutex != 0) && (xSemaphoreTake(*ctx->hwUART_mutex, 0) == pdTRUE))
 			{
 				// Transfer data
-				UART_do_tx_DMA(my_uart_num, string_to_send, strlen(string_to_send));
-				xSemaphoreGive(*hwUART_mutex);
+				UART_do_tx_DMA(ctx, string_to_send, strlen(string_to_send));
+				xSemaphoreGive(*ctx->hwUART_mutex);
 			}
 		}
 

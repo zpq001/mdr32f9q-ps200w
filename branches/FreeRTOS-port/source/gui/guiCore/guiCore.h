@@ -16,7 +16,7 @@ typedef struct {
     uint8_t head;
     uint8_t tail;
     uint8_t count;
-    guiMsg_t queue[GUI_CORE_QUEUE_SIZE];
+    guiMsg_t queue[emGUI_CORE_QUEUE_SIZE];
 } guiMsgQueue_t;
 
 
@@ -129,6 +129,13 @@ typedef struct {
 #define emGUI_ERROR_OUT_OF_HEAP                 0x01
 #define emGUI_ERROR_OUT_OF_PREALLOCATED_MEMORY  0x02
 #define emGUI_ERROR_NULL_REF                    0x03
+
+
+//-----------------------------------//
+// Handler call specifiers
+#define CALL_HANDLER    1
+#define NO_HANDLER      0
+
 
 // Modifying these pointers should be done with care!
 extern guiGenericWidget_t *rootWidget;         // Root widget must be present

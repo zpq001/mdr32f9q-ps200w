@@ -114,7 +114,7 @@ void guiGraph_DrawTextLabel(guiTextLabel_t *textLabel)
 
     //-----------------------------------------//
     // Draw background and text
-    if ((textLabel->redrawForced) || (textLabel->redrawText))
+    if (textLabel->redrawForced)
     {
         // Erase rectangle
         LCD_SetPixelOutputMode(PIXEL_MODE_REWRITE);
@@ -468,6 +468,8 @@ uint8_t guiGraph_GetStringListVisibleItemCount(guiStringList_t * list)
 {
     uint8_t count;
     count = (list->height - STRINGLIST_V_FRAME_MARGIN * 1) / (list->font->height + STRINGLIST_INTERVAL);
+    if (count > list->stringCount)
+        count = list->stringCount;
     return count;
 }
 

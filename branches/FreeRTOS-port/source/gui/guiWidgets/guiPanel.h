@@ -1,8 +1,21 @@
 #ifndef __GUI_PANEL_H_
 #define __GUI_PANEL_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+
+
+// Widget type ID - must be unique!
+#define WT_PANEL        0x01
+
+
+typedef struct guiPanel_t {
+    //----- Inherited from generic container -----//
+    GENERIC_CONTAINER_PATTERN
+    //------- Widget - specific fields --------//
+    uint8_t focusFallsThrough : 1;
+    uint8_t frame : 3;
+    // uint8_t focusIsKeptOnChilds : 1;      // doesn't let unfocus child widgets when focusFallsThrough is set. CHECKME
+} guiPanel_t;
 
 
 

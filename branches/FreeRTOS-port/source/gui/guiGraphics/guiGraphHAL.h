@@ -4,25 +4,6 @@
 #include <stdint.h>
 
 
-// Size definitions in points for Nokia 1202 LCD
-#define LCD_XSIZE (2*96)
-#define LCD_YSIZE 68
-
-// Buffer size in bytes
-#define LCD_BUFFER_SIZE (2*96*9)
-
-/*
-// Size definitions in points
-#define LCD_XSIZE (2*128)
-#define LCD_YSIZE 128
-
-// Buffer size in bytes
-#define LCD_BUFFER_SIZE (LCD_XSIZE * 16)
-*/
-
-// LCD functions settings
-//#define SOFT_HORIZ_REVERSED
-
 // counter increments from 0 to LCD_xxx_PERIOD-1
 // if counter < LCD_xxx_COMPARE, pixel is put unchaged
 // if counter >= LCD_xxx_COMPARE, pixel is put inversed
@@ -30,8 +11,6 @@
 #define LCD_DOT_COMPARE     2
 #define LCD_DASH_PERIOD     7
 #define LCD_DASH_COMPARE    5
-
-
 
 
 // Pixel output modes
@@ -60,7 +39,7 @@
 
 
 
-extern uint8_t lcdBuffer[LCD_BUFFER_SIZE];
+extern uint8_t lcdBuffer[];
 extern uint8_t LCD_lineStyle;
 
 void LCD_SetPixelOutputMode(uint8_t newMode);

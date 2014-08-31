@@ -22,8 +22,8 @@
 #define CONV_HIGH_CURRENT_RANGE_MAX		40000	// [mA]
 #define CONV_HIGH_CURRENT_RANGE_MIN		0		// [mA]
 
-#define CONV_MIN_OVERLOAD_THRESHOLD		1		// in units of Converter_HWProcess call period (0.2 ms)
-#define CONV_MAX_OVERLOAD_THRESHOLD		(5*50)	
+#define CONV_MIN_OVERLOAD_THRESHOLD		2		// in units of 100us (Converter_HWProcess call period is 0.2 ms)
+#define CONV_MAX_OVERLOAD_THRESHOLD		(10*50)	
 
 
 

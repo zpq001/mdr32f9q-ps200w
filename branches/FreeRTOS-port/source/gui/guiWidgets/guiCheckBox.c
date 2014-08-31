@@ -103,7 +103,7 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
     guiCheckBox_t *checkBox = (guiCheckBox_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     guiCheckboxTranslatedKey_t tkey;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
     widgetTouchState_t touch;
 #endif
 
@@ -149,7 +149,7 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
                     processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
         case GUI_EVENT_TOUCH:
             if (CHECKBOX_ACCEPTS_TOUCH_EVENT(checkBox))
             {
@@ -168,7 +168,7 @@ uint8_t guiCheckBox_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
                     {
                         // Capture
                         guiCore_SetFocused((guiGenericWidget_t *)checkBox,1);
-                        guiCheckbox_SetChecked(checkBox, !checkBox->isChecked);
+                        guiCheckbox_SetChecked(checkBox, !checkBox->isChecked, 1);
                         checkBox->keepTouch = 1;
                     }
                     else

@@ -37,13 +37,15 @@ void vTaskService(void *pvParameters)
 		
 		// Get temparature
 		adc_samples = 0;
-		for (i=0; i<10; i++)
+		for (i=0; i<5; i++)
 		{
 			ADC2_Start();
 			vTaskDelay(2);
+			// Make sure conversion is done
+			while( ADC_GetFlagStatus(ADC2_FLAG_END_OF_CONVERSION)==RESET );
 			adc_samples += ADC2_GetResult();
 		}
-		converter_temp_celsius = (int16_t)( (float)adc_samples*0.1*(-0.226) + 230 );	//FIXME
+		converter_temp_celsius = (int16_t)( (float)adc_samples*0.2*(-0.226) + 230 );	//FIXME
 		
 		// Update cooler speed
 		cooler_speed = (converter_temp_celsius < 25) ? 50 : converter_temp_celsius * 2;

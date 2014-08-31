@@ -156,7 +156,8 @@ uint8_t Converter_GetOverloadProtectionWarning(void)
 
 uint16_t Converter_GetOverloadProtectionThreshold(void)
 {
-    return converter_state.overload_threshold;
+	// return value is in units of 100us
+    return converter_state.overload_threshold;	
 }
 
 uint8_t Converter_GetCurrentRange(uint8_t channel)
@@ -335,12 +336,10 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 //---------------------------------------------------------------------------//
 /// Set converter overload parameters
 // new_threshold in units of 100us
-// Converter HW overload threshold in units of 200us
 //---------------------------------------------------------------------------//
 static uint8_t Converter_SetOverloadProtection(uint8_t protectionEnable, uint8_t warningEnable, int32_t new_threshold)
 {
 	uint8_t err_code;
-	new_threshold /= 2;
 	if (new_threshold < CONV_MIN_OVERLOAD_THRESHOLD)
 	{
 		new_threshold = CONV_MIN_OVERLOAD_THRESHOLD;
@@ -497,7 +496,7 @@ void Converter_SaveProfile(void)
 	device_profile->converter_profile.overload.protection_enable = Converter_GetOverloadProtectionState();
 	device_profile->converter_profile.overload.warning_enable = Converter_GetOverloadProtectionWarning();
 	device_profile->converter_profile.overload.threshold = Converter_GetOverloadProtectionThreshold();
-
+	
 	// Other fields
 	// ...
 }
@@ -583,7 +582,7 @@ void Converter_Init(void)
 	// Overload protection
 	converter_state.overload_protection_enable = 1;
 	converter_state.overload_warning_enable = 0;
-	converter_state.overload_threshold = (5*1);
+	converter_state.overload_threshold = (10*1);
 	
 	
 	// Default settings for channel and current ranges

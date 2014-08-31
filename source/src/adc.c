@@ -81,9 +81,6 @@ void vTaskADC(void *pvParameters)
 			case ADC_GET_ALL_NORMAL:
 				// Send command to low-level task - must be atomic operations
 				ctrl_ADCProcess = CMD_ADC_START_VOLTAGE | CMD_ADC_START_CURRENT;
-				
-				//while(ctrl_ADCProcess)	// TODO - use semaphore
-					//vTaskDelay(2);
 				xSemaphoreTake(xSemaphoreADC, portMAX_DELAY);
 			
 				// Process adc samples
@@ -91,7 +88,6 @@ void vTaskADC(void *pvParameters)
 				voltage_adc *= 5;
 				
 				current_adc = adc_current_counts>>2;
-				//if (regulation_setting_p->current->RANGE == CURRENT_RANGE_HIGH)
 				if (converter_state.channel->current->RANGE == CURRENT_RANGE_HIGH)
 					current_adc *= 10;
 				else

@@ -1,9 +1,33 @@
 #ifndef __GUI_STRINGLIST_H_
 #define __GUI_STRINGLIST_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+#include "guiFonts.h"
 
+// Widget type ID - must be unique!
+#define WT_STRINGLIST	0x07
+
+typedef struct guiStringList_t {
+    //----- Inherited from generic widget -----//
+    GENERIC_WIDGET_PATTERN
+    //------- Widget - specific fields --------//
+    uint8_t hasFrame : 1;
+    uint8_t isActive : 1;
+    uint8_t canWrap : 1;
+    uint8_t showStringFocus : 1;
+    uint8_t restoreIndexOnEscape : 1;
+    uint8_t newIndexAccepted : 1;
+
+    uint8_t stringCount;
+    uint8_t selectedIndex;
+    uint8_t savedIndex;
+    uint8_t firstIndexToDisplay;
+    char **strings;
+	const tFont *font;
+    uint8_t textAlignment;
+
+
+} guiStringList_t;
 
 // Widget-specific virtual keys
 enum StringListVirtualKeys {

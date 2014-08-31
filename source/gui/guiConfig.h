@@ -1,3 +1,10 @@
+/**********************************************************
+    emGUI configuration file
+
+    Project - specific
+
+**********************************************************/
+
 #ifndef __GUI_CONFIG_H_
 #define __GUI_CONFIG_H_
 
@@ -6,26 +13,52 @@
 // Custom key events
 #include "key_def.h"
 
-#define GUI_CORE_QUEUE_SIZE 20
 
-#define GUI_CFG_USE_TIMERS
-#define GUI_TIMER_COUNT 1
-#define GUI_MESSAGE_PANEL_TIMER 0   // timer's name
+// Setup core queue size
+#define emGUI_CORE_QUEUE_SIZE 20
 
-#define CFG_USE_UPDATE
-
-#define USE_Z_ORDER_REDRAW
-
-//#define ALWAYS_PASS_TOUCH_TO_FOCUSED
-
-//#define USE_TOUCH_SUPPORT
-
-
+// Heap settings
 #define emGUI_HEAP_SIZE             2000        // bytes
 #define emGUI_BYTE_ALIGNMENT        4           // bytes
 #define emGUI_POINTER_SIZE_TYPE     uint32_t
 
+// Enable this macro if your design requires timer API
+#define emGUI_USE_TIMERS
+// Setup number of timers used
+#define emGUI_TIMERS_COUNT          1
+// Enumerate your timers to allow access by name, not only index
+enum emGUI_Timers { GUI_MESSAGE_PANEL_TIMER };
 
+// Enable or disable touch support
+//#define emGUI_USE_TOUCH_SUPPORT
+// Touch processing option
+//#define emGUI_ALWAYS_PASS_TOUCH_TO_FOCUSED
+
+// Enable or disable widgets update stuff
+#define emGUI_USE_UPDATE
+
+// Enable or disable using of Z-order for redrawing
+#define emGUI_USE_Z_ORDER_REDRAW
+
+
+//---------- Graphic library configuration ----------//
+
+// Global color scheme definition
+//#define emGUI_COLORED
+#define emGUI_MONOCHROME
+
+// Screen size definitions in points for Nokia 1202 LCD
+#define LCD_XSIZE (2*96)
+#define LCD_YSIZE 68
+
+// Buffer size in bytes (1 byte = 8 pixels, just like regular Nokia 3310 display)
+#define LCD_BUFFER_SIZE (2*96*9)
+
+// LCD functions settings
+//#define SOFT_HORIZ_REVERSED
+
+
+//---------------- Design - specific ----------------//
 
 // Design-specific events
 #define GUI_EVENT_START  0xF0

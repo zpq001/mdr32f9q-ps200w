@@ -1,8 +1,26 @@
 #ifndef __GUI_CHECK_BOX_H_
 #define __GUI_CHECK_BOX_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+#include "guiFonts.h"
+
+
+// Widget type ID - must be unique!
+#define WT_CHECKBOX     0x03
+
+
+typedef struct guiCheckBox_t {
+    //----- Inherited from generic widget -----//
+    GENERIC_WIDGET_PATTERN
+    //------- Widget - specific fields --------//
+    char *text;
+    const tFont *font;
+    uint8_t textAlignment;
+    uint8_t hasFrame : 1;
+    uint8_t isChecked : 1;
+    uint8_t redrawCheckedState : 1;
+} guiCheckBox_t;
+
 
 
 // Widget-specific events

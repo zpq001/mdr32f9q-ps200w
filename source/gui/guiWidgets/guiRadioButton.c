@@ -124,7 +124,7 @@ uint8_t guiRadioButton_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
     guiRadioButton_t *button = (guiRadioButton_t *)widget;
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     guiRadioButtonTranslatedKey_t tkey;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
     widgetTouchState_t touch;
 #endif
 
@@ -170,7 +170,7 @@ uint8_t guiRadioButton_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event
                     processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
         case GUI_EVENT_TOUCH:
             if (RADIOBUTTON_ACCEPTS_TOUCH_EVENT(button))
             {

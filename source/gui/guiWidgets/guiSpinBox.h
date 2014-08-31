@@ -1,9 +1,39 @@
 #ifndef __GUI_SPINBOX_H_
 #define __GUI_SPINBOX_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+#include "guiFonts.h"
 
+// Widget type ID - must be unique!
+#define WT_SPINBOX      0x06
+
+#define SPINBOX_STRING_LENGTH  12  // long enough to hold INT32_MAX and INT32_MIN + \0
+
+typedef struct guiSpinBox_t {
+    //----- Inherited from generic widget -----//
+    GENERIC_WIDGET_PATTERN
+    //------- Widget - specific fields --------//
+    //char text[SPINBOX_STRING_LENGTH];
+    const tFont *font;
+    //uint8_t textAlignment;
+    uint8_t hasFrame : 1;
+    uint8_t redrawValue : 1;
+    uint8_t redrawDigitSelection : 1;
+    uint8_t isActive : 1;
+    uint8_t restoreValueOnEscape : 1;
+    uint8_t newValueAccepted : 1;
+    uint8_t minDigitsToDisplay;
+    uint8_t activeDigit;
+    int8_t dotPosition;
+    int32_t value;
+    int32_t savedValue;
+    int32_t maxValue;
+    int32_t minValue;
+    char text[SPINBOX_STRING_LENGTH];
+    uint8_t digitsToDisplay;
+    int8_t textRightOffset;
+    int8_t textTopOffset;
+} guiSpinBox_t;
 
 
 // Widget-specific virtual keys

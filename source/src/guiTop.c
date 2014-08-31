@@ -163,7 +163,8 @@ void vTaskGUI(void *pvParameters)
 						guiUpdateVoltageSetting(msg.converter_event.channel);
 						break;
 					case CURRENT_LIMIT_CHANGE:
-						guiUpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, msg.converter_event.type);
+						guiUpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, 
+							(msg.converter_event.type == LIMIT_TYPE_LOW) ? UPDATE_LOW_LIMIT : UPDATE_HIGH_LIMIT);
 						// Current setting may have been changed - update too
 						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
@@ -399,7 +400,7 @@ void guiTop_ApplyGuiCurrentLimit(uint8_t channel, uint8_t currentRange, uint8_t 
 	// Wait
 	xSemaphoreTake(xSemaphoreConverter, portMAX_DELAY);
 	// Converter is done. Update both current setting and limit
-	guiUpdateCurrentLimit(channel, currentRange, limit_type);
+	guiUpdateCurrentLimit(channel, currentRange, (limit_type == LIMIT_TYPE_LOW) ? UPDATE_LOW_LIMIT : UPDATE_HIGH_LIMIT);
 	guiUpdateCurrentSetting(channel, currentRange);
 }
 

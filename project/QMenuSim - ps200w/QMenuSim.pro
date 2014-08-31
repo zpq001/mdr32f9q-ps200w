@@ -65,7 +65,6 @@ HEADERS  += mainwindow.h \
 	../../source/gui/guiGraphics/guiGraphWidgets.h \
 	../../source/gui/guiCore/guiEvents.h \
     ../../source/gui/guiCore/guiCore.h \
-	../../source/gui/guiWidgets/guiWidgets.h \
 	../../source/gui/guiWidgets/guiPanel.h \
 	../../source/gui/guiWidgets/guiTextLabel.h \
 	../../source/gui/guiWidgets/guiCheckBox.h \
@@ -85,7 +84,9 @@ HEADERS  += mainwindow.h \
     ../../source/gui/guiEditPanel2.h \
     ../../source/gui/guiWidgets/guiTextSpinBox.h \
     ../../source/gui/guiWidgets/guiRadioButton.h \
-    ../../source/gui/guiWidgets/guiSelectTextBox.h
+    ../../source/gui/guiWidgets/guiSelectTextBox.h \
+    ../../source/gui/guiCore/guiWidgets.h \
+    ../../source/gui/guiConfig.h
     
     
     

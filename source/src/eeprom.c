@@ -31,7 +31,6 @@
 static global_settings_t global_settings_data;
 global_settings_t * global_settings = &global_settings_data;
 
-uart_settings_t uart_settings;
 
 
 /// Device profile
@@ -77,18 +76,6 @@ static uint16_t get_crc16(uint8_t *data, uint16_t size, uint16_t seed)
 	return seed;
 }
 	
-// Temporary
-static void fill_uart_settings_by_default(void)
-{
-	uart_settings.uart1.baudRate = 115200;
-	uart_settings.uart1.enable = 1;
-	uart_settings.uart1.parity = UART_Parity_No;
-
-	uart_settings.uart2.baudRate = 115200;
-	uart_settings.uart2.enable = 1;
-	uart_settings.uart2.parity = UART_Parity_No;
-}
-
 
 static void fill_global_settings_by_default(void)
 {
@@ -104,6 +91,12 @@ static void fill_global_settings_by_default(void)
 	global_settings->dac_voltage_offset = 0;
 	global_settings->dac_current_low_offset = 0;
 	global_settings->dac_current_high_offset = 0;
+	global_settings->uart1.baudRate = 115200;
+	global_settings->uart1.enable = 1;
+	global_settings->uart1.parity = UART_Parity_No;
+	global_settings->uart2.baudRate = 115200;
+	global_settings->uart2.enable = 1;
+	global_settings->uart2.parity = UART_Parity_No;
 }
 
 
@@ -149,7 +142,7 @@ static void fill_device_profile_by_default(void)
 	// Overload
 	device_profile->converter_profile.overload.protection_enable = 1;
 	device_profile->converter_profile.overload.warning_enable = 0;
-	device_profile->converter_profile.overload.threshold = (5*1);	// x 200us
+	device_profile->converter_profile.overload.threshold = (10*1);	// x100us
 	
 	// Buttons
 	device_profile->buttons_profile.ext_switch_enable = 0;
@@ -661,8 +654,6 @@ void vTaskEEPROM(void *pvParameters)
 					// Loading default settings may be skipped if EE_GetReadyForSystemInit() had been called earlier
 					fill_global_settings_by_default();
 				}
-				// Temporary
-				fill_uart_settings_by_default();
 				// The following function uses profile data structure, so call it before
 				// restoring recent profile
 				EE_ExamineProfiles();

@@ -30,7 +30,6 @@ uint8_t guiTextLabel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
             guiCore_CallEventHandler(widget, &event);
             // Reset flags
             textLabel->redrawFocus = 0;
-            textLabel->redrawText = 0;
             textLabel->redrawRequired = 0;
             break;
         case GUI_EVENT_FOCUS:
@@ -75,7 +74,7 @@ void guiTextLabel_Initialize(guiTextLabel_t *textLabel, guiGenericWidget_t *pare
 void guiTextLabel_SetText(guiTextLabel_t *textLabel, char *text)
 {
     textLabel->text = text;
-    textLabel->redrawText = 1;
     textLabel->redrawRequired = 1;
+    textLabel->redrawForced = 1;
 }
 

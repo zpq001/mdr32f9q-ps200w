@@ -1,8 +1,29 @@
 #ifndef __GUI_TEXTSPINBOX_H_
 #define __GUI_TEXTSPINBOX_H_
 
-#include <stdint.h>
 #include "guiWidgets.h"
+#include "guiFonts.h"
+
+// Widget type ID - must be unique!
+#define WT_TEXTSPINBOX      0x08
+
+
+typedef struct guiTextSpinBox_t {
+    //----- Inherited from generic widget -----//
+    GENERIC_WIDGET_PATTERN
+    //------- Widget - specific fields --------//
+    const tFont *font;
+    uint8_t textAlignment;
+    uint8_t hasFrame : 1;
+    uint8_t redrawText : 1;
+    uint8_t redrawCharSelection : 1;
+    uint8_t isActive : 1;
+    uint8_t activeChar;
+    char *text;
+    uint8_t textLength;
+    int8_t textLeftOffset;
+    int8_t textTopOffset;
+} guiTextSpinBox_t;
 
 
 

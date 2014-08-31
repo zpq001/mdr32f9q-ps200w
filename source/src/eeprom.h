@@ -33,19 +33,19 @@
 
 #define EE_PROFILES_COUNT				10		
 
-#define EE_GSETTNGS_SIZE				16
+#define EE_GSETTNGS_SIZE				32
 #define EE_PROFILE_SIZE					128		// total: data + name + crc + some free space
 #define EE_PROFILE_NAME_SIZE			13		// 12 chars + \0
 #define EE_CRC_SIZE						2		// using 16-bit simple CRC
 
 #define EE_GSETTINGS_BASE				0
-#define EE_RECENT_PROFILE_BASE			16
-#define EE_PROFILES_BASE				(128 + 16)
+#define EE_RECENT_PROFILE_BASE			32
+#define EE_PROFILES_BASE				(EE_RECENT_PROFILE_BASE + EE_PROFILE_SIZE)
 
-#define EE_GSETTINGS_CRC_OFFSET			14
+#define EE_GSETTINGS_CRC_OFFSET			(EE_GSETTNGS_SIZE - EE_CRC_SIZE)
 
-#define EE_PROFILE_NAME_OFFSET		(EE_PROFILE_SIZE - EE_CRC_SIZE - EE_PROFILE_NAME_SIZE - 1)
-#define EE_PROFILE_CRC_OFFSET		(EE_PROFILE_SIZE - EE_CRC_SIZE - 1)
+#define EE_PROFILE_NAME_OFFSET		(EE_PROFILE_SIZE - EE_CRC_SIZE - EE_PROFILE_NAME_SIZE)
+#define EE_PROFILE_CRC_OFFSET		(EE_PROFILE_SIZE - EE_CRC_SIZE)
 
 /* 
 For example, accessing name of 5-th profile would be like this:
@@ -131,13 +131,10 @@ typedef struct {
 	int8_t dac_current_high_offset;
 	uint8_t saveRecentProfile;
 	uint8_t restoreRecentProfile;
-} global_settings_t;
-
-// Temporary, will be moved into global settings
-typedef struct {
 	uartx_settings_t uart1;
 	uartx_settings_t uart2;
-} uart_settings_t;
+} global_settings_t;
+
 
 
 //---------------------------------------------//
@@ -190,8 +187,6 @@ extern xQueueHandle xQueueEEPROM;
 
 extern global_settings_t *global_settings;
 extern device_profile_t *device_profile;
-
-extern uart_settings_t uart_settings;
 
 // These two are special functions for calling from routine which
 // services power-down sequence

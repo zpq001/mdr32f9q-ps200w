@@ -156,7 +156,7 @@ void vTaskDispatcher(void *pvParameters)
 	
 	/* TODO: 
 <done>	-  add GUI menu for external switch
-		-  add GUI menu for UARTs ?
+<done>	-  add GUI menu for UARTs ?
 <done>	-  add GUI menu for DAC offset (global settings) ?
 		-  add GUI menu for sounds
 <done>	-  check if additional EEPROM settings are required
@@ -166,7 +166,7 @@ void vTaskDispatcher(void *pvParameters)
 		-  !!! check and remove voltage spike upon power ON !!!
 		-  check resource sharing - add critical sections (for example, current limit update in converter)
 		-  check UART command interface
-		-  Add percent setting of voltage or current
+		-  Add percent setting of voltage or current (by UART)
 		-  Add charge function
 		-  Improve cooler control
 		-  Add overheat warning and auto OFF function

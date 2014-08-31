@@ -106,7 +106,7 @@ uint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
     uint8_t processResult = GUI_EVENT_ACCEPTED;
     guiPanel_t *panel = (guiPanel_t *)widget;
     guiPanelTranslatedKey_t tkey;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
     containerTouchState_t touch;
 #endif
 
@@ -161,7 +161,7 @@ uint8_t guiPanel_ProcessEvent(guiGenericWidget_t *widget, guiEvent_t event)
                     processResult = guiCore_CallEventHandler(widget, &event);
             }
             break;
-#ifdef USE_TOUCH_SUPPORT
+#ifdef emGUI_USE_TOUCH_SUPPORT
         case GUI_EVENT_TOUCH:
             if (PANEL_ACCEPTS_TOUCH_EVENT(panel))
             {

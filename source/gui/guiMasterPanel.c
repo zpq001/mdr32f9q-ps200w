@@ -481,29 +481,29 @@ void hideEditPanel1(void)
 static void setGuiVoltageIndicator(uint16_t value)
 {
     sprintf(textLabel_voltage.text, "%2.2fv", (float)value/1000);
-    textLabel_voltage.redrawText = 1;
     textLabel_voltage.redrawRequired = 1;
+    textLabel_voltage.redrawForced = 1;
 }
 
 static void setGuiCurrentIndicator(uint16_t value)
 {
     sprintf(textLabel_current.text, "%2.2fa", (float)value/1000);
-    textLabel_current.redrawText = 1;
     textLabel_current.redrawRequired = 1;
+    textLabel_current.redrawForced = 1;
 }
 
 static void setGuiPowerIndicator(uint32_t value)
 {
     sprintf(textLabel_power.text, "%3.2fW", (float)value/1000 );
-    textLabel_power.redrawText = 1;
     textLabel_power.redrawRequired = 1;
+    textLabel_power.redrawForced = 1;
 }
 
 static void setGuiTemperatureIndicator(int16_t value)
 {
     sprintf(textLabel_temperature.text, "%2d%cC", value, 0xb0);
-    textLabel_temperature.redrawText = 1;
     textLabel_temperature.redrawRequired = 1;
+    textLabel_temperature.redrawForced = 1;
 }
 
 static void setGuiVoltageSetting(int32_t value)

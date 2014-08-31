@@ -547,7 +547,7 @@ void guiTop_ApplyDacSettings(int8_t v_offset, int8_t c_low_offset, int8_t c_high
 	dispatcher_msg.converter_cmd.a.dac_set.current_high_offset = c_high_offset;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	 */
 	
-	prepareConverterMsg(CONVERTER_SET_OVERLOAD_PARAMS, NO_SEMPHR);
+	prepareConverterMsg(CONVERTER_SET_DAC_PARAMS, NO_SEMPHR);
 	converter_msg.a.dac_set.voltage_offset = v_offset;
 	converter_msg.a.dac_set.current_low_offset = c_low_offset;
 	converter_msg.a.dac_set.current_high_offset = c_high_offset;

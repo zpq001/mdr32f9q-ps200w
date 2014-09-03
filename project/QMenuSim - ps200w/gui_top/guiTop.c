@@ -366,6 +366,8 @@ void guiTop_ApplyGuiVoltageSetting(uint8_t channel, int16_t new_set_voltage)
 
     //------ simulation of actual conveter work ------//
     guiUpdateAdcIndicators();
+    // Converter is done. Update voltage
+    guiUpdateVoltageSetting(channel);
 }
 
 
@@ -381,6 +383,8 @@ void guiTop_ApplyCurrentSetting(uint8_t channel, uint8_t currentRange, int16_t n
 
     //------ simulation of actual conveter work ------//
     guiUpdateAdcIndicators();
+    // Converter is done. Update current
+    guiUpdateCurrentSetting(channel, currentRange);
 }
 
 

@@ -56,6 +56,17 @@
 //#define APPLY_CURRENT			0x20
 
 
+
+enum ConverterErrorCodes { CONV_NO_ERROR, CONV_INTERNAL_ERROR, CONV_WRONG_CMD };
+enum ChargeFSMCommands { START_CHARGE = 1, STOP_CHARGE, ABORT_CHARGE, CHARGE_TICK };
+	
+
+enum {CONV_INTERNAL, CONV_EXTERNAL};
+enum {GET_READY_FOR_CHANNEL_SWITCH, GET_READY_FOR_PROFILE_LOAD};
+
+
+
+
 // OS stuff
 xQueueHandle xQueueConverter;
 xTaskHandle xTaskHandle_Converter;
@@ -69,6 +80,10 @@ dispatch_msg_t dispatcher_msg;
 converter_state_t converter_state;		// main converter control
 //dac_settings_t dac_settings;			// DAC calibration offset
 
+static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code);
+static void Converter_ProcessSetParam (void);
+static void Converter_ProcessProfile (void);
+static uint8_t Converter_ProcessCharge(uint8_t cmd);
 
 
 //---------------------------------------------//
@@ -616,9 +631,58 @@ void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dis
 }
 
 
-// TODO:
-//	add check for voltage, current or DAC settings - values should be truncated to 
-//	DAC resolution
+
+
+// This function is called when converter state is changed - turned ON/OFF, started/stopped charging
+// Arguments are:
+//		err_code - error code
+//		state_event - converter state change
+
+
+static void stateResponse(uint8_t err_code, uint8_t state_event)
+{	
+	// Send notification to dispatcher
+	dispatcher_msg->type = DISPATCHER_CONVERTER_EVENT;
+	dispatcher_msg->sender = sender_CONVERTER;
+	//dispatcher_msg->converter_event.msg_type = converter_msg->type;
+	dispatcher_msg->converter_event.msg_sender = converter_msg->sender;
+	dispatcher_msg.converter_event.spec = state_event;
+	dispatcher_msg.converter_event.err_code = err_code;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+}
+
+static void stateEvent(uint8_t err_code, uint8_t state_event)
+{
+	// Send notification to dispatcher
+	dispatcher_msg->type = DISPATCHER_CONVERTER_EVENT;
+	dispatcher_msg->sender = sender_CONVERTER;
+	//dispatcher_msg->converter_event.msg_type = __EVENT__;
+	dispatcher_msg->converter_event.msg_sender = sender_CONVERTER;
+	dispatcher_msg->converter_event.spec = state_event;
+	dispatcher_msg->converter_event.err_code = err_code;
+	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+}
+
+static void msgConfirm(void)
+{
+	// Confirm
+	if (msg->pxSemaphore)	xSemaphoreGive(*msg->pxSemaphore);
+}
+
+
+
+
+
+
+
+
+
+
+
+// Global to allow whole message processing be split into several functions
+static converter_message_t msg;
+
+
 
 
 //---------------------------------------------//
@@ -626,16 +690,11 @@ void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dis
 //	
 //---------------------------------------------//
 void vTaskConverter(void *pvParameters) 
-{
-	converter_message_t msg;
-	channel_state_t *c;
-	
-	uint8_t err_code;
-	uint8_t temp8u;
-	
+{	
+	uint8_t msg_group;
 	
 	// Initialize
-	xQueueConverter = xQueueCreate( 5, sizeof( converter_message_t ) );		// Queue can contain 5 elements of type converter_message_t
+	xQueueConverter = xQueueCreate( 5, sizeof( converter_message_t ) );
 	if( xQueueConverter == 0 )
 	{
 		// Queue was not created and must not be used.
@@ -648,69 +707,489 @@ void vTaskConverter(void *pvParameters)
 	xQueueReset(xQueueConverter);
 	while(1)
 	{
-
 		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-
-
-		switch(msg.type)
+		msg_group = msg.type & CONVERTER_GROUP_MASK;
+		msg.type &= ~CONVERTER_GROUP_MASK;
+		
+		switch (msg_group)
 		{
-			//=========================================================================//
-			// Loading profile
-			case CONVERTER_LOAD_PROFILE:
-				// Disable converter if enabled
-				if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
+			case CONVERTER_CONTROL_GROUP:
+				Converter_ProcessMainControl(CONV_EXTERNAL, msg.type);
+				break;
+			case CONVERTER_SET_PARAMS_GROUP:
+				Converter_ProcessSetParam();
+				break;
+			case CONVERTER_PROFILE_GROUP:
+				Converter_ProcessProfile();
+				break;
+			default:	// unknown
+				break;
+		}
+	}
+}	
+		
+		
+
+//=========================================================================//
+//	Control command processor
+//=========================================================================//
+static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
+{
+	uint8_t err_code = CONV_NO_ERROR;
+	uint8_t state_event = CONV_NO_STATE_CHANGE;
+	uint8_t temp8u;
+	
+	if (cmd_type == CONV_INTERNAL)
+	{
+		switch (cmd_code)
+		{
+			case GET_READY_FOR_CHANNEL_SWITCH:
+			case GET_READY_FOR_PROFILE_LOAD:
+				if (converter_state.state == CONVERTER_STATE_ON) 
 				{
 					Converter_TurnOff();
+					converter_state.state = CONVERTER_STATE_OFF;
+					stateResponse(CONV_NO_ERROR, CONV_TURNED_OFF);				
 				}
-				converter_state.state = CONVERTER_STATE_OFF;		// Reset overloaded flag (if set)
-				// Load profile data
-				taskENTER_CRITICAL();
-				Converter_LoadProfile();
-				taskEXIT_CRITICAL();
-				// Wait until current feedback switching is allowed
-				while(Converter_IsReady() == 0) 
-					vTaskDelay(1);	
-				// Apply new channel current range setting to hardware
-				temp8u = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
-				if (temp8u == CONVERTER_CMD_OK)
+				else if (converter_state.state == CONVERTER_STATE_CHARGING)
 				{
-					SetVoltageDAC(converter_state.channel->voltage.setting);
-					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+					// Stop charge FSM
+					Converter_TurnOff();
 					SetOutputLoad(converter_state.channel->load_state);
-					err_code = CMD_OK;
+					converter_state.state = CONVERTER_STATE_OFF;
+					Converter_ProcessCharge(STOP_CHARGE);
+					stateResponse(CONV_NO_ERROR, CONV_ABORTED_CHARGE);
+				}
+				else if (converter_state.state == CONVERTER_STATE_OVERLOADED)
+				{
+					// Just reset flag
+					converter_state.state = CONVERTER_STATE_OFF;
+					// stateResponse(CONV_NO_ERROR, CONV_RESET_OVERLOAD_FLAG);		CHECKME
+				}
+				else	
+				{
+					// OFF - do nothing
+				}
+				break;
+		}
+	}
+	else	// External command from other task
+	{
+		switch (cmd_code)
+		{
+			case CONVERTER_TURN_ON:
+				if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
+				{
+					// Resistive output load could be disabled by charger - enable it
+					SetOutputLoad(converter_state.channel->load_state);
+					// Command to low-level
+					temp8u = Converter_TurnOn();
+					if (temp8u == CONVERTER_CMD_OK)
+					{
+						converter_state.state = CONVERTER_STATE_ON;
+						state_event = CONV_TURNED_ON;
+					} 
+					else
+					{
+						err_code = CONV_INTERNAL_ERROR;
+					}
+					msgConfirm();
+					stateResponse(&msg, err_code, state_event);
+				}
+				else 	// ON or CHARGING
+				{
+					// Converter is already ON - only give semaphore
+					msgConfirm();
+					//stateResponse(&msg, CONV_NO_ERROR, CONV_NO_STATE_CHANGE);
+				}
+				break;
+				
+			case CONVERTER_START_CHARGE:
+				if (converter_state.state != CONVERTER_STATE_CHARGING)
+				{
+					if (converter_state.channel->CHANNEL == CHANNEL_12V)
+					{				
+						if (converter_state.state != CONVERTER_STATE_ON)
+						{
+							// Command to low-level
+							temp8u = Converter_TurnOn();
+							if (temp8u != CONVERTER_CMD_OK)
+							{
+								state_event = CONV_NO_STATE_CHANGE;
+								err_code = CONV_INTERNAL_ERROR;
+							}
+						}
+						if (err_code == CONV_NO_ERROR)
+						{
+							// Resistive output load must be disabled
+							SetOutputLoad(0);
+							// Process charge FSM
+							Converter_ProcessCharge(START_CHARGE);
+							converter_state.state = CONVERTER_STATE_CHARGING;
+							state_event = CONV_STARTED_CHARGE;
+						}
+					}
+					else	// Can charge only by 12V channel
+					{
+						state_event = CONV_NO_STATE_CHANGE;
+						err_code = CONV_WRONG_CMD;	
+					}
+				}
+				else	// CHARGING already - restart?
+				{
+					state_event = CONV_NO_STATE_CHANGE;
+				}
+				msgConfirm();
+				stateResponse(&msg, err_code, state_event);
+				break;
+				
+			case CONVERTER_TURN_OFF:
+				temp8u = converter_state.state;
+				Converter_TurnOff();
+				converter_state.state = CONVERTER_STATE_OFF;
+				if (temp8u == CONVERTER_STATE_CHARGING)
+				{
+					Converter_ProcessCharge(STOP_CHARGE);
+					state_event = CONV_ABORTED_CHARGE;
 				}
 				else
 				{
-					// Unexpected error for current range setting
-					err_code = CMD_ERROR;
-					Converter_TurnOff();
-				} 
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-			break;
-			//=========================================================================//
-			// Saving profile
-			case CONVERTER_SAVE_PROFILE:
-				Converter_SaveProfile();
-				// Confirm
-				if (msg.pxSemaphore != 0)
-					xSemaphoreGive(*msg.pxSemaphore);
+					// Resistive output load was disabled by charger and it is second STOP command - enable it
+					SetOutputLoad(converter_state.channel->load_state);
+					state_event = CONV_TURNED_OFF;
+				}
+				msgConfirm();
+				stateResponse(&msg, err_code, state_event);
 				break;
-			//=========================================================================//
-			// Setting DAC offset
-			case CONVERTER_SET_DAC_PARAMS:
-				taskENTER_CRITICAL();
-				global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
-				global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
-				global_settings->dac_current_high_offset = msg.a.dac_set.current_high_offset;
-				taskEXIT_CRITICAL();
-				// Update DAC output
+				
+			case CONVERTER_OVERLOADED:
+				// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
+				temp8u = converter_state.state;
+				converter_state.state = CONVERTER_STATE_OVERLOADED;
+				// Reset that routine FSM flag
+				if (Converter_ClearOverloadFlag() != CONVERTER_CMD_OK)
+				{
+					// Error, we should never get here.
+					// Kind of restore attempt
+					Converter_TurnOff();
+					err_code = CONV_INTERNAL_ERROR;
+				}
+				stateEvent(err_code, CONV_OVERLOADED);
+
+				if (temp8u == CONVERTER_STATE_CHARGING)
+				{
+					// Stop charge FSM
+					Converter_ProcessCharge(STOP_CHARGE);
+					stateEvent(CONV_NO_ERROR, CONV_ABORTED_CHARGE);
+					// Do not enable resistive load here
+				}			
+				break;
+		}
+	}
+}
+
+
+//=========================================================================//
+//	Parameters setting processor
+//=========================================================================//
+static void Converter_ProcessSetParam (void)
+{
+	uint8_t err_code;
+	uint8_t temp8u;
+	channel_state_t *c;
+	
+	switch(msg.type)
+	{
+		//-------------------- Setting voltage --------------------//
+		case CONVERTER_SET_VOLTAGE:
+			msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);
+			taskENTER_CRITICAL();
+			err_code = Converter_SetVoltage(msg.a.v_set.channel, msg.a.v_set.value);
+			taskEXIT_CRITICAL();
+			// Apply new setting to hardware. CHECKME: charge state
+			if (msg.a.v_set.channel == converter_state.channel->CHANNEL)
+			{
+				SetVoltageDAC(converter_state.channel->voltage.setting);
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = VOLTAGE_SETTING_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.v_set.channel;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
+			
+		//-------------------- Setting current --------------------//
+		case CONVERTER_SET_CURRENT:
+			msg.a.c_set.channel = Converter_ValidateChannel(msg.a.c_set.channel);
+			msg.a.c_set.range = Converter_ValidateCurrentRange(msg.a.c_set.range);
+			taskENTER_CRITICAL();
+			err_code = Converter_SetCurrent(msg.a.c_set.channel, msg.a.c_set.range, msg.a.c_set.value);
+			taskEXIT_CRITICAL();
+			// Apply new setting to hardware. CHECKME: charge state
+			if ((msg.a.c_set.channel == converter_state.channel->CHANNEL) && 
+				(msg.a.c_set.range == converter_state.channel->current->RANGE))
+			{
+				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = CURRENT_SETTING_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.c_set.channel;
+			dispatcher_msg.converter_event.range = msg.a.c_set.range;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
+		
+		//----------------- Setting voltage limit -----------------//
+		case CONVERTER_SET_VOLTAGE_LIMIT:
+			msg.a.vlim_set.channel = Converter_ValidateChannel(msg.a.vlim_set.channel);
+			taskENTER_CRITICAL();
+			err_code = Converter_SetVoltageLimit(msg.a.vlim_set.channel, msg.a.vlim_set.type, 
+								msg.a.vlim_set.value, msg.a.vlim_set.enable);
+			taskEXIT_CRITICAL();
+			// Apply new setting to hardware. CHECKME: charge state				
+			if (msg.a.vlim_set.channel == converter_state.channel->CHANNEL)
+			{
+				SetVoltageDAC(converter_state.channel->voltage.setting);
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.vlim_set.channel;
+			dispatcher_msg.converter_event.limit_type = msg.a.vlim_set.type;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break; 
+	
+		//----------------- Setting current limit -----------------//
+		case CONVERTER_SET_CURRENT_LIMIT:
+			msg.a.clim_set.channel = Converter_ValidateChannel(msg.a.clim_set.channel);
+			msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);		
+			taskENTER_CRITICAL();			
+			err_code = Converter_SetCurrentLimit(msg.a.clim_set.channel, msg.a.clim_set.range, msg.a.clim_set.type, 
+								msg.a.clim_set.value, msg.a.clim_set.enable);
+			taskEXIT_CRITICAL();
+			// Apply new setting to hardware. CHECKME: charge state	
+			if ((msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
+				(msg.a.clim_set.range == converter_state.channel->current->RANGE))
+			{
+				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = CURRENT_LIMIT_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.clim_set.channel;
+			dispatcher_msg.converter_event.range = msg.a.clim_set.range;
+			dispatcher_msg.converter_event.limit_type = msg.a.clim_set.type;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break; 
+			
+		//-------------------- Setting channel --------------------//
+		case CONVERTER_SWITCH_CHANNEL:
+			msg.a.ch_set.new_channel = Converter_ValidateChannel(msg.a.ch_set.new_channel);
+			if (msg.a.ch_set.new_channel != converter_state.channel->CHANNEL)
+			{
+				// Disable converter if enabled
+				Converter_ProcessMainControl(CONV_INTERNAL, GET_READY_FOR_CHANNEL_SWITCH);
+				
+				// Wait until voltage feedback switching is allowed
+				while(Converter_IsReady() == 0) 
+					vTaskDelay(1);
+				// Apply new channel setting to hardware
+				temp8u = Converter_SetFeedBackChannel(msg.a.ch_set.new_channel);
+				if (temp8u == CONVERTER_CMD_OK)
+				{
+					taskENTER_CRITICAL();	
+					converter_state.channel = (msg.a.ch_set.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+											&converter_state.channel_12v;
+					taskEXIT_CRITICAL();
+					while(Converter_IsReady() == 0) 
+						vTaskDelay(1);	
+					// Apply new channel current range setting to hardware
+					temp8u = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
+					if (temp8u == CONVERTER_CMD_OK)
+					{
+						SetVoltageDAC(converter_state.channel->voltage.setting);
+						SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+						SetOutputLoad(converter_state.channel->load_state);
+						err_code = CMD_OK;
+					}
+					else
+					{
+						// Unexpected error for current range setting
+						err_code = CMD_ERROR;
+					} 
+				}
+				else
+				{
+					// Unexpected error for channel setting
+					err_code = CMD_ERROR;
+				}
+			}
+			else
+			{
+				// Trying to set channel that is already selected.
+				err_code = VALUE_BOUND_BY_ABS_MAX;
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = CHANNEL_CHANGE;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
+	
+		//----------------- Setting current range -----------------//
+		case CONVERTER_SET_CURRENT_RANGE:
+			
+			msg.a.crange_set.channel = Converter_ValidateChannel(msg.a.crange_set.channel);	
+			msg.a.crange_set.new_range = Converter_ValidateCurrentRange(msg.a.crange_set.new_range);
+			c = (msg.a.crange_set.channel == CHANNEL_5V) ? &converter_state.channel_5v : 
+										&converter_state.channel_12v;	
+			if (msg.a.crange_set.new_range != c->current->RANGE)
+			{
+				// New current range differs from current
+				if (msg.a.crange_set.channel == converter_state.channel->CHANNEL)
+				{
+					// Setting current range of the active channel
+					if ((converter_state.state != CONVERTER_STATE_ON) && (converter_state.state != CONVERTER_STATE_CHARGING))
+					{
+						// Wait until current feedback switching is allowed
+						while(Converter_IsReady() == 0) 
+							vTaskDelay(1);	
+						// Apply new channel current range setting to hardware
+						temp8u = Converter_SetCurrentRange(msg.a.crange_set.new_range);
+						if (temp8u == CONVERTER_CMD_OK)
+						{
+							taskENTER_CRITICAL();
+							c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+							taskEXIT_CRITICAL();
+							SetCurrentDAC(c->current->setting, c->current->RANGE);
+							err_code = CMD_OK;
+						}
+						else
+						{
+							// Unexpected error
+							err_code = CMD_ERROR;
+						}
+					}
+					else
+					{
+						// Converter in ON and current range cannot be changed
+						err_code = CMD_ERROR;
+					}
+				}
+				else
+				{
+					// Setting current range of the non-active channel
+					taskENTER_CRITICAL();
+					c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+					taskEXIT_CRITICAL();
+					err_code = CMD_OK;
+				}
+			}
+			else
+			{
+				// Trying to set current range that is already selected.
+				err_code = VALUE_BOUND_BY_ABS_MAX;
+			}
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = CURRENT_RANGE_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.crange_set.channel;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
+			
+		//-------- Setting overload protection parameters ---------//
+		case CONVERTER_SET_OVERLOAD_PARAMS:
+			taskENTER_CRITICAL();
+			err_code = Converter_SetOverloadProtection( msg.a.overload_set.protection_enable, msg.a.overload_set.warning_enable, 
+												msg.a.overload_set.threshold);
+			taskEXIT_CRITICAL();
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = OVERLOAD_SETTING_CHANGE;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break; 
+	
+		//-------------------- Setting DAC offset -----------------//
+		case CONVERTER_SET_DAC_PARAMS:
+			taskENTER_CRITICAL();
+			global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
+			global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
+			global_settings->dac_current_high_offset = msg.a.dac_set.current_high_offset;
+			taskEXIT_CRITICAL();
+			// Update DAC output
+			SetVoltageDAC(converter_state.channel->voltage.setting);
+			SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
+			// Confirm
+			if (msg.pxSemaphore != 0)
+				xSemaphoreGive(*msg.pxSemaphore);
+			break;
+	}
+}
+
+
+//=========================================================================//
+//	Profile command processor
+//=========================================================================//
+static void Converter_ProcessProfile (void)
+{
+	switch(msg.type)
+	{
+		//---------------- Loading profile ------------------------//
+		case CONVERTER_LOAD_PROFILE:
+			// Disable converter if enabled
+			Converter_ProcessMainControl(CONV_INTERNAL, GET_READY_FOR_PROFILE_LOAD);
+			
+			// Load profile data
+			taskENTER_CRITICAL();
+			Converter_LoadProfile();
+			taskEXIT_CRITICAL();
+			// Wait until current feedback switching is allowed
+			while(Converter_IsReady() == 0) 
+				vTaskDelay(1);	
+			// Apply new channel current range setting to hardware
+			temp8u = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
+			if (temp8u == CONVERTER_CMD_OK)
+			{
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
-				// Confirm
-				if (msg.pxSemaphore != 0)
-					xSemaphoreGive(*msg.pxSemaphore);
-				break;
+				SetOutputLoad(converter_state.channel->load_state);
+				err_code = CMD_OK;
+			}
+			else
+			{
+				// Unexpected error for current range setting
+				err_code = CMD_ERROR;
+			} 
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+		break;
+		
+		//----------------- Saving profile ------------------------//
+		case CONVERTER_SAVE_PROFILE:
+			Converter_SaveProfile();
+			// Confirm
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			break;
 /*			//=========================================================================//
 			// Loading global settings
 			case CONVERTER_LOAD_GLOBAL_SETTINGS:
@@ -727,243 +1206,48 @@ void vTaskConverter(void *pvParameters)
 				if (msg.pxSemaphore != 0)
 					xSemaphoreGive(*msg.pxSemaphore);
 				break;
-*/			//=========================================================================//
-			// Setting voltage
-			case CONVERTER_SET_VOLTAGE:
-				msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);
-				taskENTER_CRITICAL();
-				err_code = Converter_SetVoltage(msg.a.v_set.channel, msg.a.v_set.value);
-				taskEXIT_CRITICAL();
-				// Apply new setting to hardware. CHECKME: charge state
-				if (msg.a.v_set.channel == converter_state.channel->CHANNEL)
-				{
-					SetVoltageDAC(converter_state.channel->voltage.setting);
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = VOLTAGE_SETTING_CHANGE;
-				dispatcher_msg.converter_event.channel = msg.a.v_set.channel;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
 			//=========================================================================//
-			// Setting current
-			case CONVERTER_SET_CURRENT:
-				msg.a.c_set.channel = Converter_ValidateChannel(msg.a.c_set.channel);
-				msg.a.c_set.range = Converter_ValidateCurrentRange(msg.a.c_set.range);
-				taskENTER_CRITICAL();
-				err_code = Converter_SetCurrent(msg.a.c_set.channel, msg.a.c_set.range, msg.a.c_set.value);
-				taskEXIT_CRITICAL();
-				// Apply new setting to hardware. CHECKME: charge state
-				if ((msg.a.c_set.channel == converter_state.channel->CHANNEL) && 
-					(msg.a.c_set.range == converter_state.channel->current->RANGE))
-				{
-					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = CURRENT_SETTING_CHANGE;
-				dispatcher_msg.converter_event.channel = msg.a.c_set.channel;
-				dispatcher_msg.converter_event.range = msg.a.c_set.range;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			//=========================================================================//
-			// Setting voltage limit
-			case CONVERTER_SET_VOLTAGE_LIMIT:
-				msg.a.vlim_set.channel = Converter_ValidateChannel(msg.a.vlim_set.channel);
-				taskENTER_CRITICAL();
-				err_code = Converter_SetVoltageLimit(msg.a.vlim_set.channel, msg.a.vlim_set.type, 
-									msg.a.vlim_set.value, msg.a.vlim_set.enable);
-				taskEXIT_CRITICAL();
-				// Apply new setting to hardware. CHECKME: charge state				
-				if (msg.a.vlim_set.channel == converter_state.channel->CHANNEL)
-				{
-					SetVoltageDAC(converter_state.channel->voltage.setting);
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = VOLTAGE_LIMIT_CHANGE;
-				dispatcher_msg.converter_event.channel = msg.a.vlim_set.channel;
-				dispatcher_msg.converter_event.limit_type = msg.a.vlim_set.type;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break; 
-			//=========================================================================//
-			// Setting current limit
-			case CONVERTER_SET_CURRENT_LIMIT:
-				msg.a.clim_set.channel = Converter_ValidateChannel(msg.a.clim_set.channel);
-				msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);		
-				taskENTER_CRITICAL();			
-				err_code = Converter_SetCurrentLimit(msg.a.clim_set.channel, msg.a.clim_set.range, msg.a.clim_set.type, 
-									msg.a.clim_set.value, msg.a.clim_set.enable);
-				taskEXIT_CRITICAL();
-				// Apply new setting to hardware. CHECKME: charge state	
-				if ((msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
-					(msg.a.clim_set.range == converter_state.channel->current->RANGE))
-				{
-					SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = CURRENT_LIMIT_CHANGE;
-				dispatcher_msg.converter_event.channel = msg.a.clim_set.channel;
-				dispatcher_msg.converter_event.range = msg.a.clim_set.range;
-				dispatcher_msg.converter_event.limit_type = msg.a.clim_set.type;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break; 
-			//=========================================================================//
-			// Setting channel
-			case CONVERTER_SWITCH_CHANNEL:
-				msg.a.ch_set.new_channel = Converter_ValidateChannel(msg.a.ch_set.new_channel);
-				if (msg.a.ch_set.new_channel != converter_state.channel->CHANNEL)
-				{
-					// Disable converter if enabled
-					if (converter_state.state == CONVERTER_STATE_ON)	// TODO: analyze charge state here
-					{
-						Converter_TurnOff();
-						converter_state.state = CONVERTER_STATE_OFF;
-					}
-					// Wait until voltage feedback switching is allowed
-					while(Converter_IsReady() == 0) 
-						vTaskDelay(1);
-					// Apply new channel setting to hardware
-					temp8u = Converter_SetFeedBackChannel(msg.a.ch_set.new_channel);
-					if (temp8u == CONVERTER_CMD_OK)
-					{
-						taskENTER_CRITICAL();	
-						converter_state.channel = (msg.a.ch_set.new_channel == CHANNEL_5V) ? &converter_state.channel_5v : 
-												&converter_state.channel_12v;
-						taskEXIT_CRITICAL();
-						while(Converter_IsReady() == 0) 
-							vTaskDelay(1);	
-						// Apply new channel current range setting to hardware
-						temp8u = Converter_SetCurrentRange(converter_state.channel->current->RANGE);
-						if (temp8u == CONVERTER_CMD_OK)
-						{
-							SetVoltageDAC(converter_state.channel->voltage.setting);
-							SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
-							SetOutputLoad(converter_state.channel->load_state);
-							err_code = CMD_OK;
-						}
-						else
-						{
-							// Unexpected error for current range setting
-							err_code = CMD_ERROR;
-							Converter_TurnOff();
-						} 
-					}
-					else
-					{
-						// Unexpected error for channel setting
-						err_code = CMD_ERROR;
-						Converter_TurnOff();
-					}
-				}
-				else
-				{
-					// Trying to set channel that is already selected.
-					err_code = VALUE_BOUND_BY_ABS_MAX;
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = CHANNEL_CHANGE;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			//=========================================================================//
-			// Setting current range
-			case CONVERTER_SET_CURRENT_RANGE:
+*/
+		default:	// unknown
+			break;
+	}
+}
+
+
+
+//---------------------------------------------//
+//	Charge process controller
+//	
+//---------------------------------------------//
+static uint8_t Converter_ProcessCharge(uint8_t cmd)
+{
+	static uint8_t charge_state;
+	switch (cmd)
+	{
+		case START_CHARGE:
+			charge_state = 1;
+			break;
+		case STOP_SHARGE:
+		case ABORT_CHARGE:
+			charge_state = 0;
+			break;
+		case CHARGE_TICK:
+			// do charge stuff
+			break;
+	}
+
+	// return converter output state - should it be enabled or disabled	
+	return charge_state;
+}
+
+
+
+		
 				
-				msg.a.crange_set.channel = Converter_ValidateChannel(msg.a.crange_set.channel);	
-				msg.a.crange_set.new_range = Converter_ValidateCurrentRange(msg.a.crange_set.new_range);
 				
-				c = (msg.a.crange_set.channel == CHANNEL_5V) ? &converter_state.channel_5v : 
-											&converter_state.channel_12v;
-								
-				if (msg.a.crange_set.new_range != c->current->RANGE)
-				{
-					// New current range differs from current
-					if (msg.a.crange_set.channel == converter_state.channel->CHANNEL)
-					{
-						// Setting current range of the active channel
-						if (converter_state.state != CONVERTER_STATE_ON)	// TODO: analyze charge state here
-						{
-							// Wait until current feedback switching is allowed
-							while(Converter_IsReady() == 0) 
-								vTaskDelay(1);	
-							// Apply new channel current range setting to hardware
-							temp8u = Converter_SetCurrentRange(msg.a.crange_set.new_range);
-							if (temp8u == CONVERTER_CMD_OK)
-							{
-								taskENTER_CRITICAL();
-								c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
-								taskEXIT_CRITICAL();
-								SetCurrentDAC(c->current->setting, c->current->RANGE);
-								err_code = CMD_OK;
-							}
-							else
-							{
-								// Unexpected error
-								Converter_TurnOff();
-								err_code = CMD_ERROR;
-							}
-						}
-						else
-						{
-							// Converter in ON and current range cannot be changed
-							err_code = CMD_ERROR;
-						}
-					}
-					else
-					{
-						// Setting current range of the non-active channel
-						taskENTER_CRITICAL();
-						c->current = (msg.a.crange_set.new_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
-						taskEXIT_CRITICAL();
-						err_code = CMD_OK;
-					}
-				}
-				else
-				{
-					// Trying to set current range that is already selected.
-					err_code = VALUE_BOUND_BY_ABS_MAX;
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = CURRENT_RANGE_CHANGE;
-				dispatcher_msg.converter_event.channel = msg.a.crange_set.channel;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			//=========================================================================//
-			// Setting overload protection parameters
-			case CONVERTER_SET_OVERLOAD_PARAMS:
-				taskENTER_CRITICAL();
-				err_code = Converter_SetOverloadProtection( msg.a.overload_set.protection_enable, msg.a.overload_set.warning_enable, 
-													msg.a.overload_set.threshold);
-				taskEXIT_CRITICAL();
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = OVERLOAD_SETTING_CHANGE;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break; 
+				
+				
+/*				
 			//=========================================================================//
 			// Turn ON
 			case CONVERTER_TURN_ON:
@@ -1046,8 +1330,197 @@ void vTaskConverter(void *pvParameters)
 				break;
 		}
 	}
+}
+*/
+
+
+
+
+
+
+/*
+void bla-bla(uint8_t cmd)
+{
+
+	if (converter_state.state == CONVERTER_STATE_OFF)
+	{
+		switch (cmd)
+		{
+			case CONVERTER_TURN_ON:		
+				// Command to low-level
+				temp8u = Converter_TurnOn();
+				if (temp8u == CONVERTER_CMD_OK)
+				{
+					converter_state.state = CONVERTER_STATE_ON;
+					err_code = CMD_OK;
+				} 
+				else 
+				{
+					err_code = CMD_ERROR;
+				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;	
+			case CONVERTER_TURN_OFF:	
+				// Always set output load
+				SetOutputLoad(LOAD_ENABLE);
+				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
+				err_code = CMD_OK;
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+			case CONVERTER_OVERLOADED:
+				// We can get here if there are simultaneous messages of turning off and overload.
+				// Anyway, hardware already disabled by low-level interrupt-driven routine.
+				Converter_ClearOverloadFlag();
+				break;	
+			case CONVERTER_START_CHARGE:
+				retVal = Converter_ProcessCharge(__START__);
+				if (retVal == 1)
+				{
+					// Command to low-level
+					temp8u = Converter_TurnOn();
+					if (temp8u == CONVERTER_CMD_OK)
+					{
+						SetOutputLoad(0);
+						converter_state.state = CONVERTER_STATE_CHARGING;
+						err_code = CMD_OK;
+					} 
+					else 
+					{
+						err_code = CMD_ERROR;
+					}
+				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_CHARGING;
+				dispatcher_msg.converter_event.err_code = retVal | err_code;		// fixme
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+		}
+	}
+	else if (converter_state.state == CONVERTER_STATE_ON)
+	{
+		switch (cmd)
+		{
+			case CONVERTER_TURN_ON:		
+				// Converter is already ON
+				err_code = CMD_OK;
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+			case CONVERTER_TURN_OFF:	
+				Converter_TurnOff();
+				converter_state.state = CONVERTER_STATE_OFF;
+				err_code = CMD_OK;
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+			case CONVERTER_OVERLOADED:
+				// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
+				converter_state.state = CONVERTER_STATE_OVERLOADED;
+				// Reset that routine FSM flag
+				if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
+				{
+					// OK, flag has been reset.
+					err_code = EVENT_OK;
+				}	
+				else
+				{
+					// Error, we should never get here.
+					// Kind of restore attempt
+					Converter_TurnOff();
+					err_code = EVENT_ERROR;							
+				}
+				// Send notification to dispatcher
+				dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
+				dispatcher_msg.sender = sender_CONVERTER;
+				dispatcher_msg.converter_event.msg_type = 0;
+				dispatcher_msg.converter_event.msg_sender = 0;
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OVERLOAD;
+				dispatcher_msg.converter_event.err_code = err_code;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+			case CONVERTER_START_CHARGE:
+				retVal = Converter_ProcessCharge(__START__);
+				if (retVal == 1)
+				{
+					SetOutputLoad(0);
+				}
+				// Confirm
+				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+				// Send notification to dispatcher
+				fillDispatchMessage(&msg, &dispatcher_msg);
+				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_CHARGING;
+				dispatcher_msg.converter_event.err_code = retVal;				// fixme
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+				break;
+		}
+	}
+	else if (converter_state.state == CONVERTER_STATE_CHARGING)
+	{
+		switch (cmd)
+		{
+			case CONVERTER_TURN_ON:		
+				break;	// do nothing
+			case CONVERTER_TURN_OFF:	
+				retVal = Converter_ProcessCharge(__STOP__);
+				if (retVal == 0)
+				{
+					__disable_converter();
+					SetOutputLoad(converter_state.channel->load_state);
+				}
+				break;
+			case CONVERTER_OVERLOADED:
+				Converter_ProcessCharge(__STOP_BY_OVERLOAD__);
+				SetOutputLoad(converter_state.channel->load_state);
+				break;
+			case CONVERTER_START_CHARGE:
+				retVal = Converter_ProcessCharge(__RESTART__);
+				break;
+		}
+	}
+	else if (converter_state.state == CONVERTER_STATE_OVERLOADED)
+	{
+		switch (cmd)
+		{
+			case CONVERTER_TURN_ON:		
+				break;	
+			case CONVERTER_TURN_OFF:	
+				break;
+			case CONVERTER_OVERLOADED:
+				break;
+			case CONVERTER_START_CHARGE:
+				break;
+		}
+	
+	}
+	
 
 }
+*/
 
 
 

@@ -5,11 +5,26 @@
 #include "queue.h"
 
 
+enum { SEND_MEASURED_VA, SEND_VSET, SEND_VSET_LIM };
+
+
+#pragma anon_unions
 
 typedef struct {
 	uint8_t type;
-	char *data;
-	uint16_t length;
+	union {
+		struct {
+			char *data;
+			uint16_t length;
+		} char_array;
+		struct {
+			uint8_t mtype;
+			uint8_t spec;
+			uint8_t channel;
+			uint8_t type;
+			uint8_t current_range;
+		} converter;
+	}
 } uart_transmiter_msg_t;
 
 

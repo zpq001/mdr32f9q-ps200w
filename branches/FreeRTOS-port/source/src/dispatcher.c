@@ -45,6 +45,7 @@ static eeprom_message_t eeprom_msg;
 static xSemaphoreHandle xSemaphoreEEPROM;
 static xSemaphoreHandle xSemaphoreSync;
 static uart_receiver_msg_t uart_rx_msg;
+static uart_transmiter_msg_t uart_tx_msg;
 const dispatch_msg_t dispatcher_shutdown_msg = {DISPATCHER_SHUTDOWN};
 
 
@@ -52,7 +53,6 @@ void vTaskDispatcher(void *pvParameters)
 {
 	dispatch_msg_t msg;
 	converter_message_t converter_msg;
-	uart_transmiter_msg_t transmitter_msg;
 	gui_msg_t gui_msg;
 	uint8_t eepromState;
 	uint32_t sound_msg;
@@ -171,6 +171,7 @@ void vTaskDispatcher(void *pvParameters)
 		-  Improve cooler control
 		-  Add overheat warning and auto OFF function
 		
+		
 	*/
 	
 	
@@ -183,11 +184,11 @@ void vTaskDispatcher(void *pvParameters)
 		{
 			//---------------- Test function  --------------//	
 			case DISPATCHER_TEST_FUNC1:
-				transmitter_msg.type = UART_SEND_POWER_CYCLES_STAT;
+				uart_tx_msg.type = UART_SEND_POWER_CYCLES_STAT;
 				if (msg.sender == sender_UART1)
-					xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
+					xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
 				else if (msg.sender == sender_UART2)
-					xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
+					xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 				break;
 				
 			//----------------- Load profile ---------------//	
@@ -315,6 +316,27 @@ void vTaskDispatcher(void *pvParameters)
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				}
 				
+				// Notify UART
+				uart_tx_msg.type = UART_SEND_CONVERTER_DATA;
+				switch (msg.converter_event.spec)
+				{
+					case VOLTAGE_SETTING_CHANGE:
+						uart_tx_msg.converter.mtype = SEND_VSET;
+						uart_tx_msg.converter.channel = msg.converter_event.channel;
+						xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
+						xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
+						break;
+					case CURRENT_SETTING_CHANGE:
+					case VOLTAGE_LIMIT_CHANGE:
+					case CURRENT_LIMIT_CHANGE:
+					case OVERLOAD_SETTING_CHANGE:
+					case CHANNEL_CHANGE:
+					case CURRENT_RANGE_CHANGE:
+					case STATE_CHANGE_TO_OVERLOAD:
+					default:
+						break;
+				}	
+				
 				// Sound feedback
 				if ( (msg.converter_event.msg_sender != sender_UART1) && (msg.converter_event.msg_sender != sender_UART2) )
 				{
@@ -360,11 +382,11 @@ void vTaskDispatcher(void *pvParameters)
 				// Serial feedback
 		/*		if ( (msg.converter_event.msg_sender == sender_UART1) || (msg.converter_event.msg_sender == sender_UART2) )
 				{
-					transmitter_msg.type = UART_RESPONSE_OK;
+					uart_tx_msg.type = UART_RESPONSE_OK;
 					if (msg.converter_event.msg_sender == sender_UART1)
-						xQueueSendToBack(xQueueUART1TX, &transmitter_msg, 0);
+						xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
 					else
-						xQueueSendToBack(xQueueUART2TX, &transmitter_msg, 0);
+						xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 				} */
 			
 			

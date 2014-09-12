@@ -165,7 +165,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 	UART_TX_Task_Context_t *ctx = ((uint32_t)pvParameters == 1) ? &UART1_TX_Task_Context : &UART2_TX_Task_Context;
 	uart_transmiter_msg_t msg;
 	char *string_to_send;
+	char *strArr[5];
 	uint16_t length;
+	uint8_t temp8u[4];
+	uint16_t temp16u[4];
+	uint32_t temp32u[4];
+	
 	
 	// UART and DMA initialization is performed by UART RX task, which is the main UART control task.
 	// Here we should only setup TX done callbacks
@@ -193,14 +198,55 @@ void vTaskUARTTransmitter(void *pvParameters)
 		{
 			case UART_SEND_STRING:
 			case UART_SEND_ALLOCATED_STRING:
-				string_to_send = msg.data;
+				string_to_send = msg.char_array.data;
 				length = strlen(string_to_send);
 				break;
 			case UART_SEND_DATA:
 			case UART_SEND_ALLOCATED_DATA:
-				string_to_send = msg.data;
-				length = msg.length;
+				string_to_send = msg.char_array.data;
+				length = msg.char_array.length;
 				break;
+			case UART_SEND_CONVERTER_DATA:
+				string_to_send = ctx->tx_data_buffer;
+				if (msg.converter.mtype == SEND_MEASURED_VA)
+				{
+					taskENTER_CRITICAL();
+					temp16u[0] = ADC_GetVoltage();
+					temp16u[1] = ADC_GetCurrent();
+					temp32u[0] = ADC_GetPower();
+					taskEXIT_CRITICAL();
+					sprintf(string_to_send, "-vm %d -cm %d -pm %d\r", temp16u[0], temp16u[1], temp32u[0]);
+				}
+				else if (msg.converter.mtype == SEND_VSET)
+				{
+					temp16u[0] = Converter_GetVoltageSetting(msg.converter.channel);
+					strArr[0] = (msg.converter.channel == CHANNEL_5V) ? "-ch5v" : "-ch12v";
+					sprintf(string_to_send, "-vset %s %d\r", strArr[0], temp16u[0]);
+				}
+				else if (msg.converter.mtype == SEND_VSET_LIM)
+				{
+					taskENTER_CRITICAL();
+					temp16u[0] = Converter_GetVoltageSetting(msg.converter.channel);
+					temp16u[1] = Converter_GetVoltageLimitSetting(msg.converter.channel, LIMIT_TYPE_LOW);
+					temp16u[2] = Converter_GetVoltageLimitSetting(msg.converter.channel, LIMIT_TYPE_HIGH);
+					temp8u[0] = Converter_GetVoltageLimitState(msg.converter.channel, LIMIT_TYPE_LOW);
+					temp8u[1] = Converter_GetVoltageLimitState(msg.converter.channel, LIMIT_TYPE_HIGH);
+					taskEXIT_CRITICAL();
+					strArr[0] = (msg.converter.channel == CHANNEL_5V) ? "-ch5v" : "-ch12v";
+					strArr[1] = (temp8u[0]) ? "-vminen" : "-vmindis";
+					strArr[2] = (temp8u[1]) ? "-vmaxen" : "-vmaxdis";
+					sprintf(string_to_send, "-vset %s %d -vmin %d %s -vmax %d %s\r", strArr[0], temp16u[0], temp16u[1], strArr[1], temp16u[2], strArr[1]);
+				}
+				if (msg.converter.mtype == CONV_TURNED_ON)
+				{
+					sprintf(string_to_send, "Converter turned ON\r");
+				}
+				else if (msg.converter.mtype == CONV_TURNED_OFF)
+				{
+					sprintf(string_to_send, "Converter turned OFF\r");
+				}
+				length = strlen(string_to_send);
+				
 			case UART_SEND_PROFILING:
 				string_to_send = ctx->tx_data_buffer;
 				length = 0;

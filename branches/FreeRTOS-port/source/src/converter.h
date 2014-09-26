@@ -69,6 +69,7 @@ typedef struct {
 	uint8_t sender;
 	xSemaphoreHandle *pxSemaphore;
 	converter_arguments_t a;
+	converter_command_t *c;
 } converter_message_t;
 
 

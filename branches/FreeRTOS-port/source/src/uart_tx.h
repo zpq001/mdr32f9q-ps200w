@@ -4,14 +4,17 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
+#include "converter_task_def.h"
 
-enum { SEND_MEASURED_VA, SEND_VSET, SEND_VSET_LIM };
+enum { UMSG_INFO, UMSG_ACK }
+enum { SEND_MEASURED_VA, SEND_VSET, SEND_ISET, SEND_VSET_LIM, SEND_ISET_LIM, SEND_STATE };
 
 
 #pragma anon_unions
 
 typedef struct {
-	uint8_t type;
+	uint8_t type : 6;
+	uint8_t spec : 2;
 	union {
 		struct {
 			char *data;
@@ -23,8 +26,10 @@ typedef struct {
 			uint8_t channel;
 			uint8_t type;
 			uint8_t current_range;
+			converter_answ_t answ;
 		} converter;
 	}
+	
 } uart_transmiter_msg_t;
 
 

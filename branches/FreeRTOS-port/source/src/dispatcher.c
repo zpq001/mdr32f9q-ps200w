@@ -318,13 +318,27 @@ void vTaskDispatcher(void *pvParameters)
 				
 				// Notify UART
 				uart_tx_msg.type = UART_SEND_CONVERTER_DATA;
+				uart_tx_msg.spec = UMSG_INFO;
 				switch (msg.converter_event.spec)
 				{
+					case CONV_TURNED_ON:
+					case CONV_TURNED_OFF:
+					case CONV_OVERLOADED:
+					case CONV_STARTED_CHARGE:
+					case CONV_FINISHED_CHARGE:
+					case CONV_ABORTED_CHARGE:
+						uart_tx_msg.converter.mtype = SEND_STATE;
+						if (msg.converter_event.msg_sender != sender_UART1)
+							xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
+						if (msg.converter_event.msg_sender != sender_UART2)
+							xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 					case VOLTAGE_SETTING_CHANGE:
 						uart_tx_msg.converter.mtype = SEND_VSET;
 						uart_tx_msg.converter.channel = msg.converter_event.channel;
-						xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
-						xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
+						if (msg.converter_event.msg_sender != sender_UART1)
+							xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
+						if (msg.converter_event.msg_sender != sender_UART2)
+							xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 						break;
 					case CURRENT_SETTING_CHANGE:
 					case VOLTAGE_LIMIT_CHANGE:

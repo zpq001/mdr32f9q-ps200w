@@ -1,0 +1,38 @@
+#ifndef SETTINGSDIALOG_H
+#define SETTINGSDIALOG_H
+
+#include <QDialog>
+#include <QIntValidator>
+#include <QtSerialPort/QSerialPort>
+
+namespace Ui {
+class SettingsDialog;
+}
+
+class SettingsDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit SettingsDialog(QWidget *parent = 0);
+    ~SettingsDialog();
+
+public slots:
+    void accept();
+    void reject();
+    int exec();
+private slots:
+    void showPortInfo(int idx);
+    //void checkCustomBaudRatePolicy(int idx);
+
+private:
+    Ui::SettingsDialog *ui;
+    QIntValidator *intValidator;
+    void populatePortList();
+    void applySettingsToControls();
+    QString getTextForParity(QSerialPort::Parity p);
+
+
+};
+
+#endif // SETTINGSDIALOG_H

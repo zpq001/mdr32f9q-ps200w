@@ -230,8 +230,9 @@ void vTaskUARTReceiver(void *pvParameters)
 //  Parser-called functions
 //=================================================================//
 
-
-
+#ifdef CONFIRMATION_IF
+static converter_command_t conveter_cmd;
+#endif
 
 
 // This is a huge switch-based procedure for executing commands
@@ -240,6 +241,7 @@ void vTaskUARTReceiver(void *pvParameters)
 static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 {
 	converter_message_t converter_msg;
+	converter_answ_t converter_answ;
 	xSemaphoreHandle *xSem = (uart_num == 1) ? &xSyncSemaphore1 : &xSyncSemaphore2;
 	gui_msg_t gui_msg;
 	dispatch_msg_t dispatcher_msg;
@@ -252,7 +254,10 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 	
 	converter_msg.pxSemaphore = xSem;
 	converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	
+	converter_msg.answ = &converter_answ;
+#ifdef CONFIRMATION_IF
+	converter_msg.c = &conveter_cmd;
+#endif	
 	switch (cmd_code)
 	{
 		//=========================================================================//
@@ -262,19 +267,14 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 			{
 				switch(args[0].flag)
 				{
-					case 0:
-						// Turn converter OFF
-						converter_msg.type = CONVERTER_TURN_OFF;
+					case 0:  case 1:
+						// Turn converter ON/OFF
+						converter_msg.type = (args[0].flag == 1) ? CONVERTER_TURN_ON : CONVERTER_TURN_OFF;
 						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 						xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-						transmitter_msg.type = UART_RESPONSE_OK;		// Ack
-						break;
-					case 1:
-						// Turn converter ON
-						converter_msg.type = CONVERTER_TURN_ON;
-						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-						xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-						transmitter_msg.type = UART_RESPONSE_OK;		// Ack
+						transmitter_msg.type = UART_SEND_CONVERTER_DATA;
+						transmitter_msg.spec = UMSG_ACK;
+						transmitter_msg.converter.mtype = SEND_STATE;
 						break;
 					case 2:
 						// Set voltage
@@ -285,7 +285,10 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 							converter_msg.a.v_set.value = (int32_t)args[3].data32u;
 							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							transmitter_msg.type = UART_RESPONSE_OK;		// Ack
+							transmitter_msg.type = UART_SEND_CONVERTER_DATA;
+							transmitter_msg.spec = UMSG_ACK;
+							transmitter_msg.converter.mtype = SEND_VSET;
+							transmitter_msg.channel = converter_msg.a.v_set.channel;	// FIXME - OPERATING
 						}
 						else
 						{
@@ -303,7 +306,11 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 							converter_msg.a.c_set.value = (int32_t)args[3].data32u;
 							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							transmitter_msg.type = UART_RESPONSE_OK;		// Ack
+							transmitter_msg.type = UART_SEND_CONVERTER_DATA;	
+							transmitter_msg.spec = UMSG_ACK;
+							transmitter_msg.converter.mtype = SEND_ISET;
+							transmitter_msg.channel = converter_msg.a.c_set.channel;	// FIXME - OPERATING
+							transmitter_msg.current_range = converter_msg.a.c_set.range;
 						}
 						else
 						{
@@ -395,7 +402,30 @@ static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
 }
 
 
-
+/*
+					case 2:
+						// Set voltage
+						if (args[3].type != 0)
+						{
+#ifndef CONFIRMATION_IF
+							converter_msg.type = CONVERTER_SET_VOLTAGE;
+							converter_msg.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
+							converter_msg.a.v_set.value = (int32_t)args[3].data32u;
+							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
+							transmitter_msg.type = UART_SEND_CONVERTER_DATA;
+							transmitter_msg.spec = UMSG_ACK;
+							transmitter_msg.converter.mtype = SEND_VSET;
+#else
+							converter_msg.type = CONVERTER_SET_VOLTAGE;
+							conveter_cmd.ca.voltage_setting.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;
+							conveter_cmd.ca.voltage_setting.value = (int32_t)args[3].data32u;
+							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
+							// Create ACK packet
+							// Problem if newer converter state if sent to transmitter task earlier than this ACK
+#endif
+*/
 
 
 

@@ -157,7 +157,8 @@ static void UART_do_tx_DMA(UART_TX_Task_Context_t *ctx, char *string, uint16_t l
 
 
 
-
+// Number of predefined char strings
+#define strArrNum 5
 
 void vTaskUARTTransmitter(void *pvParameters) 
 {
@@ -165,12 +166,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 	UART_TX_Task_Context_t *ctx = ((uint32_t)pvParameters == 1) ? &UART1_TX_Task_Context : &UART2_TX_Task_Context;
 	uart_transmiter_msg_t msg;
 	char *string_to_send;
-	char *strArr[5];
+	char *strArr[strArrNum];
 	uint16_t length;
 	uint8_t temp8u[4];
 	uint16_t temp16u[4];
 	uint32_t temp32u[4];
-	
+	uint8_t i;
 	
 	// UART and DMA initialization is performed by UART RX task, which is the main UART control task.
 	// Here we should only setup TX done callbacks
@@ -194,6 +195,8 @@ void vTaskUARTTransmitter(void *pvParameters)
 	{
 		xQueueReceive(*ctx->xQueue, &msg, portMAX_DELAY);
 		string_to_send = 0;
+		//for (i=0; i<strArrNum; i++)
+		//	strArr[i] = "";
 		switch (msg.type)
 		{
 			case UART_SEND_STRING:
@@ -215,13 +218,29 @@ void vTaskUARTTransmitter(void *pvParameters)
 					temp16u[1] = ADC_GetCurrent();
 					temp32u[0] = ADC_GetPower();
 					taskEXIT_CRITICAL();
-					sprintf(string_to_send, "-vm %d -cm %d -pm %d\r", temp16u[0], temp16u[1], temp32u[0]);
+					sprintf(string_to_send, "-vm %d \n-cm %d \n-pm %d\r", temp16u[0], temp16u[1], temp32u[0]);
+				}
+				else if (msg.converter.mtype == SEND_STATE)
+				{
+					temp16u[0] = Converter_GetState();
+					strArr[0] = (msg.spec == UMSG_INFO) ? "info" : "ack";
+					strArr[1] = (temp16u[0]) ? "on" : "off";
+					sprintf(string_to_send, "%s -state %d\r", strArr[0], strArr[1], temp16u[0]);
 				}
 				else if (msg.converter.mtype == SEND_VSET)
 				{
 					temp16u[0] = Converter_GetVoltageSetting(msg.converter.channel);
-					strArr[0] = (msg.converter.channel == CHANNEL_5V) ? "-ch5v" : "-ch12v";
-					sprintf(string_to_send, "-vset %s %d\r", strArr[0], temp16u[0]);
+					strArr[0] = (msg.spec == UMSG_INFO) ? "info" : "ack";
+					strArr[1] = (msg.spec == UMSG_INFO) ? ((msg.converter.channel == CHANNEL_5V) ? "-ch5v" : "-ch12v") : "";
+					sprintf(string_to_send, "%s -vset %s %d\r", strArr[0], strArr[1], temp16u[0]);
+				}
+				else if (msg.converter.mtype == SEND_ISET)
+				{
+					temp16u[0] = Converter_GetCurrentSetting(msg.converter.channel, msg.converter.range);
+					strArr[0] = (msg.spec == UMSG_INFO) ? "info" : "ack";
+					strArr[1] = (msg.spec == UMSG_INFO) ? ((msg.converter.channel == CHANNEL_5V) ? "-ch5v" : "-ch12v") : "";
+					strArr[2] = (msg.spec == UMSG_INFO) ? ((msg.converter.range == CURRENT_RANGE_LOW) ? "-crlow" : "-crhigh") : "";
+					sprintf(string_to_send, "%s -iset %s %s %d\r", strArr[0], strArr[1], strArr[2], temp16u[0]);
 				}
 				else if (msg.converter.mtype == SEND_VSET_LIM)
 				{

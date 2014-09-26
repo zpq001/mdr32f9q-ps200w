@@ -33,6 +33,9 @@
 
 
 
+
+
+
 //-------------------------------------------------------//
 // Converter control functions return values
 
@@ -898,8 +901,14 @@ static void Converter_ProcessSetParam (void)
 	uint8_t temp8u;
 	channel_state_t *c;
 	
+	#ifdef	CONFIRMATION_IF
+	converter_cmd_args_t *ca = msg.c.ca;
+	#endif
+	
+	
 	switch(msg.type)
 	{
+#ifndef	CONFIRMATION_IF
 		//-------------------- Setting voltage --------------------//
 		case CONVERTER_SET_VOLTAGE:
 			msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);
@@ -911,7 +920,6 @@ static void Converter_ProcessSetParam (void)
 			{
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 			}
-			// Confirm
 			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 			// Send notification to dispatcher
 			fillDispatchMessage(&msg, &dispatcher_msg);
@@ -920,7 +928,33 @@ static void Converter_ProcessSetParam (void)
 			dispatcher_msg.converter_event.err_code = err_code;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break;
-			
+#else
+		//-------------------- Setting voltage --------------------//
+		case CONVERTER_SET_VOLTAGE:
+			ca->voltage_setting.channel = Converter_ValidateChannel(ca->voltage_setting.channel);
+			taskENTER_CRITICAL();
+			err_code = Converter_SetVoltage(ca->voltage_setting.channel, ca->voltage_setting.value);
+			taskEXIT_CRITICAL();
+			// Apply new setting to hardware. CHECKME: charge state
+			if (ca->voltage_setting.channel == converter_state.channel->CHANNEL)
+			{
+				SetVoltageDAC(converter_state.channel->voltage.setting);
+			}
+			// Fill result
+			ca->voltage_setting.result.vset = Converter_GetVoltageSetting(ca->voltage_setting.channel);
+			ca->voltage_setting.result.at_max = 0;
+			ca->voltage_setting.result.at_min = 0;
+			ca->voltage_setting.result.changed = 1;
+			ca->voltage_setting.result.err_code = 0;
+			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
+			// Send notification to dispatcher
+			fillDispatchMessage(&msg, &dispatcher_msg);
+			dispatcher_msg.converter_event.spec = VOLTAGE_SETTING_CHANGE;
+			dispatcher_msg.converter_event.channel = msg.a.v_set.channel;
+			dispatcher_msg.converter_event.err_code = err_code;
+			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			break;
+#endif			
 		//-------------------- Setting current --------------------//
 		case CONVERTER_SET_CURRENT:
 			msg.a.c_set.channel = Converter_ValidateChannel(msg.a.c_set.channel);

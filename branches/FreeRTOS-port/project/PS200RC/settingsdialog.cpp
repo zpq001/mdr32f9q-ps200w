@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QtSerialPort/QSerialPort>
+#include <QLineEdit>
 
 // Declared in mainwindow.cpp
 extern QSettings appSettings;
@@ -15,8 +16,10 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle("Connection settings");
 
+    intValidator = new QIntValidator(0, 4000000, this);
+
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
-    //connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
     connect(ui->portNameBox, SIGNAL(currentIndexChanged(int)), this, SLOT(showPortInfo(int)));
 
     // Fill baud rates
@@ -65,26 +68,49 @@ void SettingsDialog::reject()
     QDialog::reject();
 }
 
-QString SettingsDialog::getTextForParity(QSerialPort::Parity p)
+
+QSerialPort::Parity SettingsDialog::getParityFromText(const QString &str)
 {
-    QString str;
-    switch(p)
-    {
-        case QSerialPort::NoParity:
-            str = "None";   break;
-        case QSerialPort::EvenParity:
-            str = "Even";   break;
-        case QSerialPort::OddParity:
-            str = "Odd";    break;
-        case QSerialPort::MarkParity:
-            str = "Mark";    break;
-        case QSerialPort::SpaceParity:
-            str = "Space";    break;
-        default:
-            str = "???";
-    }
-    return str;
+    if (str.compare("None",Qt::CaseInsensitive) == 0)
+        return QSerialPort::NoParity;
+    else if (str.compare("Even",Qt::CaseInsensitive) == 0)
+        return QSerialPort::EvenParity;
+    else if (str.compare("Odd",Qt::CaseInsensitive) == 0)
+        return QSerialPort::OddParity;
+    else if (str.compare("Mark",Qt::CaseInsensitive) == 0)
+        return QSerialPort::MarkParity;
+    else if (str.compare("Space",Qt::CaseInsensitive) == 0)
+        return QSerialPort::SpaceParity;
+    else
+        return QSerialPort::UnknownParity;
 }
+
+QSerialPort::DataBits SettingsDialog::getDataBitsFromText(const QString &str)
+{
+    if (str.compare("5") == 0)
+        return QSerialPort::Data5;
+    else if (str.compare("6") == 0)
+        return QSerialPort::Data6;
+    else if (str.compare("7") == 0)
+        return QSerialPort::Data7;
+    else if (str.compare("8") == 0)
+        return QSerialPort::Data8;
+    else
+        return QSerialPort::UnknownDataBits;
+}
+
+QSerialPort::StopBits SettingsDialog::getStopBitsFromText(const QString &str)
+{
+    if (str.compare("1") == 0)
+        return QSerialPort::OneStop;
+    else if (str.compare("1.5") == 0)
+        return QSerialPort::OneAndHalfStop;
+    else if (str.compare("2") == 0)
+        return QSerialPort::TwoStop;
+    else
+        return QSerialPort::UnknownStopBits;
+}
+
 
 
 
@@ -117,27 +143,34 @@ void SettingsDialog::showPortInfo(int idx)
     }
 }
 
+void SettingsDialog::checkCustomBaudRatePolicy(int idx)
+{
+    //bool isCustomBaudRate = !ui->baudRateBox->itemData(idx).isValid();
+    bool isCustomBaudRate = (ui->baudRateBox->count() - 1 == idx);
+    ui->baudRateBox->setEditable(isCustomBaudRate);
+    if (isCustomBaudRate) {
+        ui->baudRateBox->clearEditText();
+        QLineEdit *edit = ui->baudRateBox->lineEdit();
+        edit->setValidator(intValidator);
+    }
+}
+
 // Reading settings file and updating form widgets
 void SettingsDialog::applySettingsToControls()
 {
-    int i;
+    // If port name from settings is absent, first detected port will be selected
     QString portName = appSettings.value("serial/port").toString();
     ui->portNameBox->setCurrentText(portName);
 
     int bRate = appSettings.value("serial/baudrate").toInt();
-    //checkCustomBaudRatePolicy(ui->baudRateBox->count() - 1);
+    checkCustomBaudRatePolicy(ui->baudRateBox->count() - 1);
     ui->baudRateBox->setCurrentText(QString::number(bRate));
 
-    int dataBits = appSettings.value("serial/databits").toInt();
-    ui->dataBitsBox->setCurrentText(QString::number(dataBits));
+    QString dataBitsStr = appSettings.value("serial/databits").toString();
+    ui->dataBitsBox->setCurrentText(dataBitsStr);
 
     QString parityStr = appSettings.value("serial/parity").toString();
-    i = ui->parityBox->findText(parityStr);
-    if (i != -1)
-    {
-        ui->parityBox->setCurrentIndex(i);
-    }
-
+    ui->parityBox->setCurrentText(parityStr);
 
     QString stopBitsStr = appSettings.value("serial/stopbits").toString();
     ui->stopBitsBox->setCurrentText(stopBitsStr);

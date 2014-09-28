@@ -16,6 +16,9 @@ class SettingsDialog : public QDialog
 public:
     explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
+    QSerialPort::Parity getParityFromText(const QString &parityStr);
+    QSerialPort::DataBits getDataBitsFromText(const QString &str);
+    QSerialPort::StopBits getStopBitsFromText(const QString &str);
 
 public slots:
     void accept();
@@ -23,7 +26,7 @@ public slots:
     int exec();
 private slots:
     void showPortInfo(int idx);
-    //void checkCustomBaudRatePolicy(int idx);
+    void checkCustomBaudRatePolicy(int idx);
 
 private:
     Ui::SettingsDialog *ui;

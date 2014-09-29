@@ -1,10 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "settingshelper.h"
 #include <QSettings>
-
-
-QSettings appSettings("settings.ini", QSettings::IniFormat);
+#include <QMessageBox>
+/*
+ * http://qt-project.org/wiki/Threads_Events_QObjects
+ * http://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+ * http://habrahabr.ru/post/150274/
+ */
 
 
 
@@ -20,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     serialPort = new QSerialPort(this);
     serialStatusLabel = new QLabel(this);
     ui->statusBar->addWidget(serialStatusLabel);
+    worker = new SerialWorker();
 
     // Setup signals
     //connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort()));
@@ -42,7 +46,14 @@ MainWindow::MainWindow(QWidget *parent) :
     serialStatusLabel->setText("Disconnected");
 
     // Make sure all settings are valid
-    validateSettings();
+    if (SettingsHelper::validateSettings() == false)
+    {
+        // Show messagebox!
+        QMessageBox::information(this, "Information", "Some setting values are missing or corrupted. Defaults are loaded.", QMessageBox::Ok);
+    }
+
+    // Start second thread
+    worker->start(QThread::IdlePriority);
 }
 
 MainWindow::~MainWindow()
@@ -51,22 +62,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::validateSettings(void)
-{
-    if (appSettings.contains("serial/port") == false)
-        appSettings.setValue("serial/port", "COM9");
-    if (appSettings.contains("serial/baudrate") == false)
-        appSettings.setValue("serial/baudrate", QSerialPort::Baud115200);
-    if (appSettings.contains("serial/databits") == false)
-        appSettings.setValue("serial/databits", QSerialPort::Data8);
-    if (appSettings.contains("serial/parity") == false)
-        appSettings.setValue("serial/parity", "None");
-    if (appSettings.contains("serial/stopbits") == false)
-        appSettings.setValue("serial/stopbits", "1");
-    if (appSettings.contains("serial/flowcontrol") == false)
-        appSettings.setValue("serial/flowcontrol", "None");
-    // More...
-}
 
 
 

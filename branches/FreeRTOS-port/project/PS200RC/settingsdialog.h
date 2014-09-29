@@ -33,7 +33,7 @@ private:
     QIntValidator *intValidator;
     void populatePortList();
     void applySettingsToControls();
-    QString getTextForParity(QSerialPort::Parity p);
+    void updateSettingsFromControls();
 
 
 };

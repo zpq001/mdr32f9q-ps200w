@@ -6,7 +6,7 @@
 #include <QtSerialPort/QSerialPort>
 #include "singlevaluedialog.h"
 #include "settingsdialog.h"
-
+#include "serialworker.h"
 
 namespace Ui {
 class MainWindow;
@@ -43,6 +43,7 @@ private:
     SettingsDialog *mySettingsDialog;
     QSerialPort *serialPort;
     value_cache_t vcache;
+    SerialWorker *worker;
 };
 
 #endif // MAINWINDOW_H

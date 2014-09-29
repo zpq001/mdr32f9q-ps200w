@@ -17,12 +17,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     singlevaluedialog.cpp \
     mydoublespinbox.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    settingshelper.cpp \
+    serialworker.cpp
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
     mydoublespinbox.h \
-    settingsdialog.h
+    settingsdialog.h \
+    settingshelper.h \
+    serialworker.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \

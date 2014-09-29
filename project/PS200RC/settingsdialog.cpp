@@ -5,6 +5,8 @@
 #include <QtSerialPort/QSerialPort>
 #include <QLineEdit>
 
+#include "settingshelper.h"
+
 // Declared in mainwindow.cpp
 extern QSettings appSettings;
 
@@ -13,6 +15,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog)
 {
+    int i;
+
     ui->setupUi(this);
     this->setWindowTitle("Connection settings");
 
@@ -31,17 +35,21 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->baudRateBox->addItem("Custom");
 
     // Fill data bits
-    ui->dataBitsBox->addItem(QString::number(QSerialPort::Data5));
-    ui->dataBitsBox->addItem(QString::number(QSerialPort::Data6));
-    ui->dataBitsBox->addItem(QString::number(QSerialPort::Data7));
-    ui->dataBitsBox->addItem(QString::number(QSerialPort::Data8));
+    for(i=0; serial_databits[i].sv!=0; i++)
+        ui->dataBitsBox->addItem(serial_databits[i].sv);
 
     // Fill parity
-    ui->parityBox->addItem("None");
-    ui->parityBox->addItem("Even");
-    ui->parityBox->addItem("Odd");
-    ui->parityBox->addItem("Mark");
-    ui->parityBox->addItem("Space");
+    for(i=0; serial_parity[i].sv!=0; i++)
+        ui->parityBox->addItem(serial_parity[i].sv);
+
+    // Fill stop bits
+    for(i=0; serial_stopbits[i].sv!=0; i++)
+        ui->stopBitsBox->addItem(serial_stopbits[i].sv);
+
+    // Fill flow control
+    for(i=0; serial_flowctrl[i].sv!=0; i++)
+        ui->flowControlBox->addItem(serial_flowctrl[i].sv);
+
 }
 
 SettingsDialog::~SettingsDialog()
@@ -59,56 +67,13 @@ int SettingsDialog::exec()
 
 void SettingsDialog::accept()
 {
-    //updateSettingsFromControls();
+    updateSettingsFromControls();
     QDialog::accept();
 }
 
 void SettingsDialog::reject()
 {
     QDialog::reject();
-}
-
-
-QSerialPort::Parity SettingsDialog::getParityFromText(const QString &str)
-{
-    if (str.compare("None",Qt::CaseInsensitive) == 0)
-        return QSerialPort::NoParity;
-    else if (str.compare("Even",Qt::CaseInsensitive) == 0)
-        return QSerialPort::EvenParity;
-    else if (str.compare("Odd",Qt::CaseInsensitive) == 0)
-        return QSerialPort::OddParity;
-    else if (str.compare("Mark",Qt::CaseInsensitive) == 0)
-        return QSerialPort::MarkParity;
-    else if (str.compare("Space",Qt::CaseInsensitive) == 0)
-        return QSerialPort::SpaceParity;
-    else
-        return QSerialPort::UnknownParity;
-}
-
-QSerialPort::DataBits SettingsDialog::getDataBitsFromText(const QString &str)
-{
-    if (str.compare("5") == 0)
-        return QSerialPort::Data5;
-    else if (str.compare("6") == 0)
-        return QSerialPort::Data6;
-    else if (str.compare("7") == 0)
-        return QSerialPort::Data7;
-    else if (str.compare("8") == 0)
-        return QSerialPort::Data8;
-    else
-        return QSerialPort::UnknownDataBits;
-}
-
-QSerialPort::StopBits SettingsDialog::getStopBitsFromText(const QString &str)
-{
-    if (str.compare("1") == 0)
-        return QSerialPort::OneStop;
-    else if (str.compare("1.5") == 0)
-        return QSerialPort::OneAndHalfStop;
-    else if (str.compare("2") == 0)
-        return QSerialPort::TwoStop;
-    else
-        return QSerialPort::UnknownStopBits;
 }
 
 
@@ -162,6 +127,7 @@ void SettingsDialog::applySettingsToControls()
     QString portName = appSettings.value("serial/port").toString();
     ui->portNameBox->setCurrentText(portName);
 
+    // TODO: add messagebox if there is no selected port in system
     int bRate = appSettings.value("serial/baudrate").toInt();
     checkCustomBaudRatePolicy(ui->baudRateBox->count() - 1);
     ui->baudRateBox->setCurrentText(QString::number(bRate));
@@ -180,5 +146,14 @@ void SettingsDialog::applySettingsToControls()
 }
 
 
-
+// Reading settings file and updating form widgets
+void SettingsDialog::updateSettingsFromControls()
+{
+    appSettings.setValue("serial/port", ui->portNameBox->currentText());
+    appSettings.setValue("serial/baudrate", ui->baudRateBox->currentText().toInt());
+    appSettings.setValue("serial/databits", ui->dataBitsBox->currentText());
+    appSettings.setValue("serial/parity", ui->parityBox->currentText());
+    appSettings.setValue("serial/stopbits", ui->stopBitsBox->currentText());
+    appSettings.setValue("serial/flowcontrol", ui->flowControlBox->currentText());
+}
 

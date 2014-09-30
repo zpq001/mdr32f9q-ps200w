@@ -141,7 +141,7 @@ void SettingsDialog::applySettingsToControls()
     QString stopBitsStr = appSettings.value("serial/stopbits").toString();
     ui->stopBitsBox->setCurrentText(stopBitsStr);
 
-    QString flowStr = appSettings.value("serial/flowcontrol").toString();
+    QString flowStr = appSettings.value("serial/flowctrl").toString();
     ui->flowControlBox->setCurrentText(flowStr);
 }
 
@@ -149,11 +149,13 @@ void SettingsDialog::applySettingsToControls()
 // Reading settings file and updating form widgets
 void SettingsDialog::updateSettingsFromControls()
 {
+    settingsMutex.lock();
     appSettings.setValue("serial/port", ui->portNameBox->currentText());
     appSettings.setValue("serial/baudrate", ui->baudRateBox->currentText().toInt());
     appSettings.setValue("serial/databits", ui->dataBitsBox->currentText());
     appSettings.setValue("serial/parity", ui->parityBox->currentText());
     appSettings.setValue("serial/stopbits", ui->stopBitsBox->currentText());
-    appSettings.setValue("serial/flowcontrol", ui->flowControlBox->currentText());
+    appSettings.setValue("serial/flowctrl", ui->flowControlBox->currentText());
+    settingsMutex.unlock();
 }
 

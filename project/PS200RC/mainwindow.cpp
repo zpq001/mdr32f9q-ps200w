@@ -7,6 +7,7 @@
  * http://qt-project.org/wiki/Threads_Events_QObjects
  * http://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
  * http://habrahabr.ru/post/150274/
+ * http://we.easyelectronics.ru/electro-and-pc/qthread-qserialport-krutim-v-otdelnom-potoke-rabotu-s-som-portom.html
  */
 
 
@@ -20,19 +21,23 @@ MainWindow::MainWindow(QWidget *parent) :
     // Create instances
     myValueDialog = new SingleValueDialog(this);
     mySettingsDialog = new SettingsDialog(this);
-    serialPort = new QSerialPort(this);
     serialStatusLabel = new QLabel(this);
     ui->statusBar->addWidget(serialStatusLabel);
     worker = new SerialWorker();
 
     // Setup signals
-    //connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort()));
+    connect(ui->actionConnect, SIGNAL(triggered()), worker, SLOT(connectToDevice()));
     //connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
+
     connect (ui->actionSettings, SIGNAL(triggered()), mySettingsDialog, SLOT(exec()));
+
 
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
 
+
+    connect (worker, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
+    connect (worker, SIGNAL(_error(QString)), this, SLOT(on_Error(QString)));
 
     // Sync value cache
     memset(&vcache, 0, sizeof(vcache));
@@ -43,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Default widgets state
     ui->actionDisconnect->setEnabled(false);
-    serialStatusLabel->setText("Disconnected");
+    on_ConnectedChanged(false);
 
     // Make sure all settings are valid
     if (SettingsHelper::validateSettings() == false)
@@ -119,6 +124,29 @@ void MainWindow::updateCset(int value)
     str.sprintf("%1.2fA", (double)value/1000);
     ui->label_cset->setText(str);
     vcache.cset = value;
+}
+
+
+
+void MainWindow::on_Error(QString msg)
+{
+     QMessageBox::critical(this, "Error", msg, QMessageBox::Ok);
+}
+
+void MainWindow::on_ConnectedChanged(bool isConnected)
+{
+    if (isConnected)
+    {
+        ui->actionConnect->setEnabled(false);
+        ui->actionDisconnect->setEnabled(true);
+        serialStatusLabel->setText("Connected");
+    }
+    else
+    {
+        ui->actionConnect->setEnabled(true);
+        ui->actionDisconnect->setEnabled(false);
+        serialStatusLabel->setText("Disconnected");
+    }
 }
 
 

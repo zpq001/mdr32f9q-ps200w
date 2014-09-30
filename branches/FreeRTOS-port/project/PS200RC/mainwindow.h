@@ -27,6 +27,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+public slots:
+    void on_Error(QString msg);
+    void on_ConnectedChanged(bool isConnected);
 
 private slots:
     void on_SetVoltageCommand(void);
@@ -41,7 +44,6 @@ private:
     QLabel *serialStatusLabel;
     SingleValueDialog *myValueDialog;
     SettingsDialog *mySettingsDialog;
-    QSerialPort *serialPort;
     value_cache_t vcache;
     SerialWorker *worker;
 };

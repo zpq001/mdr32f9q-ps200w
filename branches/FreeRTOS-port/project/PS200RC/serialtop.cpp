@@ -12,7 +12,7 @@ void SerialTop::init(void)
 {
     // Here all initialization is done
     worker = new SerialWorker();
-
+    emit initDone();
 }
 
 

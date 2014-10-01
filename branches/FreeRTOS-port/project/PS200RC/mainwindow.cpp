@@ -13,6 +13,10 @@
  * http://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
  * http://habrahabr.ru/post/150274/
  * http://we.easyelectronics.ru/electro-and-pc/qthread-qserialport-krutim-v-otdelnom-potoke-rabotu-s-som-portom.html
+ * http://qt-project.org/doc/qt-4.8/threads-qobject.html#signals-and-slots-across-threads
+ * http://habrahabr.ru/post/202312/
+ * http://habrahabr.ru/post/203254/
+ * http://stackoverflow.com/questions/1764831/c-object-without-new
  */
 
 
@@ -31,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Create top-level device controller and move it to another thread
     QThread *newThread = new QThread;
-    SerialTop *topController = new SerialTop();
+    topController = new SerialTop();
     topController->moveToThread(newThread);
 
     // Setup signals
@@ -43,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // crash!
     //connect(topController->worker, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+    connect(topController, SIGNAL(initDone()), this, SLOT(otherThreadStarted()));
 
     connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
@@ -83,6 +88,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::otherThreadStarted(void)
+{
+    connect(topController->worker, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+}
 
 
 

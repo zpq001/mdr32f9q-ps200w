@@ -16,7 +16,7 @@ public:
 signals:
     void connectedChanged(bool);
     void _log(QString text, int type);
-
+    void initDone(void);
 public slots:
     void init(void);
     void connectToDevice(void);

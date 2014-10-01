@@ -6,6 +6,7 @@
 #include <QtSerialPort/QSerialPort>
 #include "singlevaluedialog.h"
 #include "settingsdialog.h"
+#include "serialtop.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 public slots:
+    void otherThreadStarted(void);
     void on_Error(QString msg);
     void on_ConnectedChanged(bool isConnected);
 
@@ -43,6 +45,7 @@ private:
     SingleValueDialog *myValueDialog;
     SettingsDialog *mySettingsDialog;
     value_cache_t vcache;
+    SerialTop *topController;
 };
 
 #endif // MAINWINDOW_H

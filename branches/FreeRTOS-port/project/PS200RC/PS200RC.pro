@@ -19,14 +19,18 @@ SOURCES += main.cpp\
     mydoublespinbox.cpp \
     settingsdialog.cpp \
     settingshelper.cpp \
-    serialworker.cpp
+    serialworker.cpp \
+    serialtop.cpp \
+    logviewer.cpp
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
     mydoublespinbox.h \
     settingsdialog.h \
     settingshelper.h \
-    serialworker.h
+    serialworker.h \
+    serialtop.h \
+    logviewer.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \

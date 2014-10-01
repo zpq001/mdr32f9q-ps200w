@@ -3,6 +3,11 @@
 #include "settingshelper.h"
 #include <QSettings>
 #include <QMessageBox>
+#include <QThread>
+
+#include "serialworker.h"
+#include "serialtop.h"
+
 /*
  * http://qt-project.org/wiki/Threads_Events_QObjects
  * http://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
@@ -23,21 +28,31 @@ MainWindow::MainWindow(QWidget *parent) :
     mySettingsDialog = new SettingsDialog(this);
     serialStatusLabel = new QLabel(this);
     ui->statusBar->addWidget(serialStatusLabel);
-    worker = new SerialWorker();
+
+    // Create top-level device controller and move it to another thread
+    QThread *newThread = new QThread;
+    SerialTop *topController = new SerialTop();
+    topController->moveToThread(newThread);
 
     // Setup signals
-    connect(ui->actionConnect, SIGNAL(triggered()), worker, SLOT(connectToDevice()));
-    //connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
+    connect(newThread, SIGNAL(started()), topController, SLOT(init()));
+    connect(topController, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
+    connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+    // Start second thread
+    newThread->start();
 
+    // crash!
+    //connect(topController->worker, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+
+    connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
+    connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
     connect (ui->actionSettings, SIGNAL(triggered()), mySettingsDialog, SLOT(exec()));
-
 
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
 
 
-    connect (worker, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
-    connect (worker, SIGNAL(_error(QString)), this, SLOT(on_Error(QString)));
+
 
     // Sync value cache
     memset(&vcache, 0, sizeof(vcache));
@@ -57,8 +72,9 @@ MainWindow::MainWindow(QWidget *parent) :
         QMessageBox::information(this, "Information", "Some setting values are missing or corrupted. Defaults are loaded.", QMessageBox::Ok);
     }
 
-    // Start second thread
-    worker->start(QThread::IdlePriority);
+
+
+    ui->logViewer->addText("Started!", 0);
 }
 
 MainWindow::~MainWindow()

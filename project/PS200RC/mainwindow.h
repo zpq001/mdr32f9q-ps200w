@@ -6,23 +6,21 @@
 #include <QtSerialPort/QSerialPort>
 #include "singlevaluedialog.h"
 #include "settingsdialog.h"
-#include "serialworker.h"
 
 namespace Ui {
 class MainWindow;
 }
 
-typedef struct {
-    int vset;
-    int vmea;
-    int cset;
-    int cmea;
-} value_cache_t;
-
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+    typedef struct {
+        int vset;
+        int vmea;
+        int cset;
+        int cmea;
+    } value_cache_t;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -45,7 +43,6 @@ private:
     SingleValueDialog *myValueDialog;
     SettingsDialog *mySettingsDialog;
     value_cache_t vcache;
-    SerialWorker *worker;
 };
 
 #endif // MAINWINDOW_H

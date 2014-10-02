@@ -1,19 +1,23 @@
 #ifndef LOGVIEWER_H
 #define LOGVIEWER_H
 
-#include <QPlainTextEdit>
+#include <QTextEdit>
 
-class LogViewer : public QPlainTextEdit
+class LogViewer : public QTextEdit
 {
     Q_OBJECT
 public:
+    enum LogTypes {LogInfo, LogWarn, LogErr, LogTx, LogRx};
+
     explicit LogViewer(QWidget *parent = 0);
 
 signals:
 
 public slots:
     void addText(const QString &text, int textType);
-    void addText(const char *text, int len, int textType);
+
+private:
+    int lastTextType;
 
 };
 

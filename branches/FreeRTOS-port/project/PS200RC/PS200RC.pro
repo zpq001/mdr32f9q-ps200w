@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     settingshelper.cpp \
     serialworker.cpp \
     serialtop.cpp \
-    logviewer.cpp
+    logviewer.cpp \
+    txEedit.cpp
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
@@ -30,7 +31,8 @@ HEADERS  += mainwindow.h \
     settingshelper.h \
     serialworker.h \
     serialtop.h \
-    logviewer.h
+    logviewer.h \
+    txEdit.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \

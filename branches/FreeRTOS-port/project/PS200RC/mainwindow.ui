@@ -536,12 +536,86 @@
      </widget>
     </item>
     <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="TxEdit" name="sendTextEdit">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>411</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier New</family>
+        </font>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAsNeeded</enum>
+       </property>
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::WidgetWidth</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="sendButton">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>0</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Send</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="sendCRLFCheckBox">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>30</y>
+         <width>70</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>+CR/CRLF</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
      <widget class="LogViewer" name="logViewer">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Courier New</family>
+       </font>
       </property>
      </widget>
     </item>
@@ -629,6 +703,11 @@
    <class>LogViewer</class>
    <extends>QPlainTextEdit</extends>
    <header>logviewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TxEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>txedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -27,13 +27,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 public slots:
-    void otherThreadStarted(void);
     void on_Error(QString msg);
     void on_ConnectedChanged(bool isConnected);
-
 private slots:
+    void sendTxWindowData(void);
     void on_SetVoltageCommand(void);
     void on_SetCurrentCommand(void);
+signals:
+    void sendString(QString);
 private:
     void updateVset(int value);
     void updateVmea(int value);

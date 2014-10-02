@@ -20,6 +20,13 @@
  */
 
 
+/*
+ * TODO:
+ *  Disable and enable widgets according to connected/disconnected state
+ *
+ * */
+
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -42,12 +49,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(newThread, SIGNAL(started()), topController, SLOT(init()));
     connect(topController, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
     connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+    connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
     // Start second thread
     newThread->start();
 
-    // crash!
-    //connect(topController->worker, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
-    connect(topController, SIGNAL(initDone()), this, SLOT(otherThreadStarted()));
 
     connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
@@ -55,9 +60,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
+    connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(sendTxWindowData()));
 
 
-
+    ui->sendButton->setShortcut(Qt::Key_Return | Qt::ControlModifier);
 
     // Sync value cache
     memset(&vcache, 0, sizeof(vcache));
@@ -86,11 +92,6 @@ MainWindow::~MainWindow()
 {
     appSettings.sync();
     delete ui;
-}
-
-void MainWindow::otherThreadStarted(void)
-{
-    connect(topController->worker, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
 }
 
 
@@ -173,6 +174,23 @@ void MainWindow::on_ConnectedChanged(bool isConnected)
         serialStatusLabel->setText("Disconnected");
     }
 }
+
+void MainWindow::sendTxWindowData()
+{
+    QString text = ui->sendTextEdit->toPlainText();
+    if (!text.isEmpty())
+    {
+        if (ui->sendCRLFCheckBox->isChecked())
+            text.append("\r");
+        emit sendString(text);
+        ui->sendTextEdit->clearAndAddToHistory();
+    }
+}
+
+// Button emulation!
+// Receive!
+
+
 
 
 

@@ -13,7 +13,7 @@ public:
                      errPortAlreadyOpen,
                      errPortCannotOpen,
                      errNoAck = 128 };
-    enum LogMessageTypes {LogMsg, LogErr, LogWarn, LogInfo};
+    enum LogMessageTypes {LogErr, LogWarn, LogInfo};
     typedef struct {
         QString name;
         int baudRate;
@@ -32,6 +32,8 @@ public:
     int getPortErrorCode(void);
     QString getPortErrorString(void);
 
+    int sendString(const QString &text);
+
     int getChannel(int *result);
     int getCurrentRange(int channel, int *result);
     int getVoltageSetting(int channel, int *result);
@@ -45,11 +47,11 @@ public:
 
 public slots:
 signals:
-
-    void _error(QString);
-    void _log(QString message, int type);
+    void _log(int type, QString message);
     void _logTx(const char *message, int len);
     void _logRx(const char *message, int len);
+private slots:
+    void on_SerialDataReceive(void);
 private:
     int writeSerialPort(const char* data, int len);
     int readSerialPort(char *data);

@@ -14,6 +14,8 @@ public:
                      errPortCannotOpen,
                      errNoAck = 128 };
     enum LogMessageTypes {LogErr, LogWarn, LogInfo};
+    //enum KeyCodes {key_OK, key_ESC, key_RIGHT, key_LEFT, key_ENCODER};
+    //enum KeyActions {act_DOWN, act_UP, act_UP_SHORT, act_UP_LONG, act_HOLD};
     typedef struct {
         QString name;
         int baudRate;

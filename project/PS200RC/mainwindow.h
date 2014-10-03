@@ -6,7 +6,9 @@
 #include <QtSerialPort/QSerialPort>
 #include "singlevaluedialog.h"
 #include "settingsdialog.h"
+#include "keywindow.h"
 #include "serialtop.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +33,7 @@ public slots:
     void on_ConnectedChanged(bool isConnected);
 private slots:
     void sendTxWindowData(void);
+    void showKeyWindow(void);
     void on_SetVoltageCommand(void);
     void on_SetCurrentCommand(void);
 signals:
@@ -47,6 +50,7 @@ private:
     SettingsDialog *mySettingsDialog;
     value_cache_t vcache;
     SerialTop *topController;
+    KeyWindow *keyWindow;
 };
 
 #endif // MAINWINDOW_H

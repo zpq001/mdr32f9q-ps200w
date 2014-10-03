@@ -642,6 +642,7 @@
    <addaction name="actionDisconnect"/>
    <addaction name="actionSettings"/>
    <addaction name="separator"/>
+   <addaction name="actionKeyboard"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="minimumSize">
@@ -653,8 +654,8 @@
   </widget>
   <action name="actionConnect">
    <property name="icon">
-    <iconset>
-     <normaloff>images/connect.ico</normaloff>images/connect.ico</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/images/connect.ico</normaloff>:/images/images/connect.ico</iconset>
    </property>
    <property name="text">
     <string>Connect</string>
@@ -668,8 +669,8 @@
   </action>
   <action name="actionDisconnect">
    <property name="icon">
-    <iconset>
-     <normaloff>images/disconnect.ico</normaloff>images/disconnect.ico</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/images/disconnect.ico</normaloff>:/images/images/disconnect.ico</iconset>
    </property>
    <property name="text">
     <string>Disconnect</string>
@@ -683,8 +684,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
-     <normaloff>images/gnome_preferences_system.ico</normaloff>images/gnome_preferences_system.ico</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/images/gnome_preferences_system.ico</normaloff>:/images/images/gnome_preferences_system.ico</iconset>
    </property>
    <property name="text">
     <string>Settings</string>
@@ -694,6 +695,17 @@
    </property>
    <property name="shortcut">
     <string>Alt+S</string>
+   </property>
+  </action>
+  <action name="actionKeyboard">
+   <property name="text">
+    <string>Keyboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Show virtual keyboad panel</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+K</string>
    </property>
   </action>
  </widget>
@@ -710,6 +722,8 @@
    <header>txedit.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

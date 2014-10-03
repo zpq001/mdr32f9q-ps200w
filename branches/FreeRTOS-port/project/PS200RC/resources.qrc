@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/connect.ico</file>
+        <file>images/disconnect.ico</file>
+        <file>images/gnome_preferences_system.ico</file>
+    </qresource>
+</RCC>

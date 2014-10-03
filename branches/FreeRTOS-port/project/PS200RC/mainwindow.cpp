@@ -37,8 +37,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // Create instances
     myValueDialog = new SingleValueDialog(this);
     mySettingsDialog = new SettingsDialog(this);
+    keyWindow = new KeyWindow(this);
     serialStatusLabel = new QLabel(this);
     ui->statusBar->addWidget(serialStatusLabel);
+
 
     // Create top-level device controller and move it to another thread
     QThread *newThread = new QThread;
@@ -50,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(topController, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
     connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
     connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
+    connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
     // Start second thread
     newThread->start();
 
@@ -57,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
     connect (ui->actionSettings, SIGNAL(triggered()), mySettingsDialog, SLOT(exec()));
+    connect (ui->actionKeyboard, SIGNAL(triggered()), this, SLOT(showKeyWindow()));
 
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
@@ -187,7 +191,17 @@ void MainWindow::sendTxWindowData()
     }
 }
 
-// Button emulation!
+// Virtual keyboard window
+void MainWindow::showKeyWindow(void)
+{
+    if (keyWindow->isVisible() == false)
+        keyWindow->show();
+    else
+        keyWindow->activateWindow();
+}
+
+
+
 // Receive!
 
 

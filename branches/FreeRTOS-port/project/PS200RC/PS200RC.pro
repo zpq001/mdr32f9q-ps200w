@@ -22,7 +22,9 @@ SOURCES += main.cpp\
     serialworker.cpp \
     serialtop.cpp \
     logviewer.cpp \
-    txEedit.cpp
+    txEedit.cpp \
+    keydriver.cpp \
+    keywindow.cpp
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
@@ -32,8 +34,14 @@ HEADERS  += mainwindow.h \
     serialworker.h \
     serialtop.h \
     logviewer.h \
-    txEdit.h
+    txEdit.h \
+    keydriver.h \
+    keywindow.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    keywindow.ui
+
+RESOURCES += \
+    resources.qrc

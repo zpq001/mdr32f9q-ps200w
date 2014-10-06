@@ -18,6 +18,7 @@ void LogViewer::addText(const QString &text, int textType)
 {
     QString typeStr;
     QString stringToAdd = "";
+    moveCursor(QTextCursor::End);
     switch (textType)
     {
         case LogInfo:

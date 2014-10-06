@@ -33,7 +33,7 @@ void SerialTop::connectToDevice(void)
                     SettingsHelper::getValue(serial_stopbits, "serial/stopbits").toInt(),
                     SettingsHelper::getValue(serial_flowctrl, "serial/flowctrl").toInt() );
         settingsMutex.unlock();
-        if (worker->openPort() == worker->noError)
+        if (worker->openPort() == SerialWorker::noError)
         {
             emit connectedChanged(true);
         }
@@ -62,6 +62,38 @@ bool SerialTop::checkConnected(void)
     return true;
 }
 
+//-----------------------------------------------------------------//
+// Logging
+
+void SerialTop::onWorkerLog(int type, QString text)
+{
+    int logType;
+    switch (type)   // Translate log types
+    {
+        case SerialWorker::LogErr:
+            logType = LogViewer::LogErr;    break;
+        case SerialWorker::LogWarn:
+            logType = LogViewer::LogWarn;   break;
+        default:
+            logType = LogViewer::LogInfo;
+    }
+    emit _log(text, logType);
+}
+
+void SerialTop::onPortTxLog(const char *data, int len)
+{
+    QString text = QString::fromLocal8Bit(data, len);
+    emit _log(text, LogViewer::LogTx);
+}
+
+void SerialTop::onPortRxLog(const char *data, int len)
+{
+    QString text = QString::fromLocal8Bit(data, len);
+    emit _log(text, LogViewer::LogRx);
+}
+
+//-----------------------------------------------------------------//
+// Commands
 void SerialTop::sendString(const QString &text)
 {
     if (!checkConnected()) return;
@@ -124,6 +156,7 @@ QString SerialTop::getKeyEventType(int keyEventType)
 
 void SerialTop::keyEvent(int key, int event)
 {
+    if (event == KeyWindow::event_REPEAT) return;
     if (!checkConnected()) return;
 
     QString keyName;
@@ -144,35 +177,9 @@ void SerialTop::keyEvent(int key, int event)
 
 
 
-//-----------------------------------------------------------------//
-// Logging
 
-void SerialTop::onWorkerLog(int type, QString text)
-{
-    int logType;
-    switch (type)   // Translate log types
-    {
-        case SerialWorker::LogErr:
-            logType = LogViewer::LogErr;    break;
-        case SerialWorker::LogWarn:
-            logType = LogViewer::LogWarn;   break;
-        default:
-            logType = LogViewer::LogInfo;
-    }
-    emit _log(text, logType);
-}
 
-void SerialTop::onPortTxLog(const char *data, int len)
-{
-    QString text = QString::fromLocal8Bit(data, len);
-    emit _log(text, LogViewer::LogTx);
-}
 
-void SerialTop::onPortRxLog(const char *data, int len)
-{
-    QString text = QString::fromLocal8Bit(data, len);
-    emit _log(text, LogViewer::LogRx);
-}
 
 
 

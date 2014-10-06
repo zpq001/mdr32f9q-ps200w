@@ -28,7 +28,8 @@ public:
         event_UP = KeyDriver::KEY_UP,
         event_UP_SHORT = KeyDriver::KEY_UP_SHORT,
         event_UP_LONG = KeyDriver::KEY_UP_LONG,
-        event_HOLD = KeyDriver::KEY_HOLD
+        event_HOLD = KeyDriver::KEY_HOLD,
+        event_REPEAT = KeyDriver::KEY_REPEAT
     };
 
     explicit KeyWindow(QWidget *parent = 0);

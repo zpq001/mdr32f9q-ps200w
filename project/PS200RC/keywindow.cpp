@@ -46,7 +46,12 @@ KeyWindow::KeyWindow(QWidget *parent) :
     connect(ui->btnEncPUSH, SIGNAL(released()), keyReleaseSignalMapper, SLOT(map()));
     connect(keyReleaseSignalMapper, SIGNAL(mapped(const int &)), keyDriver, SLOT(keyRelease(const int &)));
 
-    qApp->installEventFilter( this );
+    // Install filters for button press simulation by keyboard
+    this->installEventFilter( this );
+    for (int i=0; i<this->children().count(); i++)
+    {
+        this->children()[i]->installEventFilter( this );
+    }
 }
 
 KeyWindow::~KeyWindow()
@@ -55,7 +60,6 @@ KeyWindow::~KeyWindow()
 }
 
 
-// Filter should be set on qApp
 bool KeyWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
@@ -78,29 +82,29 @@ bool KeyWindow::eventFilter(QObject *obj, QEvent *event)
 bool KeyWindow::on_keyPress(QKeyEvent *event)
 {
     bool eventIsHandled = true;
-    //QKeyEvent *pressEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Space, 0, " ");
+    QKeyEvent *pressEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Space, 0, " ");
     if (event->isAutoRepeat() == false)
     {
         switch(event->key())
         {
             case Qt::Key_Escape:
             case Qt::Key_Backspace:
-                ui->btnESC->pressed();
+                eventIsHandled = QApplication::sendEvent(ui->btnESC, pressEvent);
                 break;
             case Qt::Key_Left:
-                eventIsHandled = QApplication::sendEvent(ui->btnLEFT, new QKeyEvent(QEvent::KeyPress, Qt::Key_Space, 0, " "));
+                eventIsHandled = QApplication::sendEvent(ui->btnLEFT, pressEvent);
                 break;
             case Qt::Key_Right:
-
+                eventIsHandled = QApplication::sendEvent(ui->btnRIGHT, pressEvent);
                 break;
             case Qt::Key_Return:
-            case Qt::Key_Space:
-                eventIsHandled = false;
+                eventIsHandled = QApplication::sendEvent(ui->btnOK, pressEvent);
                 break;
             default:
                 eventIsHandled = false;
         }
     }
+    delete pressEvent;
     return eventIsHandled;
 }
 
@@ -108,29 +112,29 @@ bool KeyWindow::on_keyPress(QKeyEvent *event)
 bool KeyWindow::on_keyRelease(QKeyEvent *event)
 {
     bool eventIsHandled = true;
-    //QKeyEvent *releaseEvent = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Space, Qt::NoModifier, " ");
+    QKeyEvent *releaseEvent = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Space, Qt::NoModifier, " ");
     if (event->isAutoRepeat() == false)
     {
         switch(event->key())
         {
             case Qt::Key_Escape:
             case Qt::Key_Backspace:
-                ui->btnESC->released();
+                eventIsHandled = QApplication::sendEvent(ui->btnESC, releaseEvent);
                 break;
             case Qt::Key_Left:
-                eventIsHandled = QApplication::sendEvent(ui->btnLEFT, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Space, Qt::NoModifier, " "));
+                eventIsHandled = QApplication::sendEvent(ui->btnLEFT, releaseEvent);
                 break;
             case Qt::Key_Right:
-
+                eventIsHandled = QApplication::sendEvent(ui->btnRIGHT, releaseEvent);
                 break;
             case Qt::Key_Return:
-            case Qt::Key_Space:
-                eventIsHandled = false;
+                eventIsHandled = QApplication::sendEvent(ui->btnOK, releaseEvent);
                 break;
             default:
                 eventIsHandled = false;
         }
     }
+    delete releaseEvent;
     return eventIsHandled;
 }
 

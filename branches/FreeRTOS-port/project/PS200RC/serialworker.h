@@ -2,7 +2,131 @@
 #define SERIALWORKER_H
 
 #include <QtSerialPort/QSerialPort>
+#include <QMutex>
+#include <QSemaphore>
+#include <QQueue>
+#include <QThread>
+#include <QTimer>
 
+
+class SerialWorker : public QThread
+{
+    Q_OBJECT
+
+// Data types
+public:
+    enum ErrorCodes {noError, errCritical = -1, errTimeout = -2,
+                     errPortConfigure = 10,
+                     errPortAlreadyOpen,
+                     errPortCannotOpen,
+                     errIncompletePortWrite,
+                     errNoAck = 128 };
+    enum LogMessageTypes {LogErr, LogWarn, LogInfo};
+
+    typedef struct {
+        int channel;
+        int result;
+        int errCode;
+    } getVoltageSettingArgs_t;
+
+private:
+    typedef struct {
+        QString name;
+        int baudRate;
+        QSerialPort::DataBits dataBits;
+        QSerialPort::Parity parity;
+        QSerialPort::StopBits stopBits;
+        QSerialPort::FlowControl flowControl;
+    }  portSettings_t;
+
+    typedef struct {
+        QSemaphore sem;
+        int errCode;
+        bool isBlocking;
+    } reqArg_t;
+
+    typedef struct {
+        int errCode;
+    } openPortArgs_t;
+
+    typedef struct {
+        QString str;
+    } sendStringArgs_t;
+
+    static const int portWriteTimeout = 100;   //ms
+
+// Methods
+public:
+    SerialWorker();
+    QMutex workerMutex;
+
+    // Serial port functions
+    int openPort(void);
+    void closePort(void);
+    void writePortSettings(const QString &name, int baudRate, int dataBits, int parity, int stopBits, int flowControl);
+    int getPortErrorCode(void);
+    QString getPortErrorString(void);
+
+
+    //
+    int sendString(const QString &text);
+    int getVoltageSetting(getVoltageSettingArgs_t *a, bool wait);
+
+public slots:
+
+
+signals:
+    //-------- Public signals -------//
+    void operationDone(void);
+
+
+    void log(int type, QString message);
+    void logTx(const char *message, int len);
+    void logRx(const char *message, int len);
+    //------- Private signals -------//
+    // Intended for internal use only
+    void signal_openPort(QSemaphore *doneSem, openPortArgs_t *a);
+    void signal_closePort(QSemaphore *doneSem);
+    void signal_sendString(reqArg_t *req, sendStringArgs_t *a);
+    void signal_getVoltageSetting(reqArg_t *req, getVoltageSettingArgs_t *a);
+    void signal_ackReceived(void);
+    //void signal_ackTimeout(void);
+private slots:
+    void _openPort(QSemaphore *doneSem, openPortArgs_t *a);
+    void _closePort(QSemaphore *doneSem);
+    void _sendString(reqArg_t *req, sendStringArgs_t *a);
+    void _getVoltageSetting(reqArg_t *req, getVoltageSettingArgs_t *a);
+
+    void _processRx(void);
+    void _transmitDone(qint64 bytesWritten);
+private:
+    QMutex portSettingsMutex;
+    QSerialPort *serialPort;
+    portSettings_t portSettings;
+
+    QMutex portErrorDataMutex;
+    QString portErrorString;
+    int portErrorCode;
+
+    QTimer ackTimer;
+
+    bool ackRequired;
+    QByteArray ackData;
+
+    void _savePortError(void);
+    int _writeSerialPort(const char* data, int len);
+
+
+    // Override thread RUN function
+    //void run();
+
+};
+
+
+
+
+
+/*
 class SerialWorker : public QObject
 {
     Q_OBJECT
@@ -66,5 +190,5 @@ private:
 
 
 };
-
+*/
 #endif // SERIALWORKER_H

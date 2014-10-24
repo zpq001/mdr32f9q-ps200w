@@ -36,13 +36,13 @@ private slots:
     void showKeyWindow(void);
     void on_SetVoltageCommand(void);
     void on_SetCurrentCommand(void);
-signals:
-    void sendString(QString);
-private:
     void updateVset(int value);
     void updateVmea(int value);
     void updateCset(int value);
     void updateCmea(int value);
+signals:
+    void sendString(QString);
+private:
     void validateSettings(void);
     Ui::MainWindow *ui;
     QLabel *serialStatusLabel;

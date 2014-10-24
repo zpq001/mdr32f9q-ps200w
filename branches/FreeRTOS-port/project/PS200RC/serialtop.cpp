@@ -13,18 +13,19 @@ SerialTop::SerialTop(QObject *parent) :
 void SerialTop::init(void)
 {
     // Here all initialization is done
+    connected = false;
     worker = new SerialWorker();
-    connect(worker, SIGNAL(_log(int,QString)), this, SLOT(onWorkerLog(int,QString)));
-    connect(worker, SIGNAL(_logTx(const char*,int)), this, SLOT(onPortTxLog(const char*,int)));
-    connect(worker, SIGNAL(_logRx(const char*,int)), this, SLOT(onPortRxLog(const char*,int)));
+    worker->start();
+    connect(worker, SIGNAL(log(int,QString)), this, SLOT(onWorkerLog(int,QString)));
+    connect(worker, SIGNAL(logTx(const char*,int)), this, SLOT(onPortTxLog(const char*,int)));
+    connect(worker, SIGNAL(logRx(const char*,int)), this, SLOT(onPortRxLog(const char*,int)));
 }
 
 
 void SerialTop::connectToDevice(void)
 {
-    if (worker->connected == false)
+    if (connected == false)
     {
-        settingsMutex.lock();
         worker->writePortSettings(
                     appSettings.value("serial/port").toString(),
                     appSettings.value("serial/baudrate").toInt(),
@@ -32,35 +33,43 @@ void SerialTop::connectToDevice(void)
                     SettingsHelper::getValue(serial_parity, "serial/parity").toInt(),
                     SettingsHelper::getValue(serial_stopbits, "serial/stopbits").toInt(),
                     SettingsHelper::getValue(serial_flowctrl, "serial/flowctrl").toInt() );
-        settingsMutex.unlock();
         if (worker->openPort() == SerialWorker::noError)
         {
-            emit connectedChanged(true);
+            connected = true;
+            emit connectedChanged(connected);
         }
         // Read data
-        //sendString("Hi man!\r\n");
+        sendString("Hi man!\r");
+        SerialWorker::getVoltageSettingArgs_t a;
+        a.channel = 0;
+        worker->getVoltageSetting(&a, true);    // blocking request
+        if (a.errCode == SerialWorker::noError)
+            emit updVset(a.result);
+        else
+            emit _log("Cannot obtain voltage setting from device!", LogViewer::LogInfo);
+
     }
+
 }
 
 
 void SerialTop::disconnectFromDevice(void)
 {
-    if (worker->connected == true)
-    {
-        worker->closePort();
-        emit connectedChanged(false);
-    }
+    worker->closePort();
+    connected = false;
+    emit connectedChanged(connected);
 }
 
 bool SerialTop::checkConnected(void)
 {
-    if (worker->connected != true)
+    if (connected != true)
     {
         emit _log("Port is closed", LogViewer::LogErr);
         return false;
     }
-    return true;
+    return connected;
 }
+
 
 //-----------------------------------------------------------------//
 // Logging
@@ -97,9 +106,12 @@ void SerialTop::onPortRxLog(const char *data, int len)
 void SerialTop::sendString(const QString &text)
 {
     if (!checkConnected()) return;
-    worker->sendString(text);
+    int errCode = worker->sendString(text);
+    if (errCode != SerialWorker::noError)
+    {
+        emit _log("string write problem", LogViewer::LogWarn);
+    }
 }
-
 
 QString SerialTop::getKeyName(int keyId)
 {

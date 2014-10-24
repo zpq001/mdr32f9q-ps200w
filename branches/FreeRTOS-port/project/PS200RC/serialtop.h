@@ -18,7 +18,7 @@ signals:
     void _log(QString text, int type);
     void updVmea(int);
     void updImea(int);
-    void updVset(int, int);
+    void updVset(int);
     void updIset(int, int, int);
 public slots:
     void init(void);
@@ -36,6 +36,7 @@ private slots:
     void onPortRxLog(const char *, int);
 private:
     bool checkConnected(void);
+    bool connected;
     QString getKeyName(int keyId);
     QString getKeyEventType(int keyEventType);
     SerialWorker *worker;

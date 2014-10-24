@@ -285,6 +285,13 @@ debug/moc_mainwindow.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
 		serialtop.h \
 		serialworker.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		mainwindow.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) mainwindow.h -o debug\moc_mainwindow.cpp
 
@@ -694,6 +701,13 @@ debug/moc_serialworker.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSeria
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qisenum.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qobject_impl.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		serialworker.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) serialworker.h -o debug\moc_serialworker.cpp
 
@@ -759,6 +773,13 @@ debug/moc_serialtop.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QOb
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialport.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qiodevice.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		serialtop.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) serialtop.h -o debug\moc_serialtop.cpp
 
@@ -1702,6 +1723,13 @@ debug/main.o: main.cpp mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
 		serialtop.h \
 		serialworker.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QApplication \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qapplication.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qcoreapplication.h \
@@ -1845,6 +1873,13 @@ debug/mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
 		serialtop.h \
 		serialworker.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		ui_mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QVariant \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QAction \
@@ -1913,11 +1948,8 @@ debug/mainwindow.o: mainwindow.cpp mainwindow.h \
 		settingshelper.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSettings \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsettings.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QMessageBox \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qmessagebox.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qmessagebox.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\mainwindow.o mainwindow.cpp
 
 debug/singlevaluedialog.o: singlevaluedialog.cpp singlevaluedialog.h \
@@ -2506,7 +2538,14 @@ debug/serialworker.o: serialworker.cpp serialworker.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qcontainerfwd.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qisenum.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qobject_impl.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\serialworker.o serialworker.cpp
 
 debug/serialtop.o: serialtop.cpp serialtop.h \
@@ -2572,6 +2611,13 @@ debug/serialtop.o: serialtop.cpp serialtop.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialport.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qiodevice.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
 		settingshelper.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QVariant \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qvariant.h \
@@ -2592,7 +2638,6 @@ debug/serialtop.o: serialtop.cpp serialtop.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qstringmatcher.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSettings \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsettings.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
 		logviewer.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QTextEdit \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qtextedit.h \
@@ -2637,22 +2682,9 @@ debug/serialtop.o: serialtop.cpp serialtop.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qtextcursor.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qtextformat.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qpen.h \
-		mainwindow.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QMainWindow \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qmainwindow.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qtabwidget.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qicon.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QLabel \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qlabel.h \
-		singlevaluedialog.h \
+		keywindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QDialog \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qdialog.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QString \
-		settingsdialog.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/QIntValidator \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qvalidator.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qregularexpression.h \
-		keywindow.h \
 		keydriver.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QTimer \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qtimer.h \
@@ -3127,7 +3159,8 @@ debug/keywindow.o: keywindow.cpp keywindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QPushButton \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qpushbutton.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qabstractbutton.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSignalMapper.h
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSignalMapper.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/QKeyEvent
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\keywindow.o keywindow.cpp
 
 debug/qrc_resources.o: debug/qrc_resources.cpp 

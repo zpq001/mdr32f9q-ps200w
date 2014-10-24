@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(newThread, SIGNAL(started()), topController, SLOT(init()));
     connect(topController, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
     connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+    connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
     connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
     connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
     // Start second thread

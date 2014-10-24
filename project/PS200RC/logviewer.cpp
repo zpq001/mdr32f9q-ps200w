@@ -37,7 +37,7 @@ void LogViewer::addText(const QString &text, int textType)
             typeStr = "<< ";
             break;
         case LogRx:
-            setTextColor( Qt::blue );
+            setTextColor( QColor(100,0,255) );
             //typeStr = "[rx   ] ";
             typeStr = ">> ";
             break;

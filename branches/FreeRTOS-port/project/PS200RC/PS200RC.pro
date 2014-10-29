@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     logviewer.cpp \
     txEedit.cpp \
     keydriver.cpp \
-    keywindow.cpp
+    keywindow.cpp \
+    serialparser.cpp
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
@@ -36,7 +37,8 @@ HEADERS  += mainwindow.h \
     logviewer.h \
     txEdit.h \
     keydriver.h \
-    keywindow.h
+    keywindow.h \
+    serialparser.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \

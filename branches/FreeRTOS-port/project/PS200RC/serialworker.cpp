@@ -1,6 +1,9 @@
-#include "serialworker.h"
 #include <QEventLoop>
 #include <QSignalMapper>
+#include <QCoreApplication>
+
+#include "serialworker.h"
+#include "serialparser.h"
 
 SerialWorker::SerialWorker()
 {
@@ -8,13 +11,16 @@ SerialWorker::SerialWorker()
 
     connect(this, SIGNAL(signal_openPort(QSemaphore*,openPortArgs_t*)), this, SLOT(_openPort(QSemaphore*,openPortArgs_t*)));
     connect(this, SIGNAL(signal_closePort(QSemaphore*)), this, SLOT(_closePort(QSemaphore*)));
-    connect(this, SIGNAL(signal_sendString(reqArg_t*,sendStringArgs_t*)),
-            this, SLOT(_sendString(reqArg_t*,sendStringArgs_t*)));
-    connect(this, SIGNAL(signal_getVoltageSetting(reqArg_t*,getVoltageSettingArgs_t*)),
-            this, SLOT(_getVoltageSetting(reqArg_t*,getVoltageSettingArgs_t*)));
+    connect(this, SIGNAL(signal_sendString(QSemaphore *,sendStringArgs_t*)),
+            this, SLOT(_sendString(QSemaphore *,sendStringArgs_t*)));
+    connect(this, SIGNAL(signal_getVoltageSetting(QSemaphore *,getVoltageSettingArgs_t*)),
+            this, SLOT(_getVoltageSetting(QSemaphore *,getVoltageSettingArgs_t*)));
 
-    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_processRx()));
+    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
+    connect(this, SIGNAL(signal_ForceReadSerialPort()), this, SLOT(_readSerialPort()));
     connect(serialPort, SIGNAL(bytesWritten(qint64)), this, SLOT(_transmitDone(qint64)));
+
+    verboseLevel = 1;
 }
 
 
@@ -72,12 +78,13 @@ QString SerialWorker::getPortErrorString(void)
 //-------------------------------------------------------//
 int SerialWorker::sendString(const QString &text)
 {
-    reqArg_t req;
+    workerMutex.lock();     // Protect from re-entrance
+    QSemaphore sem;
     sendStringArgs_t a;
     a.str = text;
-    emit signal_sendString(&req, &a);
-    req.sem.acquire();
-    return req.errCode;
+    emit signal_sendString(&sem, &a);
+    sem.acquire();
+    return a.errCode;
 }
 
 
@@ -87,33 +94,18 @@ int SerialWorker::sendString(const QString &text)
 /// @note
 /// @return
 //-------------------------------------------------------//
-int SerialWorker::getVoltageSetting(getVoltageSettingArgs_t *a, bool wait = false)
+void SerialWorker::getVoltageSetting(getVoltageSettingArgs_t *a, bool wait = false)
 {
     workerMutex.lock();     // Protect from re-entrance
-    reqArg_t req;
-    req.isBlocking = wait;
-    emit signal_getVoltageSetting(&req, a);
-    req.sem.acquire();
-    if (req.errCode == noError)
+    QSemaphore *sem = (wait) ? new QSemaphore() : 0;
+    emit signal_getVoltageSetting(sem, a);
+    if (wait)
     {
-        if (wait)
-            req.sem.acquire();
+        sem->acquire();
+        delete sem;
     }
-    return req.errCode;
 }
 
-
-
-
-
-
-
-void SerialWorker::_savePortError(void)
-{
-    QMutexLocker locker(&portErrorDataMutex);
-    portErrorCode = serialPort->error();
-    portErrorString = serialPort->errorString();
-}
 
 
 
@@ -178,58 +170,65 @@ void SerialWorker::_closePort(QSemaphore *doneSem)
     doneSem->release();
 }
 
-
-void SerialWorker::_sendString(reqArg_t *req, sendStringArgs_t *a)
+void SerialWorker::_savePortError(void)
 {
-    req->errCode = _writeSerialPort(a->str.toLocal8Bit(), a->str.length());
-    req->sem.release();
+    QMutexLocker locker(&portErrorDataMutex);
+    portErrorCode = serialPort->error();
+    portErrorString = serialPort->errorString();
 }
 
 
-void SerialWorker::_getVoltageSetting(reqArg_t *req, getVoltageSettingArgs_t *a)
+
+
+
+void SerialWorker::_sendString(QSemaphore *doneSem, sendStringArgs_t *a)
+{
+    a->errCode = _writeSerialPort(a->str.toLocal8Bit(), a->str.length());
+    if (doneSem)
+    {
+        doneSem->release();
+    }
+    workerMutex.unlock();
+}
+
+
+
+void SerialWorker::_getVoltageSetting(QSemaphore *doneSem, getVoltageSettingArgs_t *a)
 {
     // Create command string
-    QString cmdStr = "converter get_voltage -ch12v";
-    // Write data to port
-    req->errCode = _writeSerialPort(cmdStr.toLocal8Bit(), cmdStr.length());
-    // First phase confirmation
-    req->sem.release();
-    if (req->errCode == noError)
+    QByteArray ba = parser.cmd_readVset(0);
+    // Send and wait for acknowledge
+    a->errCode = _sendDataWithAcknowledge(ba);
+    // Analyze received acknowledge string
+    if (a->errCode == noError)
     {
-        // Wait for acknowledge from device.
-        QEventLoop loop;
-        connect(this, SIGNAL(signal_ackReceived()), &loop, SLOT(quit()));
-        connect(&ackTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
-        ackTimer.start(50);
-        ackRequired = true;
-        loop.exec();
-        // Check if ACK is received - request flag is reset by receive routine
-        if (ackRequired == false)
+        // Parse acknowledge string
+        // Fill return values
+        if (parser.getAckData_Vset(receiveBuffer, &a->result) == 0)
         {
-            ackTimer.stop();
-            // Parse acknowledge string
-            // Fill return values
-            a->result = 3560;   //mV
             a->errCode = noError;
-            emit log(LogInfo, "Voltage read OK");
         }
         else
         {
-            a->errCode = errNoAck;
-            emit log(LogErr, "No acknowledge from device");
+            a->errCode = errParser;
         }
-
-
-        // Second phase confirmation
-        if (req->isBlocking)
-        {
-            req->sem.release();
-        }
-        else
-        {
-            // emit _cmd_done()_
-        }
+        //a->result = 3560;   //mV
+        //a->errCode = noError;
+        emit log(LogInfo, "Voltage read OK");
     }
+    // Confirm if slot call is blocking or generate a signal
+    if (doneSem)
+    {
+        doneSem->release();
+        // done!
+    }
+    else
+    {
+        // emit cmdReady() signal
+    }
+
+    // Allow further incoming data processing
+    emit signal_ForceReadSerialPort();
     workerMutex.unlock();
 }
 
@@ -237,263 +236,206 @@ void SerialWorker::_getVoltageSetting(reqArg_t *req, getVoltageSettingArgs_t *a)
 
 
 
-
-
-
-
-
-void SerialWorker::_processRx(void)
+int SerialWorker::_sendDataWithAcknowledge(const QByteArray &ba)
 {
-    int len = serialPort->bytesAvailable();
-    if (len > 0)
+    // Write data to port
+    int errCode = _writeSerialPort(ba.data(), ba.size());
+    if (errCode == noError)
     {
-        char *data = new char[len];
-        serialPort->read(data, len);
-        emit logRx(data, len);
-        delete data;
-    }
-}
-
-
-
-void SerialWorker::_transmitDone(qint64 bytesWritten)
-{
-    emit log(LogInfo, "TX done");
-}
-
-
-int SerialWorker::_writeSerialPort(const char* data, int len)
-{
-    int errCode = noError;
-    int bytesWritten = serialPort->write(data, len);
-    if (bytesWritten == -1)
-    {
-        QString errorText = "Cannot write to port: ";
-        errorText.append(serialPort->errorString());
-        _savePortError();
-        emit log(LogErr, errorText);
-        errCode = errCritical;
-    }
-    else
-    {
-        // Some data is written. Log data
-        emit logTx(data, bytesWritten);
-        // Check for errors
-        if (bytesWritten != len)
+        // Wait for acknowledge from device.
+        QEventLoop loop;
+        connect(this, SIGNAL(signal_ackReceived()), &loop, SLOT(quit()));
+        connect(&ackTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        ackTimer.setSingleShot(true);
+        ackTimer.start(ackWaitTimeout);
+        ackRequired = true;
+        loop.exec();
+        // Check whether ACK is received or timeout is reached
+        if (ackTimer.isActive())
         {
-            emit log(LogErr, "Cannot write all data to port!");
-            _savePortError();
-            errCode = errIncompletePortWrite;
-        }
-    }
-    return errCode;
-}
-
-
-/*
- * BUGGY due to waitForBytesWritten() issue
- *
- * int SerialWorker::_writeSerialPort(const char* data, int len)
-{
-    int errCode = noError;
-    int bytesWritten = serialPort->write(data, len);
-    if (bytesWritten == -1)
-    {
-        QString errorText = "Cannot write to port: ";
-        errorText.append(serialPort->errorString());
-        _savePortError();
-        emit log(LogErr, errorText);
-        errCode = errCritical;
-    }
-    else
-    {
-        // Some data is written. Log data
-        emit logTx(data, bytesWritten);
-        // Check for errors
-        if (bytesWritten != len)
-        {
-            emit log(LogErr, "Cannot write all data to port!");
-            _savePortError();
-            errCode = errIncompletePortWrite;
-        }
-        if (!serialPort->waitForBytesWritten(portWriteTimeout))
-        {
-            errCode = errTimeout;
-            _savePortError();
-        }
-    }
-    return errCode;
-}
-
-
-*/
-/*
-void SerialWorker::on_SerialDataReceive()
-{
-    int len = serialPort->bytesAvailable();
-    char *data = new char[len];
-    serialPort->read(data, len);
-    emit logRx(data, len);
-    delete data;
-}
-*/
-
-
-/*
-void SerialWorker::run()
-{
-    exec();
-}
-*/
-
-/*
-SerialWorker::SerialWorker()
-{
-    // Initialize thread
-    serialPort = new QSerialPort;   // no "this" parent - thread object itself lives in main GUI thread
-    connected = false;
-
-    connect(serialPort, SIGNAL(readyRead()), this, SLOT(on_SerialDataReceive()));
-}
-
-
-void SerialWorker::writePortSettings(const QString &name, int baudRate, int dataBits, int parity, int stopBits, int flowControl)
-{
-    portSettings.name = name;
-    portSettings.baudRate = (QSerialPort::BaudRate) baudRate;
-    portSettings.dataBits = (QSerialPort::DataBits) dataBits;
-    portSettings.parity = (QSerialPort::Parity) parity;
-    portSettings.stopBits = (QSerialPort::StopBits) stopBits;
-    portSettings.flowControl = (QSerialPort::FlowControl) flowControl;
-}
-
-int SerialWorker::openPort(void)
-{
-    int errCode = noError;
-    QString errorText;
-    if (serialPort->isOpen() == false)
-    {
-        serialPort->setPortName(portSettings.name);
-        if (serialPort->open(QIODevice::ReadWrite))
-        {
-            if (serialPort->setBaudRate(portSettings.baudRate)
-                && serialPort->setDataBits(portSettings.dataBits)
-                && serialPort->setParity(portSettings.parity)
-                && serialPort->setStopBits(portSettings.stopBits)
-                && serialPort->setFlowControl(portSettings.flowControl))
+            ackTimer.stop();
+            if (verboseLevel > 0)
             {
-                connected = true;
-                serialPort->clear();
-                _log(LogInfo, "Port open OK");
-            }
-            else
-            {
-                // Port configure error
-                errorText = "Port configure error: ";
-                errorText.append(serialPort->errorString());
-                errCode = errPortConfigure;
-                serialPort->close();
+                QString logText = "Acknowledge received";
+                emit log(LogInfo, logText);
             }
         }
         else
         {
-            // Port open error
-            errorText = "Port open error: ";
-            errorText.append(serialPort->errorString());
-            errCode = errPortCannotOpen;
-            serialPort->close();
+            errCode = errNoAck;
+            emit log(LogErr, "No acknowledge from device");
+        }
+        // not expecting ACK any more
+        ackRequired = false;
+    }
+    return errCode;
+}
+
+
+
+
+
+void SerialWorker::_readSerialPort(void)
+{
+    static int state = RSTATE_READING_NEW_DATA;
+    static char *data;
+    static int len;
+    static int index;
+    char c;
+    bool exit = false;
+
+    while(!exit)
+    {
+        switch(state)
+        {
+            case RSTATE_READING_NEW_DATA:
+                len = serialPort->bytesAvailable();
+                if (len > 0)
+                {
+                    data = new char[len];
+                    serialPort->read(data, len);
+                    emit logRx(data, len);
+                    state = RSTATE_PROCESSING_DATA;
+                }
+                else
+                {
+                    exit = true;    // no data - nothing to do
+                }
+                break;
+            case RSTATE_PROCESSING_DATA:
+                if (index < len)
+                {
+                    c = data[index++];
+                    receiveBuffer.append(c);
+                    if (c == SerialParser::termSymbol)
+                    {
+                        if (verboseLevel > 0)
+                        {
+                            log(LogInfo, "Received complete message");
+                        }
+                        // process
+                        int messageType = parser.getMessageType(receiveBuffer);
+                        switch (messageType)
+                        {
+                            case SerialParser::MSG_INFO:
+                                log(LogInfo, "Received INFO packet");
+                                // Call parser
+                                receiveBuffer.clear();
+                                break;
+                            case SerialParser::MSG_ACK:
+                                if (ackRequired)
+                                {
+                                    log(LogInfo, "Received ACK");
+                                    // Emit signal that exits local loop and enables further processing in requesting function
+                                    emit signal_ackReceived();
+                                    // Disconnect from serial port - ensure correct message processing order
+                                    disconnect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
+                                    // A signal that is connected to this slot must be emitted after ACK processing
+                                    state = RSTATE_PROCESSING_ACK;
+                                    exit = true;
+                                }
+                                else
+                                {
+                                    log(LogWarn, "Received ACK that is not required");
+                                    receiveBuffer.clear();
+                                }
+                                break;
+                            default:
+                                log(LogInfo, "Received unknown data");
+                                receiveBuffer.clear();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        if (receiveBuffer.size() >= receiveBufferLength)
+                        {
+                            // Reached maximum message length
+                            log(LogWarn, "Reached maximum message length. Buffer will be reset");
+                            receiveBuffer.clear();
+                        }
+                    }
+                }
+                else
+                {
+                    // Processed all data
+                    state = RSTATE_READING_NEW_DATA;
+                    index = 0;
+                    delete data;
+                }
+                break;
+            case RSTATE_PROCESSING_ACK:
+                // Connect to serial port again
+                connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
+                // Clear buffer and return to further processing
+                receiveBuffer.clear();
+                state = RSTATE_PROCESSING_DATA;
+                break;
         }
     }
-    else
-    {
-        errorText = "Port is already open";
-        errCode = errPortAlreadyOpen;
-    }
-    if (errCode != noError)
-    {
-        _log(LogErr, errorText);
-    }
-    return errCode;
-}
-
-void SerialWorker::closePort(void)
-{
-    serialPort->close();
-    connected = false;
-    _log(LogInfo, "Port closed");
-}
-
-int SerialWorker::getPortErrorCode(void)
-{
-    return serialPort->error();
-}
-
-QString SerialWorker::getPortErrorString(void)
-{
-    return serialPort->errorString();
 }
 
 
-//-------------------------------------------------------//
-/// @brief Blocking read of device channel
-/// @param[inout] *result - if function comletes succesfully,
-///     stores actual device channel
-/// @note
-/// @return
-//-------------------------------------------------------//
-int SerialWorker::getChannel(int *result)
+
+
+
+int SerialWorker::_writeSerialPort(const char* data, int len)
 {
-    int errCode = 0;
-    QString cmdStr;
-    if (state.connected == false)
+    int bytesWritten;
+    QTimer timer;
+
+    int errCode = noError;
+    while (len)
     {
-        //emit _error("Not connected to device");
-        return errCritical;
-    }
-    cmdStr = "converter get_channel\r\n";
-    errCode = writeSerialPort(cmdStr.toLocal8Bit(), cmdStr.length());
-    if (errCode == noError)
-    {
-        // Wait for ACK response
-        *result = 0;
-    }
-    else
-    {
-       // emit _error( (errCode == errTimeout) ? "Timeout error" : "Cannot write to port" );
+        bytesWritten = serialPort->write(data, len);
+        if (bytesWritten == -1)
+        {
+            QString errorText = "Cannot write to port: ";
+            errorText.append(serialPort->errorString());
+            _savePortError();
+            emit log(LogErr, errorText);
+            errCode = errCritical;
+            break;
+        }
+        else
+        {
+            // Some data is written. Log data
+            emit logTx(data, bytesWritten);
+            data += bytesWritten;
+            len -= bytesWritten;
+            // Wait until data is actually written through serial port
+            timer.setSingleShot(true);
+            timer.start(portWriteTimeout);
+            // Keep processing incoming RX data
+            while (timer.isActive() && serialPort->bytesToWrite())
+                QCoreApplication::processEvents();
+            // Check if timeout is reached
+            if (!timer.isActive())
+            {
+                // Timeout error
+                emit log(LogErr, "Port write timeout");
+                errCode = errTimeout;
+                break;
+            }
+        }
     }
     return errCode;
 }
 
 
-int SerialWorker::writeSerialPort(const char* data, int len)
+void SerialWorker::_transmitDone(qint64 bytesWritten)
 {
-    int bytesWritten = serialPort->write(data, len);
-    if (bytesWritten == -1)
+    if (verboseLevel > 0)
     {
-        QString errorText = "Cannot write to port: ";
-        errorText.append(serialPort->errorString());
-        _log(LogErr, errorText);
-        return errCritical;
+        // Debug only
+        QString text = "Tx done, total ";
+        text.append(QString::number(bytesWritten));
+        text.append(" bytes");
+        emit log(LogInfo, text);
     }
-    // Data is written. Log data
-    emit _logTx(data, bytesWritten);
-    return (serialPort->waitForBytesWritten(100) == true) ? noError : errTimeout;
-}
-
-int SerialWorker::sendString(const QString &text)
-{
-    return writeSerialPort(text.toLocal8Bit(), text.length());
 }
 
 
-void SerialWorker::on_SerialDataReceive()
-{
-    int len = serialPort->bytesAvailable();
-    char *data = new char[len];
-    serialPort->read(data, len);
-    emit _logRx(data, len);
-}
-*/
 
 
 

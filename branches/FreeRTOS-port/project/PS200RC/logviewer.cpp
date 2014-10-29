@@ -26,6 +26,11 @@ void LogViewer::addText(const QString &text, int textType)
             //typeStr = "[info ] ";
             typeStr = "";
             break;
+        case LogWarn:
+            setTextColor( QColor(100,100, 0) );
+            //typeStr = "[warn] ";
+            typeStr = "";
+            break;
         case LogErr:
             setTextColor( Qt::red );
             //typeStr = "[error] ";
@@ -37,7 +42,7 @@ void LogViewer::addText(const QString &text, int textType)
             typeStr = "<< ";
             break;
         case LogRx:
-            setTextColor( QColor(100,0,255) );
+            setTextColor( QColor(150,0,255) );
             //typeStr = "[rx   ] ";
             typeStr = ">> ";
             break;
@@ -58,6 +63,7 @@ void LogViewer::addText(const QString &text, int textType)
     {
         stringToAdd.append(typeStr);
     }
+
     stringToAdd.append(text);
     if (!((textType == LogTx) || (textType == LogRx)))
         stringToAdd.append("\r");

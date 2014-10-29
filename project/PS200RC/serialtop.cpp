@@ -106,11 +106,7 @@ void SerialTop::onPortRxLog(const char *data, int len)
 void SerialTop::sendString(const QString &text)
 {
     if (!checkConnected()) return;
-    int errCode = worker->sendString(text);
-    if (errCode != SerialWorker::noError)
-    {
-        emit _log("string write problem", LogViewer::LogWarn);
-    }
+    worker->sendString(text);
 }
 
 QString SerialTop::getKeyName(int keyId)

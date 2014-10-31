@@ -218,12 +218,12 @@ void vTaskUARTTransmitter(void *pvParameters)
 					temp16u[1] = ADC_GetCurrent();
 					temp32u[0] = ADC_GetPower();
 					taskEXIT_CRITICAL();
-					sprintf(string_to_send, "-vm %d \n-cm %d \n-pm %d\r", temp16u[0], temp16u[1], temp32u[0]);
+					sprintf(string_to_send, "[i] -vm %d -cm %d -pm %d\r", temp16u[0], temp16u[1], temp32u[0]);
 				}
 				else if (msg.converter.mtype == SEND_STATE)
 				{
 					temp16u[0] = Converter_GetState();
-					strArr[0] = (msg.spec == UMSG_INFO) ? "info" : "ack";
+					strArr[0] = (msg.spec == UMSG_INFO) ? "[i]" : "[a]";
 					strArr[1] = (temp16u[0]) ? "on" : "off";
 					sprintf(string_to_send, "%s -state %d\r", strArr[0], strArr[1], temp16u[0]);
 				}

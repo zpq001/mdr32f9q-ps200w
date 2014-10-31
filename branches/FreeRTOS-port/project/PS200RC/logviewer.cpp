@@ -1,5 +1,6 @@
 #include "logviewer.h"
 #include <QScrollBar>
+#include <QThread>
 
 LogViewer::LogViewer(QWidget *parent) :
     QTextEdit(parent)
@@ -34,6 +35,11 @@ void LogViewer::addText(const QString &text, int textType)
         case LogErr:
             setTextColor( Qt::red );
             //typeStr = "[error] ";
+            typeStr = "";
+            break;
+        case LogThreadId:
+            setTextColor( QColor(100,100,100) );
+            //typeStr = "[thread ] ";
             typeStr = "";
             break;
         case LogTx:
@@ -74,6 +80,16 @@ void LogViewer::addText(const QString &text, int textType)
 }
 
 
+
+QString LogViewer::prefixThreadId(const QString &text)
+{
+    Qt::HANDLE h = QThread::currentThreadId();
+    QString logText = "[Thread ";
+    logText.append(QString::number((int)h));
+    logText.append("] ");
+    logText.append(text);
+    return logText;
+}
 
 
 

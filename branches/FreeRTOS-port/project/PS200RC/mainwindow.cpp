@@ -39,30 +39,45 @@ MainWindow::MainWindow(QWidget *parent) :
     mySettingsDialog = new SettingsDialog(this);
     keyWindow = new KeyWindow(this);
     serialStatusLabel = new QLabel(this);
-    ui->statusBar->addWidget(serialStatusLabel);
+    serialBytesReceivedLabel = new QLabel(this);
+    serialBytesTransmittedLabel = new QLabel(this);
 
+    rxBytesCounter = 0;
+    txBytesCounter = 0;
+
+    ui->statusBar->addWidget(serialStatusLabel, 30);
+    ui->statusBar->addWidget(serialBytesReceivedLabel, 20);
+    ui->statusBar->addWidget(serialBytesTransmittedLabel, 20);
+
+    ui->logViewer->addText(LogViewer::prefixThreadId("Main thread"), LogViewer::LogThreadId);
 
     // Create top-level device controller and move it to another thread
     QThread *newThread = new QThread;
     topController = new SerialTop();
-    topController->moveToThread(newThread);
+
 
     // Setup signals
     connect(newThread, SIGNAL(started()), topController, SLOT(init()));
     connect(topController, SIGNAL(connectedChanged(bool)), this, SLOT(on_ConnectedChanged(bool)));
     connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
+    connect(topController, SIGNAL(bytesReceived(int)), this, SLOT(onBytesReceived(int)));
+    connect(topController, SIGNAL(bytesTransmitted(int)), this, SLOT(onBytesTransmitted(int)));
     connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
-    connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
-    connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
-    // Start second thread
-    newThread->start();
-
+    connect(topController, SIGNAL(updVmea(int)), this, SLOT(updateVmea(int)));
+    connect(topController, SIGNAL(updCmea(int)), this, SLOT(updateCmea(int)));
 
     connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
+    connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
+    connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
+    connect(this, SIGNAL(setVoltageSetting(int,int)), topController, SLOT(setVoltage(int,int)));
+
+    topController->moveToThread(newThread);
+    // Start second thread
+    newThread->start();
+
     connect (ui->actionSettings, SIGNAL(triggered()), mySettingsDialog, SLOT(exec()));
     connect (ui->actionKeyboard, SIGNAL(triggered()), this, SLOT(showKeyWindow()));
-
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
     connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(sendTxWindowData()));
@@ -81,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionDisconnect->setEnabled(false);
     on_ConnectedChanged(false);
 
+    onBytesReceived(0);
+    onBytesTransmitted(0);
+
     // Make sure all settings are valid
     if (SettingsHelper::validateSettings() == false)
     {
@@ -91,12 +109,29 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     ui->logViewer->addText("Started!", 0);
+
+
 }
 
 MainWindow::~MainWindow()
 {
     appSettings.sync();
     delete ui;
+}
+
+
+void MainWindow::onBytesReceived(int count)
+{
+    rxBytesCounter += count;
+    serialBytesReceivedLabel->setText("Rx: ");
+    serialBytesReceivedLabel->setText( serialBytesReceivedLabel->text().append(QString::number(rxBytesCounter)) );
+}
+
+void MainWindow::onBytesTransmitted(int count)
+{
+    txBytesCounter += count;
+    serialBytesTransmittedLabel->setText("Tx: ");
+    serialBytesTransmittedLabel->setText( serialBytesTransmittedLabel->text().append(QString::number(txBytesCounter)) );
 }
 
 
@@ -171,6 +206,8 @@ void MainWindow::on_ConnectedChanged(bool isConnected)
         ui->actionConnect->setEnabled(false);
         ui->actionDisconnect->setEnabled(true);
         serialStatusLabel->setText("Connected");
+
+        topController->requestForParam1(1,2);
     }
     else
     {
@@ -218,8 +255,9 @@ void MainWindow::on_SetVoltageCommand(void)
     if (myValueDialog->result() == QDialog::Accepted)
     {
         // Temporary
-        updateVset(myValueDialog->GetValue());
-        updateVmea(vcache.vset);
+        //updateVset(myValueDialog->GetValue());
+        //updateVmea(vcache.vset);
+        emit setVoltageSetting(vcache.channel, myValueDialog->GetValue());
     }
 }
 

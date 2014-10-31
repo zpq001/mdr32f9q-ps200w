@@ -7,12 +7,13 @@ class LogViewer : public QTextEdit
 {
     Q_OBJECT
 public:
-    enum LogTypes {LogInfo, LogWarn, LogErr, LogTx, LogRx};
+    enum LogTypes {LogInfo, LogWarn, LogErr, LogTx, LogRx, LogThreadId};
 
     explicit LogViewer(QWidget *parent = 0);
 
-signals:
+    static QString prefixThreadId(const QString &text);
 
+signals:
 public slots:
     void addText(const QString &text, int textType);
 

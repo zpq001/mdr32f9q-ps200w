@@ -10,7 +10,7 @@ SerialParser::SerialParser()
 QByteArray SerialParser::cmd_writeVset(int channel, int newValue)
 {
     QByteArray ba = "converter set_voltage ";
-    ba.append((channel == 0) ? "-ch5v" : "-ch12v");
+    ba.append((channel == 0) ? "-ch5v " : "-ch12v ");
     ba.append(QByteArray::number(newValue));
     ba.append('\r');
     //char *bytes = (char *)malloc(ba.size());    // not using terminatig \0

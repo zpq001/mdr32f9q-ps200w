@@ -10,7 +10,7 @@
 #include "serialparser.h"
 
 
-class SerialWorker : public QThread
+class SerialWorker : public QObject
 {
     Q_OBJECT
 
@@ -21,9 +21,10 @@ public:
                      errPortAlreadyOpen,
                      errPortCannotOpen,
                      errIncompletePortWrite,
+                     errTerminated = 64,
                      errNoAck = 128,
                      errParser };
-    enum LogMessageTypes {LogErr, LogWarn, LogInfo};
+    enum LogMessageTypes {LogErr, LogWarn, LogInfo, LogThread};
 
     typedef struct {
         int channel;
@@ -31,12 +32,19 @@ public:
         int errCode;
     } getVoltageSettingArgs_t;
 
+    typedef struct {
+        int channel;
+        int newValue;
+        int resultValue;
+        int errCode;
+    } setVoltageSettingArgs_t;
+
     //typedef struct {
     //    int errCode;
     //} operationResult_t;
 
 private:
-    enum RxProcessorStates {RSTATE_READING_NEW_DATA = 0, RSTATE_PROCESSING_DATA, RSTATE_PROCESSING_ACK};
+    enum RxProcessorStates {RSTATE_READING_NEW_DATA = 0, RSTATE_PROCESSING_DATA};
 
     typedef struct {
         QString name;
@@ -81,33 +89,45 @@ public:
 
     //
     int sendString(const QString &text);
-    void getVoltageSetting(getVoltageSettingArgs_t *a, bool wait);
+    void getVoltageSetting(getVoltageSettingArgs_t *a, bool wait = false);
+    void setVoltageSetting(setVoltageSettingArgs_t *a, bool wait = false);
 
 public slots:
 
+    void init(void);
 
 signals:
     //-------- Public signals -------//
     void operationDone(void);
-
-
+    void updVmea(int value);
+    void updCmea(int value);
+    void updPmea(int value);
     void log(int type, QString message);
     void logTx(const char *message, int len);
     void logRx(const char *message, int len);
+    void bytesReceived(int);
+    void bytesTransmitted(int);
+
     //------- Private signals -------//
     // Intended for internal use only
     void signal_openPort(QSemaphore *doneSem, openPortArgs_t *a);
     void signal_closePort(QSemaphore *doneSem);
     void signal_sendString(QSemaphore *doneSem, sendStringArgs_t *a);
     void signal_getVoltageSetting(QSemaphore *doneSem, getVoltageSettingArgs_t *a);
+    void signal_setVoltageSetting(QSemaphore *doneSem, setVoltageSettingArgs_t *a);
     void signal_ackReceived(void);
+    void signal_infoReceived(void);
     //void signal_ackTimeout(void);
     void signal_ForceReadSerialPort(void);
+    void signal_Terminate(void);
 private slots:
     void _openPort(QSemaphore *doneSem, openPortArgs_t *a);
     void _closePort(QSemaphore *doneSem);
     void _sendString(QSemaphore *doneSem, sendStringArgs_t *a);
     void _getVoltageSetting(QSemaphore *doneSem, getVoltageSettingArgs_t *a);
+    void _setVoltageSetting(QSemaphore *doneSem, setVoltageSettingArgs_t *a);
+
+    void _infoPacketHandler(void);
 
     void _readSerialPort(void);
     void _transmitDone(qint64 bytesWritten);
@@ -122,18 +142,33 @@ private:
     QString portErrorString;
     int portErrorCode;
 
-    QTimer ackTimer;
+
 
     bool ackRequired;
     QByteArray ackData;
 
     int verboseLevel;
 
+    bool connected;
+
     QByteArray receiveBuffer;
 
     void _savePortError(void);
     int _writeSerialPort(const char* data, int len);
     int _sendDataWithAcknowledge(const QByteArray &ba);
+
+    void _processReceivedData();
+    void _continueProcessingReceivedData();
+    void _stopReceive();
+
+    struct {
+        char *data;
+        int len;
+        int index;
+        int state;
+        bool receiveSlotConnected;
+
+    } rx;
 
     // Override thread RUN function
     //void run();

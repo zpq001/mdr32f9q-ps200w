@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     typedef struct {
+        int channel;
         int vset;
         int vmea;
         int cset;
@@ -40,17 +41,24 @@ private slots:
     void updateVmea(int value);
     void updateCset(int value);
     void updateCmea(int value);
+    void onBytesReceived(int);
+    void onBytesTransmitted(int);
 signals:
     void sendString(QString);
+    void setVoltageSetting(int channel, int newValue);
 private:
     void validateSettings(void);
     Ui::MainWindow *ui;
     QLabel *serialStatusLabel;
+    QLabel *serialBytesReceivedLabel;
+    QLabel *serialBytesTransmittedLabel;
     SingleValueDialog *myValueDialog;
     SettingsDialog *mySettingsDialog;
     value_cache_t vcache;
     SerialTop *topController;
     KeyWindow *keyWindow;
+    qint64 rxBytesCounter;
+    qint64 txBytesCounter;
 };
 
 #endif // MAINWINDOW_H

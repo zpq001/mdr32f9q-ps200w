@@ -27,8 +27,10 @@ public:
     int getAckData_Vset(const QByteArray &ba, int *value);
 
 
-private:
     int _getValueForKey(const QByteArray &ba, const QString &key, QString &value);
+
+private:
+
 
 };
 

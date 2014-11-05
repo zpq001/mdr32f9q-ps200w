@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QEventLoop>
+#include <QQueue>
 #include "serialworker.h"
 
 
@@ -11,18 +12,21 @@ class SerialTop : public QObject
 {
     Q_OBJECT
 public:
-    typedef void (SerialTop::*Some_fnc_ptr)(int, int);
+
+
 
     explicit SerialTop(QObject *parent = 0);
 
-    ////////////////
-    void requestForParam1(int arg1, int arg2);
-    void getParam1(int arg1, int arg2);
-signals:
-    void sig_execute(/*Some_fnc_ptr ptr,*/ int arg1, int arg2);
-public slots:
-    void execute(/*Some_fnc_ptr ptr,*/ int arg1, int arg2);
-    ////////////////
+private:
+    typedef void (SerialTop::*TaskPointer)(void *);
+    typedef struct {
+        TaskPointer fptr;
+        void *arg;
+    } TaskQueueRecord_t;
+    typedef struct {
+        int channel;
+        int newValue;
+    } setVsetArgs_t;
 
 signals:
     //-------- Public signals -------//
@@ -37,6 +41,7 @@ signals:
     void updIset(int, int, int);
     //------- Private signals -------//
     void signal_Terminate();
+    void signal_ProcessTaskQueue();
 public slots:
     void init(void);
     void connectToDevice(void);
@@ -52,13 +57,20 @@ private slots:
     void onWorkerLog(int, QString);
     void onPortTxLog(const char *, int);
     void onPortRxLog(const char *, int);
+    void processTaskQueue();
 private:
+    void _setVoltage(void *arguments);
+
+
     bool checkConnected(void);
     bool connected;
-    bool busy;
-    QString getKeyName(int keyId);
-    QString getKeyEventType(int keyEventType);
+    bool processingTask;
+    static QString getKeyName(int keyId);
+    static QString getKeyEventType(int keyEventType);
     SerialWorker *worker;
+
+    QQueue<TaskQueueRecord_t> taskQueue;
+    QMutex taskQueueMutex;
 
 
 };

@@ -5,6 +5,57 @@
 
 
 
+QString SerialTop::getKeyName(int keyId)
+{
+    QString keyName;
+    switch (keyId)
+    {
+        case KeyWindow::key_OK:
+            keyName = "btn_ok";
+            break;
+        case KeyWindow::key_ESC:
+            keyName = "btn_esc";
+            break;
+        case KeyWindow::key_RIGHT:
+            keyName = "btn_right";
+            break;
+        case KeyWindow::key_LEFT:
+            keyName = "btn_left";
+            break;
+        case KeyWindow::key_ENCODER:
+            keyName = "btn_encoder";
+            break;
+        default:
+            keyName = QString::number(keyId);
+    }
+    return keyName;
+}
+
+QString SerialTop::getKeyEventType(int keyEventType)
+{
+    QString keyAction;
+    switch (keyEventType)
+    {
+        case KeyWindow::event_DOWN:
+            keyAction = "down";
+            break;
+        case KeyWindow::event_UP:
+            keyAction = "up";
+            break;
+        case KeyWindow::event_UP_SHORT:
+            keyAction = "up_short";
+            break;
+        case KeyWindow::event_UP_LONG:
+            keyAction = "up_long";
+            break;
+        case KeyWindow::event_HOLD:
+            keyAction = "hold";
+            break;
+        default:
+            keyAction = QString::number(keyEventType);
+    }
+    return keyAction;
+}
 
 
 SerialTop::SerialTop(QObject *parent) :
@@ -14,14 +65,17 @@ SerialTop::SerialTop(QObject *parent) :
     // in separate thread
 }
 
-
-void SerialTop::requestForParam1(int arg1, int arg2)
+/*
+void SerialTop::requestForParam1(SerialTop *inst, int arg1, int arg2)
 {
     // Called from other thread
     emit _log( LogViewer::prefixThreadId("aaa"), LogViewer::LogThreadId);
 
     //Some_fnc_ptr fnc_ptr = &SerialTop::getParam1;
-    emit sig_execute(/*fnc_ptr,*/ arg1, arg2);
+    //emit sig_execute(fnc_ptr, arg1, arg2);
+
+    fptr = &SerialTop::getParam1;
+    emit sig_execute(arg1, arg2);
 }
 
 
@@ -35,9 +89,9 @@ void SerialTop::getParam1(int arg1, int arg2)
 void SerialTop::execute(int arg1, int arg2)
 {
     emit _log( LogViewer::prefixThreadId("bbb"), LogViewer::LogThreadId);
-    //(this->*ptr)(arg1, arg2);
+    (this->*fptr)(arg1, arg2);
 }
-
+*/
 
 
 
@@ -48,7 +102,7 @@ void SerialTop::init(void)
 {
     // Here all initialization is done
     connected = false;
-    busy = false;
+    processingTask = false;
 
     QThread *workerThread = new QThread();
     worker = new SerialWorker();
@@ -69,10 +123,16 @@ void SerialTop::init(void)
     workerThread->start();
 
     //connect(this, SIGNAL(sig_execute(Some_fnc_ptr,int,int)), this, SLOT(execute(Some_fnc_ptr,int,int)));
-    connect(this, SIGNAL(sig_execute(int,int)), this, SLOT(execute(int,int)));
+    //connect(this, SIGNAL(sig_execute(int,int)), this, SLOT(execute(int,int)));
 
-    //requestForParam1(1,2);
+    connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(processTaskQueue()), Qt::QueuedConnection);
+
 }
+
+
+//-----------------------------------------------------------------//
+// Commands
+
 
 
 void SerialTop::connectToDevice(void)
@@ -130,114 +190,10 @@ bool SerialTop::checkConnected(void)
 
 
 
-
-
-//-----------------------------------------------------------------//
-// Commands
-
-void SerialTop::setVoltage(int channel, int value)
-{
-    QEventLoop localLoop;
-    SerialWorker::setVoltageSettingArgs_t a;
-    if (!connected)
-    {
-        emit _log("Port is closed", LogViewer::LogErr);
-        return;
-    }
-    if (busy)
-    {
-        emit _log("Other command in progress", LogViewer::LogErr);
-        return;
-    }
-    busy = true;
-    connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
-    a.channel = channel;
-    a.newValue = value;
-    worker->setVoltageSetting(&a);  // non-blocking
-    localLoop.exec();
-    // Worker has finished (or it's operation was aborted)
-    if (a.errCode == SerialWorker::noError)
-    {
-        // Success!
-        emit updVset(a.resultValue);
-    }
-    else
-    {
-        // An error happened
-        emit _log("Set voltage error", LogViewer::LogErr);
-    }
-    busy = false;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-//-----------------------------------------------------------------//
-// Misc commands
 void SerialTop::sendString(const QString &text)
 {
     if (!checkConnected()) return;
     worker->sendString(text);
-}
-
-QString SerialTop::getKeyName(int keyId)
-{
-    QString keyName;
-    switch (keyId)
-    {
-        case KeyWindow::key_OK:
-            keyName = "btn_ok";
-            break;
-        case KeyWindow::key_ESC:
-            keyName = "btn_esc";
-            break;
-        case KeyWindow::key_RIGHT:
-            keyName = "btn_right";
-            break;
-        case KeyWindow::key_LEFT:
-            keyName = "btn_left";
-            break;
-        case KeyWindow::key_ENCODER:
-            keyName = "btn_encoder";
-            break;
-        default:
-            keyName = QString::number(keyId);
-    }
-    return keyName;
-}
-
-QString SerialTop::getKeyEventType(int keyEventType)
-{
-    QString keyAction;
-    switch (keyEventType)
-    {
-        case KeyWindow::event_DOWN:
-            keyAction = "down";
-            break;
-        case KeyWindow::event_UP:
-            keyAction = "up";
-            break;
-        case KeyWindow::event_UP_SHORT:
-            keyAction = "up_short";
-            break;
-        case KeyWindow::event_UP_LONG:
-            keyAction = "up_long";
-            break;
-        case KeyWindow::event_HOLD:
-            keyAction = "hold";
-            break;
-        default:
-            keyAction = QString::number(keyEventType);
-    }
-    return keyAction;
 }
 
 
@@ -260,6 +216,104 @@ void SerialTop::keyEvent(int key, int event)
 
     worker->sendString(resultCmd);
 }
+
+
+// Can be signal-slot or direct call from other thread
+void SerialTop::setVoltage(int channel, int value)
+{
+    QMutexLocker locker(&taskQueueMutex);
+    setVsetArgs_t *args = (setVsetArgs_t *)malloc(sizeof(setVsetArgs_t));
+    args->channel = channel;
+    args->newValue = value;
+    TaskQueueRecord_t record = {&SerialTop::_setVoltage, args};
+    taskQueue.append(record);
+    emit signal_ProcessTaskQueue();
+}
+
+
+
+
+
+//-----------------------------------------------------------------//
+// Internal queue processing
+
+
+void SerialTop::processTaskQueue()
+{
+    TaskQueueRecord_t taskRecord;
+    // Protect from re-entrance
+    if (!processingTask)
+    {
+        taskQueueMutex.lock();
+        if (taskQueue.count() > 0)
+        {
+            taskRecord = taskQueue.dequeue();
+            processingTask = true;
+        }
+        taskQueueMutex.unlock();
+        if (processingTask)
+        {
+            // Tasks invoke a local event loop, so this is a blocking call
+            (this->*taskRecord.fptr)(taskRecord.arg);
+            // Here task is done
+            processingTask = false;
+            //delete taskRecord.arg; - moved to task
+            // Call self again until there are no tasks in the queue
+            QMetaObject::invokeMethod(this, "processTaskQueue", Qt::QueuedConnection);
+        }
+    }
+}
+
+
+
+
+
+
+void SerialTop::_setVoltage(void *arguments)
+{
+    setVsetArgs_t *args = (setVsetArgs_t *)arguments;
+
+    QEventLoop localLoop;
+    SerialWorker::setVoltageSettingArgs_t a;
+    if (!connected)
+    {
+        emit _log("Port is closed", LogViewer::LogErr);
+        return;
+    }
+    connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
+    a.channel = args->channel;
+    a.newValue = args->newValue;
+    worker->setVoltageSetting(&a);  // non-blocking
+    localLoop.exec();
+    // Worker has finished (or it's operation was aborted)
+    if (a.errCode == SerialWorker::noError)
+    {
+        // Success!
+        emit updVset(a.resultValue);
+    }
+    else
+    {
+        // An error happened
+        emit _log("Set voltage error", LogViewer::LogErr);
+    }
+
+    // Delete arguments
+    delete args;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------//
+// Misc commands
 
 
 //-----------------------------------------------------------------//

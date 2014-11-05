@@ -206,8 +206,6 @@ void MainWindow::on_ConnectedChanged(bool isConnected)
         ui->actionConnect->setEnabled(false);
         ui->actionDisconnect->setEnabled(true);
         serialStatusLabel->setText("Connected");
-
-        topController->requestForParam1(1,2);
     }
     else
     {
@@ -224,7 +222,8 @@ void MainWindow::sendTxWindowData()
     {
         if (ui->sendCRLFCheckBox->isChecked())
             text.append("\r");
-        emit sendString(text);
+        for (int i=0; i<9; i++)
+            emit sendString(text);
         ui->sendTextEdit->clearAndAddToHistory();
     }
 }

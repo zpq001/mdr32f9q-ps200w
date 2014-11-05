@@ -16,18 +16,11 @@ void SerialWorker::init()
 
     connect(this, SIGNAL(signal_openPort(QSemaphore*,openPortArgs_t*)), this, SLOT(_openPort(QSemaphore*,openPortArgs_t*)));
     connect(this, SIGNAL(signal_closePort(QSemaphore*)), this, SLOT(_closePort(QSemaphore*)));
-    connect(this, SIGNAL(signal_sendString(QSemaphore *,sendStringArgs_t*)),
-            this, SLOT(_sendString(QSemaphore *,sendStringArgs_t*)));
-    connect(this, SIGNAL(signal_getVoltageSetting(QSemaphore *,getVoltageSettingArgs_t*)),
-            this, SLOT(_getVoltageSetting(QSemaphore *,getVoltageSettingArgs_t*)));
-    connect(this, SIGNAL(signal_setVoltageSetting(QSemaphore*,setVoltageSettingArgs_t*)),
-            this,SLOT(_setVoltageSetting(QSemaphore*,setVoltageSettingArgs_t*)));
-
-    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
-    connect(serialPort, SIGNAL(bytesWritten(qint64)), this, SLOT(_transmitDone(qint64)));
-
+    connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()));
     connect(this, SIGNAL(signal_ForceReadSerialPort()), this, SLOT(_readSerialPort()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_infoReceived()), this, SLOT(_infoPacketHandler()), Qt::QueuedConnection);
+    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
+    connect(serialPort, SIGNAL(bytesWritten(qint64)), this, SLOT(_transmitDone(qint64)));
 
     verboseLevel = 1;
 
@@ -83,23 +76,21 @@ QString SerialWorker::getPortErrorString(void)
 }
 
 
+
 //-------------------------------------------------------//
 /// @brief Sends a string to the device
 /// @param[in] text string
-/// @note Non-blocking. Returns when text is put to serial buffer
-/// (not completely transmitted).
-/// @return
+/// @note If call is not blocking, signal operationDone() is
+/// emitted when done.
+/// @return none
 //-------------------------------------------------------//
-int SerialWorker::sendString(const QString &text)
+void SerialWorker::sendString(const QString &text, bool blocking)
 {
-    workerMutex.lock();     // Protect from re-entrance
-    QSemaphore *sem = new QSemaphore();
-    sendStringArgs_t a;
-    a.str = text;
-    emit signal_sendString(sem, &a);
-    sem->acquire();
-    delete sem;
-    return a.errCode;
+    sendStringArgs_t *args = (sendStringArgs_t *)malloc(sizeof(sendStringArgs_t));
+    args->len = text.length();
+    args->data = (char *)malloc(args->len);
+    memcpy(args->data, text.toLocal8Bit().data(), args->len);
+    _invokeTaskQueued(&SerialWorker::_sendString, args, blocking);
 }
 
 
@@ -109,28 +100,21 @@ int SerialWorker::sendString(const QString &text)
 /// @note
 /// @return
 //-------------------------------------------------------//
-void SerialWorker::getVoltageSetting(getVoltageSettingArgs_t *a, bool wait)
+void SerialWorker::getVoltageSetting(getVoltageSettingArgs_t *a, bool blocking)
 {
-    workerMutex.lock();     // Protect from re-entrance
-    QSemaphore *sem = (wait) ? new QSemaphore() : 0;
-    emit signal_getVoltageSetting(sem, a);
-    if (wait)
-    {
-        sem->acquire();
-        delete sem;
-    }
+    _invokeTaskQueued(&SerialWorker::_getVoltageSetting, a, blocking);
 }
 
-void SerialWorker::setVoltageSetting(setVoltageSettingArgs_t *a, bool wait)
+
+//-------------------------------------------------------//
+/// @brief Sets voltage setting for a channel
+/// @param[in]
+/// @note
+/// @return
+//-------------------------------------------------------//
+void SerialWorker::setVoltageSetting(setVoltageSettingArgs_t *a, bool blocking)
 {
-    workerMutex.lock();     // Protect from re-entrance
-    QSemaphore *sem = (wait) ? new QSemaphore() : 0;
-    emit signal_setVoltageSetting(sem, a);
-    if (wait)
-    {
-        sem->acquire();
-        delete sem;
-    }
+    _invokeTaskQueued(&SerialWorker::_setVoltageSetting, a, blocking);
 }
 
 
@@ -212,23 +196,67 @@ void SerialWorker::_savePortError(void)
 }
 
 
-
-
-
-void SerialWorker::_sendString(QSemaphore *doneSem, sendStringArgs_t *a)
+void SerialWorker::_invokeTaskQueued(TaskPointer fptr, void *arguments, bool blocking)
 {
-    a->errCode = _writeSerialPort(a->str.toLocal8Bit(), a->str.length());
-    if (doneSem)
+    QSemaphore *doneSem = (blocking) ? new QSemaphore() : 0;
+    TaskQueueRecord_t record = {fptr, doneSem, arguments};
+    taskQueueMutex.lock();
+    taskQueue.append(record);
+    taskQueueMutex.unlock();
+    emit signal_ProcessTaskQueue();
+    if (blocking)
     {
-        doneSem->release();
+        doneSem->acquire();
+        delete doneSem;
     }
-    workerMutex.unlock();
+}
+
+
+void SerialWorker::_processTaskQueue(void)
+{
+    TaskQueueRecord_t taskRecord;
+    // Protect from re-entrance
+    if (!processingTask)
+    {
+        taskQueueMutex.lock();
+        if (taskQueue.count() > 0)
+        {
+            taskRecord = taskQueue.dequeue();
+            processingTask = true;
+        }
+        taskQueueMutex.unlock();
+        if (processingTask)
+        {
+            // Tasks invoke a local event loop, so this is a blocking call
+            (this->*taskRecord.fptr)(taskRecord.doneSem, taskRecord.arg);
+            // Here task is done
+            processingTask = false;
+            // Call self again until there are no tasks in the queue
+            QMetaObject::invokeMethod(this, "_processTaskQueue", Qt::QueuedConnection);
+        }
+    }
 }
 
 
 
-void SerialWorker::_getVoltageSetting(QSemaphore *doneSem, getVoltageSettingArgs_t *a)
+void SerialWorker::_sendString(QSemaphore *doneSem, void *args)
 {
+    sendStringArgs_t *a = (sendStringArgs_t *)args;
+    _writeSerialPort(a->data, a->len);
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+    delete a->data;
+    delete a;
+}
+
+
+
+void SerialWorker::_getVoltageSetting(QSemaphore *doneSem, void *arguments)
+{
+    getVoltageSettingArgs_t *a = (getVoltageSettingArgs_t *)arguments;
+
     // Create command string
     QByteArray ba = parser.cmd_readVset(0);
     // Send and wait for acknowledge
@@ -252,12 +280,13 @@ void SerialWorker::_getVoltageSetting(QSemaphore *doneSem, getVoltageSettingArgs
         doneSem->release();
     else
         emit operationDone();
-    workerMutex.unlock();
 }
 
 
-void SerialWorker::_setVoltageSetting(QSemaphore *doneSem, setVoltageSettingArgs_t *a)
+void SerialWorker::_setVoltageSetting(QSemaphore *doneSem, void *arguments)
 {
+    setVoltageSettingArgs_t *a = (setVoltageSettingArgs_t *)arguments;
+
     // Create command string
     QByteArray ba = parser.cmd_writeVset(a->channel, a->newValue);
     // Send and wait for acknowledge
@@ -281,7 +310,6 @@ void SerialWorker::_setVoltageSetting(QSemaphore *doneSem, setVoltageSettingArgs
         doneSem->release();
     else
         emit operationDone();
-    workerMutex.unlock();
 }
 
 
@@ -521,7 +549,7 @@ int SerialWorker::_writeSerialPort(const char* data, int len)
             timer.setSingleShot(true);
             timer.start(portWriteTimeout);
             // Keep processing incoming RX data
-            while (timer.isActive() && serialPort->bytesToWrite())
+            while (timer.isActive() && serialPort->bytesToWrite())  // TODO: add terminated signal
                 QCoreApplication::processEvents();
             // Check if timeout is reached
             if (!timer.isActive())

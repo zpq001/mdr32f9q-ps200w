@@ -27,21 +27,39 @@ public:
     enum LogMessageTypes {LogErr, LogWarn, LogInfo, LogThread};
 
     typedef struct {
-        int channel;
+        int newValue;
         int result;
         int errCode;
-    } getVoltageSettingArgs_t;
+    } argsState_t;
+
+    typedef struct {
+        int newValue;
+        int result;
+        int errCode;
+    } argsChannel_t;
 
     typedef struct {
         int channel;
         int newValue;
-        int resultValue;
+        int result;
         int errCode;
-    } setVoltageSettingArgs_t;
+    } argsCurrentRange_t;
 
-    //typedef struct {
-    //    int errCode;
-    //} operationResult_t;
+    typedef struct {
+        int channel;
+        int newValue;
+        int result;
+        int errCode;
+    } argsVset_t;
+
+    typedef struct {
+        int channel;
+        int currentRange;
+        int newValue;
+        int result;
+        int errCode;
+    } argsCset_t;
+
 
 private:
     enum RxProcessorStates {RSTATE_READING_NEW_DATA = 0, RSTATE_PROCESSING_DATA};
@@ -55,12 +73,6 @@ private:
         QSerialPort::FlowControl flowControl;
     }  portSettings_t;
 
-//    typedef struct {
-//        QSemaphore sem;
-//        int errCode;
-//        bool isBlocking;
-//    } reqArg_t;
-
     typedef void (SerialWorker::*TaskPointer)(QSemaphore *doneSem, void *arguments);
     typedef struct {
         TaskPointer fptr;
@@ -69,16 +81,13 @@ private:
     } TaskQueueRecord_t;
 
     typedef struct {
-        char *data;
-        int len;
-    } sendStringArgs_t;
-
-
-
-    typedef struct {
         int errCode;
     } openPortArgs_t;
 
+    typedef struct {
+        char *data;
+        int len;
+    } sendDataArgs_t;
 
     static const int portWriteTimeout = 1000;   //ms
     static const int ackWaitTimeout = 1000;     //ms
@@ -96,11 +105,19 @@ public:
     int getPortErrorCode(void);
     QString getPortErrorString(void);
 
-
     //
     void sendString(const QString &text, bool blocking = false);
-    void getVoltageSetting(getVoltageSettingArgs_t *a, bool blocking = false);
-    void setVoltageSetting(setVoltageSettingArgs_t *a, bool blocking = false);
+
+    void getState(argsState_t *a, bool blocking = false);
+    void getChannel(argsChannel_t *a, bool blocking = false);
+    void getCurrentRange(argsCurrentRange_t *a, bool blocking = false);
+    void getVoltageSetting(argsVset_t *a, bool blocking = false);
+    void getCurrentSetting(argsCset_t *a, bool blocking = false);
+
+    void setState(argsState_t *a, bool blocking = false);
+    void setCurrentRange(argsCurrentRange_t *a, bool blocking = false);
+    void setVoltageSetting(argsVset_t *a, bool blocking = false);
+    void setCurrentSetting(argsCset_t *a, bool blocking = false);
 
 public slots:
 
@@ -130,17 +147,34 @@ signals:
 private slots:
     void _openPort(QSemaphore *doneSem, openPortArgs_t *a);
     void _closePort(QSemaphore *doneSem);
-    void _processTaskQueue(void);
-    void _sendString(QSemaphore *doneSem, void *args);
-    void _getVoltageSetting(QSemaphore *doneSem, void *arguments);
-    void _setVoltageSetting(QSemaphore *doneSem, void *arguments);
-
-    void _infoPacketHandler(void);
-
     void _readSerialPort(void);
     void _transmitDone(qint64 bytesWritten);
+    void _processTaskQueue(void);
+    void _infoPacketHandler(void);
+
 private:
-    SerialParser parser;
+    void _sendData(QSemaphore *doneSem, void *arguments);
+
+    void _getState(QSemaphore *doneSem, void *arguments);
+    void _getChannel(QSemaphore *doneSem, void *arguments);
+    void _getCurrentRange(QSemaphore *doneSem, void *arguments);
+    void _getVset(QSemaphore *doneSem, void *arguments);
+    void _getCset(QSemaphore *doneSem, void *arguments);
+    void _getVsetLim(QSemaphore *doneSem, void *arguments);
+    void _getCsetLim(QSemaphore *doneSem, void *arguments);
+    void _getProtectionState(QSemaphore *doneSem, void *arguments);
+
+    void _setState(QSemaphore *doneSem, void *arguments);
+    void _setCurrentRange(QSemaphore *doneSem, void *arguments);
+    void _setVset(QSemaphore *doneSem, void *arguments);
+    void _setCset(QSemaphore *doneSem, void *arguments);
+    void _setVsetLim(QSemaphore *doneSem, void *arguments);
+    void _setCsetLim(QSemaphore *doneSem, void *arguments);
+    void _setProtectionState(QSemaphore *doneSem, void *arguments);
+
+
+
+    //SerialParser parser;
 
     QMutex portSettingsMutex;
     QSerialPort *serialPort;
@@ -155,20 +189,19 @@ private:
     QMutex taskQueueMutex;
     bool processingTask;
 
-    bool ackRequired;
-    QByteArray ackData;
 
     int verboseLevel;
 
     bool connected;
 
     QByteArray receiveBuffer;
+    bool ackRequired;
 
     void _invokeTaskQueued(TaskPointer fptr, void *arguments, bool blocking);
 
     void _savePortError(void);
     int _writeSerialPort(const char* data, int len);
-    int _sendDataWithAcknowledge(const QByteArray &ba);
+    int _sendCmdWithAcknowledge(const QByteArray &ba);
 
     void _processReceivedData();
     void _continueProcessingReceivedData();
@@ -180,7 +213,6 @@ private:
         int index;
         int state;
         bool receiveSlotConnected;
-
     } rx;
 
 

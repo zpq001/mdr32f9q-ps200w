@@ -38,7 +38,8 @@ HEADERS  += mainwindow.h \
     txEdit.h \
     keydriver.h \
     keywindow.h \
-    serialparser.h
+    serialparser.h \
+    globaldef.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \

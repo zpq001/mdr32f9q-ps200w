@@ -5,6 +5,7 @@
 #include "serialworker.h"
 #include "serialparser.h"
 #include "logviewer.h"
+#include "globaldef.h"
 
 SerialWorker::SerialWorker()
 {
@@ -16,7 +17,7 @@ void SerialWorker::init()
 
     connect(this, SIGNAL(signal_openPort(QSemaphore*,openPortArgs_t*)), this, SLOT(_openPort(QSemaphore*,openPortArgs_t*)));
     connect(this, SIGNAL(signal_closePort(QSemaphore*)), this, SLOT(_closePort(QSemaphore*)));
-    connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()));
+    connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_ForceReadSerialPort()), this, SLOT(_readSerialPort()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_infoReceived()), this, SLOT(_infoPacketHandler()), Qt::QueuedConnection);
     connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
@@ -51,7 +52,7 @@ void SerialWorker::closePort(void)
     sem.acquire();
 }
 
-// Blocking settings write
+// Settings write
 void SerialWorker::writePortSettings(const QString &name, int baudRate, int dataBits, int parity, int stopBits, int flowControl)
 {
     QMutexLocker locker(&portSettingsMutex);
@@ -63,6 +64,7 @@ void SerialWorker::writePortSettings(const QString &name, int baudRate, int data
     portSettings.flowControl = (QSerialPort::FlowControl) flowControl;
 }
 
+// Serial port error recovery
 int SerialWorker::getPortErrorCode(void)
 {
     QMutexLocker locker(&portErrorDataMutex);
@@ -86,35 +88,77 @@ QString SerialWorker::getPortErrorString(void)
 //-------------------------------------------------------//
 void SerialWorker::sendString(const QString &text, bool blocking)
 {
-    sendStringArgs_t *args = (sendStringArgs_t *)malloc(sizeof(sendStringArgs_t));
+    sendDataArgs_t *args = (sendDataArgs_t *)malloc(sizeof(sendDataArgs_t));
     args->len = text.length();
     args->data = (char *)malloc(args->len);
     memcpy(args->data, text.toLocal8Bit().data(), args->len);
-    _invokeTaskQueued(&SerialWorker::_sendString, args, blocking);
+    _invokeTaskQueued(&SerialWorker::_sendData, args, blocking);
 }
 
 
-//-------------------------------------------------------//
-/// @brief Reads voltage setting for a channel
-/// @param[in]
-/// @note
-/// @return
-//-------------------------------------------------------//
-void SerialWorker::getVoltageSetting(getVoltageSettingArgs_t *a, bool blocking)
+void SerialWorker::getState(argsState_t *a, bool blocking)
 {
-    _invokeTaskQueued(&SerialWorker::_getVoltageSetting, a, blocking);
+    _invokeTaskQueued(&SerialWorker::_getState, a, blocking);
+}
+
+void SerialWorker::getChannel(argsChannel_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_getChannel, a, blocking);
+}
+
+void SerialWorker::getCurrentRange(argsCurrentRange_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_getCurrentRange, a, blocking);
+}
+
+void SerialWorker::getVoltageSetting(argsVset_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_getVset, a, blocking);
+}
+
+void SerialWorker::getCurrentSetting(argsCset_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_getCset, a, blocking);
 }
 
 
-//-------------------------------------------------------//
-/// @brief Sets voltage setting for a channel
-/// @param[in]
-/// @note
-/// @return
-//-------------------------------------------------------//
-void SerialWorker::setVoltageSetting(setVoltageSettingArgs_t *a, bool blocking)
+
+void SerialWorker::setState(argsState_t *a, bool blocking)
 {
-    _invokeTaskQueued(&SerialWorker::_setVoltageSetting, a, blocking);
+    _invokeTaskQueued(&SerialWorker::_setState, a, blocking);
+}
+
+void SerialWorker::setCurrentRange(argsCurrentRange_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_setCurrentRange, a, blocking);
+}
+
+void SerialWorker::setVoltageSetting(argsVset_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_setVset, a, blocking);
+}
+
+void SerialWorker::setCurrentSetting(argsCset_t *a, bool blocking)
+{
+    _invokeTaskQueued(&SerialWorker::_setCset, a, blocking);
+}
+
+
+// Helper function
+// Executed from other (not worker's) thread. Reentrant, thread-safe
+void SerialWorker::_invokeTaskQueued(TaskPointer fptr, void *arguments, bool blocking)
+{
+    QSemaphore *doneSem = (blocking) ? new QSemaphore() : 0;
+    TaskQueueRecord_t record = {fptr, doneSem, arguments};
+    taskQueueMutex.lock();
+    taskQueue.append(record);
+    taskQueueMutex.unlock();
+    emit signal_ProcessTaskQueue();
+    if (blocking)
+    {
+        doneSem->acquire();
+        delete doneSem;
+    }
 }
 
 
@@ -177,7 +221,6 @@ void SerialWorker::_openPort(QSemaphore *doneSem, openPortArgs_t *a)
     doneSem->release();
 }
 
-
 void SerialWorker::_closePort(QSemaphore *doneSem)
 {
     serialPort->close();
@@ -194,23 +237,6 @@ void SerialWorker::_savePortError(void)
     portErrorCode = serialPort->error();
     portErrorString = serialPort->errorString();
 }
-
-
-void SerialWorker::_invokeTaskQueued(TaskPointer fptr, void *arguments, bool blocking)
-{
-    QSemaphore *doneSem = (blocking) ? new QSemaphore() : 0;
-    TaskQueueRecord_t record = {fptr, doneSem, arguments};
-    taskQueueMutex.lock();
-    taskQueue.append(record);
-    taskQueueMutex.unlock();
-    emit signal_ProcessTaskQueue();
-    if (blocking)
-    {
-        doneSem->acquire();
-        delete doneSem;
-    }
-}
-
 
 void SerialWorker::_processTaskQueue(void)
 {
@@ -237,11 +263,9 @@ void SerialWorker::_processTaskQueue(void)
     }
 }
 
-
-
-void SerialWorker::_sendString(QSemaphore *doneSem, void *args)
+void SerialWorker::_sendData(QSemaphore *doneSem, void *arguments)
 {
-    sendStringArgs_t *a = (sendStringArgs_t *)args;
+    sendDataArgs_t *a = (sendDataArgs_t *)arguments;
     _writeSerialPort(a->data, a->len);
     if (doneSem)
         doneSem->release();
@@ -251,72 +275,8 @@ void SerialWorker::_sendString(QSemaphore *doneSem, void *args)
     delete a;
 }
 
-
-
-void SerialWorker::_getVoltageSetting(QSemaphore *doneSem, void *arguments)
-{
-    getVoltageSettingArgs_t *a = (getVoltageSettingArgs_t *)arguments;
-
-    // Create command string
-    QByteArray ba = parser.cmd_readVset(0);
-    // Send and wait for acknowledge
-    a->errCode = _sendDataWithAcknowledge(ba);
-    // Analyze received acknowledge string
-    if (a->errCode == noError)
-    {
-        if (parser.getAckData_Vset(receiveBuffer, &a->result) == 0)
-        {
-            a->errCode = noError;
-        }
-        else
-        {
-            a->errCode = errParser;
-        }
-        emit log(LogInfo, "Voltage read OK");
-        _continueProcessingReceivedData();
-    }
-    // Confirm if slot call is blocking or generate a signal
-    if (doneSem)
-        doneSem->release();
-    else
-        emit operationDone();
-}
-
-
-void SerialWorker::_setVoltageSetting(QSemaphore *doneSem, void *arguments)
-{
-    setVoltageSettingArgs_t *a = (setVoltageSettingArgs_t *)arguments;
-
-    // Create command string
-    QByteArray ba = parser.cmd_writeVset(a->channel, a->newValue);
-    // Send and wait for acknowledge
-    a->errCode = _sendDataWithAcknowledge(ba);
-    // Analyze received acknowledge string
-    if (a->errCode == noError)
-    {
-        if (parser.getAckData_Vset(receiveBuffer, &a->resultValue) == 0)
-        {
-            a->errCode = noError;
-        }
-        else
-        {
-            a->errCode = errParser;
-        }
-        emit log(LogInfo, "Voltage write OK");
-        _continueProcessingReceivedData();
-    }
-    // Confirm if slot call is blocking or generate a signal
-    if (doneSem)
-        doneSem->release();
-    else
-        emit operationDone();
-}
-
-
-
-
-
-int SerialWorker::_sendDataWithAcknowledge(const QByteArray &ba)
+// Helper function
+int SerialWorker::_sendCmdWithAcknowledge(const QByteArray &ba)
 {
     // Write data to port
     int errCode = _writeSerialPort(ba.data(), ba.size());
@@ -361,25 +321,290 @@ int SerialWorker::_sendDataWithAcknowledge(const QByteArray &ba)
 }
 
 
+void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
+{
+    argsState_t *a = (argsState_t *)arguments;
+
+    // Create command string
+    QByteArray ba = SerialParser::cmd_readState();
+    // Send and wait for acknowledge
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    // Analyze received acknowledge string
+    if (a->errCode == noError)
+    {
+        if (SerialParser::findKey(receiveBuffer, cs_on) == 0)
+        {
+            a->result = CONVERTER_ON;
+            a->errCode = noError;
+        }
+        if (SerialParser::findKey(receiveBuffer, cs_off) == 0)
+        {
+            a->result = CONVERTER_OFF;
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "State read OK");
+        _continueProcessingReceivedData();
+    }
+    // Confirm if slot call is blocking or generate a signal
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_getChannel(QSemaphore *doneSem, void *arguments)
+{
+    argsChannel_t *a = (argsChannel_t *)arguments;
+
+    // Create command string
+    QByteArray ba = SerialParser::cmd_readChannel();
+    // Send and wait for acknowledge
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    // Analyze received acknowledge string
+    if (a->errCode == noError)
+    {
+        if (SerialParser::findKey(receiveBuffer, cs_ch5v) == 0)
+        {
+            a->result = CHANNEL_5V;
+            a->errCode = noError;
+        }
+        if (SerialParser::findKey(receiveBuffer, cs_ch12v) == 0)
+        {
+            a->result = CHANNEL_12V;
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Channel read OK");
+        _continueProcessingReceivedData();
+    }
+    // Confirm if slot call is blocking or generate a signal
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_getCurrentRange(QSemaphore *doneSem, void *arguments)
+{
+    argsCurrentRange_t *a = (argsCurrentRange_t *)arguments;
+    QByteArray ba = SerialParser::cmd_readCurrentRange(a->channel);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::findKey(receiveBuffer, cs_rangeLow) == 0)
+        {
+            a->result = CURRENT_RANGE_LOW;
+            a->errCode = noError;
+        }
+        if (SerialParser::findKey(receiveBuffer, cs_rangeHigh) == 0)
+        {
+            a->result = CURRENT_RANGE_HIGH;
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Current range read OK");
+        _continueProcessingReceivedData();
+    }
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_getVset(QSemaphore *doneSem, void *arguments)
+{
+    argsVset_t *a = (argsVset_t *)arguments;
+    QByteArray ba = SerialParser::cmd_readVset(a->channel);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::getValueForKey(receiveBuffer, cs_vset, &a->result) == 0)
+        {
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Voltage read OK");
+        _continueProcessingReceivedData();
+    }
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_getCset(QSemaphore *doneSem, void *arguments)
+{
+    argsCset_t *a = (argsCset_t *)arguments;
+    QByteArray ba = SerialParser::cmd_readCset(a->channel, a->currentRange);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::getValueForKey(receiveBuffer, cs_cset, &a->result) == 0)
+        {
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Current read OK");
+        _continueProcessingReceivedData();
+    }
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+
+void SerialWorker::_setState(QSemaphore *doneSem, void *arguments)
+{
+    argsState_t *a = (argsState_t *)arguments;
+    QByteArray ba = SerialParser::cmd_writeState(a->newValue);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::findKey(receiveBuffer, cs_on) == 0)
+        {
+            a->result = CONVERTER_ON;
+            a->errCode = noError;
+        }
+        if (SerialParser::findKey(receiveBuffer, cs_off) == 0)
+        {
+            a->result = CONVERTER_OFF;
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "State write OK");
+        _continueProcessingReceivedData();
+    }
+    // Confirm if slot call is blocking or generate a signal
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_setCurrentRange(QSemaphore *doneSem, void *arguments)
+{
+    argsCurrentRange_t *a = (argsCurrentRange_t *)arguments;
+    QByteArray ba = SerialParser::cmd_writeCurrentRange(a->channel, a->newValue);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::findKey(receiveBuffer, cs_rangeLow) == 0)
+        {
+            a->result = CURRENT_RANGE_LOW;
+            a->errCode = noError;
+        }
+        if (SerialParser::findKey(receiveBuffer, cs_rangeHigh) == 0)
+        {
+            a->result = CURRENT_RANGE_HIGH;
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Current range write OK");
+        _continueProcessingReceivedData();
+    }
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_setVset(QSemaphore *doneSem, void *arguments)
+{
+    argsVset_t *a = (argsVset_t *)arguments;
+    QByteArray ba = SerialParser::cmd_writeVset(a->channel, a->newValue);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::getValueForKey(receiveBuffer, cs_vset, &a->result) == 0)
+        {
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Voltage write OK");
+        _continueProcessingReceivedData();
+    }
+    // Confirm if slot call is blocking or generate a signal
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+void SerialWorker::_setCset(QSemaphore *doneSem, void *arguments)
+{
+    argsCset_t *a = (argsCset_t *)arguments;
+    QByteArray ba = SerialParser::cmd_writeCset(a->channel, a->currentRange, a->newValue);
+    a->errCode = _sendCmdWithAcknowledge(ba);
+    if (a->errCode == noError)
+    {
+        if (SerialParser::getValueForKey(receiveBuffer, cs_cset, &a->result) == 0)
+        {
+            a->errCode = noError;
+        }
+        else
+        {
+            a->errCode = errParser;
+        }
+        emit log(LogInfo, "Current write OK");
+        _continueProcessingReceivedData();
+    }
+    if (doneSem)
+        doneSem->release();
+    else
+        emit operationDone();
+}
+
+
+
+
+
+
+
 
 
 void SerialWorker::_infoPacketHandler()
 {
     log(LogInfo, "Processing INFO packet");
     QString valueStr;
-    if (parser._getValueForKey(receiveBuffer, "-vm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, "-vm", valueStr) == 0)
     {
-        log(LogInfo, "Updating measured voltage");
+        log(LogInfo, "Received new vmea");
         emit updVmea(valueStr.toInt());
     }
-    if (parser._getValueForKey(receiveBuffer, "-cm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, "-cm", valueStr) == 0)
     {
-        log(LogInfo, "Updating measured current");
+        log(LogInfo, "Received new cmea");
         emit updCmea(valueStr.toInt());
     }
-    if (parser._getValueForKey(receiveBuffer, "-pm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, "-pm", valueStr) == 0)
     {
-        log(LogInfo, "Updating measured power");
+        log(LogInfo, "Received new pmea");
         emit updPmea(valueStr.toInt());
     }
     _continueProcessingReceivedData();
@@ -425,7 +650,7 @@ void SerialWorker::_readSerialPort(void)
                             log(LogInfo, "Received complete message");
                         }
                         // process
-                        int messageType = parser.getMessageType(receiveBuffer);
+                        int messageType = SerialParser::getMessageType(receiveBuffer);
                         switch (messageType)
                         {
                             case SerialParser::MSG_INFO:

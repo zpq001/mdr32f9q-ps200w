@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QThread>
 
-#include "serialworker.h"
+//#include "serialworker.h"
 #include "serialtop.h"
 
 /*
@@ -222,7 +222,7 @@ void MainWindow::sendTxWindowData()
     {
         if (ui->sendCRLFCheckBox->isChecked())
             text.append("\r");
-        for (int i=0; i<9; i++)
+        //for (int i=0; i<9; i++)
             emit sendString(text);
         ui->sendTextEdit->clearAndAddToHistory();
     }

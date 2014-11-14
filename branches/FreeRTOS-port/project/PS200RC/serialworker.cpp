@@ -332,12 +332,12 @@ void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
     // Analyze received acknowledge string
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, cs_on) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.on) == 0)
         {
             a->result = CONVERTER_ON;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, cs_off) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
         {
             a->result = CONVERTER_OFF;
             a->errCode = noError;
@@ -367,12 +367,12 @@ void SerialWorker::_getChannel(QSemaphore *doneSem, void *arguments)
     // Analyze received acknowledge string
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, cs_ch5v) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.ch5v) == 0)
         {
             a->result = CHANNEL_5V;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, cs_ch12v) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.ch12v) == 0)
         {
             a->result = CHANNEL_12V;
             a->errCode = noError;
@@ -398,12 +398,12 @@ void SerialWorker::_getCurrentRange(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, cs_rangeLow) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeLow) == 0)
         {
             a->result = CURRENT_RANGE_LOW;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, cs_rangeHigh) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
         {
             a->result = CURRENT_RANGE_HIGH;
             a->errCode = noError;
@@ -428,7 +428,7 @@ void SerialWorker::_getVset(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::getValueForKey(receiveBuffer, cs_vset, &a->result) == 0)
+        if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.vset, &a->result) == 0)
         {
             a->errCode = noError;
         }
@@ -452,7 +452,7 @@ void SerialWorker::_getCset(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::getValueForKey(receiveBuffer, cs_cset, &a->result) == 0)
+        if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.cset, &a->result) == 0)
         {
             a->errCode = noError;
         }
@@ -477,12 +477,12 @@ void SerialWorker::_setState(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, cs_on) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.on) == 0)
         {
             a->result = CONVERTER_ON;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, cs_off) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
         {
             a->result = CONVERTER_OFF;
             a->errCode = noError;
@@ -508,12 +508,12 @@ void SerialWorker::_setCurrentRange(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, cs_rangeLow) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeLow) == 0)
         {
             a->result = CURRENT_RANGE_LOW;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, cs_rangeHigh) == 0)
+        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
         {
             a->result = CURRENT_RANGE_HIGH;
             a->errCode = noError;
@@ -538,7 +538,7 @@ void SerialWorker::_setVset(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::getValueForKey(receiveBuffer, cs_vset, &a->result) == 0)
+        if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.vset, &a->result) == 0)
         {
             a->errCode = noError;
         }
@@ -563,7 +563,7 @@ void SerialWorker::_setCset(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::getValueForKey(receiveBuffer, cs_cset, &a->result) == 0)
+        if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.cset, &a->result) == 0)
         {
             a->errCode = noError;
         }
@@ -592,17 +592,17 @@ void SerialWorker::_infoPacketHandler()
 {
     log(LogInfo, "Processing INFO packet");
     QString valueStr;
-    if (SerialParser::getValueForKey(receiveBuffer, "-vm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.vmea, valueStr) == 0)
     {
         log(LogInfo, "Received new vmea");
         emit updVmea(valueStr.toInt());
     }
-    if (SerialParser::getValueForKey(receiveBuffer, "-cm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.cmea, valueStr) == 0)
     {
         log(LogInfo, "Received new cmea");
         emit updCmea(valueStr.toInt());
     }
-    if (SerialParser::getValueForKey(receiveBuffer, "-pm", valueStr) == 0)
+    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.pmea, valueStr) == 0)
     {
         log(LogInfo, "Received new pmea");
         emit updPmea(valueStr.toInt());
@@ -643,7 +643,7 @@ void SerialWorker::_readSerialPort(void)
                 {
                     c = rx.data[rx.index++];
                     receiveBuffer.append(c);
-                    if (c == SerialParser::termSymbol)
+                    if (c == SerialParser::proto.termSymbol)
                     {
                         if (verboseLevel > 0)
                         {

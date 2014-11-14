@@ -96,7 +96,6 @@ private:
 // Methods
 public:
     SerialWorker();
-    QMutex workerMutex;
 
     // Serial port functions
     int openPort(void);
@@ -126,14 +125,22 @@ public slots:
 signals:
     //-------- Public signals -------//
     void operationDone(void);
-    void updVmea(int value);
-    void updCmea(int value);
-    void updPmea(int value);
     void log(int type, QString message);
     void logTx(const char *message, int len);
     void logRx(const char *message, int len);
     void bytesReceived(int);
     void bytesTransmitted(int);
+
+    void updVmea(int value);
+    void updCmea(int value);
+    void updPmea(int value);
+
+    void updState(int value);
+    void updChannel(int value);
+    void updCurrentRange(int channel, int value);
+    void updVset(int channel, int value);
+    void updCset(int channel, int crange, int value);
+
 
     //------- Private signals -------//
     // Intended for internal use only

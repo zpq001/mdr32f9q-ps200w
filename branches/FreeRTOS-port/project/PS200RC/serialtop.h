@@ -22,8 +22,20 @@ private:
     } TaskQueueRecord_t;
 
     typedef struct {
+        bool state;
+        bool channel;
+        bool currentRange;
+        bool voltageSetting;
+        bool currentSetting;
+    } ReadTaskArgs_t;
+
+    typedef struct {
         int channel;
         int currentRange;
+        int vset;
+        int vmea;
+        int cset;
+        int cmea;
     } value_cache_t;
 
 signals:
@@ -70,10 +82,10 @@ private slots:
     void onWorkerUpdCmea(int);
     void onWorkerUpdPmea(int);
     void onWorkerUpdState(int);
-    void onWorkerUpdChannel(int);
-    void onWorkerUpdCurrentRange(int, int);
-    void onWorkerUpdVset(int, int);
-    void onWorkerUpdCset(int, int, int);
+    //void onWorkerUpdChannel(int);
+    //void onWorkerUpdCurrentRange(int, int);
+    //void onWorkerUpdVset(int, int);
+    //void onWorkerUpdCset(int, int, int);
     void onWorkerLog(int, QString);
     void onPortTxLog(const char *, int);
     void onPortRxLog(const char *, int);
@@ -85,13 +97,22 @@ private:
     bool processingTask;
     value_cache_t vcache;
 
-    void _invokeTaskQueued(TaskPointer fptr, void *arguments);
+    void _invokeTaskQueued(TaskPointer fptr, void *arguments, bool insertToFront = false);
     bool _checkConnected(void);
     void _initialRead(void *arguments);
+    void _readTask(void *arguments);
+
     void _setState(void *arguments);
     void _setCurrentRange(void *arguments);
     void _setVoltage(void *arguments);
     void _setCurrent(void *arguments);
+
+    void _getState(void *arguments);
+    void _getChannel(void *arguments);
+    void _getCurrentRange(void *arguments);
+    void _getVoltage(void *arguments);
+    void _getCurrent(void *arguments);
+
     static QString getKeyName(int keyId);
     static QString getKeyEventType(int keyEventType);
 

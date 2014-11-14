@@ -337,7 +337,7 @@ void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
             a->result = CONVERTER_ON;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
+        else if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
         {
             a->result = CONVERTER_OFF;
             a->errCode = noError;
@@ -372,7 +372,7 @@ void SerialWorker::_getChannel(QSemaphore *doneSem, void *arguments)
             a->result = CHANNEL_5V;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.ch12v) == 0)
+        else if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.ch12v) == 0)
         {
             a->result = CHANNEL_12V;
             a->errCode = noError;
@@ -403,7 +403,7 @@ void SerialWorker::_getCurrentRange(QSemaphore *doneSem, void *arguments)
             a->result = CURRENT_RANGE_LOW;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
+        else if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
         {
             a->result = CURRENT_RANGE_HIGH;
             a->errCode = noError;
@@ -482,7 +482,7 @@ void SerialWorker::_setState(QSemaphore *doneSem, void *arguments)
             a->result = CONVERTER_ON;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
+        else if (SerialParser::findKey(receiveBuffer, SerialParser::proto.values.off) == 0)
         {
             a->result = CONVERTER_OFF;
             a->errCode = noError;
@@ -513,7 +513,7 @@ void SerialWorker::_setCurrentRange(QSemaphore *doneSem, void *arguments)
             a->result = CURRENT_RANGE_LOW;
             a->errCode = noError;
         }
-        if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
+        else if (SerialParser::findKey(receiveBuffer, SerialParser::proto.flags.crangeHigh) == 0)
         {
             a->result = CURRENT_RANGE_HIGH;
             a->errCode = noError;

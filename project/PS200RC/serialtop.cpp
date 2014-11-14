@@ -26,6 +26,11 @@ void SerialTop::init(void)
     connect(worker, SIGNAL(updVmea(int)), this, SLOT(onWorkerUpdVmea(int)));
     connect(worker, SIGNAL(updCmea(int)), this, SLOT(onWorkerUpdCmea(int)));
     //connect(worker, SIGNAL(updPmea(int)), this, SIGNAL(up)
+    connect(worker, SIGNAL(updState(int)), this, SLOT(onWorkerUpdState(int)));
+    connect(worker, SIGNAL(updChannel(int)), this, SLOT(onWorkerUpdChannel(int)));
+    connect(worker, SIGNAL(updCurrentRange(int,int)), this, SLOT(onWorkerUpdCurrentRange(int,int)));
+    connect(worker, SIGNAL(updVset(int,int)), this, SLOT(onWorkerUpdVset(int,int)));
+    connect(worker, SIGNAL(updCset(int,int,int)), this, SLOT(onWorkerUpdCset(int,int,int)));
 
     connect(worker, SIGNAL(log(int,QString)), this, SLOT(onWorkerLog(int,QString)), Qt::DirectConnection);
     connect(worker, SIGNAL(logTx(const char*,int)), this, SLOT(onPortTxLog(const char*,int)), Qt::DirectConnection);
@@ -39,6 +44,9 @@ void SerialTop::init(void)
 
     connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()), Qt::QueuedConnection);
 
+
+    vcache.channel = -1;
+    vcache.currentRange = -1;
 }
 
 
@@ -67,19 +75,6 @@ void SerialTop::connectToDevice(void)
 
             emit _log("Reading data from device", LogViewer::LogInfo);
             _invokeTaskQueued(&SerialTop::_initialRead, 0);
-/*
-            // Read data
-            SerialWorker::argsVset_t a;
-            a.channel = 0;
-            //for (int i = 0; i<20; i++)
-            //{
-                //worker->getVoltageSetting(&a, false);    // non-blocking request
-                worker->getVoltageSetting(&a, true);    // blocking request
-            //}
-            if (a.errCode == SerialWorker::noError)
-                emit updVset(a.result);
-            else
-                emit _log("Cannot obtain voltage setting from device!", LogViewer::LogInfo); */
         }
     }
 }
@@ -122,6 +117,23 @@ void SerialTop::keyEvent(int key, int event)
 
 
 // Can be signal-slot or direct call from other thread
+void SerialTop::setState(int state)
+{
+    SerialWorker::argsState_t *args = (SerialWorker::argsState_t *)malloc(sizeof(SerialWorker::argsState_t));
+    args->newValue = state;
+    _invokeTaskQueued(&SerialTop::_setState, args);
+}
+
+// Can be signal-slot or direct call from other thread
+void SerialTop::setCurrentRange(int channel, int value)
+{
+    SerialWorker::argsCurrentRange_t *args = (SerialWorker::argsCurrentRange_t *)malloc(sizeof(SerialWorker::argsCurrentRange_t));
+    args->channel = channel;
+    args->newValue = value;
+    _invokeTaskQueued(&SerialTop::_setCurrentRange, args);
+}
+
+// Can be signal-slot or direct call from other thread
 void SerialTop::setVoltage(int channel, int value)
 {
     SerialWorker::argsVset_t *args = (SerialWorker::argsVset_t *)malloc(sizeof(SerialWorker::argsVset_t));
@@ -130,8 +142,21 @@ void SerialTop::setVoltage(int channel, int value)
     _invokeTaskQueued(&SerialTop::_setVoltage, args);
 }
 
+// Can be signal-slot or direct call from other thread
+void SerialTop::setCurrent(int channel, int currentRange, int value)
+{
+    SerialWorker::argsCset_t *args = (SerialWorker::argsCset_t *)malloc(sizeof(SerialWorker::argsCset_t));
+    args->channel = channel;
+    args->currentRange = currentRange;
+    args->newValue = value;
+    _invokeTaskQueued(&SerialTop::_setCurrent, args);
+}
 
 
+
+
+
+// Helper function
 void SerialTop::_invokeTaskQueued(TaskPointer fptr, void *arguments)
 {
     TaskQueueRecord_t record = {fptr, arguments};
@@ -141,7 +166,7 @@ void SerialTop::_invokeTaskQueued(TaskPointer fptr, void *arguments)
     emit signal_ProcessTaskQueue();
 }
 
-
+// Helper function
 bool SerialTop::_checkConnected(void)
 {
     if (connected != true)
@@ -153,6 +178,9 @@ bool SerialTop::_checkConnected(void)
 }
 
 
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//
 //-----------------------------------------------------------------//
 // Internal queue processing
 
@@ -198,45 +226,168 @@ void SerialTop::_initialRead(void *arguments)
         emit _log("Channel selection read error", LogViewer::LogErr);
         return;
     }
-    // emit updChannel(a.result);
+    vcache.channel = channelArgs.result;
+    emit updChannel(channelArgs.result);
 
-    SerialWorker::argsVset_t a;
-    a.channel = 0;
-    worker->getVoltageSetting(&a);
+    // Current range
+    SerialWorker::argsCurrentRange_t crangeArgs;
+    crangeArgs.channel = vcache.channel;
+    worker->getCurrentRange(&crangeArgs);
     localLoop.exec();
-    if (a.errCode != SerialWorker::noError)
+    if (crangeArgs.errCode != SerialWorker::noError)
     {
-        emit _log("Read voltage setting error", LogViewer::LogErr);
+        emit _log("Current range read error", LogViewer::LogErr);
         return;
     }
+    vcache.currentRange = crangeArgs.result;
+    emit updCurrentRange(crangeArgs.result);
+
+    // Voltage setting
+    SerialWorker::argsVset_t vsetArgs;
+    vsetArgs.channel = vcache.channel;
+    worker->getVoltageSetting(&vsetArgs);
+    localLoop.exec();
+    if (vsetArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Voltage setting read error", LogViewer::LogErr);
+        return;
+    }
+    emit updVset(vsetArgs.result);
+
+    // Current setting
+    SerialWorker::argsCset_t csetArgs;
+    csetArgs.channel = vcache.channel;
+    csetArgs.currentRange = crangeArgs.result;
+    worker->getCurrentSetting(&csetArgs);
+    localLoop.exec();
+    if (csetArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Current setting read error", LogViewer::LogErr);
+        return;
+    }
+    emit updCset(csetArgs.result);
+
+    // State
+    SerialWorker::argsState_t stateArgs;
+    worker->getState(&stateArgs);
+    localLoop.exec();
+    if (stateArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Channel selection read error", LogViewer::LogErr);
+        return;
+    }
+    emit updState(stateArgs.result);
+
 }
 
 
+
+void SerialTop::_setState(void *arguments)
+{
+    QEventLoop localLoop;
+    SerialWorker::argsState_t *a = (SerialWorker::argsState_t *)arguments;
+    if (!_checkConnected()) return;
+    connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
+    worker->setState(a);
+    localLoop.exec();
+    if (a->errCode == SerialWorker::noError)
+    {
+        emit updState(a->result);
+    }
+    else
+    {
+        emit _log("Set state error", LogViewer::LogErr);
+    }
+    delete a;
+}
+
+void SerialTop::_setCurrentRange(void *arguments)
+{
+    QEventLoop localLoop;
+    SerialWorker::argsCurrentRange_t *a = (SerialWorker::argsCurrentRange_t *)arguments;
+    if (_checkConnected())
+    {
+        connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
+        worker->setCurrentRange(a);
+        localLoop.exec();
+        if (a->errCode == SerialWorker::noError)
+        {
+            if (a->channel == vcache.channel)
+            {
+                vcache.currentRange = a->result;
+                emit updCurrentRange(a->result);
+
+                // Also read current setting for new range
+                SerialWorker::argsCset_t csetArgs;
+                csetArgs.channel = a->channel;
+                csetArgs.currentRange = a->result;
+                worker->getCurrentSetting(&csetArgs);
+                localLoop.exec();
+                if (csetArgs.errCode == SerialWorker::noError)
+                {
+                    emit updCset(csetArgs.result);
+                }
+                else
+                {
+                    emit _log("Current setting read error", LogViewer::LogErr);
+                }
+            }
+        }
+        else
+        {
+            emit _log("Set current range error", LogViewer::LogErr);
+            return;
+        }
+    }
+    delete a;
+}
 
 void SerialTop::_setVoltage(void *arguments)
 {
     QEventLoop localLoop;
     SerialWorker::argsVset_t *a = (SerialWorker::argsVset_t *)arguments;
-    if (!_checkConnected()) return;
-    connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
-    worker->setVoltageSetting(a);  // non-blocking
-    localLoop.exec();
-    // Worker has finished (or it's operation was aborted)
-    if (a->errCode == SerialWorker::noError)
+    if (_checkConnected())
     {
-        // Success!
-        emit updVset(a->result);
+        connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
+        worker->setVoltageSetting(a);
+        localLoop.exec();
+        if (a->errCode == SerialWorker::noError)
+        {
+            if (a->channel == vcache.channel)
+            {
+                emit updVset(a->result);
+            }
+        }
+        else
+        {
+            emit _log("Set voltage error", LogViewer::LogErr);
+            return;
+        }
     }
-    else
-    {
-        // An error happened
-        emit _log("Set voltage error", LogViewer::LogErr);
-    }
-
-    // Delete arguments
     delete a;
 }
 
+void SerialTop::_setCurrent(void *arguments)
+{
+    QEventLoop localLoop;
+    SerialWorker::argsCset_t *a = (SerialWorker::argsCset_t *)arguments;
+    if (_checkConnected())
+    {
+        connect(worker, SIGNAL(operationDone()), &localLoop, SLOT(quit()));
+        worker->setCurrentSetting(a);
+        localLoop.exec();
+        if (a->errCode == SerialWorker::noError)
+        {
+            if ((a->channel == vcache.channel) && (a->currentRange == vcache.currentRange))
+            emit updCset(a->result);
+        }
+        else
+        {
+            emit _log("Set current error", LogViewer::LogErr);
+        }
+    }
+    delete a;
+}
 
 
 
@@ -261,6 +412,115 @@ void SerialTop::onWorkerUpdPmea(int v)
     emit _log("Updating measured instant power", LogViewer::LogInfo);
     emit updPmea(v);
 }
+
+void SerialTop::onWorkerUpdState(int state)
+{
+    emit _log("Updating state", LogViewer::LogInfo);
+    emit updState(state);
+}
+
+void SerialTop::onWorkerUpdChannel(int channel)
+{
+    QEventLoop localLoop;
+    emit _log("Updating channel", LogViewer::LogInfo);
+
+    // Read all necessary data
+    vcache.channel = channel;
+    emit updChannel(channel);
+
+    // Current range
+    SerialWorker::argsCurrentRange_t crangeArgs;
+    crangeArgs.channel = vcache.channel;
+    worker->getCurrentRange(&crangeArgs);
+    localLoop.exec();
+    if (crangeArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Current range read error", LogViewer::LogErr);
+        return;
+    }
+    vcache.currentRange = crangeArgs.result;
+    emit updCurrentRange(crangeArgs.result);
+
+    // Voltage setting
+    SerialWorker::argsVset_t vsetArgs;
+    vsetArgs.channel = vcache.channel;
+    worker->getVoltageSetting(&vsetArgs);
+    localLoop.exec();
+    if (vsetArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Voltage setting read error", LogViewer::LogErr);
+        return;
+    }
+    emit updVset(vsetArgs.result);
+
+    // Current setting
+    SerialWorker::argsCset_t csetArgs;
+    csetArgs.channel = vcache.channel;
+    csetArgs.currentRange = crangeArgs.result;
+    worker->getCurrentSetting(&csetArgs);
+    localLoop.exec();
+    if (csetArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Current setting read error", LogViewer::LogErr);
+        return;
+    }
+    emit updCset(csetArgs.result);
+
+    // State
+    SerialWorker::argsState_t stateArgs;
+    worker->getState(&stateArgs);
+    localLoop.exec();
+    if (stateArgs.errCode != SerialWorker::noError)
+    {
+        emit _log("Channel selection read error", LogViewer::LogErr);
+        return;
+    }
+    emit updState(stateArgs.result);
+
+}
+
+void SerialTop::onWorkerUpdCurrentRange(int channel, int currentRange)
+{
+    QEventLoop localLoop;
+    if (channel == vcache.channel)
+    {
+        emit _log("Updating current range", LogViewer::LogInfo);
+        vcache.currentRange = currentRange;
+        emit updCurrentRange(currentRange);
+
+        // Current setting
+        SerialWorker::argsCset_t csetArgs;
+        csetArgs.channel = vcache.channel;
+        csetArgs.currentRange = vcache.currentRange;
+        worker->getCurrentSetting(&csetArgs);
+        localLoop.exec();
+        if (csetArgs.errCode != SerialWorker::noError)
+        {
+            emit _log("Current setting read error", LogViewer::LogErr);
+            return;
+        }
+        emit updCset(csetArgs.result);
+    }
+}
+
+void SerialTop::onWorkerUpdVset(int channel, int value)
+{
+    if (channel == vcache.channel)
+    {
+        emit _log("Updating voltage setting", LogViewer::LogInfo);
+        emit updVset(value);
+    }
+}
+
+void SerialTop::onWorkerUpdCset(int channel, int currentRange, int value)
+{
+    if ((channel == vcache.channel) && (currentRange == vcache.currentRange))
+    {
+        emit _log("Updating current setting", LogViewer::LogInfo);
+        emit updCset(value);
+    }
+}
+
 
 
 

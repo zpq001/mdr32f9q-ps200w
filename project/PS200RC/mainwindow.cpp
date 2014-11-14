@@ -7,6 +7,7 @@
 
 //#include "serialworker.h"
 #include "serialtop.h"
+#include "globaldef.h"
 
 /*
  * http://qt-project.org/wiki/Threads_Events_QObjects
@@ -62,9 +63,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(topController, SIGNAL(_log(QString,int)), ui->logViewer, SLOT(addText(QString,int)));
     connect(topController, SIGNAL(bytesReceived(int)), this, SLOT(onBytesReceived(int)));
     connect(topController, SIGNAL(bytesTransmitted(int)), this, SLOT(onBytesTransmitted(int)));
-    connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
     connect(topController, SIGNAL(updVmea(int)), this, SLOT(updateVmea(int)));
     connect(topController, SIGNAL(updCmea(int)), this, SLOT(updateCmea(int)));
+/*    connect(topController, SIGNAL(updState(int)), this, SLOT(updateState(int)));
+    connect(topController, SIGNAL(updChannel(int)), this, SLOT(updateChannel(int)));
+    connect(topController, SIGNAL(updCurrentRange(int,int)), this, SLOT(updateCurrentRange(int,int)));
+    connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
+    connect(topController, SIGNAL(updCset(int,int,int)), this, SLOT(updateCset(int,int,int))); */
+    connect(topController, SIGNAL(updState(int)), this, SLOT(updateState(int)));
+    connect(topController, SIGNAL(updChannel(int)), this, SLOT(updateChannel(int)));
+    connect(topController, SIGNAL(updCurrentRange(int)), this, SLOT(updateCurrentRange(int)));
+    connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
+    connect(topController, SIGNAL(updCset(int)), this, SLOT(updateCset(int)));
 
     connect(ui->actionConnect, SIGNAL(triggered()), topController, SLOT(connectToDevice()));
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
@@ -78,6 +88,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect (ui->actionSettings, SIGNAL(triggered()), mySettingsDialog, SLOT(exec()));
     connect (ui->actionKeyboard, SIGNAL(triggered()), this, SLOT(showKeyWindow()));
+    connect(ui->stateOnBtn, SIGNAL(clicked()), this, SLOT(on_SetStateOnCommand()));
+    connect(ui->stateOffBtn, SIGNAL(clicked()), this, SLOT(on_SetStateOffCommand()));
+    connect(ui->setCurrentRangeBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentRangeCommand()));
     connect(ui->setVoltageBtn, SIGNAL(clicked()), this, SLOT(on_SetVoltageCommand()));
     connect(ui->setCurrentBtn, SIGNAL(clicked()), this, SLOT(on_SetCurrentCommand()));
     connect(ui->sendButton, SIGNAL(clicked()), this, SLOT(sendTxWindowData()));
@@ -87,10 +100,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Sync value cache
     memset(&vcache, 0, sizeof(vcache));
-    updateVset(vcache.vset);
+
     updateVmea(vcache.vmea);
-    updateCset(vcache.cset);
     updateCmea(vcache.cmea);
+
+    updateState(CONVERTER_OFF);
+    updateChannel(CHANNEL_5V);
+    updateCurrentRange(CURRENT_RANGE_LOW);
+    updateVset(0);
+    updateCset(0);
+
 
     // Default widgets state
     ui->actionDisconnect->setEnabled(false);
@@ -136,12 +155,7 @@ void MainWindow::onBytesTransmitted(int count)
 
 
 
-//-------------------------------------------------------//
-/// @brief Updates measured voltage
-/// @param[in] value - voltage [mV]
-/// @note Also updates value cache
-/// @return none
-//-------------------------------------------------------//
+
 void MainWindow::updateVmea(int value)
 {
     QString str;
@@ -150,12 +164,7 @@ void MainWindow::updateVmea(int value)
     vcache.vmea = value;
 }
 
-//-------------------------------------------------------//
-/// @brief Updates measured current
-/// @param[in] value - current [mA]
-/// @note Also updates value cache
-/// @return none
-//-------------------------------------------------------//
+
 void MainWindow::updateCmea(int value)
 {
     QString str;
@@ -164,12 +173,62 @@ void MainWindow::updateCmea(int value)
     vcache.cmea = value;
 }
 
-//-------------------------------------------------------//
-/// @brief Updates voltage setting
-/// @param[in] value - voltage [mV]
-/// @note Also updates value cache
-/// @return none
-//-------------------------------------------------------//
+
+/*
+void MainWindow::updateState(int state)
+{
+    ui->label_state->setText((state == CONVERTER_ON) ? "On" : "Off");
+}
+
+void MainWindow::updateChannel(int channel)
+{
+    vcache.channel = channel;
+    // invalidate_controls(); -TODO
+    ui->label_channel->setText((channel == CHANNEL_5V) ? "5V" : "12V");
+}
+
+void MainWindow::updateCurrentRange(int channel, int currentRange)
+{
+    vcache.currentRange = currentRange;
+    ui->label_crange->setText((currentRange == CURRENT_RANGE_LOW) ? "20A" : "40A");
+}
+
+void MainWindow::updateVset(int channel, int value)
+{
+    QString str;
+    str.sprintf("%1.2fV", (double)value/1000);
+    ui->label_vset->setText(str);
+    vcache.vset = value;
+}
+
+void MainWindow::updateCset(int channel, int currentRange, int value)
+{
+
+    QString str;
+    str.sprintf("%1.2fA", (double)value/1000);
+    ui->label_cset->setText(str);
+    vcache.cset = value;
+}
+*/
+
+void MainWindow::updateState(int state)
+{
+    ui->label_state->setText((state == CONVERTER_ON) ? "On" : "Off");
+}
+
+void MainWindow::updateChannel(int channel)
+{
+    vcache.channel = channel;
+    // invalidate_controls(); -TODO
+    ui->label_channel->setText((channel == CHANNEL_5V) ? "5V" : "12V");
+}
+
+void MainWindow::updateCurrentRange(int currentRange)
+{
+    vcache.currentRange = currentRange;
+    ui->label_crange->setText((currentRange == CURRENT_RANGE_LOW) ? "20A" : "40A");
+}
+
 void MainWindow::updateVset(int value)
 {
     QString str;
@@ -178,19 +237,15 @@ void MainWindow::updateVset(int value)
     vcache.vset = value;
 }
 
-//-------------------------------------------------------//
-/// @brief Updates current setting
-/// @param[in] value - current [mA]
-/// @note Also updates value cache
-/// @return none
-//-------------------------------------------------------//
 void MainWindow::updateCset(int value)
 {
+
     QString str;
     str.sprintf("%1.2fA", (double)value/1000);
     ui->label_cset->setText(str);
     vcache.cset = value;
 }
+
 
 
 
@@ -238,12 +293,25 @@ void MainWindow::showKeyWindow(void)
 }
 
 
+void MainWindow::on_SetStateOnCommand(void)
+{
+    topController->setState(CONVERTER_ON);
+}
 
-// Receive!
+void MainWindow::on_SetStateOffCommand(void)
+{
+    topController->setState(CONVERTER_OFF);
+}
 
-
-
-
+void MainWindow::on_SetCurrentRangeCommand(void)
+{
+    // CHECKME - use cache for additional params to prevent their change while dialog is active
+    // TODO: dialog
+    if (vcache.currentRange == CURRENT_RANGE_LOW)
+        topController->setCurrentRange(vcache.channel, CURRENT_RANGE_HIGH);
+    else
+        topController->setCurrentRange(vcache.channel, CURRENT_RANGE_LOW);
+}
 
 void MainWindow::on_SetVoltageCommand(void)
 {
@@ -253,10 +321,8 @@ void MainWindow::on_SetVoltageCommand(void)
     myValueDialog->exec();  // modal
     if (myValueDialog->result() == QDialog::Accepted)
     {
-        // Temporary
-        //updateVset(myValueDialog->GetValue());
-        //updateVmea(vcache.vset);
-        emit setVoltageSetting(vcache.channel, myValueDialog->GetValue());
+        // CHECKME - use cache for additional params to prevent their change while dialog is active
+        topController->setVoltage(vcache.channel, myValueDialog->GetValue());
     }
 }
 
@@ -268,9 +334,10 @@ void MainWindow::on_SetCurrentCommand(void)
     myValueDialog->exec();  // modal
     if (myValueDialog->result() == QDialog::Accepted)
     {
-        // Temporary
-        updateCset(myValueDialog->GetValue());
-        updateCmea(vcache.cset);
+        // CHECKME - use cache for additional params to prevent their change while dialog is active
+        topController->setCurrent(vcache.channel, vcache.currentRange, myValueDialog->GetValue());
     }
 }
+
+
 

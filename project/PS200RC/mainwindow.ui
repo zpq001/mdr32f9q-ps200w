@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
-    <height>546</height>
+    <width>681</width>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,10 +18,16 @@
     <item>
      <widget class="QFrame" name="frame">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>210</height>
+       </size>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -34,8 +40,8 @@
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>256</width>
-         <height>156</height>
+         <width>300</width>
+         <height>190</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -47,26 +53,13 @@
        <property name="title">
         <string>Voltage</string>
        </property>
-       <widget class="QPushButton" name="setVoltageBtn">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>100</y>
-          <width>75</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Set</string>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_vset">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>120</x>
           <y>60</y>
-          <width>111</width>
-          <height>31</height>
+          <width>110</width>
+          <height>30</height>
          </rect>
         </property>
         <property name="palette">
@@ -167,7 +160,7 @@
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>20</x>
           <y>70</y>
           <width>46</width>
           <height>13</height>
@@ -186,10 +179,10 @@
        <widget class="QLabel" name="label_vmea">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>120</x>
           <y>20</y>
-          <width>111</width>
-          <height>31</height>
+          <width>110</width>
+          <height>30</height>
          </rect>
         </property>
         <property name="palette">
@@ -264,9 +257,9 @@
        <widget class="QLabel" name="label_4">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>20</x>
           <y>30</y>
-          <width>81</width>
+          <width>91</width>
           <height>16</height>
          </rect>
         </property>
@@ -277,17 +270,43 @@
          </font>
         </property>
         <property name="text">
-         <string>measure:</string>
+         <string>measured:</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="setVoltageBtn">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>150</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set voltage</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="setVoltageLimBtn">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>150</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set limits</string>
         </property>
        </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="geometry">
         <rect>
-         <x>272</x>
+         <x>320</x>
          <y>10</y>
-         <width>255</width>
-         <height>156</height>
+         <width>300</width>
+         <height>190</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -302,23 +321,23 @@
        <widget class="QPushButton" name="setCurrentBtn">
         <property name="geometry">
          <rect>
-          <x>110</x>
-          <y>100</y>
-          <width>75</width>
-          <height>23</height>
+          <x>20</x>
+          <y>150</y>
+          <width>80</width>
+          <height>25</height>
          </rect>
         </property>
         <property name="text">
-         <string>Set</string>
+         <string>Set current</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_cset">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>170</x>
           <y>60</y>
-          <width>111</width>
-          <height>31</height>
+          <width>110</width>
+          <height>30</height>
          </rect>
         </property>
         <property name="palette">
@@ -419,7 +438,7 @@
        <widget class="QLabel" name="label_3">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>20</x>
           <y>70</y>
           <width>46</width>
           <height>13</height>
@@ -438,10 +457,10 @@
        <widget class="QLabel" name="label_cmea">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>170</x>
           <y>20</y>
-          <width>111</width>
-          <height>31</height>
+          <width>110</width>
+          <height>30</height>
          </rect>
         </property>
         <property name="palette">
@@ -516,9 +535,9 @@
        <widget class="QLabel" name="label_5">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>20</x>
           <y>30</y>
-          <width>81</width>
+          <width>91</width>
           <height>16</height>
          </rect>
         </property>
@@ -529,16 +548,101 @@
          </font>
         </property>
         <property name="text">
-         <string>measure:</string>
+         <string>measured:</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_6">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>110</y>
+          <width>71</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>HE_TERMINAL</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>range:</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="setCurrentRangeBtn">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>150</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set range</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_crange">
+        <property name="geometry">
+         <rect>
+          <x>170</x>
+          <y>100</y>
+          <width>110</width>
+          <height>30</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>HE_TERMINAL</family>
+          <pointsize>20</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Panel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="text">
+         <string>20A</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="setCurrentLimBtn">
+        <property name="geometry">
+         <rect>
+          <x>200</x>
+          <y>150</y>
+          <width>80</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set limits</string>
         </property>
        </widget>
       </widget>
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="frame_3">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -546,7 +650,284 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>60</height>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>127</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>127</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>118</red>
+            <green>116</green>
+            <blue>108</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QPushButton" name="stateOnBtn">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>10</y>
+         <width>80</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>On</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="stateOffBtn">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>10</y>
+         <width>80</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Off</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_state">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>60</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>170</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>170</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>118</red>
+             <green>116</green>
+             <blue>108</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="font">
+        <font>
+         <family>HE_TERMINAL</family>
+         <pointsize>20</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+         <kerning>true</kerning>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="text">
+        <string>Off</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="Line" name="line">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>10</y>
+         <width>16</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>20</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="WindowText">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>118</red>
+             <green>116</green>
+             <blue>108</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="font">
+        <font>
+         <family>HE_TERMINAL</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>channel:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_channel">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>560</x>
+         <y>10</y>
+         <width>60</width>
+         <height>30</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>HE_TERMINAL</family>
+         <pointsize>20</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+         <kerning>true</kerning>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="text">
+        <string>5V</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>70</height>
        </size>
       </property>
       <property name="frameShape">
@@ -558,8 +939,8 @@
       <widget class="TxEdit" name="sendTextEdit">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>0</y>
+         <x>10</x>
+         <y>10</y>
          <width>411</width>
          <height>51</height>
         </rect>
@@ -579,8 +960,8 @@
       <widget class="QPushButton" name="sendButton">
        <property name="geometry">
         <rect>
-         <x>450</x>
-         <y>0</y>
+         <x>460</x>
+         <y>10</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -592,8 +973,8 @@
       <widget class="QCheckBox" name="sendCRLFCheckBox">
        <property name="geometry">
         <rect>
-         <x>450</x>
-         <y>30</y>
+         <x>460</x>
+         <y>40</y>
          <width>70</width>
          <height>17</height>
         </rect>
@@ -626,7 +1007,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>553</width>
+     <width>681</width>
      <height>20</height>
     </rect>
    </property>

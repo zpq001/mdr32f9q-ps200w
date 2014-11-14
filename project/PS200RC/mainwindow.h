@@ -20,6 +20,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     typedef struct {
         int channel;
+        int currentRange;
         int vset;
         int vmea;
         int cset;
@@ -35,17 +36,26 @@ public slots:
 private slots:
     void sendTxWindowData(void);
     void showKeyWindow(void);
+    void on_SetStateOnCommand(void);
+    void on_SetStateOffCommand(void);
+    void on_SetCurrentRangeCommand(void);
     void on_SetVoltageCommand(void);
     void on_SetCurrentCommand(void);
+
+    void updateState(int state);
+    void updateChannel(int channel);
+    void updateCurrentRange(int currentRange);
     void updateVset(int value);
-    void updateVmea(int value);
     void updateCset(int value);
+
+    void updateVmea(int value);
     void updateCmea(int value);
+
     void onBytesReceived(int);
     void onBytesTransmitted(int);
 signals:
     void sendString(QString);
-    void setVoltageSetting(int channel, int newValue);
+    //void setVoltageSetting(int channel, int newValue);
 private:
     void validateSettings(void);
     Ui::MainWindow *ui;

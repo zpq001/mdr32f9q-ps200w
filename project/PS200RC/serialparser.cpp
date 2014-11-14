@@ -2,16 +2,9 @@
 #include <QStringList>
 #include "globaldef.h"
 
-const char SerialParser::termSymbol = '\r';
-const char SerialParser::spaceSymbol = ' ';
-//const char SerialParser::cs_ch5v[] = "-ch5v";
-//const char SerialParser::cs_ch12v[] = "-ch12v";
-//const char SerialParser::cs_rangeLow[] = "-range20";
-//const char SerialParser::cs_rangeHigh[] = "-range40";
-
-
-
-
+//const char SerialParser::termSymbol = '\r';
+//const char SerialParser::spaceSymbol = ' ';
+const SerialParser::protocol_definition_struct SerialParser::proto;
 
 /*
 
@@ -75,54 +68,64 @@ key
 
 QByteArray SerialParser::cmd_readState()
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_getState);
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.get);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.state);
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_readChannel()
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_getChannel);
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.get);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.channel);
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_readCurrentRange(int channel)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_getCrange);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.get);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.crange);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_readVset(int channel)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_getVset);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.get);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.vset);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_readCset(int channel, int currentRange)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_getCset);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(spaceSymbol);
-    ba.append((currentRange == CURRENT_RANGE_LOW) ? cs_rangeLow : ((currentRange == CURRENT_RANGE_HIGH) ? cs_rangeHigh : ""));
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.get);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.cset);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.spaceSymbol);
+    ba.append((currentRange == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : ((currentRange == CURRENT_RANGE_HIGH) ? proto.flags.crangeHigh : ""));
+    ba.append(proto.termSymbol);
     return ba;
 }
 
@@ -136,57 +139,65 @@ QByteArray SerialParser::cmd_readCset(int channel, int currentRange)
 
 QByteArray SerialParser::cmd_writeState(int state)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_setState);
-    ba.append(spaceSymbol);
-    ba.append((state == CONVERTER_ON) ? cs_on : cs_off);
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.set);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.state);
+    ba.append(proto.spaceSymbol);
+    ba.append((state == CONVERTER_ON) ? proto.values.on : proto.values.off);
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_writeCurrentRange(int channel, int newCurrentRange)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_setCrange);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(spaceSymbol);
-    ba.append((newCurrentRange == CURRENT_RANGE_LOW) ? cs_rangeLow : ((newCurrentRange == CURRENT_RANGE_HIGH) ? cs_rangeHigh : ""));
-    ba.append(termSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.set);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.crange);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.spaceSymbol);
+    ba.append((newCurrentRange == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : ((newCurrentRange == CURRENT_RANGE_HIGH) ? proto.flags.crangeHigh : ""));
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_writeVset(int channel, int newValue)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_setVset);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(spaceSymbol);
-    ba.append(cs_vset);
-    ba.append(spaceSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.set);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.vset);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.keys.vset);
+    ba.append(proto.spaceSymbol);
     ba.append(QByteArray::number(newValue));
-    ba.append(termSymbol);
+    ba.append(proto.termSymbol);
     return ba;
 }
 
 QByteArray SerialParser::cmd_writeCset(int channel, int currentRange, int newValue)
 {
-    QByteArray ba = cs_cmdtype_converter;
-    ba.append(spaceSymbol);
-    ba.append(cs_cmd_setCset);
-    ba.append(spaceSymbol);
-    ba.append((channel == CHANNEL_5V) ? cs_ch5v : ((channel == CHANNEL_12V) ? cs_ch12v : ""));
-    ba.append(spaceSymbol);
-    ba.append((currentRange == CURRENT_RANGE_LOW) ? cs_rangeLow : ((currentRange == CURRENT_RANGE_HIGH) ? cs_rangeHigh : ""));
-    ba.append(spaceSymbol);
-    ba.append(cs_cset);
-    ba.append(spaceSymbol);
+    QByteArray ba = proto.groups.converter;
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.actions.set);
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.parameters.cset);
+    ba.append(proto.spaceSymbol);
+    ba.append((channel == CHANNEL_5V) ? proto.flags.ch5v : ((channel == CHANNEL_12V) ? proto.flags.ch12v : ""));
+    ba.append(proto.spaceSymbol);
+    ba.append((currentRange == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : ((currentRange == CURRENT_RANGE_HIGH) ? proto.flags.crangeHigh : ""));
+    ba.append(proto.spaceSymbol);
+    ba.append(proto.keys.cset);
+    ba.append(proto.spaceSymbol);
     ba.append(QByteArray::number(newValue));
-    ba.append(termSymbol);
+    ba.append(proto.termSymbol);
     return ba;
 }
 
@@ -223,7 +234,7 @@ int SerialParser::getAckData_Vset(const QByteArray &ba, int *value)
 int SerialParser::getMessageType(const QByteArray &ba)
 {
     int msgType;
-    if (ba.indexOf(cs_acknowledge) != -1)
+    if (ba.indexOf(proto.message_types.ack) != -1)
         msgType = MSG_ACK;
     else
         msgType = MSG_INFO;

@@ -80,7 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
     connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
     connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
-    connect(this, SIGNAL(setVoltageSetting(int,int)), topController, SLOT(setVoltage(int,int)));
 
     topController->moveToThread(newThread);
     // Start second thread

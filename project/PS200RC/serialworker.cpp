@@ -13,17 +13,23 @@ SerialWorker::SerialWorker()
 
 void SerialWorker::init()
 {
-    serialPort = new QSerialPort;   // no "this" parent - thread object itself lives in master thread
+    serialPort = new QSerialPort(this);
+    portWriteTimer = new QTimer(this);
 
     connect(this, SIGNAL(signal_openPort(QSemaphore*,openPortArgs_t*)), this, SLOT(_openPort(QSemaphore*,openPortArgs_t*)));
     connect(this, SIGNAL(signal_closePort(QSemaphore*)), this, SLOT(_closePort(QSemaphore*)));
     connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_ForceReadSerialPort()), this, SLOT(_readSerialPort()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_infoReceived()), this, SLOT(_infoPacketHandler()), Qt::QueuedConnection);
-    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()));
+    connect(serialPort, SIGNAL(readyRead()), this, SLOT(_readSerialPort()), Qt::QueuedConnection);
     connect(serialPort, SIGNAL(bytesWritten(qint64)), this, SLOT(_transmitDone(qint64)));
+    connect(serialPort, SIGNAL(bytesWritten(qint64)), portWriteTimer, SLOT(stop()));    // stop timer when data is written
+    //connect(this, SIGNAL(signal_Terminate()), portWriteTimer, SLOT(stop()));            // stop timer when port is closed
+    connect(portWriteTimer, SIGNAL(timeout()), this, SLOT(_portWriteTimeout()));
 
     verboseLevel = 1;
+
+    portWriteTimer->setSingleShot(true);
 
     rx.state = RSTATE_READING_NEW_DATA;
     rx.index = 0;
@@ -224,7 +230,6 @@ void SerialWorker::_openPort(QSemaphore *doneSem, openPortArgs_t *a)
 void SerialWorker::_closePort(QSemaphore *doneSem)
 {
     serialPort->close();
-    serialPort->clear();
     _stopReceive();
     emit signal_Terminate();
     emit log(LogInfo, "Port closed");
@@ -278,19 +283,21 @@ void SerialWorker::_sendData(QSemaphore *doneSem, void *arguments)
 // Helper function
 int SerialWorker::_sendCmdWithAcknowledge(const QByteArray &ba)
 {
+    QEventLoop loop;
+    QTimer ackTimer;
     // Write data to port
     int errCode = _writeSerialPort(ba.data(), ba.size());
     if (errCode == noError)
     {
-        // Wait for acknowledge from device.
-        QEventLoop loop;
-        QTimer ackTimer;
-        connect(this, SIGNAL(signal_ackReceived()), &loop, SLOT(quit()));
         connect(&ackTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        connect(portWriteTimer, SIGNAL(timeout()), &loop, SLOT(quit()));
         connect(this, SIGNAL(signal_Terminate()), &loop, SLOT(quit()));
+        connect(this, SIGNAL(signal_ackReceived()), &loop, SLOT(quit()));
         ackTimer.setSingleShot(true);
-        ackTimer.start(ackWaitTimeout);
         ackRequired = true;
+        // Wait for acknowledge from device.
+        ackTimer.start(ackWaitTimeout);
+        //log(LogThread, LogViewer::prefixThreadId("From sendCmdWithAcknowledge"));
         loop.exec();
         // Check whether ACK is received or timeout is reached
         if (ackRequired == false)
@@ -309,6 +316,11 @@ int SerialWorker::_sendCmdWithAcknowledge(const QByteArray &ba)
             {
                 errCode = errNoAck;
                 emit log(LogErr, "No acknowledge from device");
+            }
+            else if (portWriteTimer->isActive() == false)   // FIXME
+            {
+                errCode = errTimeout;
+                //emit log(LogErr, "Port write timeout");
             }
             else
             {
@@ -591,22 +603,61 @@ void SerialWorker::_setCset(QSemaphore *doneSem, void *arguments)
 void SerialWorker::_infoPacketHandler()
 {
     log(LogInfo, "Processing INFO packet");
-    QString valueStr;
-    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.vmea, valueStr) == 0)
+    QStringList list = SerialParser::splitPacket(receiveBuffer);
+    int value;
+    int channel;
+    int currentRange;
+    if (SerialParser::getValueForKey(list, SerialParser::proto.keys.vmea, &value) == 0)
     {
         log(LogInfo, "Received new vmea");
-        emit updVmea(valueStr.toInt());
+        emit updVmea(value);
     }
-    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.cmea, valueStr) == 0)
+    else if (SerialParser::getValueForKey(list, SerialParser::proto.keys.cmea, &value) == 0)
     {
         log(LogInfo, "Received new cmea");
-        emit updCmea(valueStr.toInt());
+        emit updCmea(value);
     }
-    if (SerialParser::getValueForKey(receiveBuffer, SerialParser::proto.keys.pmea, valueStr) == 0)
+    else if (SerialParser::getValueForKey(list, SerialParser::proto.keys.pmea, &value) == 0)
     {
         log(LogInfo, "Received new pmea");
-        emit updPmea(valueStr.toInt());
+        emit updPmea(value);
     }
+    else if (SerialParser::findKey(list, SerialParser::proto.parameters.state) == 0)
+    {
+        if (SerialParser::getState(list, &value) == 0)
+            emit updState(value);
+    }
+    else if (SerialParser::findKey(list, SerialParser::proto.parameters.channel) == 0)
+    {
+        if (SerialParser::getChannel(list, &value) == 0)
+            emit updChannel(value);
+    }
+    else if (SerialParser::findKey(list, SerialParser::proto.parameters.crange) == 0)
+    {
+        if ((SerialParser::getChannel(list, &channel) == 0) &&
+            (SerialParser::getCurrentRange(list, &value) == 0))
+        {
+            emit updCurrentRange(channel, value);
+        }
+    }
+    else if (SerialParser::findKey(list, SerialParser::proto.parameters.vset) == 0)
+    {
+        if ((SerialParser::getChannel(list, &channel) == 0) &&
+            (SerialParser::getValueForKey(list, SerialParser::proto.keys.vset, &value) == 0))
+        {
+            emit updVset(channel, value);
+        }
+    }
+    else if (SerialParser::findKey(list, SerialParser::proto.parameters.cset) == 0)
+    {
+        if ((SerialParser::getChannel(list, &channel) == 0) &&
+            (SerialParser::getCurrentRange(list, &currentRange) == 0) &&
+            (SerialParser::getValueForKey(list, SerialParser::proto.keys.vset, &value) == 0))
+        {
+            emit updCset(channel, currentRange, value);
+        }
+    }
+
     _continueProcessingReceivedData();
 }
 
@@ -627,6 +678,7 @@ void SerialWorker::_readSerialPort(void)
                 rx.len = serialPort->bytesAvailable();
                 if (rx.len > 0)
                 {
+                    //log(LogThread, LogViewer::prefixThreadId("From read serial"));
                     rx.data = new char[rx.len];
                     serialPort->read(rx.data, rx.len);
                     emit logRx(rx.data, rx.len);
@@ -642,7 +694,6 @@ void SerialWorker::_readSerialPort(void)
                 if (rx.index < rx.len)
                 {
                     c = rx.data[rx.index++];
-                    receiveBuffer.append(c);
                     if (c == SerialParser::proto.termSymbol)
                     {
                         if (verboseLevel > 0)
@@ -691,6 +742,7 @@ void SerialWorker::_readSerialPort(void)
                     }
                     else
                     {
+                        receiveBuffer.append(c);
                         if (receiveBuffer.size() >= receiveBufferLength)
                         {
                             // Reached maximum message length
@@ -748,46 +800,87 @@ void SerialWorker::_stopReceive()
 
 int SerialWorker::_writeSerialPort(const char* data, int len)
 {
-    int bytesWritten;
-    QTimer timer;
-
+    // According to http://qt-project.org/doc/qt-5/qiodevice.html#writeData ,
+    // all data is written before return from writeData() function
     int errCode = noError;
-    while (len)
+    int bytesWritten = serialPort->write(data, len);
+    if (bytesWritten == -1)
     {
-        bytesWritten = serialPort->write(data, len);
-        if (bytesWritten == -1)
-        {
-            QString errorText = "Cannot write to port: ";
-            errorText.append(serialPort->errorString());
-            _savePortError();
-            emit log(LogErr, errorText);
-            errCode = errCritical;
-            break;
-        }
-        else
-        {
-            // Some data is written. Log data
-            emit logTx(data, bytesWritten);
-            data += bytesWritten;
-            len -= bytesWritten;
-            // Wait until data is actually written through serial port
-            timer.setSingleShot(true);
-            timer.start(portWriteTimeout);
-            // Keep processing incoming RX data
-            while (timer.isActive() && serialPort->bytesToWrite())  // TODO: add terminated signal
-                QCoreApplication::processEvents();
-            // Check if timeout is reached
-            if (!timer.isActive())
-            {
-                // Timeout error
-                emit log(LogErr, "Port write timeout");
-                errCode = errTimeout;
-                break;
-            }
-        }
+        QString errorText = "Cannot write to port: ";
+        errorText.append(serialPort->errorString());
+        _savePortError();
+        emit log(LogErr, errorText);
+        errCode = errCritical;
+    }
+    else if (bytesWritten != len)
+    {
+        // Amount of written bytes should be equal to requested.
+        // If program gets here, there is a problem in QSerial.
+        QString errorText = "Cannot write to port all data: ";
+        errorText.append(serialPort->errorString());
+        _savePortError();
+        emit log(LogErr, errorText);
+        errCode = errCritical;
+    }
+    else
+    {
+        // All data is written. Log data
+        portWriteTimer->start(portWriteTimeout);
+        emit logTx(data, bytesWritten);
     }
     return errCode;
 }
+
+//int SerialWorker::_writeSerialPort(const char* data, int len)
+//{
+//    int bytesWritten;
+//    QTimer timer;
+//    QEventLoop loop;
+//    connect(serialPort, SIGNAL(bytesWritten(qint64)), &loop, SLOT(quit()));
+//    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+//    connect(this, SIGNAL(signal_Terminate()), &loop, SLOT(quit()));
+//    timer.setSingleShot(true);
+
+//    int errCode = noError;
+//    while (len)
+//    {
+//        bytesWritten = serialPort->write(data, len);
+//        if (bytesWritten == -1)
+//        {
+//            QString errorText = "Cannot write to port: ";
+//            errorText.append(serialPort->errorString());
+//            _savePortError();
+//            emit log(LogErr, errorText);
+//            errCode = errCritical;
+//            break;
+//        }
+//        else
+//        {
+//            // Some data is written. Log data
+//            emit logTx(data, bytesWritten);
+//            data += bytesWritten;
+//            len -= bytesWritten;
+//            // Wait until data is actually written through serial port and
+//            // keep processing events
+//            timer.start(portWriteTimeout);
+//            loop.exec();
+//            // Check if timeout is reached
+//            if (!timer.isActive())
+//            {
+//                emit log(LogErr, "Port write timeout");
+//                errCode = errTimeout;
+//                break;
+//            }
+//            else if (serialPort->isOpen() == false)
+//            {
+//                emit log(LogErr, "Port write aborted");
+//                errCode = errTerminated;
+//                break;
+//            }
+//        }
+//    }
+//    return errCode;
+//}
 
 
 void SerialWorker::_transmitDone(qint64 bytesWritten)
@@ -801,6 +894,11 @@ void SerialWorker::_transmitDone(qint64 bytesWritten)
         text.append(" bytes");
         emit log(LogInfo, text);
     }
+}
+
+void SerialWorker::_portWriteTimeout()
+{
+    emit log(LogErr, "Port write timeout");
 }
 
 

@@ -89,8 +89,8 @@ private:
         int len;
     } sendDataArgs_t;
 
-    static const int portWriteTimeout = 1000;   //ms
-    static const int ackWaitTimeout = 1000;     //ms
+    static const int portWriteTimeout = 100;   //ms
+    static const int ackWaitTimeout = 500;     //ms
     static const int receiveBufferLength = 100; // chars
 
 // Methods
@@ -156,6 +156,7 @@ private slots:
     void _closePort(QSemaphore *doneSem);
     void _readSerialPort(void);
     void _transmitDone(qint64 bytesWritten);
+    void _portWriteTimeout(void);
     void _processTaskQueue(void);
     void _infoPacketHandler(void);
 
@@ -186,6 +187,7 @@ private:
     QMutex portSettingsMutex;
     QSerialPort *serialPort;
     portSettings_t portSettings;
+    QTimer *portWriteTimer;
 
     QMutex portErrorDataMutex;
     QString portErrorString;

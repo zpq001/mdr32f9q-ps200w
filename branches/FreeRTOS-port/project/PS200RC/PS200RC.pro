@@ -13,6 +13,8 @@ TARGET = PS200RC
 TEMPLATE = app
 CONFIG += c++11
 
+INCLUDEPATH += ../../source/src/
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     singlevaluedialog.cpp \
@@ -25,7 +27,8 @@ SOURCES += main.cpp\
     txEedit.cpp \
     keydriver.cpp \
     keywindow.cpp \
-    serialparser.cpp
+	serialparser.cpp \
+	../../source/src/uart_proto.c
 
 HEADERS  += mainwindow.h \
     singlevaluedialog.h \
@@ -39,12 +42,13 @@ HEADERS  += mainwindow.h \
     keydriver.h \
     keywindow.h \
     serialparser.h \
-    globaldef.h
+	globaldef.h \
+	../../source/src/uart_proto.h
 
 FORMS    += mainwindow.ui \
     singlevaluedialog.ui \
     settingsdialog.ui \
-    keywindow.ui
+	keywindow.ui
 
 RESOURCES += \
     resources.qrc

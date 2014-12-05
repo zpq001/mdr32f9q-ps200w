@@ -7,7 +7,7 @@
 #include <QQueue>
 #include <QThread>
 #include <QTimer>
-#include "serialparser.h"
+
 
 
 class SerialWorker : public QObject

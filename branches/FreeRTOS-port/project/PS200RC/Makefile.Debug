@@ -14,7 +14,7 @@ CXX           = g++
 DEFINES       = -DUNICODE -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -DQT_WIDGETS_LIB -DQT_SERIALPORT_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_NEEDS_QMAIN
 CFLAGS        = -pipe -fno-keep-inline-dllexport -g -Wall -Wextra $(DEFINES)
 CXXFLAGS      = -pipe -fno-keep-inline-dllexport -g -std=c++0x -frtti -Wall -Wextra -fexceptions -mthreads $(DEFINES)
-INCPATH       = -I. -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtWidgets" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtSerialPort" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtGui" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtCore" -I"debug" -I"." -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\win32-g++"
+INCPATH       = -I. -I"..\..\source\src" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtWidgets" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtSerialPort" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtGui" -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\include\QtCore" -I"debug" -I"." -I"..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\win32-g++"
 LINKER      =        g++
 LFLAGS        =        -Wl,-subsystem,windows -mthreads
 LIBS        =        -lglu32 -lopengl32 -lgdi32 -luser32 -lmingw32 -lqtmaind -LE:\Qt5.2.0\5.2.0\mingw48_32\lib -lQt5Widgetsd -lQt5SerialPortd -lQt5Guid -lQt5Cored 
@@ -55,7 +55,8 @@ SOURCES       = main.cpp \
 		txEedit.cpp \
 		keydriver.cpp \
 		keywindow.cpp \
-		serialparser.cpp debug\qrc_resources.cpp \
+		serialparser.cpp \
+		..\..\source\src\uart_proto.c debug\qrc_resources.cpp \
 		debug\moc_mainwindow.cpp \
 		debug\moc_singlevaluedialog.cpp \
 		debug\moc_mydoublespinbox.cpp \
@@ -79,6 +80,7 @@ OBJECTS       = debug/main.o \
 		debug/keydriver.o \
 		debug/keywindow.o \
 		debug/serialparser.o \
+		debug/uart_proto.o \
 		debug/qrc_resources.o \
 		debug/moc_mainwindow.o \
 		debug/moc_singlevaluedialog.o \
@@ -130,7 +132,7 @@ dist:
 	$(ZIP) PS200RC.zip $(SOURCES) $(DIST) PS200RC.pro ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\spec_pre.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\qdevice.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\device_config.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\common\shell-win32.conf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\qconfig.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axbase.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axbase_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axcontainer.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axcontainer_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axserver.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_axserver_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_bluetooth.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_bluetooth_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_bootstrap_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_clucene_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_concurrent.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_concurrent_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_core.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_core_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_declarative.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_declarative_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_designer.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_designer_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_designercomponents_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_gui.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_gui_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_help.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_help_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_multimedia.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_multimedia_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_multimediawidgets.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_multimediawidgets_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_network.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_network_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_nfc.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_nfc_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_opengl.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_opengl_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_openglextensions.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_openglextensions_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_platformsupport_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_positioning.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_positioning_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_printsupport.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_printsupport_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qml.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qml_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qmldevtools_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qmltest.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qmltest_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_quick.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_quick_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_quickparticles_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_script.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_script_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_scripttools.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_scripttools_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_sensors.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_sensors_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_serialport.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_serialport_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_sql.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_sql_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_svg.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_svg_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_testlib.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_testlib_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_uitools.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_uitools_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_webkit.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_webkit_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_webkitwidgets.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_webkitwidgets_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_widgets.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_widgets_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_winextras.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_winextras_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_xml.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_xml_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_xmlpatterns.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\modules\qt_lib_xmlpatterns_private.pri ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\qt_functions.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\qt_config.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\win32-g++\qmake.conf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\spec_post.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\exclusive_builds.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\default_pre.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\win32\default_pre.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\resolve_config.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\exclusive_builds_post.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\default_post.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\build_pass.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\c++11.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\qml_debug.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\declarative_debug.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\win32\rtti.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\warn_on.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\qt.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\resources.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\moc.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\win32\opengl.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\uic.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\win32\windows.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\testcase_targets.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\exceptions.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\yacc.prf ..\..\..\..\Qt5.2.0\5.2.0\mingw48_32\mkspecs\features\lex.prf PS200RC.pro resources.qrc E:/Qt5.2.0/5.2.0/mingw48_32/lib/Qt5Widgetsd.prl E:/Qt5.2.0/5.2.0/mingw48_32/lib/Qt5SerialPortd.prl E:/Qt5.2.0/5.2.0/mingw48_32/lib/Qt5Guid.prl E:/Qt5.2.0/5.2.0/mingw48_32/lib/Qt5Cored.prl  RESOURCES HEADERS SOURCES OBJECTIVE_SOURCES FORMS YACCSOURCES YACCSOURCES LEXSOURCES 
 
 clean: compiler_clean 
-	-$(DEL_FILE) debug\main.o debug\mainwindow.o debug\singlevaluedialog.o debug\mydoublespinbox.o debug\settingsdialog.o debug\settingshelper.o debug\serialworker.o debug\serialtop.o debug\logviewer.o debug\txEedit.o debug\keydriver.o debug\keywindow.o debug\serialparser.o debug\qrc_resources.o debug\moc_mainwindow.o debug\moc_singlevaluedialog.o debug\moc_mydoublespinbox.o debug\moc_settingsdialog.o debug\moc_serialworker.o debug\moc_serialtop.o debug\moc_logviewer.o debug\moc_txEdit.o debug\moc_keydriver.o debug\moc_keywindow.o
+	-$(DEL_FILE) debug\main.o debug\mainwindow.o debug\singlevaluedialog.o debug\mydoublespinbox.o debug\settingsdialog.o debug\settingshelper.o debug\serialworker.o debug\serialtop.o debug\logviewer.o debug\txEedit.o debug\keydriver.o debug\keywindow.o debug\serialparser.o debug\uart_proto.o debug\qrc_resources.o debug\moc_mainwindow.o debug\moc_singlevaluedialog.o debug\moc_mydoublespinbox.o debug\moc_settingsdialog.o debug\moc_serialworker.o debug\moc_serialtop.o debug\moc_logviewer.o debug\moc_txEdit.o debug\moc_keydriver.o debug\moc_keywindow.o
 
 distclean: clean
 	-$(DEL_FILE) $(DESTDIR_TARGET)
@@ -147,8 +149,8 @@ compiler_rcc_clean:
 	-$(DEL_FILE) debug\qrc_resources.cpp
 debug/qrc_resources.cpp: resources.qrc \
 		images/connect.ico \
-		images/disconnect.ico \
-		images/gnome_preferences_system.ico
+		images/gnome_preferences_system.ico \
+		images/disconnect.ico
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\rcc.exe -name resources resources.qrc -o debug\qrc_resources.cpp
 
 compiler_moc_header_make_all: debug/moc_mainwindow.cpp debug/moc_singlevaluedialog.cpp debug/moc_mydoublespinbox.cpp debug/moc_settingsdialog.cpp debug/moc_serialworker.cpp debug/moc_serialtop.cpp debug/moc_logviewer.cpp debug/moc_txEdit.cpp debug/moc_keydriver.cpp debug/moc_keywindow.cpp
@@ -296,7 +298,7 @@ debug/moc_mainwindow.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
-		serialparser.h \
+		globaldef.h \
 		mainwindow.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) mainwindow.h -o debug\moc_mainwindow.cpp
 
@@ -716,8 +718,6 @@ debug/moc_serialworker.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSeria
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QTimer \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qtimer.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
-		serialparser.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QString \
 		serialworker.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) serialworker.h -o debug\moc_serialworker.cpp
 
@@ -795,8 +795,7 @@ debug/moc_serialtop.cpp: ../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QOb
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QTimer \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qtimer.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
-		serialparser.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QString \
+		globaldef.h \
 		serialtop.h
 	E:\Qt5.2.0\5.2.0\mingw48_32\bin\moc.exe $(DEFINES) -D__GNUC__ -DWIN32 $(INCPATH) serialtop.h -o debug\moc_serialtop.cpp
 
@@ -1749,7 +1748,7 @@ debug/main.o: main.cpp mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
-		serialparser.h \
+		globaldef.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QApplication \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/qapplication.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qcoreapplication.h \
@@ -1901,7 +1900,7 @@ debug/mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
-		serialparser.h \
+		globaldef.h \
 		ui_mainwindow.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QVariant \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtWidgets/QAction \
@@ -2561,21 +2560,6 @@ debug/serialworker.o: serialworker.cpp ../../../../Qt5.2.0/5.2.0/mingw48_32/incl
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsignalmapper.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QCoreApplication \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qcoreapplication.h \
-		serialworker.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/QSerialPort \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialport.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qiodevice.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtSerialPort/qserialportglobal.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QMutex \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QSemaphore \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qsemaphore.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QQueue \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qqueue.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QThread \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qthread.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QTimer \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qtimer.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
 		serialparser.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QString \
 		logviewer.h \
@@ -2596,6 +2580,7 @@ debug/serialworker.o: serialworker.cpp ../../../../Qt5.2.0/5.2.0/mingw48_32/incl
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qrgb.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qstringlist.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qdatastream.h \
+		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qiodevice.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qpair.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qregexp.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qstringmatcher.h \
@@ -2638,7 +2623,8 @@ debug/serialworker.o: serialworker.cpp ../../../../Qt5.2.0/5.2.0/mingw48_32/incl
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qtextcursor.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qtextformat.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtGui/qpen.h \
-		globaldef.h
+		globaldef.h \
+		../../source/src/uart_proto.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\serialworker.o serialworker.cpp
 
 debug/serialtop.o: serialtop.cpp serialtop.h \
@@ -2716,8 +2702,7 @@ debug/serialtop.o: serialtop.cpp serialtop.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QTimer \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qtimer.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qbasictimer.h \
-		serialparser.h \
-		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QString \
+		globaldef.h \
 		settingshelper.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/QVariant \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qvariant.h \
@@ -3329,6 +3314,9 @@ debug/serialparser.o: serialparser.cpp serialparser.h \
 		../../../../Qt5.2.0/5.2.0/mingw48_32/include/QtCore/qstringmatcher.h \
 		globaldef.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\serialparser.o serialparser.cpp
+
+debug/uart_proto.o: ../../source/src/uart_proto.c ../../source/src/uart_proto.h
+	$(CC) -c $(CFLAGS) $(INCPATH) -o debug\uart_proto.o ..\..\source\src\uart_proto.c
 
 debug/qrc_resources.o: debug/qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\qrc_resources.o debug\qrc_resources.cpp

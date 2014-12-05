@@ -4,8 +4,6 @@
 #include "stdlib.h"
 #include "stdint.h"
 
-
-
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -14,9 +12,9 @@
 #include "global_def.h"
 #include "key_def.h"		// button codes
 #include "uart_hw.h"
-#include "uart_parser.h"
 #include "uart_rx.h"
 #include "uart_tx.h"
+#include "uart_proto"
 #include "systemfunc.h"
 #include "dispatcher.h"
 #include "converter.h"
@@ -25,17 +23,6 @@
 
 
 static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args);
-
-
-
-void UART_Get_comm_params(uint8_t uart_num, uart_param_request_t *r)
-{
-	uartx_settings_t *my_uart_settings = (uart_num == 1) ? &global_settings->uart1 : &global_settings->uart2;
-	r->enable = my_uart_settings->enable;
-	r->brate = my_uart_settings->baudRate;
-	r->parity = my_uart_settings->parity;
-}
-
 
 
 // OS stuff
@@ -66,8 +53,6 @@ typedef struct {
 	xQueueHandle *xQueue;
 	xSemaphoreHandle *hwUART_mutex;
 	xSemaphoreHandle *xSyncSem;
-	uint8_t exeFunc;
-    arg_t exeFuncArgs[MAX_FUNCTION_ARGUMENTS];
 } UART_RX_Task_Context_t;
 
 
@@ -87,8 +72,20 @@ UART_RX_Task_Context_t UART2_Task_Context = {
 
 
 
-static uint8_t UartRxStreamParser(char c)
-{
+// Reads UART communication settings for specified UART number from
+// global settings
+// Used by GUI
+void UART_Get_comm_params(uint8_t uart_num, uart_param_request_t *r) {
+	uartx_settings_t *my_uart_settings = (uart_num == 1) ? &global_settings->uart1 : &global_settings->uart2;
+	r->enable = my_uart_settings->enable;
+	r->brate = my_uart_settings->baudRate;
+	r->parity = my_uart_settings->parity;
+}
+
+
+//-------------------------------------------------------//
+// Low-level callback
+static uint8_t UartRxStreamParser(char c) {
 	if ((c == '\n') || (c == '\r'))
 		return 1;
 	else
@@ -107,7 +104,7 @@ void vTaskUARTReceiver(void *pvParameters)
 	
 	// Initialize OS items
 	*ctx->xQueue = xQueueCreate( 5, sizeof( uart_receiver_msg_t ) );
-	if( *ctx->xQueue == 0 )
+	if(*ctx->xQueue == 0)
 		while(1);
 	
 	vSemaphoreCreateBinary( *ctx->xSyncSem );
@@ -133,11 +130,9 @@ void vTaskUARTReceiver(void *pvParameters)
 	parser.received_msg_ptr = parser.received_msg;
 	parser.chars_to_read = RX_MESSAGE_MAX_LENGTH;
 	
-	while(1)
-	{
+	while(1) {
 		xQueueReceive(*ctx->xQueue, &msg, portMAX_DELAY);
-		switch (msg.type)
-		{
+		switch (msg.type) {
 			case UART_INITIAL_START:
 				// Read global settings, setup UART hardware and start listening if required
 				UART_Enable(ctx->uart_num, my_uart_settings->baudRate, my_uart_settings->parity);
@@ -170,8 +165,7 @@ void vTaskUARTReceiver(void *pvParameters)
 				my_uart_settings->parity = msg.parity;
 				my_uart_settings->enable = msg.enable;
 				taskEXIT_CRITICAL();
-				if (my_uart_settings->enable)
-				{
+				if (my_uart_settings->enable) {
 					// Enables UART and allows RX requests to DMA
 					UART_Start_RX(ctx->uart_num);
 					// Releasing mutex will allow UART TX task operation
@@ -180,39 +174,25 @@ void vTaskUARTReceiver(void *pvParameters)
 				break;
 			case UART_RX_TICK:
 				parser.analyze_message = UART_read_RX_stream(ctx->uart_num, &parser.received_msg_ptr, &parser.chars_to_read);
-				if (parser.analyze_message)
-				{
+				if (parser.analyze_message) {
 					parser.msg_length = RX_MESSAGE_MAX_LENGTH - parser.chars_to_read;
-					
 					// Split message string into argument words
 					parser.argc = 0;
 					parser.searchWord = 1;
-					for (i=0; i<parser.msg_length; i++)
-					{
-						if ( (parser.received_msg[i] == ' ') || (parser.received_msg[i] == '\t') || 
-							 (parser.received_msg[i] == '\n') || (parser.received_msg[i] == '\r'))
-						{
+					for (i=0; i<parser.msg_length; i++) {
+						if ((parser.received_msg[i] == ' ') || (parser.received_msg[i] == '\t') || 
+								(parser.received_msg[i] == '\n') || (parser.received_msg[i] == '\r')) {
 							parser.received_msg[i] = 0;
 							parser.searchWord = 1;
-						}
-						else if (parser.searchWord)
-						{
+						} else if (parser.searchWord) {
 							parser.argv[parser.argc++] = &parser.received_msg[i];
 							parser.searchWord = 0;
 						}
 					}
 					// If there are any words
-					if (parser.argc > 0)
-					{
-						// Clear argument being passed to exe function -
-						// actualy fill args[i].type with ATYPE_NONE (0)
-						memset(ctx->exeFuncArgs, 0, sizeof(ctx->exeFuncArgs));
-						
-						// Parse string into function and arguments
-						ctx->exeFunc = parse_argv(parser.argv, parser.argc, ctx->exeFuncArgs);
-					
+					if (parser.argc > 0) {
 						// Execute function
-						execute_command(ctx->exeFunc, ctx->uart_num, ctx->exeFuncArgs);
+						execute_command(parser.argv, parser.argc, ctx->uart_num);
 					}
 					// Done - reset parser stuff
 					parser.chars_to_read = RX_MESSAGE_MAX_LENGTH;
@@ -230,202 +210,238 @@ void vTaskUARTReceiver(void *pvParameters)
 //  Parser-called functions
 //=================================================================//
 
-#ifdef CONFIRMATION_IF
-static converter_command_t conveter_cmd;
-#endif
-
-
-// This is a huge switch-based procedure for executing commands
-// received from UARTs.
-// Possibly there is a better way to implement it.
-static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args)
+static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 {
 	converter_message_t converter_msg;
-	converter_answ_t converter_answ;
-	xSemaphoreHandle *xSem = (uart_num == 1) ? &xSyncSemaphore1 : &xSyncSemaphore2;
 	gui_msg_t gui_msg;
 	dispatch_msg_t dispatcher_msg;
 	uart_transmiter_msg_t transmitter_msg;
+	xSemaphoreHandle *xSem = (uart_num == 1) ? &xSyncSemaphore1 : &xSyncSemaphore2;
 	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
-	dispatcher_msg.type = 0;
-	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	transmitter_msg.type = 0;
-	gui_msg.type = 0;
 	
+	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
 	converter_msg.pxSemaphore = xSem;
 	converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	converter_msg.answ = &converter_answ;
-#ifdef CONFIRMATION_IF
-	converter_msg.c = &conveter_cmd;
-#endif	
-	switch (cmd_code)
-	{
-		//=========================================================================//
-		// Converter command
-		case UART_CMD_CONVERTER:
-			if (args[0].type != 0)
-			{
-				switch(args[0].flag)
-				{
-					case 0:  case 1:
-						// Turn converter ON/OFF
-						converter_msg.type = (args[0].flag == 1) ? CONVERTER_TURN_ON : CONVERTER_TURN_OFF;
-						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-						xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-						transmitter_msg.type = UART_SEND_CONVERTER_DATA;
-						transmitter_msg.spec = UMSG_ACK;
-						transmitter_msg.converter.mtype = SEND_STATE;
-						break;
-					case 2:
-						// Set voltage
-						if (args[3].type != 0)
-						{
-							converter_msg.type = CONVERTER_SET_VOLTAGE;
-							converter_msg.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							converter_msg.a.v_set.value = (int32_t)args[3].data32u;
-							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							transmitter_msg.type = UART_SEND_CONVERTER_DATA;
-							transmitter_msg.spec = UMSG_ACK;
-							transmitter_msg.converter.mtype = SEND_VSET;
-							transmitter_msg.channel = converter_msg.a.v_set.channel;	// FIXME - OPERATING
-						}
-						else
-						{
-							// value is missing
-							transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
-						}
-						break;
-					case 3:
-						// Set current
-						if (args[3].type != 0)
-						{
-							converter_msg.type = CONVERTER_SET_CURRENT;
-							converter_msg.a.c_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							converter_msg.a.c_set.range = (args[2].type) ? args[2].flag : OPERATING_CURRENT_RANGE;
-							converter_msg.a.c_set.value = (int32_t)args[3].data32u;
-							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							transmitter_msg.type = UART_SEND_CONVERTER_DATA;	
-							transmitter_msg.spec = UMSG_ACK;
-							transmitter_msg.converter.mtype = SEND_ISET;
-							transmitter_msg.channel = converter_msg.a.c_set.channel;	// FIXME - OPERATING
-							transmitter_msg.current_range = converter_msg.a.c_set.range;
-						}
-						else
-						{
-							// value is missing
-							transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
-						}
-						break;
-						
-					default:
-						transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-				}		
+
+	uint8_t action_get = 0;
+    uint8_t action_set = 0;
+    uint32_t temp32u;
+	int32_t temp32;
+	uint8_t temp8u;
+    char *temp_string;
+    uint8_t arg_channel;
+    uint8_t arg_crange;
+	uint8_t errorCode = NO_ERROR;
+	
+	// Actions are common for all parameters and properties
+    if (getIndexOfKey(argv, argc,proto.actions.get) >= 0) {
+        action_get = 1;
+    } else if (getIndexOfKey(argv, argc,proto.actions.set) >= 0) {
+        action_set = 1;
+    } else {
+        action_get = 1;
+    }
+	
+	//=========================================================================//
+	// Group CONVERTER
+    if (getIndexOfKey(argv, argc, proto.groups.converter) >= 0)
+    {
+		transmitter_msg.type = UART_SEND_CONVERTER_DATA;
+		transmitter_msg.spec = UMSG_ACK;
+		
+		// Parse common arguments
+		// Channel and current range arguments may be omitted - in this case
+		// active channel and active current range for that channel will be used
+        arg_channel = (getIndexOfKey(argv, argc,proto.flags.ch5v) >= 0) ? CHANNEL_5V :
+                    ((getIndexOfKey(argv, argc,proto.flags.ch12v) >= 0) ? CHANNEL_12V : 
+					Converter_GetFeedbackChannel());
+        arg_crange = (getIndexOfKey(argv, argc,proto.flags.crangeLow) >= 0) ? CURRENT_RANGE_LOW :
+                    ((getIndexOfKey(argv, argc,proto.flags.crangeHigh) >= 0) ? CURRENT_RANGE_HIGH : 
+					Converter_GetCurrentRange(arg_channel));
+
+        // Determine parameter
+        if (getIndexOfKey(argv, argc, proto.parameters.state) >= 0)
+        {
+            // Parameter STATE
+            if (action_set) {
+				errorCode = getStringForKey(argv, argc, proto.keys.state, &temp_string);
+                if (errorCode == NO_ERROR) {
+                    if (strcmp(temp_string, proto.values.on) == 0) {
+                        converter_msg.type = CONVERTER_TURN_ON;
+                    } else if (strcmp(temp_string, proto.values.off) == 0) {
+                        converter_msg.type = CONVERTER_TURN_OFF;
+                    } else {
+						errorCode = ERROR_ILLEGAL_VALUE;
+                    }
+				}
+				if (errorCode == NO_ERROR) {
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
+				}
+            }
+			// Acknowledge
+			if (errorCode == NO_ERROR) {
+				transmitter_msg.converter.param = param_STATE;
+				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 			}
-			else
-			{
-				transmitter_msg.type = UART_RESPONSE_MISSING_ARGUMENT;
+        }
+		else if (getIndexOfKey(argv, argc,proto.parameters.channel) >= 0)
+        {
+            // Parameter CHANNEL
+            if (action_set) {
+				errorCode = ERROR_PARAM_READONLY;
+			} else {
+				transmitter_msg.converter.param = param_CHANNEL;
+				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 			}
-			break;
-			
-		//=========================================================================//
-		// Key command
-		case UART_CMD_KEY:
-			if ((args[0].type != 0) && (args[1].type != 0))
-			{
+        }
+		else if (getIndexOfKey(argv, argc,proto.parameters.crange) >= 0)
+        {
+            // Parameter CURRENT RANGE
+			if (action_set) {
+				converter_msg.a.crange_set.channel = arg_channel;
+				converter_msg.a.crange_set.new_range = arg_crange;
+				converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
+				xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+				xSemaphoreTake(*xSem, portMAX_DELAY);
+			}
+			// Acknowledge
+			transmitter_msg.converter.param = param_CRANGE;
+			transmitter_msg.converter.channel = arg_channel;
+			xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
+        }
+		else if (getIndexOfKey(argv, argc,proto.parameters.vset) >= 0)
+        {
+            // Parameter VSET
+            if (action_set) {
+				errorCode = getValueUI32ForKey(argv, argc, proto.keys.vset, &temp32u);
+                if (errorCode == NO_ERROR) {
+                    converter_msg.a.v_set.channel = arg_channel;
+					converter_msg.a.v_set.value = temp32u;
+					converter_msg.type = CONVERTER_SET_VOLTAGE;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					xSemaphoreTake(*xSem, portMAX_DELAY);
+				}
+            }
+            // Acknowledge
+			if (errorCode == NO_ERROR) {
+				transmitter_msg.converter.param = param_VSET;
+				transmitter_msg.converter.channel = arg_channel;				
+				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
+			}
+        }
+		else if (getIndexOfKey(argv, argc,proto.parameters.cset) >= 0)
+        {
+            // Parameter CSET
+            if (action_set) {
+				errorCode = getValueUI32ForKey(argv, argc, proto.keys.cset, &temp32u);
+                if (errorCode == NO_ERROR) {
+                    converter_msg.a.c_set.channel = arg_channel;
+					converter_msg.a.c_set.range = arg_crange;
+					converter_msg.a.c_set.value = temp32u;
+					converter_msg.type = CONVERTER_SET_CURRENT;
+					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
+					xSemaphoreTake(*xSem, portMAX_DELAY);
+				}
+            }
+            // Acknowledge
+			if (errorCode == NO_ERROR) {
+				transmitter_msg.converter.param = param_CSET;
+				transmitter_msg.converter.channel = arg_channel;
+				transmitter_msg.converter.current_range = arg_crange;
+				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
+			}
+        }
+    }	// end of group CONVERTER
+	//=========================================================================//
+	// Group BUTTONS
+	else if (getIndexOfKey(argv, argc, proto.groups.buttons) >= 0)
+	{	
+		// Process button events
+		temp8u = getStringForKey(argv, argc, proto.keys.btn_event, &temp_string);
+		if (temp8u == NO_ERROR) {
+			if (strcmp(temp_string, proto.button_events.down) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_DOWN;
+			} else if (strcmp(temp_string, proto.button_events.up) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_UP;
+			} else if (strcmp(temp_string, proto.button_events.up_short) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_UP_SHORT;
+			} else if (strcmp(temp_string, proto.button_events.up_long) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_UP_LONG;
+			} else if (strcmp(temp_string, proto.button_events.hold) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_HOLD;
+			} else if (strcmp(temp_string, proto.button_events.repeat) == 0) {
+				gui_msg.key_event.event = BTN_EVENT_REPEAT;
+			} else {
+				errorCode = ERROR_ILLEGAL_VALUE;
+			}
+			if (errorCode == NO_ERROR) {
+				errorCode = getStringForKey(argv, argc, proto.keys.btn_code, &temp_string);
+				if (errorCode == NO_ERROR) {
+					if (strcmp(temp_string, proto.button_codes.esc) == 0) {
+						gui_msg.key_event.code = BTN_ESC;
+					} else if (strcmp(temp_string, proto.button_codes.ok) == 0) {
+						gui_msg.key_event.code = BTN_OK;
+					} else if (strcmp(temp_string, proto.button_codes.left) == 0) {
+						gui_msg.key_event.code = BTN_LEFT;
+					} else if (strcmp(temp_string, proto.button_codes.right) == 0) {
+						gui_msg.key_event.code = BTN_RIGHT;
+					} else if (strcmp(temp_string, proto.button_codes.on) == 0) {
+						gui_msg.key_event.code = BTN_ON;
+					} else if (strcmp(temp_string, proto.button_codes.off) == 0) {
+						gui_msg.key_event.code = BTN_OFF;
+					} else if (strcmp(temp_string, proto.button_codes.encoder) == 0) {
+						gui_msg.key_event.code = BTN_ENCODER;
+					} else {
+						errorCode = ERROR_ILLEGAL_VALUE;
+					}
+				}
+			}
+			if (errorCode == NO_ERROR) {
 				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;
-				gui_msg.key_event.event = args[0].flag;
-				gui_msg.key_event.code = args[1].flag;
-				transmitter_msg.type = UART_RESPONSE_OK;
+				xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
 			}
-			else
-			{
-				// Unknown key event or code
-				transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-			}
-			break;
-			
-		//=========================================================================//
-		// Encoder command
-		case UART_CMD_ENCODER:
-			if (args[0].type != 0)
-			{
-				gui_msg.type = GUI_TASK_PROCESS_ENCODER;
-				gui_msg.encoder_event.delta = args[0].data32;
-				transmitter_msg.type = UART_RESPONSE_OK;
-			}
-			else
-			{
-				// Missing argument
-				transmitter_msg.type = UART_RESPONSE_WRONG_ARGUMENT;
-			}
-			break;
-			
-		//=========================================================================//
-		// Time profiling command
-		case UART_CMD_PROFILING:
-			transmitter_msg.type = UART_SEND_PROFILING;
-			break;
-		
-		//=========================================================================//
-		// Test function 1 command	
-		case UART_CMD_TEST1:
-			dispatcher_msg.type = DISPATCHER_TEST_FUNC1;
-			break;
-		
-		//=========================================================================//
-		// Unknown command
-		default:
-			transmitter_msg.type = UART_RESPONSE_UNKNOWN_CMD;
-	}
-	
-	
-	// Send message to the GUI
-	if (gui_msg.type != 0)
+		}
+		// Process encoder events
+		temp8u = getValueI32ForKey(argv, argc, proto.keys.enc_delta, &temp32);
+		if (temp8u == NO_ERROR) {
+			gui_msg.type = GUI_TASK_PROCESS_ENCODER;
+			gui_msg.encoder_event.delta = temp32;
+		}
+	}	// end of group BUTTONS
+	//=========================================================================//
+	// Group PROFILING
+	else if (getIndexOfKey(argv, argc, proto.groups.profiling) >= 0)
 	{
-		xQueueSendToBack(xQueueGUI, &gui_msg, portMAX_DELAY);
+		transmitter_msg.type = UART_SEND_PROFILING;
+		xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 	}
-	
-	// Send message to the dispatcher
-	if (dispatcher_msg.type != 0)
+	//=========================================================================//
+	// Group TEST
+	else if (getIndexOfKey(argv, argc, proto.groups.test) >= 0)
 	{
+		dispatcher_msg.type = DISPATCHER_TEST_FUNC1;
 		xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, portMAX_DELAY);	
 	}
-		
-	// Send message directly to UART
-	if (transmitter_msg.type != 0)
+	//=========================================================================//
+	// No group or unknown
+	else
 	{
+		// Unknown group
+		errorCode = ERROR_CANNOT_DETERMINE_GROUP;
+	}
+	
+	
+	
+	if (errorCode != NO_ERROR) {
+		// Send error code to the transmitter task 
+		transmitter_msg.type = UART_SEND_ERROR;
+		transmitter_msg.error.code = errorCode;
 		xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 	}
 	
 }
 
-
-/*
-					case 2:
-						// Set voltage
-						if (args[3].type != 0)
-						{
-#ifndef CONFIRMATION_IF
-							converter_msg.type = CONVERTER_SET_VOLTAGE;
-							converter_msg.a.v_set.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;	
-							converter_msg.a.v_set.value = (int32_t)args[3].data32u;
-							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							transmitter_msg.type = UART_SEND_CONVERTER_DATA;
-							transmitter_msg.spec = UMSG_ACK;
-							transmitter_msg.converter.mtype = SEND_VSET;
-#else
-							converter_msg.type = CONVERTER_SET_VOLTAGE;
-							conveter_cmd.ca.voltage_setting.channel = (args[1].type) ? args[1].flag : OPERATING_CHANNEL;
-							conveter_cmd.ca.voltage_setting.value = (int32_t)args[3].data32u;
-							xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-							xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
-							// Create ACK packet
-							// Problem if newer converter state if sent to transmitter task earlier than this ACK
-#endif
-*/
 
 
 

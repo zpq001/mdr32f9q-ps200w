@@ -4,6 +4,17 @@
 #include <stdint.h>
 
 
+enum ConverterParameters {
+	param_STATE;
+	param_VSET;
+	param_CSET;
+	param_CHANNEL;
+	param_CRANGE;
+	param_VLIMIT;
+	param_CLIMIT;
+	param_MEASURED_DATA;
+	param_OVERLOAD_PROTECTION;
+};
 
 
 

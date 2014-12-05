@@ -6,11 +6,9 @@
 #include "semphr.h"
 
 //---------------------------------------------//
-
 // Parser settings
 #define RX_MESSAGE_MAX_LENGTH	80		// Maximum message length
 #define MAX_WORDS_IN_MESSAGE	20		// Maximum words separated by SPACING_SYMBOL in message
-#define MAX_FUNCTION_ARGUMENTS   5		// Maximum arguments for a command
 
 
 typedef struct {

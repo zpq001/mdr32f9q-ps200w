@@ -1,10 +1,13 @@
 #include "serialparser.h"
 #include <QStringList>
 #include "globaldef.h"
+#include "uart_proto.h"
+
 
 //const char SerialParser::termSymbol = '\r';
 //const char SerialParser::spaceSymbol = ' ';
-const SerialParser::protocol_definition_struct SerialParser::proto;
+//const protocol_definition_struct proto;
+
 
 /*
 
@@ -231,12 +234,12 @@ int SerialParser::getState(const QStringList &list, int *value)
     int keyIndex = list.indexOf(proto.keys.state);
     if ((keyIndex >= 0) && (keyIndex < list.size()-1))
     {
-        if (list.at(keyIndex + 1).compare(SerialParser::proto.values.on) == 0)
+        if (list.at(keyIndex + 1).compare(proto.values.on) == 0)
         {
             *value = CONVERTER_ON;
             errCode = NO_ERROR;
         }
-        else if (list.at(keyIndex + 1).compare(SerialParser::proto.values.off) == 0)
+        else if (list.at(keyIndex + 1).compare(proto.values.off) == 0)
         {
             *value = CONVERTER_OFF;
             errCode = NO_ERROR;

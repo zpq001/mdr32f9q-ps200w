@@ -25,7 +25,7 @@ void SerialTop::init(void)
 
     connect(worker, SIGNAL(updVmea(int)), this, SLOT(onWorkerUpdVmea(int)));
     connect(worker, SIGNAL(updCmea(int)), this, SLOT(onWorkerUpdCmea(int)));
-    //connect(worker, SIGNAL(updPmea(int)), this, SIGNAL(up)
+    connect(worker, SIGNAL(updPmea(int)), this, SLOT(onWorkerUpdPmea(int)));
     connect(worker, SIGNAL(updState(int)), this, SLOT(onWorkerUpdState(int)));
     connect(worker, SIGNAL(updChannel(int)), this, SLOT(onWorkerUpdChannel(int)));
     connect(worker, SIGNAL(updCurrentRange(int,int)), this, SLOT(onWorkerUpdCurrentRange(int,int)));

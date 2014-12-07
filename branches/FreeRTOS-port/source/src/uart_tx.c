@@ -19,6 +19,10 @@
 #include "uart_hw.h"
 #include "uart_tx.h"
 #include "uart_rx.h"
+#include "uart_proto.h"
+#include "adc.h"
+#include "converter.h"
+#include "global_def.h"
 
 //-------------------------------------------------------//
 // OS stuff
@@ -97,12 +101,12 @@ void vTaskUARTTransmitter(void *pvParameters) {
 	UART_TX_Task_Context_t *ctx = ((uint32_t)pvParameters == 1) ? &UART1_TX_Task_Context : &UART2_TX_Task_Context;
 	uart_transmiter_msg_t msg;
 	char *answ;
-	char *tempStr;
+	const char *tempStr;
 	uint16_t length;
-	uint8_t temp8u[4];
+//	uint8_t temp8u[4];
 	uint16_t temp16u[4];
 	uint32_t temp32u[4];
-	uint8_t i;
+//	uint8_t i;
 	uint8_t freeMem;
 	
 	// Initialize OS items
@@ -123,6 +127,7 @@ void vTaskUARTTransmitter(void *pvParameters) {
 	while(1) {
 		xQueueReceive(*ctx->xQueue, &msg, portMAX_DELAY);
 		answ = 0;
+		length = 0;
 		freeMem = 0;
 		switch (msg.type) {
 			case UART_SEND_DATA:
@@ -134,12 +139,12 @@ void vTaskUARTTransmitter(void *pvParameters) {
 				answ = ctx->tx_data_buffer;
 				startString(answ, proto.message_types.error);
 				switch (msg.error.code) {
-					case ERROR_CANNOT_DETERMINE_GROUP:	tempStr = proto.error_messages.no_group;	break;
-					case ERROR_MISSING_KEY:		tempStr = proto.error_messages.missing_key;			break;
-					case ERROR_MISSING_VALUE:	tempStr = proto.error_messages.missing_value;		break;
-					case ERROR_ILLEGAL_VALUE:	tempStr = proto.error_messages.illegal_value;		break;
-					case ERROR_PARAM_READONLY:	tempStr = proto.error_messages.illegal_value;		break;
-					default:					tempStr = proto.error_messages.param_readonly;		break;
+					case ERROR_CANNOT_DETERMINE_GROUP:	tempStr = proto.errors.no_group;	break;
+					case ERROR_MISSING_KEY:		tempStr = proto.errors.missing_key;			break;
+					case ERROR_MISSING_VALUE:	tempStr = proto.errors.missing_value;		break;
+					case ERROR_ILLEGAL_VALUE:	tempStr = proto.errors.illegal_value;		break;
+					case ERROR_PARAM_READONLY:	tempStr = proto.errors.illegal_value;		break;
+					default:					tempStr = proto.errors.param_readonly;		break;
 				}
 				appendToStringLast(answ, tempStr);
 				length = strlen(answ);
@@ -149,46 +154,47 @@ void vTaskUARTTransmitter(void *pvParameters) {
 				startString(answ, (msg.spec == UART_MSG_INFO) ? proto.message_types.info : proto.message_types.ack);
 				appendToString(answ, proto.groups.converter);
 				switch (msg.converter.param) {
-				case param_MEASURED_DATA:
-					taskENTER_CRITICAL();
-					temp16u[0] = ADC_GetVoltage();
-					temp16u[1] = ADC_GetCurrent();
-					temp32u[0] = ADC_GetPower();
-					taskEXIT_CRITICAL();
-					appendToString(answ, proto.parameters.measured);
-					appendToStringU32(answ, proto.keys.vmea, temp16u[0]);
-					appendToStringU32(answ, proto.keys.cmea, temp16u[1]);
-					appendToStringU32(answ, proto.keys.pmea, temp32u[0]);
-					break;
-				case param_STATE:
-					temp16u[0] = Converter_GetState();
-					appendToString(answ, proto.parameters.state);
-					appendToString(answ, proto.keys.state);
-					appendToString(answ, (temp16u == CONVERTER_ON) ? proto.values.on : proto.values.off);
-					break;
-				case param_CHANNEL:
-					temp16u[0] = Converter_GetFeedbackChannel();
-					appendToString(answ, proto.parameters.channel);
-					appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
-					break;
-				case param_CRANGE:
-					temp16u[0] = Converter_GetCurrentRange(msg.converter.channel);
-					appendToString(answ, proto.parameters.crange);
-					appendToString(answ, (temp16u == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : proto.flags.crangeHigh);
-					break;
-				case param_VSET:				
-					temp16u[0] = Converter_GetVoltageSetting(msg.converter.channel);
-					appendToString(answ, proto.parameters.vset);
-					appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
-					appendToStringU32(answ, proto.keys.vset, temp16u[0]);
-					break;
-				case param_CSET:
-					temp16u[0] = Converter_GetCurrentSetting(msg.converter.channel, msg.converter.range);
-					appendToString(answ, proto.parameters.cset);
-					appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
-					appendToString(answ, (msg.converter.range == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : proto.flags.crangeHigh);
-					appendToStringU32(answ, proto.keys.cset, temp16u[0]);
-					break;
+					case param_MEASURED_DATA:
+						taskENTER_CRITICAL();
+						temp16u[0] = ADC_GetVoltage();
+						temp16u[1] = ADC_GetCurrent();
+						temp32u[0] = ADC_GetPower();
+						taskEXIT_CRITICAL();
+						appendToString(answ, proto.parameters.measured);
+						appendToStringU32(answ, proto.keys.vmea, temp16u[0]);
+						appendToStringU32(answ, proto.keys.cmea, temp16u[1]);
+						appendToStringU32(answ, proto.keys.pmea, temp32u[0]);
+						break;
+					case param_STATE:
+						temp16u[0] = Converter_GetState();
+						appendToString(answ, proto.parameters.state);
+						appendToString(answ, proto.keys.state);
+						appendToString(answ, (temp16u[0] == CONVERTER_ON) ? proto.values.on : proto.values.off);
+						break;
+					case param_CHANNEL:
+						temp16u[0] = Converter_GetFeedbackChannel();
+						appendToString(answ, proto.parameters.channel);
+						appendToString(answ, (temp16u[0] == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
+						break;
+					case param_CRANGE:
+						temp16u[0] = Converter_GetCurrentRange(msg.converter.channel);
+						appendToString(answ, proto.parameters.crange);
+						appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
+						appendToString(answ, (temp16u[0] == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : proto.flags.crangeHigh);
+						break;
+					case param_VSET:				
+						temp16u[0] = Converter_GetVoltageSetting(msg.converter.channel);
+						appendToString(answ, proto.parameters.vset);
+						appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
+						appendToStringU32(answ, proto.keys.vset, temp16u[0]);
+						break;
+					case param_CSET:
+						temp16u[0] = Converter_GetCurrentSetting(msg.converter.channel, msg.converter.current_range);
+						appendToString(answ, proto.parameters.cset);
+						appendToString(answ, (msg.converter.channel == CHANNEL_5V) ? proto.flags.ch5v : proto.flags.ch12v);
+						appendToString(answ, (msg.converter.current_range == CURRENT_RANGE_LOW) ? proto.flags.crangeLow : proto.flags.crangeHigh);
+						appendToStringU32(answ, proto.keys.cset, temp16u[0]);
+						break;
 				}
 				terminateString(answ);
 				length = strlen(answ);

@@ -14,7 +14,7 @@
 #include "uart_hw.h"
 #include "uart_rx.h"
 #include "uart_tx.h"
-#include "uart_proto"
+#include "uart_proto.h"
 #include "systemfunc.h"
 #include "dispatcher.h"
 #include "converter.h"
@@ -22,7 +22,7 @@
 #include "eeprom.h"
 
 
-static void execute_command(uint8_t cmd_code, uint8_t uart_num, arg_t *args);
+static void execute_command(char **argv, uint8_t argc, uint8_t uart_num);
 
 
 // OS stuff
@@ -219,10 +219,6 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 	xSemaphoreHandle *xSem = (uart_num == 1) ? &xSyncSemaphore1 : &xSyncSemaphore2;
 	xQueueHandle *xQueueUARTTX = (uart_num == 1) ? &xQueueUART1TX : &xQueueUART2TX;
 	
-	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-	converter_msg.pxSemaphore = xSem;
-	converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-
 	uint8_t action_get = 0;
     uint8_t action_set = 0;
     uint32_t temp32u;
@@ -232,6 +228,12 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
     uint8_t arg_channel;
     uint8_t arg_crange;
 	uint8_t errorCode = NO_ERROR;
+	
+	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
+	converter_msg.pxSemaphore = xSem;
+	converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
+
+	
 	
 	// Actions are common for all parameters and properties
     if (getIndexOfKey(argv, argc,proto.actions.get) >= 0) {
@@ -247,16 +249,16 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
     if (getIndexOfKey(argv, argc, proto.groups.converter) >= 0)
     {
 		transmitter_msg.type = UART_SEND_CONVERTER_DATA;
-		transmitter_msg.spec = UMSG_ACK;
+		transmitter_msg.spec = UART_MSG_ACK;
 		
 		// Parse common arguments
 		// Channel and current range arguments may be omitted - in this case
 		// active channel and active current range for that channel will be used
-        arg_channel = (getIndexOfKey(argv, argc,proto.flags.ch5v) >= 0) ? CHANNEL_5V :
-                    ((getIndexOfKey(argv, argc,proto.flags.ch12v) >= 0) ? CHANNEL_12V : 
+        arg_channel = (getIndexOfKey(argv, argc, proto.flags.ch5v) >= 0) ? CHANNEL_5V :
+                    ((getIndexOfKey(argv, argc, proto.flags.ch12v) >= 0) ? CHANNEL_12V : 
 					Converter_GetFeedbackChannel());
-        arg_crange = (getIndexOfKey(argv, argc,proto.flags.crangeLow) >= 0) ? CURRENT_RANGE_LOW :
-                    ((getIndexOfKey(argv, argc,proto.flags.crangeHigh) >= 0) ? CURRENT_RANGE_HIGH : 
+        arg_crange = (getIndexOfKey(argv, argc, proto.flags.crangeLow) >= 0) ? CURRENT_RANGE_LOW :
+                    ((getIndexOfKey(argv, argc, proto.flags.crangeHigh) >= 0) ? CURRENT_RANGE_HIGH : 
 					Converter_GetCurrentRange(arg_channel));
 
         // Determine parameter

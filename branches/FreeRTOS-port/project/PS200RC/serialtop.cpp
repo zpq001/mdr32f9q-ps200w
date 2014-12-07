@@ -3,6 +3,7 @@
 #include "logviewer.h"
 #include "keywindow.h"
 #include "globaldef.h"
+#include "uart_proto.h"
 
 SerialTop::SerialTop(QObject *parent) :
     QObject(parent)
@@ -108,11 +109,18 @@ void SerialTop::keyEvent(int key, int event)
     keyName = getKeyName(key);
     keyAction = getKeyEventType(event);
 
-    QString resultCmd = "key ";
+
+
+    QString resultCmd = proto.groups.buttons;
+    resultCmd.append(proto.spaceSymbol);
+    resultCmd.append(proto.keys.btn_event);
+    resultCmd.append(proto.spaceSymbol);
     resultCmd.append(keyAction);
-    resultCmd.append(" ");
+    resultCmd.append(proto.spaceSymbol);
+    resultCmd.append(proto.keys.btn_code);
+    resultCmd.append(proto.spaceSymbol);
     resultCmd.append(keyName);
-    resultCmd.append('\r');
+    resultCmd.append(proto.termSymbol);
 
     worker->sendString(resultCmd);
 }
@@ -581,19 +589,19 @@ QString SerialTop::getKeyName(int keyId)
     switch (keyId)
     {
         case KeyWindow::key_OK:
-            keyName = "btn_ok";
+            keyName = proto.button_codes.ok;
             break;
         case KeyWindow::key_ESC:
-            keyName = "btn_esc";
+            keyName = proto.button_codes.esc;
             break;
         case KeyWindow::key_RIGHT:
-            keyName = "btn_right";
+            keyName = proto.button_codes.right;
             break;
         case KeyWindow::key_LEFT:
-            keyName = "btn_left";
+            keyName = proto.button_codes.left;
             break;
         case KeyWindow::key_ENCODER:
-            keyName = "btn_encoder";
+            keyName = proto.button_codes.encoder;
             break;
         default:
             keyName = QString::number(keyId);
@@ -607,19 +615,19 @@ QString SerialTop::getKeyEventType(int keyEventType)
     switch (keyEventType)
     {
         case KeyWindow::event_DOWN:
-            keyAction = "down";
+            keyAction = proto.button_events.down;
             break;
         case KeyWindow::event_UP:
-            keyAction = "up";
+            keyAction = proto.button_events.up;
             break;
         case KeyWindow::event_UP_SHORT:
-            keyAction = "up_short";
+            keyAction = proto.button_events.up_short;
             break;
         case KeyWindow::event_UP_LONG:
-            keyAction = "up_long";
+            keyAction = proto.button_events.up_long;
             break;
         case KeyWindow::event_HOLD:
-            keyAction = "hold";
+            keyAction = proto.button_events.hold;
             break;
         default:
             keyAction = QString::number(keyEventType);

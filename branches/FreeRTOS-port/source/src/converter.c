@@ -76,6 +76,9 @@ xTaskHandle xTaskHandle_Converter;
 const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
 const converter_message_t converter_tick_message = {CONVERTER_TICK};
 
+// Global to allow whole message processing be split into several functions
+static converter_message_t msg;
+
 //gui_msg_t gui_msg;
 uint32_t adc_msg;
 dispatch_msg_t dispatcher_msg;
@@ -642,13 +645,13 @@ void fillDispatchMessage(converter_message_t *converter_msg, dispatch_msg_t *dis
 //		state_event - converter state change
 
 
-static void stateResponse(uint8_t err_code, uint8_t state_event)
+static void stateResponse(converter_message_t *msg, uint8_t err_code, uint8_t state_event)
 {	
 	// Send notification to dispatcher
-	dispatcher_msg->type = DISPATCHER_CONVERTER_EVENT;
-	dispatcher_msg->sender = sender_CONVERTER;
-	//dispatcher_msg->converter_event.msg_type = converter_msg->type;
-	dispatcher_msg->converter_event.msg_sender = converter_msg->sender;
+	dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
+	dispatcher_msg.sender = sender_CONVERTER;
+	//dispatcher_msg.converter_event.msg_type = converter_msg->type;
+	dispatcher_msg.converter_event.msg_sender = msg->sender;
 	dispatcher_msg.converter_event.spec = state_event;
 	dispatcher_msg.converter_event.err_code = err_code;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
@@ -657,19 +660,19 @@ static void stateResponse(uint8_t err_code, uint8_t state_event)
 static void stateEvent(uint8_t err_code, uint8_t state_event)
 {
 	// Send notification to dispatcher
-	dispatcher_msg->type = DISPATCHER_CONVERTER_EVENT;
-	dispatcher_msg->sender = sender_CONVERTER;
+	dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
+	dispatcher_msg.sender = sender_CONVERTER;
 	//dispatcher_msg->converter_event.msg_type = __EVENT__;
-	dispatcher_msg->converter_event.msg_sender = sender_CONVERTER;
-	dispatcher_msg->converter_event.spec = state_event;
-	dispatcher_msg->converter_event.err_code = err_code;
+	dispatcher_msg.converter_event.msg_sender = sender_CONVERTER;
+	dispatcher_msg.converter_event.spec = state_event;
+	dispatcher_msg.converter_event.err_code = err_code;
 	xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 }
 
 static void msgConfirm(void)
 {
 	// Confirm
-	if (msg->pxSemaphore)	xSemaphoreGive(*msg->pxSemaphore);
+	if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
 }
 
 
@@ -682,8 +685,7 @@ static void msgConfirm(void)
 
 
 
-// Global to allow whole message processing be split into several functions
-static converter_message_t msg;
+
 
 
 
@@ -712,7 +714,7 @@ void vTaskConverter(void *pvParameters)
 	{
 		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
 		msg_group = msg.type & CONVERTER_GROUP_MASK;
-		msg.type &= ~CONVERTER_GROUP_MASK;
+		//msg.type &= ~CONVERTER_GROUP_MASK;
 		
 		switch (msg_group)
 		{
@@ -752,7 +754,7 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 				{
 					Converter_TurnOff();
 					converter_state.state = CONVERTER_STATE_OFF;
-					stateResponse(CONV_NO_ERROR, CONV_TURNED_OFF);				
+					stateResponse(&msg, CONV_NO_ERROR, CONV_TURNED_OFF);				
 				}
 				else if (converter_state.state == CONVERTER_STATE_CHARGING)
 				{
@@ -761,7 +763,7 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 					SetOutputLoad(converter_state.channel->load_state);
 					converter_state.state = CONVERTER_STATE_OFF;
 					Converter_ProcessCharge(STOP_CHARGE);
-					stateResponse(CONV_NO_ERROR, CONV_ABORTED_CHARGE);
+					stateResponse(&msg, CONV_NO_ERROR, CONV_ABORTED_CHARGE);
 				}
 				else if (converter_state.state == CONVERTER_STATE_OVERLOADED)
 				{
@@ -886,6 +888,15 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 					stateEvent(CONV_NO_ERROR, CONV_ABORTED_CHARGE);
 					// Do not enable resistive load here
 				}			
+				break;
+				
+				
+			//=========================================================================//
+			// Tick
+			case CONVERTER_TICK:		// Temporary! Will be special for charging mode
+				// ADC task is responsible for sampling and filtering voltage and current
+				adc_msg = ADC_GET_ALL_NORMAL;
+				xQueueSendToBack(xQueueADC, &adc_msg, 0);
 				break;
 		}
 	}
@@ -1186,6 +1197,8 @@ static void Converter_ProcessSetParam (void)
 //=========================================================================//
 static void Converter_ProcessProfile (void)
 {
+	uint8_t temp8u;
+	//uint8_t err_code;
 	switch(msg.type)
 	{
 		//---------------- Loading profile ------------------------//
@@ -1207,12 +1220,12 @@ static void Converter_ProcessProfile (void)
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 				SetOutputLoad(converter_state.channel->load_state);
-				err_code = CMD_OK;
+				//err_code = CMD_OK;
 			}
 			else
 			{
 				// Unexpected error for current range setting
-				err_code = CMD_ERROR;
+				//err_code = CMD_ERROR;
 			} 
 			// Confirm
 			if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
@@ -1256,7 +1269,7 @@ static void Converter_ProcessProfile (void)
 static uint8_t Converter_ProcessCharge(uint8_t cmd)
 {
 	static uint8_t charge_state;
-	switch (cmd)
+/*	switch (cmd)
 	{
 		case START_CHARGE:
 			charge_state = 1;
@@ -1269,7 +1282,7 @@ static uint8_t Converter_ProcessCharge(uint8_t cmd)
 			// do charge stuff
 			break;
 	}
-
+*/
 	// return converter output state - should it be enabled or disabled	
 	return charge_state;
 }

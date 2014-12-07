@@ -69,7 +69,7 @@ typedef struct {
 	uint8_t sender;
 	xSemaphoreHandle *pxSemaphore;
 	converter_arguments_t a;
-	converter_command_t *c;
+//	converter_command_t *c;
 } converter_message_t;
 
 
@@ -168,7 +168,7 @@ typedef struct {
 #define CONVERTER_STATE_OFF			0x00
 #define CONVERTER_STATE_ON			0x01
 #define CONVERTER_STATE_OVERLOADED	0x02
-
+#define CONVERTER_STATE_CHARGING	0x04
 
 
 

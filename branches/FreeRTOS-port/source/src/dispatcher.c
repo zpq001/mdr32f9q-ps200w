@@ -332,6 +332,7 @@ void vTaskDispatcher(void *pvParameters)
 							xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
 						if (msg.converter_event.msg_sender != sender_UART2)
 							xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
+						break;
 					case VOLTAGE_SETTING_CHANGE:
 						uart_tx_msg.converter.param = param_VSET;
 						uart_tx_msg.converter.channel = msg.converter_event.channel;

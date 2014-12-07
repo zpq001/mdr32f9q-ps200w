@@ -337,7 +337,6 @@ int SerialWorker::_sendCmdWithAcknowledge(const QByteArray &ba)
 void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
 {
     argsState_t *a = (argsState_t *)arguments;
-
     // Create command string
     QByteArray ba = SerialParser::cmd_readState();
     // Send and wait for acknowledge
@@ -345,15 +344,11 @@ void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
     // Analyze received acknowledge string
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, proto.values.on) == 0)
+        QStringList list = SerialParser::splitPacket(receiveBuffer);    // FIXME
+        if (SerialParser::findKey(list, proto.parameters.state) == 0)
         {
-            a->result = CONVERTER_ON;
-            a->errCode = noError;
-        }
-        else if (SerialParser::findKey(receiveBuffer, proto.values.off) == 0)
-        {
-            a->result = CONVERTER_OFF;
-            a->errCode = noError;
+            if (SerialParser::getState(list, &a->result) == 0)
+                a->errCode = noError;
         }
         else
         {
@@ -490,15 +485,11 @@ void SerialWorker::_setState(QSemaphore *doneSem, void *arguments)
     a->errCode = _sendCmdWithAcknowledge(ba);
     if (a->errCode == noError)
     {
-        if (SerialParser::findKey(receiveBuffer, proto.values.on) == 0)
+        QStringList list = SerialParser::splitPacket(receiveBuffer);    // FIXME
+        if (SerialParser::findKey(list, proto.parameters.state) == 0)
         {
-            a->result = CONVERTER_ON;
-            a->errCode = noError;
-        }
-        else if (SerialParser::findKey(receiveBuffer, proto.values.off) == 0)
-        {
-            a->result = CONVERTER_OFF;
-            a->errCode = noError;
+            if (SerialParser::getState(list, &a->result) == 0)
+                a->errCode = noError;
         }
         else
         {

@@ -46,7 +46,7 @@ typedef struct {
 			uint8_t channel;			// Related channel for the parameter
 			uint8_t current_range;		// Related current range for the parameter
 		} converter;
-	}
+	};
 } uart_transmiter_msg_t;
 
 

@@ -4,6 +4,12 @@
 #include <stdint.h>
 
 
+
+
+
+
+
+
 enum ConverterParameters {
 	param_STATE,
 	param_VSET,
@@ -13,8 +19,12 @@ enum ConverterParameters {
 	param_VLIMIT,
 	param_CLIMIT,
 	param_MEASURED_DATA,
-	param_OVERLOAD_PROTECTION
+	param_OVERLOAD_PROTECTION,
+	param_DAC_OFFSET
 };
+
+
+
 
 
 
@@ -73,50 +83,5 @@ typedef union
 
 
 
-//-------------------------------------------------------//
-
-//#define CONFIRMATION_IF
-
-#ifdef CONFIRMATION_IF
-
-typedef union {
-	struct {
-		uint8_t channel;
-		int32_t value;
-		struct {
-			int32_t vset;
-			uint8_t at_max: 1;
-			uint8_t at_min: 1;
-			uint8_t changed: 1;
-			uint8_t err_code;
-		} result;
-	} voltage_setting;
-	struct {
-		uint8_t channel;
-		uint8_t current_range;
-		int32_t value;
-		struct {
-			int32_t cset;
-			uint8_t at_max: 1;
-			uint8_t at_min: 1;
-			uint8_t err_code;
-		} result;
-	} current_setting;
-} converter_cmd_args_t;
-
-
-typedef struct {
-	uint8_t command_type;
-	converter_cmd_args_t ca;
-} converter_command_t;
-
-
-
-
-
-
-
-
-#endif
 
 #endif

@@ -41,7 +41,7 @@ typedef struct {
 			uint8_t msg_type;
 			converter_arguments_t a;
 		} converter_cmd;
-		struct {
+/*(		struct {
 			uint8_t msg_type;
 			uint8_t msg_sender;
 			uint8_t err_code;
@@ -49,7 +49,19 @@ typedef struct {
 			uint8_t channel : 2;
 			uint8_t range : 2;
 			uint8_t limit_type : 2;
+		} converter_event; */
+		
+		struct {
+			uint8_t msg_sender;
+			uint8_t param;				// parameter that changed
+			uint8_t spec;				// parameter modify specification
+			uint8_t err_code;			// error (if any)
+			
+			uint8_t channel : 1;		// Related channel for the parameter
+			uint8_t range : 1;			// Related current range for the parameter
+			uint8_t limit_type : 1;
 		} converter_event;
+		
 		struct {
 			uint16_t event_type;
 			uint16_t code;

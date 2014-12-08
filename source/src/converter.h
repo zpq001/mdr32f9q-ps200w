@@ -76,34 +76,17 @@ typedef struct {
 //-------------------------------------------------------//
 // Voltage and current setting return codes
 
-#define VALUE_OK					0x00
 #define VALUE_BOUND_BY_SOFT_MAX		0x01
 #define VALUE_BOUND_BY_SOFT_MIN		0x02
-#define VALUE_BOUND_BY_ABS_MAX		0x03
-#define VALUE_BOUND_BY_ABS_MIN		0x04
-#define CMD_OK						0x10
-#define CMD_ERROR					0x11
-#define EVENT_OK					0x12
-#define EVENT_ERROR					0x13
+#define VALUE_BOUND_BY_ABS_MAX		0x04
+#define VALUE_BOUND_BY_ABS_MIN		0x08
+#define VALUE_UPDATED				0x10
 
+#define VALUE_BOUND_MASK	(VALUE_BOUND_BY_SOFT_MAX | VALUE_BOUND_BY_SOFT_MIN | VALUE_BOUND_BY_ABS_MAX | VALUE_BOUND_BY_ABS_MIN)
 
+enum ConverterErrorCodes { ERROR_NONE, ERROR_INTERNAL, ERROR_CMD };
 
-//-------------------------------------------------------//
-// spec values to dispatcher
-
-enum ConverterEventSpec {
-	VOLTAGE_SETTING_CHANGE = 1,
-	CURRENT_SETTING_CHANGE,	
-	VOLTAGE_LIMIT_CHANGE,
-	CURRENT_LIMIT_CHANGE,	
-	OVERLOAD_SETTING_CHANGE,
-	CURRENT_RANGE_CHANGE,
-	CHANNEL_CHANGE,
-	STATE_CHANGE_TO_ON,
-	STATE_CHANGE_TO_OFF,
-	STATE_CHANGE_TO_OVERLOAD,
-	PROFILE_LOADED,
-	
+enum ConverterStateEvents {
 	CONV_TURNED_ON,
 	CONV_TURNED_OFF,
 	CONV_OVERLOADED,
@@ -112,6 +95,15 @@ enum ConverterEventSpec {
 	CONV_ABORTED_CHARGE,
 	CONV_NO_STATE_CHANGE
 };
+
+//-------------------------------------------------------//
+// Converter states
+
+#define CONVERTER_STATE_OFF			0x00
+#define CONVERTER_STATE_ON			0x01
+#define CONVERTER_STATE_OVERLOADED	0x02
+#define CONVERTER_STATE_CHARGING	0x04
+
 
 
 
@@ -162,13 +154,7 @@ typedef struct {
 } dac_settings_t;
 */
 
-//-------------------------------------------------------//
-// Converter states
 
-#define CONVERTER_STATE_OFF			0x00
-#define CONVERTER_STATE_ON			0x01
-#define CONVERTER_STATE_OVERLOADED	0x02
-#define CONVERTER_STATE_CHARGING	0x04
 
 
 

@@ -13,7 +13,7 @@
 #include "control.h"
 #include "adc.h"
 
-#include "guiTop.h"
+#include "dispatcher.h"
 
 
 // ctrl_ADCProcess bits
@@ -33,7 +33,7 @@ static uint16_t adc_current_counts;	// [ADC counts]
 
 static volatile uint8_t ctrl_ADCProcess = 0;
 
-static uint32_t gui_msg;
+static dispatch_msg_t dispatcher_msg;
 
 xQueueHandle xQueueADC;
 xSemaphoreHandle xSemaphoreADC;
@@ -95,9 +95,10 @@ void vTaskADC(void *pvParameters)
 				
 				power_adc = voltage_adc * current_adc / 1000;
 				
-				// Send notification to GUI
-				gui_msg = GUI_TASK_UPDATE_VOLTAGE_CURRENT;
-				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				// Send notification
+				dispatcher_msg.type = DISPATCHER_NEW_ADC_DATA;
+				dispatcher_msg.sender = sender_ADC;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			
 				break;
 			

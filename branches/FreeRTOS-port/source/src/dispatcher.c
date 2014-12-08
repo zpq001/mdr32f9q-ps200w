@@ -328,7 +328,7 @@ void vTaskDispatcher(void *pvParameters)
 					uart_tx_msg.spec = UART_MSG_INFO;
 					uart_tx_msg.converter.param = msg.converter_event.param;
 					uart_tx_msg.converter.channel = msg.converter_event.channel;
-					uart_tx_msg.current_range = msg.converter_event.range;
+					uart_tx_msg.converter.current_range = msg.converter_event.range;
 					if (msg.converter_event.msg_sender != sender_UART1)
 						xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
 					if (msg.converter_event.msg_sender != sender_UART2)
@@ -402,6 +402,19 @@ void vTaskDispatcher(void *pvParameters)
 						xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 				} */
 			
+			
+				break;
+				
+			case DISPATCHER_NEW_ADC_DATA:
+				// Notify GUI
+				gui_msg.type = GUI_TASK_UPDATE_VOLTAGE_CURRENT;
+				xQueueSendToBack(xQueueGUI, &gui_msg, 0);
+				// Notify UARTs
+				uart_tx_msg.type = UART_SEND_CONVERTER_DATA;
+				uart_tx_msg.spec = UART_MSG_INFO;
+				uart_tx_msg.converter.param = param_MEASURED_DATA;
+				xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
+				xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
 			
 				break;
 				

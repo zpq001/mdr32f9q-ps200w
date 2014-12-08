@@ -236,9 +236,7 @@ static uint8_t SetRegulationValue(reg_setting_t *s, int32_t new_value)
 		errCode |= VALUE_BOUND_BY_ABS_MAX;
 	} 
 	// Check if new value differes from old
-	if (s->setting == new_value) {
-		errCode |= VALUE_NOT_CHANGED;
-	} else {
+	if (s->setting != new_value) {
 		s->setting = new_value;
 		errCode |= VALUE_UPDATED;
 	}
@@ -264,10 +262,8 @@ static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t 
 	} 
 	if (limit_type == LIMIT_TYPE_LOW)
 	{
-		if ((s->limit_low == new_value) && (s->enable_low_limit == enable))
+		if ((s->limit_low != new_value) || (s->enable_low_limit != enable))
 		{
-			errCode |= VALUE_NOT_CHANGED;
-		} else {
 			s->limit_low = new_value;
 			s->enable_low_limit = enable;
 			errCode |= VALUE_UPDATED;
@@ -275,10 +271,8 @@ static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t 
 	}
 	else 
 	{
-		if ((s->limit_high == new_value) && (s->enable_high_limit == enable))
+		if ((s->limit_high != new_value) || (s->enable_high_limit != enable))
 		{
-			errCode |= VALUE_NOT_CHANGED;
-		} else {
 			s->limit_high = new_value;
 			s->enable_high_limit = enable;
 			errCode |= VALUE_UPDATED;
@@ -387,7 +381,7 @@ static uint8_t Converter_SetOverloadProtection(uint8_t protectionEnable, uint8_t
 	}
 	else
 	{
-		err_code = VALUE_OK;
+		err_code = VALUE_UPDATED;
 	}
 	
 	converter_state.overload_protection_enable = protectionEnable;
@@ -669,9 +663,9 @@ static void stateResponse(converter_message_t *msg, uint8_t err_code, uint8_t st
 	dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
 	dispatcher_msg.sender = sender_CONVERTER;
 	if (msg)
-		dispatcher_msg->converter_event.msg_sender = msg->sender;
+		dispatcher_msg.converter_event.msg_sender = msg->sender;
 	else
-		dispatcher_msg->converter_event.msg_sender = sender_CONVERTER;
+		dispatcher_msg.converter_event.msg_sender = sender_CONVERTER;
 	dispatcher_msg.converter_event.param = param_STATE;
 	dispatcher_msg.converter_event.spec = state_event;
 	dispatcher_msg.converter_event.err_code = err_code;
@@ -829,7 +823,7 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 				else {
 					// CHARGING already - restart?
 				}
-				msgConfirm();
+				msgConfirm(&msg);
 				stateResponse(&msg, err_code, state_event);
 				break;
 			case CONVERTER_TURN_OFF:
@@ -844,7 +838,7 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 					SetOutputLoad(converter_state.channel->load_state);
 					state_event = CONV_TURNED_OFF;
 				}
-				msgConfirm();
+				msgConfirm(&msg);
 				stateResponse(&msg, err_code, state_event);
 				break;
 			case CONVERTER_OVERLOADED:

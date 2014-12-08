@@ -58,6 +58,7 @@ void vTaskDispatcher(void *pvParameters)
 	uint32_t sound_msg;
 	buttons_msg_t buttons_msg;
 	uint8_t eeprom_op_in_progress = 0;
+	uint8_t temp8u;
 	
 	// Temporary
 	uint32_t time_delay;
@@ -306,57 +307,53 @@ void vTaskDispatcher(void *pvParameters)
 				// Other fields provide information about converter message process status
 				
 				// Notify GUI
-				if (msg.converter_event.msg_sender != sender_GUI)
+				temp8u = (msg.converter_event.param != param_STATE) && (msg.converter_event.spec & VALUE_UPDATED);
+				temp8u |= (msg.converter_event.param == param_STATE) && (msg.converter_event.spec != CONV_NO_STATE_CHANGE);
+				if ((msg.converter_event.msg_sender != sender_GUI) && temp8u)
 				{
 					gui_msg.type = GUI_TASK_UPDATE_CONVERTER_STATE;
+					gui_msg.converter_event.param = msg.converter_event.param;
 					gui_msg.converter_event.spec = msg.converter_event.spec;
 					gui_msg.converter_event.channel = msg.converter_event.channel;
 					gui_msg.converter_event.current_range = msg.converter_event.range;
-					gui_msg.converter_event.type = msg.converter_event.limit_type;
+					gui_msg.converter_event.limit_type = msg.converter_event.limit_type;
 					xQueueSendToBack(xQueueGUI, &gui_msg, 0);
 				}
 				
 				// Notify UART
-				uart_tx_msg.type = UART_SEND_CONVERTER_DATA;
-				uart_tx_msg.spec = UART_MSG_INFO;
-				switch (msg.converter_event.spec)
-				{
-					case CONV_TURNED_ON:
-					case CONV_TURNED_OFF:
-					case CONV_OVERLOADED:
-					case CONV_STARTED_CHARGE:
-					case CONV_FINISHED_CHARGE:
-					case CONV_ABORTED_CHARGE:
-						uart_tx_msg.converter.param = param_STATE;
-						if (msg.converter_event.msg_sender != sender_UART1)
-							xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
-						if (msg.converter_event.msg_sender != sender_UART2)
-							xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
-						break;
-					case VOLTAGE_SETTING_CHANGE:
-						uart_tx_msg.converter.param = param_VSET;
-						uart_tx_msg.converter.channel = msg.converter_event.channel;
-						if (msg.converter_event.msg_sender != sender_UART1)
-							xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
-						if (msg.converter_event.msg_sender != sender_UART2)
-							xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
-						break;
-					case CURRENT_SETTING_CHANGE:
-					case VOLTAGE_LIMIT_CHANGE:
-					case CURRENT_LIMIT_CHANGE:
-					case OVERLOAD_SETTING_CHANGE:
-					case CHANNEL_CHANGE:
-					case CURRENT_RANGE_CHANGE:
-					case STATE_CHANGE_TO_OVERLOAD:
-					default:
-						break;
-				}	
+				temp8u = (msg.converter_event.param != param_STATE) && (msg.converter_event.spec & VALUE_UPDATED);
+				temp8u |= (msg.converter_event.param == param_STATE) && (msg.converter_event.spec != CONV_NO_STATE_CHANGE);
+				if (temp8u) {
+					uart_tx_msg.type = UART_SEND_CONVERTER_DATA;
+					uart_tx_msg.spec = UART_MSG_INFO;
+					uart_tx_msg.converter.param = msg.converter_event.param;
+					uart_tx_msg.converter.channel = msg.converter_event.channel;
+					uart_tx_msg.current_range = msg.converter_event.range;
+					if (msg.converter_event.msg_sender != sender_UART1)
+						xQueueSendToBack(xQueueUART1TX, &uart_tx_msg, 0);
+					if (msg.converter_event.msg_sender != sender_UART2)
+						xQueueSendToBack(xQueueUART2TX, &uart_tx_msg, 0);
+				}
+				
 				
 				// Sound feedback
 				if ( (msg.converter_event.msg_sender != sender_UART1) && (msg.converter_event.msg_sender != sender_UART2) )
 				{
 					// CHECKME - this can be actualy decided by sound task itself, depending on settings
 					sound_msg = 0;
+					if (msg.converter_event.param != param_STATE) {
+						if (msg.converter_event.spec & VALUE_BOUND_MASK)
+							sound_msg = SND_CONV_SETTING_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
+						else if (msg.converter_event.spec & VALUE_UPDATED)
+							sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
+					} else {
+						if (msg.converter_event.err_code != ERROR_NONE)
+							sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_HIGHEST;
+						else if (msg.converter_event.spec == CONV_OVERLOADED)
+							sound_msg = SND_CONV_OVERLOADED | SND_CONVERTER_PRIORITY_HIGHEST;
+					}
+										
+					/*
 					switch (msg.converter_event.spec)
 					{
 						case VOLTAGE_SETTING_CHANGE:
@@ -389,7 +386,8 @@ void vTaskDispatcher(void *pvParameters)
 							if ((msg.converter_event.err_code == CMD_ERROR) || (msg.converter_event.err_code == EVENT_ERROR))
 								sound_msg = SND_CONV_CMD_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;	
 							break;
-					}					
+					}					*/
+					
 					if (sound_msg)
 						xQueueSendToBack(xQueueSound, &sound_msg, 0); 
 				}

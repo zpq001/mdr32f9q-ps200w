@@ -149,32 +149,32 @@ void vTaskGUI(void *pvParameters)
 				guiCore_ProcessEncoderEvent(msg.encoder_event.delta);
 				break;
 			case GUI_TASK_UPDATE_CONVERTER_STATE:
-				switch (msg.converter_event.spec)
+				switch (msg.converter_event.param)
 				{
-					case VOLTAGE_SETTING_CHANGE:
+					case param_VSET:
 						guiUpdateVoltageSetting(msg.converter_event.channel);
 						break;
-					case CURRENT_SETTING_CHANGE:
+					case param_CSET:
 						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
-					case VOLTAGE_LIMIT_CHANGE:
-						guiUpdateVoltageLimit(msg.converter_event.channel, msg.converter_event.type);
+					case param_VLIMIT:
+						guiUpdateVoltageLimit(msg.converter_event.channel, msg.converter_event.limit_type);
 						// Voltage setting may have been changed - update too
 						guiUpdateVoltageSetting(msg.converter_event.channel);
 						break;
-					case CURRENT_LIMIT_CHANGE:
+					case param_CLIMIT:
 						guiUpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, 
-							(msg.converter_event.type == LIMIT_TYPE_LOW) ? UPDATE_LOW_LIMIT : UPDATE_HIGH_LIMIT);
+							(msg.converter_event.limit_type == LIMIT_TYPE_LOW) ? UPDATE_LOW_LIMIT : UPDATE_HIGH_LIMIT);
 						// Current setting may have been changed - update too
 						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
 						break;
-					case CURRENT_RANGE_CHANGE:
+					case param_CRANGE:
 						guiUpdateCurrentRange(msg.converter_event.channel);
 						break;
-					case CHANNEL_CHANGE:
+					case param_CHANNEL:
 						guiUpdateChannel();
 						break;
-					case OVERLOAD_SETTING_CHANGE:
+					case param_OVERLOAD_PROTECTION:
 						guiUpdateOverloadSettings();
 						break;
 				}

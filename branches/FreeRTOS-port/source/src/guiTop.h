@@ -25,10 +25,11 @@ typedef struct {
         } encoder_event;
 		//----- converter -----//
 		struct {
-			uint8_t spec;
-			uint8_t channel;
-			uint8_t type;
-			uint8_t current_range;
+			uint8_t param;				// parameter that changed
+			uint8_t spec;				// parameter modify specification
+			uint8_t channel : 1;		// Related channel for the parameter
+			uint8_t current_range : 1;			// Related current range for the parameter
+			uint8_t limit_type : 1;
 		} converter_event;
 		//----- profiles ------//
 		struct {

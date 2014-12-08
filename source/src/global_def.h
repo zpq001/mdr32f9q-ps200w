@@ -49,7 +49,7 @@ enum senders {
 
 	sender_GUI,
 	sender_CONVERTER,
-	
+	sender_ADC,
 	sender_BUTTONS
 };
 

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\FLASH\MDR_200W.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\FLASH\MDR_200W.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Tue Dec 09 00:24:24 2014
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.03 [Build 76]: Last Updated: Wed Dec 10 21:41:31 2014
 <BR><P>
 <H3>Maximum Stack Usage =        408 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1295,9 +1295,9 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PORT_ResetBits
 <LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PORT_SetBits
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[28]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDispatcher
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_Init
 </UL>
@@ -1430,15 +1430,15 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[f0]"></a>fillDispatchMessage</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, converter.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
-<P><STRONG><a name="[26]"></a>vTaskConverter</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, converter.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = vTaskConverter &rArr; Converter_ProcessSetParam &rArr; Converter_ProcessMainControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[26]"></a>vTaskConverter</STRONG> (Thumb, 100 bytes, Stack size 0 bytes, converter.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = vTaskConverter &rArr; Converter_ProcessParamControl &rArr; Converter_ProcessStateControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Calls]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 <LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReset
@@ -1448,7 +1448,7 @@ Global Symbols
 <P><STRONG><a name="[e2]"></a>SetVoltageDAC</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, converter_hw.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetVoltagePWMPeriod
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_Init
 </UL>
@@ -1458,13 +1458,13 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetCurrentPWMPeriod
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_Init
 </UL>
 
 <P><STRONG><a name="[e1]"></a>Converter_IsReady</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, converter_hw.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_Init
 </UL>
@@ -1474,7 +1474,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetFeedbackChannel
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[ed]"></a>Converter_SetCurrentRange</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, converter_hw.o(.text))
@@ -1482,21 +1482,21 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetCurrentRange
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 </UL>
 
 <P><STRONG><a name="[e8]"></a>Converter_TurnOn</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, converter_hw.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 </UL>
 
 <P><STRONG><a name="[e0]"></a>Converter_TurnOff</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, converter_hw.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_Init
 </UL>
 
 <P><STRONG><a name="[e9]"></a>Converter_ClearOverloadFlag</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, converter_hw.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 </UL>
 
 <P><STRONG><a name="[f7]"></a>Converter_HWProcess</STRONG> (Thumb, 470 bytes, Stack size 32 bytes, converter_hw.o(.text))
@@ -1511,7 +1511,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[19]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Timer2_IRQHandler
 </UL>
 
-<P><STRONG><a name="[28]"></a>vTaskDispatcher</STRONG> (Thumb, 1788 bytes, Stack size 72 bytes, dispatcher.o(.text))
+<P><STRONG><a name="[28]"></a>vTaskDispatcher</STRONG> (Thumb, 1804 bytes, Stack size 72 bytes, dispatcher.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 176 + Unknown Stack Size
 <LI>Call Chain = vTaskDispatcher &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
@@ -1606,65 +1606,65 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> main.o(.text)
 </UL>
-<P><STRONG><a name="[11a]"></a>guiTop_ApplyGuiVoltageSetting</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, guitop.o(.text))
+<P><STRONG><a name="[11a]"></a>guiTop_ApplyCurrentRange</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, guitop.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyCurrentRange &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+</UL>
+<BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
+<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateCurrentRange
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
+</UL>
+<BR>[Called By]<UL><LI><a href="#[3a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onTextLabelKeyEncoderEvent
+</UL>
+
+<P><STRONG><a name="[11c]"></a>guiTop_ApplyGuiVoltageSetting</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyGuiVoltageSetting &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateVoltageSetting
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiEditPanel1_onKey
 <LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onSpinBoxValueChanged
 </UL>
 
-<P><STRONG><a name="[11c]"></a>guiTop_ApplyCurrentSetting</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, guitop.o(.text))
+<P><STRONG><a name="[11d]"></a>guiTop_ApplyCurrentSetting</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyCurrentSetting &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateCurrentSetting
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiEditPanel1_onKey
 <LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onSpinBoxValueChanged
 </UL>
 
-<P><STRONG><a name="[11d]"></a>guiTop_ApplyGuiVoltageLimit</STRONG> (Thumb, 84 bytes, Stack size 24 bytes, guitop.o(.text))
+<P><STRONG><a name="[11e]"></a>guiTop_ApplyGuiVoltageLimit</STRONG> (Thumb, 84 bytes, Stack size 24 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = guiTop_ApplyGuiVoltageLimit &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateVoltageSetting
 <LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateVoltageLimit
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onLowLimitChanged
 <LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onHighLimitChanged
 </UL>
 
-<P><STRONG><a name="[11e]"></a>guiTop_ApplyGuiCurrentLimit</STRONG> (Thumb, 124 bytes, Stack size 32 bytes, guitop.o(.text))
+<P><STRONG><a name="[11f]"></a>guiTop_ApplyGuiCurrentLimit</STRONG> (Thumb, 124 bytes, Stack size 32 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = guiTop_ApplyGuiCurrentLimit &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateCurrentSetting
 <LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateCurrentLimit
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onLowLimitChanged
 <LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onHighLimitChanged
-</UL>
-
-<P><STRONG><a name="[11f]"></a>guiTop_ApplyCurrentRange</STRONG> (Thumb, 60 bytes, Stack size 16 bytes, guitop.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyCurrentRange &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
-</UL>
-<BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
-<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
-<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateCurrentRange
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
-</UL>
-<BR>[Called By]<UL><LI><a href="#[3a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onTextLabelKeyEncoderEvent
 </UL>
 
 <P><STRONG><a name="[120]"></a>guiTop_ApplyGuiOverloadSettings</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, guitop.o(.text))
@@ -1673,12 +1673,21 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateOverloadSettings
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
 </UL>
 <BR>[Called By]<UL><LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onOverloadSettingsChanged
 </UL>
 
-<P><STRONG><a name="[121]"></a>guiTop_ApplyGuiProfileSettings</STRONG> (Thumb, 54 bytes, Stack size 8 bytes, guitop.o(.text))
+<P><STRONG><a name="[121]"></a>guiTop_ApplyDacSettings</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, guitop.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyDacSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+</UL>
+<BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillConverterMessage
+</UL>
+<BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onDacSettingsChanged
+</UL>
+
+<P><STRONG><a name="[122]"></a>guiTop_ApplyGuiProfileSettings</STRONG> (Thumb, 54 bytes, Stack size 8 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = guiTop_ApplyGuiProfileSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -1688,7 +1697,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[55]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onProfileSettingsChanged
 </UL>
 
-<P><STRONG><a name="[122]"></a>guiTop_LoadProfile</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, guitop.o(.text))
+<P><STRONG><a name="[123]"></a>guiTop_LoadProfile</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = guiTop_LoadProfile &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -1696,7 +1705,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiProfileList_onKeyEvent
 </UL>
 
-<P><STRONG><a name="[123]"></a>guiTop_SaveProfile</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, guitop.o(.text))
+<P><STRONG><a name="[124]"></a>guiTop_SaveProfile</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = guiTop_SaveProfile &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -1704,7 +1713,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[234]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hideEditPanel2
 </UL>
 
-<P><STRONG><a name="[124]"></a>readProfileListRecordName</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, guitop.o(.text))
+<P><STRONG><a name="[125]"></a>readProfileListRecordName</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = readProfileListRecordName &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -1714,21 +1723,12 @@ Global Symbols
 <LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiUpdateProfileList
 </UL>
 
-<P><STRONG><a name="[125]"></a>guiTop_ApplyExtSwitchSettings</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, guitop.o(.text))
+<P><STRONG><a name="[126]"></a>guiTop_ApplyExtSwitchSettings</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, guitop.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = guiTop_ApplyExtSwitchSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
 <BR>[Called By]<UL><LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onExtSwitchSettingsChanged
-</UL>
-
-<P><STRONG><a name="[126]"></a>guiTop_ApplyDacSettings</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, guitop.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiTop_ApplyDacSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
-</UL>
-<BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepareConverterMsg
-</UL>
-<BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;onDacSettingsChanged
 </UL>
 
 <P><STRONG><a name="[127]"></a>guiTop_ApplyUartSettings</STRONG> (Thumb, 62 bytes, Stack size 16 bytes, guitop.o(.text))
@@ -2085,7 +2085,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[29]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskButtons
 </UL>
 
-<P><STRONG><a name="[29]"></a>vTaskButtons</STRONG> (Thumb, 508 bytes, Stack size 16 bytes, buttons_top.o(.text))
+<P><STRONG><a name="[29]"></a>vTaskButtons</STRONG> (Thumb, 516 bytes, Stack size 16 bytes, buttons_top.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = vTaskButtons &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
@@ -2449,7 +2449,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ulPortSetInterruptMask
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ProcessButtons
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -2497,7 +2497,7 @@ Global Symbols
 <P><STRONG><a name="[c7]"></a>vPortExitCritical</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, port.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[1c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortClearInterruptMask
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ProcessButtons
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -2657,8 +2657,8 @@ Global Symbols
 <LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvUnlockQueue
 <LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortYield
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;msgConfirm
 <LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stateResponse
 <LI><a href="#[2c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskUARTTransmitter
@@ -2674,18 +2674,18 @@ Global Symbols
 <LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTimerGenericCommand
 <LI><a href="#[2f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTimerCallback
 <LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyUartSettings
-<LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
-<LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyExtSwitchSettings
-<LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
-<LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_SaveProfile
-<LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_LoadProfile
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
+<LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyExtSwitchSettings
+<LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
+<LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_SaveProfile
+<LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_LoadProfile
+<LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
+<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiOverloadSettings
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
-<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
 </UL>
 
 <P><STRONG><a name="[184]"></a>xQueueCreateMutex</STRONG> (Thumb, 68 bytes, Stack size 8 bytes, queue.o(.text))
@@ -2750,14 +2750,14 @@ Global Symbols
 <LI><a href="#[2a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskADC
 <LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_do_tx_DMA
 <LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;execute_command
-<LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
+<LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
+<LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiOverloadSettings
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
-<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
 <LI><a href="#[1f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvProcessReceivedCommands
 </UL>
 
@@ -2893,7 +2893,7 @@ Global Symbols
 <LI><a href="#[1e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 <LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortYield
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[27]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskService
 <LI><a href="#[28]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDispatcher
@@ -3201,8 +3201,8 @@ Global Symbols
 <LI><a href="#[21e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiVoltageSetting
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
 </UL>
 
 <P><STRONG><a name="[111]"></a>guiUpdateCurrentSetting</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, guimasterpanel.o(.text))
@@ -3214,8 +3214,8 @@ Global Symbols
 <LI><a href="#[220]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiCurrentSetting
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
 </UL>
 
 <P><STRONG><a name="[114]"></a>guiUpdateCurrentRange</STRONG> (Thumb, 66 bytes, Stack size 16 bytes, guimasterpanel.o(.text))
@@ -3230,7 +3230,7 @@ Global Symbols
 <LI><a href="#[220]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiCurrentSetting
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
 </UL>
 
 <P><STRONG><a name="[104]"></a>guiUpdateChannel</STRONG> (Thumb, 196 bytes, Stack size 16 bytes, guimasterpanel.o(.text))
@@ -3289,7 +3289,7 @@ Global Symbols
 <LI><a href="#[228]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiLimitWidgets
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiChSetupList_onIndexChanged
 </UL>
 
@@ -3303,7 +3303,7 @@ Global Symbols
 <LI><a href="#[228]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiLimitWidgets
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiChSetupList_onIndexChanged
 </UL>
 
@@ -3343,7 +3343,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = hideEditPanel2 &rArr; guiTop_SaveProfile &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiCore_AddMessageToQueue
-<LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_SaveProfile
+<LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_SaveProfile
 <LI><a href="#[202]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiCore_RequestFocusChange
 </UL>
 <BR>[Called By]<UL><LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiEditPanel2_onKey
@@ -3373,14 +3373,14 @@ Global Symbols
 <LI><a href="#[23b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;EE_IsRecentProfileSavingEnabled
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
+<LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
 </UL>
 
 <P><STRONG><a name="[118]"></a>guiUpdateProfileListRecord</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152 + Unknown Stack Size
 <LI>Call Chain = guiUpdateProfileListRecord &rArr; setGuiProfileRecordState &rArr; __2snprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
+<BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
 <LI><a href="#[237]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiProfileRecordState
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
@@ -3390,7 +3390,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 152 + Unknown Stack Size
 <LI>Call Chain = guiUpdateProfileList &rArr; setGuiProfileRecordState &rArr; __2snprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
+<BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;readProfileListRecordName
 <LI><a href="#[237]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;setGuiProfileRecordState
 </UL>
 <BR>[Called By]<UL><LI><a href="#[25]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskGUI
@@ -5208,7 +5208,7 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetRegulationValue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetVoltageLimit
 </UL>
 
@@ -5218,7 +5218,7 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetVoltage
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetRegulationLimit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[d2]"></a>Converter_SetCurrent</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, converter.o(.text))
@@ -5226,7 +5226,7 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetRegulationValue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetCurrentLimit
 </UL>
 
@@ -5236,21 +5236,21 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetCurrent
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetRegulationLimit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[f3]"></a>Converter_SetOverloadProtection</STRONG> (Thumb, 52 bytes, Stack size 12 bytes, converter.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = Converter_SetOverloadProtection
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[ef]"></a>Converter_ValidateChannel</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, converter.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[f1]"></a>Converter_ValidateCurrentRange</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, converter.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR><BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 </UL>
 
 <P><STRONG><a name="[eb]"></a>Converter_LoadProfile</STRONG> (Thumb, 292 bytes, Stack size 0 bytes, converter.o(.text))
@@ -5262,7 +5262,7 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 </UL>
 
 <P><STRONG><a name="[e5]"></a>msgConfirm</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, converter.o(.text))
@@ -5270,17 +5270,17 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 </UL>
 
 <P><STRONG><a name="[e7]"></a>Converter_ProcessCharge</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, converter.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 </UL>
 
-<P><STRONG><a name="[e6]"></a>Converter_ProcessMainControl</STRONG> (Thumb, 412 bytes, Stack size 32 bytes, converter.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = Converter_ProcessMainControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[e6]"></a>Converter_ProcessStateControl</STRONG> (Thumb, 406 bytes, Stack size 32 bytes, converter.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = Converter_ProcessStateControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_TurnOn
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_TurnOff
@@ -5291,19 +5291,19 @@ Local Symbols
 <LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetOutputLoad
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessSetParam
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessParamControl
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessProfile
 <LI><a href="#[26]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskConverter
 </UL>
 
-<P><STRONG><a name="[ea]"></a>Converter_ProcessProfile</STRONG> (Thumb, 130 bytes, Stack size 8 bytes, converter.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = Converter_ProcessProfile &rArr; Converter_ProcessMainControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[ea]"></a>Converter_ProcessProfile</STRONG> (Thumb, 128 bytes, Stack size 8 bytes, converter.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = Converter_ProcessProfile &rArr; Converter_ProcessStateControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetCurrentDAC
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetCurrentRange
 <LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_IsReady
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SaveProfile
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;msgConfirm
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_LoadProfile
 <LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetOutputLoad
@@ -5315,15 +5315,15 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[26]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskConverter
 </UL>
 
-<P><STRONG><a name="[ee]"></a>Converter_ProcessSetParam</STRONG> (Thumb, 1218 bytes, Stack size 40 bytes, converter.o(.text))
-<BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = Converter_ProcessSetParam &rArr; Converter_ProcessMainControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[ee]"></a>Converter_ProcessParamControl</STRONG> (Thumb, 1206 bytes, Stack size 40 bytes, converter.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = Converter_ProcessParamControl &rArr; Converter_ProcessStateControl &rArr; stateResponse &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetCurrentDAC
 <LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetFeedBackChannel
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_SetCurrentRange
 <LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_IsReady
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fillDispatchMessage
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessMainControl
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ProcessStateControl
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;msgConfirm
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ValidateCurrentRange
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_ValidateChannel
@@ -5342,14 +5342,14 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[26]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskConverter
 </UL>
 
-<P><STRONG><a name="[11b]"></a>prepareConverterMsg</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, guitop.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
+<P><STRONG><a name="[11b]"></a>fillConverterMessage</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, guitop.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiOverloadSettings
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
-<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
 </UL>
 
 <P><STRONG><a name="[12a]"></a>EEPROM_ReadSmallBlock</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, i2c_eeprom.o(.text))
@@ -5431,7 +5431,7 @@ Local Symbols
 <P><STRONG><a name="[30]"></a>UartRxStreamParser</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, uart_rx.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> uart_rx.o(.text)
 </UL>
-<P><STRONG><a name="[17d]"></a>execute_command</STRONG> (Thumb, 1274 bytes, Stack size 112 bytes, uart_rx.o(.text))
+<P><STRONG><a name="[17d]"></a>execute_command</STRONG> (Thumb, 1278 bytes, Stack size 112 bytes, uart_rx.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = execute_command &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Converter_GetFeedbackChannel
@@ -5829,8 +5829,8 @@ Local Symbols
 <P><STRONG><a name="[3d]"></a>onSpinBoxValueChanged</STRONG> (Thumb, 60 bytes, Stack size 8 bytes, guimasterpanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = onSpinBoxValueChanged &rArr; guiTop_ApplyCurrentSetting &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<BR>[Calls]<UL><LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guimasterpanel.o(.text)
 </UL>
@@ -5845,7 +5845,7 @@ Local Symbols
 <P><STRONG><a name="[3a]"></a>onTextLabelKeyEncoderEvent</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, guimasterpanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = onTextLabelKeyEncoderEvent &rArr; guiTop_ApplyCurrentRange &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
+<BR>[Calls]<UL><LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentRange
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guimasterpanel.o(.text)
 </UL>
@@ -5992,21 +5992,21 @@ Local Symbols
 <P><STRONG><a name="[57]"></a>onDacSettingsChanged</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = onDacSettingsChanged &rArr; guiTop_ApplyDacSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
+<BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyDacSettings
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guisetuppanel.o(.text)
 </UL>
 <P><STRONG><a name="[56]"></a>onExtSwitchSettingsChanged</STRONG> (Thumb, 82 bytes, Stack size 8 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = onExtSwitchSettingsChanged &rArr; guiTop_ApplyExtSwitchSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyExtSwitchSettings
+<BR>[Calls]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyExtSwitchSettings
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guisetuppanel.o(.text)
 </UL>
 <P><STRONG><a name="[55]"></a>onProfileSettingsChanged</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = onProfileSettingsChanged &rArr; guiTop_ApplyGuiProfileSettings &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
+<BR>[Calls]<UL><LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiProfileSettings
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guisetuppanel.o(.text)
 </UL>
@@ -6023,7 +6023,7 @@ Local Symbols
 <P><STRONG><a name="[52]"></a>guiProfileList_onKeyEvent</STRONG> (Thumb, 96 bytes, Stack size 8 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = guiProfileList_onKeyEvent &rArr; guiTop_LoadProfile &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_LoadProfile
+<BR>[Calls]<UL><LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_LoadProfile
 <LI><a href="#[226]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiEditPanel2_Show
 <LI><a href="#[202]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiCore_RequestFocusChange
 </UL>
@@ -6046,16 +6046,16 @@ Local Symbols
 <P><STRONG><a name="[4e]"></a>onHighLimitChanged</STRONG> (Thumb, 68 bytes, Stack size 16 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = onHighLimitChanged &rArr; guiTop_ApplyGuiCurrentLimit &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<BR>[Calls]<UL><LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guisetuppanel.o(.text)
 </UL>
 <P><STRONG><a name="[4b]"></a>onLowLimitChanged</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, guisetuppanel.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = onLowLimitChanged &rArr; guiTop_ApplyGuiCurrentLimit &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
-<LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
+<BR>[Calls]<UL><LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiCurrentLimit
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageLimit
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guisetuppanel.o(.text)
 </UL>
@@ -6240,8 +6240,8 @@ Local Symbols
 <P><STRONG><a name="[5b]"></a>guiEditPanel1_onKey</STRONG> (Thumb, 110 bytes, Stack size 8 bytes, guieditpanel1.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = guiEditPanel1_onKey &rArr; guiTop_ApplyCurrentSetting &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
+<BR>[Calls]<UL><LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyCurrentSetting
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;guiTop_ApplyGuiVoltageSetting
 <LI><a href="#[216]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hideEditPanel1
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> guieditpanel1.o(.text)

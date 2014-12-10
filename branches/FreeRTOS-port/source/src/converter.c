@@ -20,7 +20,7 @@
 #include "queue.h"
 
 
-#include "sound_driver.h"
+//#include "sound_driver.h"
 #include "control.h"
 #include "converter.h"
 #include "converter_hw.h"
@@ -28,44 +28,11 @@
 #include "eeprom.h"
 
 #include "dispatcher.h"
-//#include "guiTop.h"
-
-
-
-
-
-
-
-//-------------------------------------------------------//
-// Converter control functions return values
-
-// these can be set simultaneously
-#define VOLTAGE_SETTING_APPLIED			0x01	
-#define VOLTAGE_LIMIT_APPLIED			0x02
-//#define VOLTAGE_SETTING_ARG_MODIFIED	0x04
-//#define VOLTAGE_LIMIT_ARG_MODIFIED		0x08
-// these can be set simultaneously
-#define CURRENT_SETTING_APPLIED			0x01	
-#define CURRENT_LIMIT_APPLIED			0x02
-//#define CURRENT_SETTING_ARG_MODIFIED	0x04
-//#define CURRENT_LIMIT_ARG_MODIFIED		0x08
-
-//-------------------------------------------------------//
-// Arguments of Converter_ApplyControls
-//#define APPLY_CHANNEL			0x01
-//#define APPLY_CURRENT_RANGE		0x02
-//#define APPLY_OUTPUT_LOAD		0x04
-//#define APPLY_VOLTAGE			0x10
-//#define APPLY_CURRENT			0x20
-
 
 
 
 enum ChargeFSMCommands { START_CHARGE = 1, STOP_CHARGE, ABORT_CHARGE, CHARGE_TICK };
-	
 
-enum {CMD_INTERNAL, CMD_EXTERNAL};
-enum {GET_READY_FOR_CHANNEL_SWITCH, GET_READY_FOR_PROFILE_LOAD};
 
 
 
@@ -79,15 +46,14 @@ const converter_message_t converter_tick_message = {CONVERTER_TICK};
 // Global to allow whole message processing be split into several functions
 static converter_message_t msg;
 
-//gui_msg_t gui_msg;
 uint32_t adc_msg;
 dispatch_msg_t dispatcher_msg;
 
 converter_state_t converter_state;		// main converter control
 //dac_settings_t dac_settings;			// DAC calibration offset
 
-static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code);
-static void Converter_ProcessSetParam (void);
+static void Converter_ProcessStateControl (uint8_t cmd_code);
+static void Converter_ProcessParamControl (void);
 static void Converter_ProcessProfile (void);
 static uint8_t Converter_ProcessCharge(uint8_t cmd);
 
@@ -629,7 +595,7 @@ void Converter_Init(void)
 	SetVoltageDAC(converter_state.channel->voltage.setting);
 	SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 	SetOutputLoad(converter_state.channel->load_state);
-	// Overload protection mechanism uses data from converter_regulation, so no
+	// Overload protection mechanism uses data from converter_state, so no
 	// 	special settings are required.
 }
 
@@ -687,49 +653,41 @@ static void msgConfirm(converter_message_t *msg)
 
 
 
-
-
-
-
-
-
-
 //---------------------------------------------//
 //	Main converter task
 //	
 //---------------------------------------------//
 void vTaskConverter(void *pvParameters) 
 {	
-	uint8_t msg_group;
-	
 	// Initialize
 	xQueueConverter = xQueueCreate( 5, sizeof( converter_message_t ) );
 	if( xQueueConverter == 0 )
-	{
-		// Queue was not created and must not be used.
 		while(1);
-	}
 	
 	// Wait until task is started by dispatcher		
-	//vTaskSuspend(0);			
+	//vTaskSuspend(0);
 	
 	xQueueReset(xQueueConverter);
-	while(1)
-	{
-		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);
-		msg_group = msg.type & CONVERTER_GROUP_MASK;
-		//msg.type &= ~CONVERTER_GROUP_MASK;
-		
-		switch (msg_group)
-		{
-			case CONVERTER_CONTROL_GROUP:
-				Converter_ProcessMainControl(CMD_EXTERNAL, msg.type);
+	while(1) {
+		xQueueReceive(xQueueConverter, &msg, portMAX_DELAY);	
+		switch (msg.type) {
+			case CONVERTER_CONTROL:
+				if (msg.param == param_STATE)
+					Converter_ProcessStateControl(msg.a.state_set.command);
+				else
+					Converter_ProcessParamControl();
 				break;
-			case CONVERTER_SET_PARAMS_GROUP:
-				Converter_ProcessSetParam();
-				break;
-			case CONVERTER_PROFILE_GROUP:
+			case CONVERTER_PROFILE_CMD:
 				Converter_ProcessProfile();
+				break;
+			case CONVERTER_ADC_MEASUREMENT_READY:
+
+				break;
+			case CONVERTER_TICK:
+				Converter_ProcessStateControl(event_TICK);
+				break;
+			case CONVERTER_OVERLOAD_EVENT:
+				Converter_ProcessStateControl(event_OVERLOAD);
 				break;
 			default:	// unknown
 				break;
@@ -742,130 +700,124 @@ void vTaskConverter(void *pvParameters)
 //=========================================================================//
 //	Control command processor
 //=========================================================================//
-static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
-{
+static void Converter_ProcessStateControl (uint8_t cmd_code) {
 	uint8_t err_code = ERROR_NONE;
 	uint8_t state_event = CONV_NO_STATE_CHANGE;
 	uint8_t temp8u;
 	
-	if (cmd_type == CMD_INTERNAL) {
-		switch (cmd_code) {
-			case GET_READY_FOR_CHANNEL_SWITCH:
-			case GET_READY_FOR_PROFILE_LOAD:
-				if (converter_state.state == CONVERTER_STATE_ON) {
-					Converter_TurnOff();
-					converter_state.state = CONVERTER_STATE_OFF;
-					stateResponse(0, ERROR_NONE, CONV_TURNED_OFF);				
-				}
-				else if (converter_state.state == CONVERTER_STATE_CHARGING)	{
-					// Stop charge FSM
-					Converter_TurnOff();
-					SetOutputLoad(converter_state.channel->load_state);
-					converter_state.state = CONVERTER_STATE_OFF;
-					Converter_ProcessCharge(STOP_CHARGE);
-					stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
-				}
-				else if (converter_state.state == CONVERTER_STATE_OVERLOADED) {
-					// Just reset flag
-					converter_state.state = CONVERTER_STATE_OFF;
-					// stateResponse(ERROR_NONE, CONV_RESET_OVERLOAD_FLAG);		CHECKME
-				}
-				else {
-					// OFF - do nothing
-				}
-				break;
-		}
-	} else {	// External command from other task
-		switch (cmd_code) {
-			case CONVERTER_TURN_ON:
-				if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED)) {
-					// Resistive output load could be disabled by charger - enable it
-					SetOutputLoad(converter_state.channel->load_state);
-					// Command to low-level
-					temp8u = Converter_TurnOn();
-					if (temp8u == CONVERTER_CMD_OK) {
-						converter_state.state = CONVERTER_STATE_ON;
-						state_event = CONV_TURNED_ON;
-					} 
-					else {
-						err_code = ERROR_INTERNAL;
-					}
-					msgConfirm(&msg);
-					stateResponse(&msg, err_code, state_event);
-				} else {
-					msgConfirm(&msg);	// Converter is already ON or CHARGING - only give semaphore
-				}
-				break;
-			case CONVERTER_START_CHARGE:
-				if (converter_state.state != CONVERTER_STATE_CHARGING) {
-					if (converter_state.channel->CHANNEL == CHANNEL_12V) {				
-						if (converter_state.state != CONVERTER_STATE_ON) {
-							// Command to low-level
-							temp8u = Converter_TurnOn();
-							if (temp8u != CONVERTER_CMD_OK) {
-								err_code = ERROR_INTERNAL;
-							}
-						}
-						if (err_code == ERROR_NONE) {
-							// Resistive output load must be disabled
-							SetOutputLoad(0);
-							// Process charge FSM
-							Converter_ProcessCharge(START_CHARGE);
-							converter_state.state = CONVERTER_STATE_CHARGING;
-							state_event = CONV_STARTED_CHARGE;
-						}
-					}
-					else {
-						// Can charge only by 12V channel
-						err_code = ERROR_CMD;	
-					}
-				}
-				else {
-					// CHARGING already - restart?
-				}
-				msgConfirm(&msg);
-				stateResponse(&msg, err_code, state_event);
-				break;
-			case CONVERTER_TURN_OFF:
-				temp8u = converter_state.state;
+	switch (cmd_code) {
+		case cmd_GET_READY_FOR_CHANNEL_SWITCH:
+		case cmd_GET_READY_FOR_PROFILE_LOAD:
+			if (converter_state.state == CONVERTER_STATE_ON) {
 				Converter_TurnOff();
 				converter_state.state = CONVERTER_STATE_OFF;
-				if (temp8u == CONVERTER_STATE_CHARGING) {
-					Converter_ProcessCharge(STOP_CHARGE);
-					state_event = CONV_ABORTED_CHARGE;
-				} else {
-					// Resistive output load was disabled by charger and it is second STOP command - enable it
-					SetOutputLoad(converter_state.channel->load_state);
-					state_event = CONV_TURNED_OFF;
+				stateResponse(0, ERROR_NONE, CONV_TURNED_OFF);				
+			}
+			else if (converter_state.state == CONVERTER_STATE_CHARGING)	{
+				// Stop charge FSM
+				Converter_TurnOff();
+				SetOutputLoad(converter_state.channel->load_state);
+				converter_state.state = CONVERTER_STATE_OFF;
+				Converter_ProcessCharge(STOP_CHARGE);
+				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
+			}
+			else if (converter_state.state == CONVERTER_STATE_OVERLOADED) {
+				// Just reset flag
+				converter_state.state = CONVERTER_STATE_OFF;
+				// stateResponse(ERROR_NONE, CONV_RESET_OVERLOAD_FLAG);		CHECKME
+			}
+			else {
+				// OFF - do nothing
+			}
+			break;
+		case cmd_TURN_ON:
+			if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED)) {
+				// Resistive output load could be disabled by charger - enable it
+				SetOutputLoad(converter_state.channel->load_state);
+				// Command to low-level
+				temp8u = Converter_TurnOn();
+				if (temp8u == CONVERTER_CMD_OK) {
+					converter_state.state = CONVERTER_STATE_ON;
+					state_event = CONV_TURNED_ON;
+				} 
+				else {
+					err_code = ERROR_INTERNAL;
 				}
 				msgConfirm(&msg);
 				stateResponse(&msg, err_code, state_event);
-				break;
-			case CONVERTER_OVERLOADED:
-				// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
-				temp8u = converter_state.state;
-				converter_state.state = CONVERTER_STATE_OVERLOADED;
-				// Reset that routine FSM flag
-				if (Converter_ClearOverloadFlag() != CONVERTER_CMD_OK) {
-					// Error, we should never get here.
-					// Kind of restore attempt
-					Converter_TurnOff();
-					err_code = ERROR_INTERNAL;
+			} else {
+				msgConfirm(&msg);	// Converter is already ON or CHARGING - only give semaphore
+			}
+			break;
+		case cmd_START_CHARGE:
+			if (converter_state.state != CONVERTER_STATE_CHARGING) {
+				if (converter_state.channel->CHANNEL == CHANNEL_12V) {				
+					if (converter_state.state != CONVERTER_STATE_ON) {
+						// Command to low-level
+						temp8u = Converter_TurnOn();
+						if (temp8u != CONVERTER_CMD_OK) {
+							err_code = ERROR_INTERNAL;
+						}
+					}
+					if (err_code == ERROR_NONE) {
+						// Resistive output load must be disabled
+						SetOutputLoad(0);
+						// Process charge FSM
+						Converter_ProcessCharge(START_CHARGE);
+						converter_state.state = CONVERTER_STATE_CHARGING;
+						state_event = CONV_STARTED_CHARGE;
+					}
 				}
-				stateResponse(0, err_code, CONV_OVERLOADED);
-				if (temp8u == CONVERTER_STATE_CHARGING) {
-					// Stop charge FSM
-					Converter_ProcessCharge(STOP_CHARGE);
-					stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
-					// Do not enable resistive load here
-				}			
-				break;
-			case CONVERTER_TICK:		// Temporary! Will be special for charging mode
-				// ADC task is responsible for sampling and filtering voltage and current
-				adc_msg = ADC_GET_ALL_NORMAL;
-				xQueueSendToBack(xQueueADC, &adc_msg, 0);
-				break;
-		}
+				else {
+					// Can charge only by 12V channel
+					err_code = ERROR_CMD;	
+				}
+			}
+			else {
+				// CHARGING already - restart?
+			}
+			msgConfirm(&msg);
+			stateResponse(&msg, err_code, state_event);
+			break;
+		case cmd_TURN_OFF:
+			temp8u = converter_state.state;
+			Converter_TurnOff();
+			converter_state.state = CONVERTER_STATE_OFF;
+			if (temp8u == CONVERTER_STATE_CHARGING) {
+				Converter_ProcessCharge(STOP_CHARGE);
+				state_event = CONV_ABORTED_CHARGE;
+			} else {
+				// Resistive output load was disabled by charger and it is second STOP command - enable it
+				SetOutputLoad(converter_state.channel->load_state);
+				state_event = CONV_TURNED_OFF;
+			}
+			msgConfirm(&msg);
+			stateResponse(&msg, err_code, state_event);
+			break;
+		case event_OVERLOAD:
+			// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
+			temp8u = converter_state.state;
+			converter_state.state = CONVERTER_STATE_OVERLOADED;
+			// Reset that routine FSM flag
+			if (Converter_ClearOverloadFlag() != CONVERTER_CMD_OK) {
+				// Error, we should never get here.
+				// Kind of restore attempt
+				Converter_TurnOff();
+				err_code = ERROR_INTERNAL;
+			}
+			stateResponse(0, err_code, CONV_OVERLOADED);
+			if (temp8u == CONVERTER_STATE_CHARGING) {
+				// Stop charge FSM
+				Converter_ProcessCharge(STOP_CHARGE);
+				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
+				// Do not enable resistive load here
+			}			
+			break;
+		case event_TICK:		// Temporary! Will be special for charging mode
+			// ADC task is responsible for sampling and filtering voltage and current
+			adc_msg = ADC_GET_ALL_NORMAL;
+			xQueueSendToBack(xQueueADC, &adc_msg, 0);
+			break;
 	}
 }
 
@@ -873,15 +825,15 @@ static void Converter_ProcessMainControl (uint8_t cmd_type, uint8_t cmd_code)
 //=========================================================================//
 //	Parameters setting processor
 //=========================================================================//
-static void Converter_ProcessSetParam (void)
+static void Converter_ProcessParamControl (void)
 {
 	uint8_t err_code = ERROR_NONE;
 	uint8_t op_result = 0;
 	uint8_t temp8u;
 	channel_state_t *c;
-	switch(msg.type) {
+	switch (msg.param) {
 		//-------------------- Setting voltage --------------------//
-		case CONVERTER_SET_VOLTAGE:
+		case param_VSET:
 			msg.a.v_set.channel = Converter_ValidateChannel(msg.a.v_set.channel);
 			taskENTER_CRITICAL();
 			op_result = Converter_SetVoltage(msg.a.v_set.channel, msg.a.v_set.value);
@@ -897,7 +849,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break;	
 		//-------------------- Setting current --------------------//
-		case CONVERTER_SET_CURRENT:
+		case param_CSET:
 			msg.a.c_set.channel = Converter_ValidateChannel(msg.a.c_set.channel);
 			msg.a.c_set.range = Converter_ValidateCurrentRange(msg.a.c_set.range);
 			taskENTER_CRITICAL();
@@ -916,7 +868,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break;
 		//----------------- Setting voltage limit -----------------//
-		case CONVERTER_SET_VOLTAGE_LIMIT:
+		case param_VLIMIT:
 			msg.a.vlim_set.channel = Converter_ValidateChannel(msg.a.vlim_set.channel);
 			taskENTER_CRITICAL();
 			op_result = Converter_SetVoltageLimit(msg.a.vlim_set.channel, msg.a.vlim_set.type, 
@@ -934,7 +886,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break; 
 		//----------------- Setting current limit -----------------//
-		case CONVERTER_SET_CURRENT_LIMIT:
+		case param_CLIMIT:
 			msg.a.clim_set.channel = Converter_ValidateChannel(msg.a.clim_set.channel);
 			msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);		
 			taskENTER_CRITICAL();			
@@ -955,12 +907,12 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break; 
 		//-------------------- Setting channel --------------------//
-		case CONVERTER_SWITCH_CHANNEL:
+		case param_CHANNEL:
 			msg.a.ch_set.new_channel = Converter_ValidateChannel(msg.a.ch_set.new_channel);
 			if (msg.a.ch_set.new_channel != converter_state.channel->CHANNEL)
 			{
 				// Disable converter if enabled
-				Converter_ProcessMainControl(CMD_INTERNAL, GET_READY_FOR_CHANNEL_SWITCH);
+				Converter_ProcessStateControl(cmd_GET_READY_FOR_CHANNEL_SWITCH);
 				// Wait until voltage feedback switching is allowed
 				while(Converter_IsReady() == 0) 
 					vTaskDelay(1);
@@ -999,7 +951,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break;
 		//----------------- Setting current range -----------------//
-		case CONVERTER_SET_CURRENT_RANGE:
+		case param_CRANGE:
 			msg.a.crange_set.channel = Converter_ValidateChannel(msg.a.crange_set.channel);	
 			msg.a.crange_set.new_range = Converter_ValidateCurrentRange(msg.a.crange_set.new_range);
 			c = (msg.a.crange_set.channel == CHANNEL_5V) ? &converter_state.channel_5v : 
@@ -1047,7 +999,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break;
 		//-------- Setting overload protection parameters ---------//
-		case CONVERTER_SET_OVERLOAD_PARAMS:
+		case param_OVERLOAD_PROTECTION:
 			taskENTER_CRITICAL();
 			op_result = Converter_SetOverloadProtection( msg.a.overload_set.protection_enable, msg.a.overload_set.warning_enable, 
 												msg.a.overload_set.threshold);
@@ -1058,7 +1010,7 @@ static void Converter_ProcessSetParam (void)
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			break; 
 		//-------------------- Setting DAC offset -----------------//
-		case CONVERTER_SET_DAC_PARAMS:
+		case param_DAC_OFFSET:
 			taskENTER_CRITICAL();
 			global_settings->dac_voltage_offset = msg.a.dac_set.voltage_offset;
 			global_settings->dac_current_low_offset = msg.a.dac_set.current_low_offset;
@@ -1084,11 +1036,11 @@ static void Converter_ProcessProfile (void)
 	uint8_t temp8u;
 	//uint8_t err_code = ERROR_NONE;
 	//uint8_t op_result = 0;
-	switch(msg.type) {
+	switch (msg.param) {
 		//---------------- Loading profile ------------------------//
-		case CONVERTER_LOAD_PROFILE:
+		case cmd_LOAD_PROFILE:
 			// Disable converter if enabled
-			Converter_ProcessMainControl(CMD_INTERNAL, GET_READY_FOR_PROFILE_LOAD);
+			Converter_ProcessStateControl(cmd_GET_READY_FOR_PROFILE_LOAD);
 			// Load profile data
 			taskENTER_CRITICAL();
 			Converter_LoadProfile();
@@ -1111,7 +1063,7 @@ static void Converter_ProcessProfile (void)
 		break;
 		
 		//----------------- Saving profile ------------------------//
-		case CONVERTER_SAVE_PROFILE:
+		case cmd_SAVE_PROFILE:
 			Converter_SaveProfile();
 			msgConfirm(&msg);
 			break;
@@ -1175,7 +1127,7 @@ static uint8_t Converter_ProcessCharge(uint8_t cmd)
 /*				
 			//=========================================================================//
 			// Turn ON
-			case CONVERTER_TURN_ON:
+			case cmd_TURN_ON:
 				if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
 				{
 					temp8u = Converter_TurnOn();
@@ -1204,7 +1156,7 @@ static uint8_t Converter_ProcessCharge(uint8_t cmd)
 				break;
 			//=========================================================================//
 			// Turn OFF
-			case CONVERTER_TURN_OFF:
+			case cmd_TURN_OFF:
 				Converter_TurnOff();
 				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
 				err_code = CMD_OK;
@@ -1271,7 +1223,7 @@ void bla-bla(uint8_t cmd)
 	{
 		switch (cmd)
 		{
-			case CONVERTER_TURN_ON:		
+			case cmd_TURN_ON:		
 				// Command to low-level
 				temp8u = Converter_TurnOn();
 				if (temp8u == CONVERTER_CMD_OK)
@@ -1291,7 +1243,7 @@ void bla-bla(uint8_t cmd)
 				dispatcher_msg.converter_event.err_code = err_code;
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 				break;	
-			case CONVERTER_TURN_OFF:	
+			case cmd_TURN_OFF:	
 				// Always set output load
 				SetOutputLoad(LOAD_ENABLE);
 				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
@@ -1309,7 +1261,7 @@ void bla-bla(uint8_t cmd)
 				// Anyway, hardware already disabled by low-level interrupt-driven routine.
 				Converter_ClearOverloadFlag();
 				break;	
-			case CONVERTER_START_CHARGE:
+			case cmd_START_CHARGE:
 				retVal = Converter_ProcessCharge(__START__);
 				if (retVal == 1)
 				{
@@ -1340,7 +1292,7 @@ void bla-bla(uint8_t cmd)
 	{
 		switch (cmd)
 		{
-			case CONVERTER_TURN_ON:		
+			case cmd_TURN_ON:		
 				// Converter is already ON
 				err_code = CMD_OK;
 				// Confirm
@@ -1351,7 +1303,7 @@ void bla-bla(uint8_t cmd)
 				dispatcher_msg.converter_event.err_code = err_code;
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 				break;
-			case CONVERTER_TURN_OFF:	
+			case cmd_TURN_OFF:	
 				Converter_TurnOff();
 				converter_state.state = CONVERTER_STATE_OFF;
 				err_code = CMD_OK;
@@ -1388,7 +1340,7 @@ void bla-bla(uint8_t cmd)
 				dispatcher_msg.converter_event.err_code = err_code;
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 				break;
-			case CONVERTER_START_CHARGE:
+			case cmd_START_CHARGE:
 				retVal = Converter_ProcessCharge(__START__);
 				if (retVal == 1)
 				{
@@ -1408,9 +1360,9 @@ void bla-bla(uint8_t cmd)
 	{
 		switch (cmd)
 		{
-			case CONVERTER_TURN_ON:		
+			case cmd_TURN_ON:		
 				break;	// do nothing
-			case CONVERTER_TURN_OFF:	
+			case cmd_TURN_OFF:	
 				retVal = Converter_ProcessCharge(__STOP__);
 				if (retVal == 0)
 				{
@@ -1422,7 +1374,7 @@ void bla-bla(uint8_t cmd)
 				Converter_ProcessCharge(__STOP_BY_OVERLOAD__);
 				SetOutputLoad(converter_state.channel->load_state);
 				break;
-			case CONVERTER_START_CHARGE:
+			case cmd_START_CHARGE:
 				retVal = Converter_ProcessCharge(__RESTART__);
 				break;
 		}
@@ -1431,13 +1383,13 @@ void bla-bla(uint8_t cmd)
 	{
 		switch (cmd)
 		{
-			case CONVERTER_TURN_ON:		
+			case cmd_TURN_ON:		
 				break;	
-			case CONVERTER_TURN_OFF:	
+			case cmd_TURN_OFF:	
 				break;
 			case CONVERTER_OVERLOADED:
 				break;
-			case CONVERTER_START_CHARGE:
+			case cmd_START_CHARGE:
 				break;
 		}
 	

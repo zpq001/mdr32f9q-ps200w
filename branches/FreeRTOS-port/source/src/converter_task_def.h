@@ -4,32 +4,12 @@
 #include <stdint.h>
 
 
-
-
-
-
-
-
-enum ConverterParameters {
-	param_STATE,
-	param_VSET,
-	param_CSET,
-	param_CHANNEL,
-	param_CRANGE,
-	param_VLIMIT,
-	param_CLIMIT,
-	param_MEASURED_DATA,
-	param_OVERLOAD_PROTECTION,
-	param_DAC_OFFSET
-};
-
-
-
-
-
-
 typedef union 
 {
+		struct 
+		{
+			uint8_t command;
+		} state_set;
 		struct 
 		{
 			uint8_t channel;

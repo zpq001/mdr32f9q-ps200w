@@ -183,40 +183,31 @@ void vTaskButtons(void *pvParameters)
 				ProcessButtons();	
 				UpdateEncoderDelta();
 				extsw_cmd = getExtSwAction();
+				
 				//---------- Converter control -----------//
+				converter_msg.type = CONVERTER_CONTROL;
 				
 				// Feedback channel select
-				if (buttons.action_down & SW_CHANNEL)
-				{
-					// Send switch channel to 5V message
-					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+				converter_msg.param = param_CHANNEL;
+				if (buttons.action_down & SW_CHANNEL) {
 					converter_msg.a.ch_set.new_channel = CHANNEL_5V;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-				}
-				else if (buttons.action_up & SW_CHANNEL)
-				{
-					// Send switch channel to 12V message
-					converter_msg.type = CONVERTER_SWITCH_CHANNEL;
+				} else if (buttons.action_up & SW_CHANNEL) {
 					converter_msg.a.ch_set.new_channel = CHANNEL_12V;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				}
 				
-				if (enable_on_off)
-				{				
-					if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF))
-					{
-						// Send OFF mesage to converter task
-						converter_msg.type = CONVERTER_TURN_OFF;
+				// ON/OFF
+				converter_msg.param = param_STATE;
+				if (enable_on_off) {				
+					if ((buttons.action_down & BTN_OFF) || (extsw_cmd == EXTSW_CMD_OFF)) {
+						converter_msg.a.state_set.command = cmd_TURN_OFF;
 						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
-					}
-					else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON))
-					{
-						// Send ON mesage to converter task
-						converter_msg.type = CONVERTER_TURN_ON;
+					} else if ((buttons.action_down & BTN_ON) || (extsw_cmd == EXTSW_CMD_ON)) {
+						converter_msg.a.state_set.command = cmd_TURN_ON;
 						xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					}
 				}
-				
 				
 				// Serialize button events
 				gui_msg.type = GUI_TASK_PROCESS_BUTTONS;

@@ -54,7 +54,7 @@ static void set_beeper_output(uint8_t enable)
 
 //-------------------------------------------------------//
 // Messages to sound driver should be composed like this
-// msg = CONVERTER_TURN_ON   |   12;
+// msg = cmd_TURN_ON   |   12;
 //       ^                       ^
 //       event code              priority
 // If there is some sample playing and incoming events's priority is higher than current,

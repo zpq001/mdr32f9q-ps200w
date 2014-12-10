@@ -40,7 +40,7 @@ enum ChargeFSMCommands { START_CHARGE = 1, STOP_CHARGE, ABORT_CHARGE, CHARGE_TIC
 // OS stuff
 xQueueHandle xQueueConverter;
 xTaskHandle xTaskHandle_Converter;
-const converter_message_t converter_overload_msg = {CONVERTER_OVERLOADED};
+const converter_message_t converter_overload_msg = {CONVERTER_OVERLOAD_EVENT};
 const converter_message_t converter_tick_message = {CONVERTER_TICK};
 
 // Global to allow whole message processing be split into several functions

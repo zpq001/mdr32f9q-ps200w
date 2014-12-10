@@ -116,7 +116,8 @@ void vTaskDispatcher(void *pvParameters)
 	//xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
 	// Load converter profile
-	converter_msg.type = CONVERTER_LOAD_PROFILE;
+	converter_msg.type = CONVERTER_PROFILE_CMD;
+	converter_msg.param = cmd_LOAD_PROFILE;
 	converter_msg.pxSemaphore = 0;
 	xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 	
@@ -211,7 +212,8 @@ void vTaskDispatcher(void *pvParameters)
 				if (msg.profile_load_response.profileState == EE_PROFILE_VALID)
 				{
 					// New profile data is loaded. 
-					converter_msg.type = CONVERTER_LOAD_PROFILE;
+					converter_msg.type = CONVERTER_PROFILE_CMD;
+					converter_msg.param = cmd_LOAD_PROFILE;
 					converter_msg.pxSemaphore = &xSemaphoreSync;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					// Wait for task to complete
@@ -256,7 +258,8 @@ void vTaskDispatcher(void *pvParameters)
 				
 					// Collect information from tasks:
 					// Converter task
-					converter_msg.type = CONVERTER_SAVE_PROFILE;
+					converter_msg.type = CONVERTER_PROFILE_CMD;
+					converter_msg.param = cmd_SAVE_PROFILE;
 					converter_msg.pxSemaphore = &xSemaphoreSync;
 					xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 					// Wait for task to complete
@@ -433,7 +436,8 @@ void vTaskDispatcher(void *pvParameters)
 				
 				// Collect information from tasks
 				// Converter task
-				converter_msg.type = CONVERTER_SAVE_PROFILE;
+				converter_msg.type = CONVERTER_PROFILE_CMD;
+				converter_msg.param = cmd_SAVE_PROFILE;
 				converter_msg.pxSemaphore = &xSemaphoreSync;
 				xQueueSendToBack(xQueueConverter, &converter_msg, 0);
 				// Wait for task to complete

@@ -52,7 +52,7 @@ enum ConverterParameters {
 };
 
 enum ConverterStateControl {
-	cmd_TURN_ON
+	cmd_TURN_ON,
 	cmd_TURN_OFF,
 	cmd_START_CHARGE,
 	cmd_STOP_CHARGE,

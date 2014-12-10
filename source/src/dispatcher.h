@@ -10,12 +10,7 @@
 
 enum DispatcherTaskMsgTypes {	
 	DISPATCHER_TICK = 1, 
-	DP_CONVERTER_TURN_ON, 
-	DP_CONVERTER_TURN_OFF,
-	DP_CONVERTER_SET_VOLTAGE,
-	DP_CONVERTER_SET_CURRENT,
-	DP_CONVERTER_SET_CURRENT_LIMIT,
-	
+
 	DISPATCHER_BUTTONS,
 	DISPATCHER_ENCODER,
 	DISPATCHER_CONVERTER,
@@ -107,7 +102,7 @@ typedef struct {
 
 
 extern xQueueHandle xQueueDispatcher;
-extern const dispatch_msg_t dispatcher_tick_msg;
+//extern const dispatch_msg_t dispatcher_tick_msg;
 extern const dispatch_msg_t dispatcher_shutdown_msg;
 
 void vTaskDispatcher(void *pvParameters);

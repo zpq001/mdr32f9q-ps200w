@@ -27,49 +27,56 @@
 
 
 
-
-
 //---------------------------------------------//
-// Task queue messages
-
-#define CONVERTER_GROUP_MASK		0xF0
-#define CONVERTER_CONTROL_GROUP		0x10
-#define CONVERTER_SET_PARAMS_GROUP	0x20
-#define CONVERTER_PROFILE_GROUP		0x30
+// Message stuff
 
 enum ConverterTaskMsgTypes {
-	// Control
-	CONVERTER_TURN_ON = CONVERTER_CONTROL_GROUP,
-	CONVERTER_TURN_OFF,
-	CONVERTER_START_CHARGE,
-	CONVERTER_OVERLOADED,
-	CONVERTER_TICK,		
-	
-	// parameters setting
-	CONVERTER_SET_VOLTAGE = CONVERTER_SET_PARAMS_GROUP,		
-	CONVERTER_SET_VOLTAGE_LIMIT,
-	CONVERTER_SET_CURRENT,		
-	CONVERTER_SET_CURRENT_LIMIT,
-	CONVERTER_SET_CURRENT_RANGE,
-	CONVERTER_SWITCH_CHANNEL,
-	CONVERTER_SET_OVERLOAD_PARAMS,
-	CONVERTER_SET_DAC_PARAMS,
-	
-	// profile
-	CONVERTER_LOAD_PROFILE = CONVERTER_PROFILE_GROUP,
-	CONVERTER_SAVE_PROFILE
+	CONVERTER_TICK,
+	CONVERTER_CONTROL,
+	CONVERTER_PROFILE_CMD,
+	CONVERTER_ADC_MEASUREMENT_READY,
+	CONVERTER_OVERLOAD_EVENT
+};
+
+enum ConverterParameters {
+	param_STATE,				// *used only for notify
+	param_CHANNEL,
+	param_CRANGE,
+	param_VSET,
+	param_CSET,
+	param_VLIMIT,
+	param_CLIMIT,
+	param_MEASURED_DATA,		// *
+	param_OVERLOAD_PROTECTION,
+	param_DAC_OFFSET
+};
+
+enum ConverterStateControl {
+	cmd_TURN_ON
+	cmd_TURN_OFF,
+	cmd_START_CHARGE,
+	cmd_STOP_CHARGE,
+	// Internal. Do not use outside of converter module.
+	cmd_GET_READY_FOR_CHANNEL_SWITCH,
+	cmd_GET_READY_FOR_PROFILE_LOAD,
+	event_OVERLOAD,
+	event_TICK
+};
+
+enum ConverterProfileControl {
+	cmd_LOAD_PROFILE,
+	cmd_SAVE_PROFILE
 	//CONVERTER_LOAD_GLOBAL_SETTINGS,
 	//CONVERTER_SAVE_GLOBAL_SETTINGS
-	
 };
 
 
 typedef struct {
-    uint8_t type;
+	uint8_t type;			// see ConverterTaskMsgTypes
+	uint8_t param;
 	uint8_t sender;
 	xSemaphoreHandle *pxSemaphore;
 	converter_arguments_t a;
-//	converter_command_t *c;
 } converter_message_t;
 
 

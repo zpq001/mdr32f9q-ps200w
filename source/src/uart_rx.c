@@ -232,7 +232,7 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 	dispatcher_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
 	converter_msg.pxSemaphore = xSem;
 	converter_msg.sender = (uart_num == 1) ? sender_UART1 : sender_UART2;
-
+	converter_msg.type = CONVERTER_CONTROL;
 	
 	
 	// Actions are common for all parameters and properties
@@ -262,21 +262,21 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 					Converter_GetCurrentRange(arg_channel));
 
         // Determine parameter
-        if (getIndexOfKey(argv, argc, proto.parameters.state) >= 0)
-        {
+        if (getIndexOfKey(argv, argc, proto.parameters.state) >= 0) {
             // Parameter STATE
             if (action_set) {
 				errorCode = getStringForKey(argv, argc, proto.keys.state, &temp_string);
                 if (errorCode == NO_ERROR) {
                     if (strcmp(temp_string, proto.values.on) == 0) {
-                        converter_msg.type = CONVERTER_TURN_ON;
+                        converter_msg.a.state_set.command = cmd_TURN_ON;
                     } else if (strcmp(temp_string, proto.values.off) == 0) {
-                        converter_msg.type = CONVERTER_TURN_OFF;
+                        converter_msg.a.state_set.command = cmd_TURN_OFF;
                     } else {
 						errorCode = ERROR_ILLEGAL_VALUE;
                     }
 				}
 				if (errorCode == NO_ERROR) {
+					converter_msg.param = param_STATE;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					xSemaphoreTake(*xSem, portMAX_DELAY);			// Wait
 				}
@@ -287,8 +287,7 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 			}
         }
-		else if (getIndexOfKey(argv, argc,proto.parameters.channel) >= 0)
-        {
+		else if (getIndexOfKey(argv, argc,proto.parameters.channel) >= 0) {
             // Parameter CHANNEL
             if (action_set) {
 				errorCode = ERROR_PARAM_READONLY;
@@ -297,13 +296,12 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 			}
         }
-		else if (getIndexOfKey(argv, argc,proto.parameters.crange) >= 0)
-        {
+		else if (getIndexOfKey(argv, argc,proto.parameters.crange) >= 0) {
             // Parameter CURRENT RANGE
 			if (action_set) {
 				converter_msg.a.crange_set.channel = arg_channel;
 				converter_msg.a.crange_set.new_range = arg_crange;
-				converter_msg.type = CONVERTER_SET_CURRENT_RANGE;
+				converter_msg.param = param_CRANGE;
 				xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 				xSemaphoreTake(*xSem, portMAX_DELAY);
 			}
@@ -312,15 +310,14 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 			transmitter_msg.converter.channel = arg_channel;
 			xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
         }
-		else if (getIndexOfKey(argv, argc,proto.parameters.vset) >= 0)
-        {
+		else if (getIndexOfKey(argv, argc,proto.parameters.vset) >= 0) {
             // Parameter VSET
             if (action_set) {
 				errorCode = getValueUI32ForKey(argv, argc, proto.keys.vset, &temp32u);
                 if (errorCode == NO_ERROR) {
                     converter_msg.a.v_set.channel = arg_channel;
 					converter_msg.a.v_set.value = temp32u;
-					converter_msg.type = CONVERTER_SET_VOLTAGE;
+					converter_msg.param = param_VSET;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					xSemaphoreTake(*xSem, portMAX_DELAY);
 				}
@@ -332,8 +329,7 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
 				xQueueSendToBack(*xQueueUARTTX, &transmitter_msg, portMAX_DELAY);
 			}
         }
-		else if (getIndexOfKey(argv, argc,proto.parameters.cset) >= 0)
-        {
+		else if (getIndexOfKey(argv, argc,proto.parameters.cset) >= 0) {
             // Parameter CSET
             if (action_set) {
 				errorCode = getValueUI32ForKey(argv, argc, proto.keys.cset, &temp32u);
@@ -341,7 +337,7 @@ static void execute_command(char **argv, uint8_t argc, uint8_t uart_num)
                     converter_msg.a.c_set.channel = arg_channel;
 					converter_msg.a.c_set.range = arg_crange;
 					converter_msg.a.c_set.value = temp32u;
-					converter_msg.type = CONVERTER_SET_CURRENT;
+					converter_msg.param = param_CSET;
 					xQueueSendToBack(xQueueConverter, &converter_msg, portMAX_DELAY);
 					xSemaphoreTake(*xSem, portMAX_DELAY);
 				}

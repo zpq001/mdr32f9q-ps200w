@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
         int vmea;
         int cset;
         int cmea;
+        int pmea;
     } value_cache_t;
 
 public:
@@ -50,9 +51,11 @@ private slots:
 
     void updateVmea(int value);
     void updateCmea(int value);
+    void updatePmea(int value);
 
     void onBytesReceived(int);
     void onBytesTransmitted(int);
+
 signals:
     void sendString(QString);
     //void setVoltageSetting(int channel, int newValue);

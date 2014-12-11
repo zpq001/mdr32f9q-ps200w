@@ -103,6 +103,7 @@ public:
     void writePortSettings(const QString &name, int baudRate, int dataBits, int parity, int stopBits, int flowControl);
     int getPortErrorCode(void);
     QString getPortErrorString(void);
+    void setVerboseLevel(int);
 
     //
     void sendString(const QString &text, bool blocking = false);
@@ -146,6 +147,7 @@ signals:
     // Intended for internal use only
     void signal_openPort(QSemaphore *doneSem, openPortArgs_t *a);
     void signal_closePort(QSemaphore *doneSem);
+    void signal_setVerboseLevel(int);
     void signal_Terminate(void);
     void signal_ProcessTaskQueue(void);
     void signal_ForceReadSerialPort(void);
@@ -154,6 +156,7 @@ signals:
 private slots:
     void _openPort(QSemaphore *doneSem, openPortArgs_t *a);
     void _closePort(QSemaphore *doneSem);
+    void _setVerboseLevel(int);
     void _readSerialPort(void);
     void _transmitDone(qint64 bytesWritten);
     void _portWriteTimeout(void);

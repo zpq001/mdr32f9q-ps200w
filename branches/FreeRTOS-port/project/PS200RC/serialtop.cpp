@@ -90,6 +90,12 @@ void SerialTop::disconnectFromDevice(void)
     emit connectedChanged(connected);
 }
 
+// Can be signal-slot or direct call from other thread
+void SerialTop::setVerboseLevel(int level)
+{
+    worker->setVerboseLevel(level);
+}
+
 // Signal-slot only
 void SerialTop::sendString(const QString &text)
 {
@@ -481,31 +487,31 @@ void SerialTop::_setCurrent(void *arguments)
 
 void SerialTop::onWorkerUpdVmea(int v)
 {
-    emit _log("Updating measured voltage", LogViewer::LogInfo);
+    //emit _log("Updating measured voltage", LogViewer::LogInfo);
     emit updVmea(v);
 }
 
 void SerialTop::onWorkerUpdCmea(int v)
 {
-    emit _log("Updating measured current", LogViewer::LogInfo);
+    //emit _log("Updating measured current", LogViewer::LogInfo);
     emit updCmea(v);
 }
 
 void SerialTop::onWorkerUpdPmea(int v)
 {
-    emit _log("Updating measured instant power", LogViewer::LogInfo);
+    //emit _log("Updating measured instant power", LogViewer::LogInfo);
     emit updPmea(v);
 }
 
 void SerialTop::onWorkerUpdState(int state)
 {
-    emit _log("Updating state", LogViewer::LogInfo);
+    //emit _log("Updating state", LogViewer::LogInfo);
     emit updState(state);
 }
 
 void SerialTop::onWorkerUpdChannel(int channel)
 {
-    emit _log("Updating channel", LogViewer::LogInfo);
+    //emit _log("Updating channel", LogViewer::LogInfo);
     cache.activeChannel.set(channel);
     _updateTopGui((void *)(UPD_CHANNEL | UPD_CRANGE | UPD_VSET | UPD_CSET));
 }

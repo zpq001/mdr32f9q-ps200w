@@ -248,6 +248,22 @@ static uint8_t SetRegulationLimit(reg_setting_t *s, uint8_t limit_type, int32_t 
 }
 
 
+
+
+static reg_setting_t *getVoltageRegData(uint8_t channel)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	return &c->voltage;
+}
+
+static reg_setting_t *getCurrentRegData(uint8_t channel, uint8_t current_range)
+{
+	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
+	return (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
+}
+
+
+
 //---------------------------------------------------------------------------//
 ///	Set converter output voltage
 //	input:
@@ -280,8 +296,6 @@ static uint8_t Converter_SetVoltageLimit(uint8_t channel, uint8_t limit_type, in
 {
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	uint8_t err_code = SetRegulationLimit(&c->voltage, limit_type, new_value, enable);
-	// Ensure that voltage setting lies inside new limits
-	Converter_SetVoltage(channel, c->voltage.setting);
 	return err_code;
 }
 
@@ -322,8 +336,6 @@ static uint8_t Converter_SetCurrentLimit(uint8_t channel, uint8_t current_range,
 	channel_state_t *c = (channel == CHANNEL_5V) ? &converter_state.channel_5v : &converter_state.channel_12v;
 	reg_setting_t *s = (current_range == CURRENT_RANGE_LOW) ? &c->current_low_range : &c->current_high_range;
 	uint8_t err_code = SetRegulationLimit(s, limit_type, new_value, enable);	
-	// Ensure that current setting lies inside new limits
-	Converter_SetCurrent(channel, current_range, s->setting);
 	return err_code;
 }
 
@@ -829,6 +841,7 @@ static void Converter_ProcessParamControl (void)
 {
 	uint8_t err_code = ERROR_NONE;
 	uint8_t op_result = 0;
+	uint8_t op_result2 = 0;
 	uint8_t temp8u;
 	channel_state_t *c;
 	switch (msg.param) {
@@ -873,9 +886,13 @@ static void Converter_ProcessParamControl (void)
 			taskENTER_CRITICAL();
 			op_result = Converter_SetVoltageLimit(msg.a.vlim_set.channel, msg.a.vlim_set.type, 
 								msg.a.vlim_set.value, msg.a.vlim_set.enable);
+			// Ensure that voltage setting lies inside new limits
+			if (op_result & VALUE_UPDATED)
+				op_result2 = Converter_SetVoltage(msg.a.vlim_set.channel, 
+									getVoltageRegData(msg.a.vlim_set.channel)->setting);
 			taskEXIT_CRITICAL();
 			// Apply new setting to hardware. CHECKME: charge state				
-			if ((op_result & VALUE_UPDATED) && (msg.a.vlim_set.channel == converter_state.channel->CHANNEL)) {
+			if ((op_result2 & VALUE_UPDATED) && (msg.a.vlim_set.channel == converter_state.channel->CHANNEL)) {
 				SetVoltageDAC(converter_state.channel->voltage.setting);
 			}
 			msgConfirm(&msg);
@@ -884,17 +901,28 @@ static void Converter_ProcessParamControl (void)
 			dispatcher_msg.converter_event.limit_type = msg.a.vlim_set.type;
 			dispatcher_msg.converter_event.spec = op_result;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			if (op_result2 & VALUE_UPDATED) {
+				fillDispatchMessage(&msg, &dispatcher_msg, param_VSET);
+				dispatcher_msg.converter_event.channel = msg.a.vlim_set.channel;
+				dispatcher_msg.converter_event.spec = op_result2 | VALUE_UPFORCED;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			}
 			break; 
 		//----------------- Setting current limit -----------------//
 		case param_CLIMIT:
 			msg.a.clim_set.channel = Converter_ValidateChannel(msg.a.clim_set.channel);
-			msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);		
+			msg.a.clim_set.range = Converter_ValidateCurrentRange(msg.a.clim_set.range);
 			taskENTER_CRITICAL();			
 			op_result = Converter_SetCurrentLimit(msg.a.clim_set.channel, msg.a.clim_set.range, msg.a.clim_set.type, 
 								msg.a.clim_set.value, msg.a.clim_set.enable);
+								
+			// Ensure that current setting lies inside new limits
+			if (op_result & VALUE_UPDATED)
+				op_result2 = Converter_SetCurrent(msg.a.clim_set.channel, msg.a.clim_set.range, 
+									getCurrentRegData(msg.a.clim_set.channel, msg.a.clim_set.range)->setting;
 			taskEXIT_CRITICAL();
 			// Apply new setting to hardware. CHECKME: charge state	
-			if ((op_result & VALUE_UPDATED) && (msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
+			if ((op_result2 & VALUE_UPDATED) && (msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
 				(msg.a.clim_set.range == converter_state.channel->current->RANGE)) {
 				SetCurrentDAC(converter_state.channel->current->setting, converter_state.channel->current->RANGE);
 			}
@@ -905,6 +933,13 @@ static void Converter_ProcessParamControl (void)
 			dispatcher_msg.converter_event.limit_type = msg.a.clim_set.type;
 			dispatcher_msg.converter_event.spec = op_result;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			if (op_result2 & VALUE_UPDATED) {
+				fillDispatchMessage(&msg, &dispatcher_msg, param_CSET);
+				dispatcher_msg.converter_event.channel = msg.a.clim_set.channel;
+				dispatcher_msg.converter_event.range = msg.a.clim_set.range;
+				dispatcher_msg.converter_event.spec = op_result2 | VALUE_UPFORCED;
+				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
+			}
 			break; 
 		//-------------------- Setting channel --------------------//
 		case param_CHANNEL:

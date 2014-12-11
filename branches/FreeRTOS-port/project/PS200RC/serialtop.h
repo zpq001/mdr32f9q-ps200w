@@ -190,6 +190,7 @@ public slots:
     void init(void);
     void connectToDevice(void);
     void disconnectFromDevice(void);
+    void setVerboseLevel(int);
     void sendString(const QString &text);
     void keyEvent(int key, int event);
     // Can be either signal-slot connected or called directly from other thread

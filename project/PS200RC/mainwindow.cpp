@@ -65,11 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(topController, SIGNAL(bytesTransmitted(int)), this, SLOT(onBytesTransmitted(int)));
     connect(topController, SIGNAL(updVmea(int)), this, SLOT(updateVmea(int)));
     connect(topController, SIGNAL(updCmea(int)), this, SLOT(updateCmea(int)));
-/*    connect(topController, SIGNAL(updState(int)), this, SLOT(updateState(int)));
-    connect(topController, SIGNAL(updChannel(int)), this, SLOT(updateChannel(int)));
-    connect(topController, SIGNAL(updCurrentRange(int,int)), this, SLOT(updateCurrentRange(int,int)));
-    connect(topController, SIGNAL(updVset(int)), this, SLOT(updateVset(int)));
-    connect(topController, SIGNAL(updCset(int,int,int)), this, SLOT(updateCset(int,int,int))); */
+    connect(topController, SIGNAL(updPmea(int)), this, SLOT(updatePmea(int)));
     connect(topController, SIGNAL(updState(int)), this, SLOT(updateState(int)));
     connect(topController, SIGNAL(updChannel(int)), this, SLOT(updateChannel(int)));
     connect(topController, SIGNAL(updCurrentRange(int)), this, SLOT(updateCurrentRange(int)));
@@ -80,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDisconnect, SIGNAL(triggered()), topController, SLOT(disconnectFromDevice()));
     connect(this, SIGNAL(sendString(QString)), topController, SLOT(sendString(QString)));
     connect(keyWindow, SIGNAL(KeyEvent(int,int)), topController, SLOT(keyEvent(int,int)));
+    connect(ui->comboBox_Verbose, SIGNAL(currentIndexChanged(int)), topController, SLOT(setVerboseLevel(int)));
 
     topController->moveToThread(newThread);
     // Start second thread
@@ -124,10 +121,9 @@ MainWindow::MainWindow(QWidget *parent) :
         QMessageBox::information(this, "Information", "Some setting values are missing or corrupted. Defaults are loaded.", QMessageBox::Ok);
     }
 
-
-
+    QThread::sleep(20);
+    topController->setVerboseLevel(ui->comboBox_Verbose->currentIndex());
     ui->logViewer->addText("Started!", 0);
-
 
 }
 
@@ -170,6 +166,14 @@ void MainWindow::updateCmea(int value)
     str.sprintf("%1.2fA", (double)value/1000);
     ui->label_cmea->setText(str);
     vcache.cmea = value;
+}
+
+void MainWindow::updatePmea(int value)
+{
+    QString str;
+    str.sprintf("%1.2fW", (double)value/1000);
+    ui->label_pmea->setText(str);
+    vcache.pmea = value;
 }
 
 

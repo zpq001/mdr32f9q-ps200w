@@ -88,6 +88,7 @@ typedef struct {
 #define VALUE_BOUND_BY_ABS_MAX		0x04
 #define VALUE_BOUND_BY_ABS_MIN		0x08
 #define VALUE_UPDATED				0x10
+#define VALUE_UPFORCED				0x20	// value change has been caused by another value change
 
 #define VALUE_BOUND_MASK	(VALUE_BOUND_BY_SOFT_MAX | VALUE_BOUND_BY_SOFT_MIN | VALUE_BOUND_BY_ABS_MAX | VALUE_BOUND_BY_ABS_MIN)
 
@@ -118,13 +119,13 @@ enum ConverterStateEvents {
 // Converter data structures
 
 typedef struct {
-	uint16_t setting;	
-	uint16_t MINIMUM;					// const, minimum avaliable setting 
-	uint16_t MAXIMUM;					// const, maximum avaliable setting 
-	uint16_t limit_low;
-	uint16_t limit_high;
-	uint16_t LIMIT_MIN;					// const, minimum current setting
-	uint16_t LIMIT_MAX;					// const, maximum current setting
+	uint32_t setting;	
+	uint32_t MINIMUM;					// const, minimum avaliable setting 
+	uint32_t MAXIMUM;					// const, maximum avaliable setting 
+	uint32_t limit_low;
+	uint32_t limit_high;
+	uint32_t LIMIT_MIN;					// const, minimum current setting
+	uint32_t LIMIT_MAX;					// const, maximum current setting
 	uint8_t enable_low_limit : 1;		
 	uint8_t enable_high_limit : 1;
 	uint8_t RANGE : 1;					// used as const, only for current

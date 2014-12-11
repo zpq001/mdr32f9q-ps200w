@@ -19,6 +19,7 @@ void SerialWorker::init()
 
     connect(this, SIGNAL(signal_openPort(QSemaphore*,openPortArgs_t*)), this, SLOT(_openPort(QSemaphore*,openPortArgs_t*)));
     connect(this, SIGNAL(signal_closePort(QSemaphore*)), this, SLOT(_closePort(QSemaphore*)));
+    connect(this, SIGNAL(signal_setVerboseLevel(int)), this, SLOT(_setVerboseLevel(int)));
     connect(this, SIGNAL(signal_ProcessTaskQueue()), this, SLOT(_processTaskQueue()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_ForceReadSerialPort()), this, SLOT(_readSerialPort()), Qt::QueuedConnection);
     connect(this, SIGNAL(signal_infoReceived()), this, SLOT(_infoPacketHandler()), Qt::QueuedConnection);
@@ -28,7 +29,7 @@ void SerialWorker::init()
     //connect(this, SIGNAL(signal_Terminate()), portWriteTimer, SLOT(stop()));            // stop timer when port is closed
     connect(portWriteTimer, SIGNAL(timeout()), this, SLOT(_portWriteTimeout()));
 
-    verboseLevel = 1;
+    verboseLevel = 2;
 
     portWriteTimer->setSingleShot(true);
 
@@ -84,6 +85,10 @@ QString SerialWorker::getPortErrorString(void)
     return serialPort->errorString();
 }
 
+void SerialWorker::setVerboseLevel(int level)
+{
+    emit signal_setVerboseLevel(level);
+}
 
 
 //-------------------------------------------------------//
@@ -244,6 +249,11 @@ void SerialWorker::_savePortError(void)
     portErrorString = serialPort->errorString();
 }
 
+void SerialWorker::_setVerboseLevel(int level)
+{
+    verboseLevel = level;
+}
+
 void SerialWorker::_processTaskQueue(void)
 {
     TaskQueueRecord_t taskRecord;
@@ -347,14 +357,20 @@ void SerialWorker::_getState(QSemaphore *doneSem, void *arguments)
         QStringList list = SerialParser::splitPacket(receiveBuffer);    // FIXME
         if (SerialParser::findKey(list, proto.parameters.state) == 0)
         {
-            if (SerialParser::getState(list, &a->result) == 0)
+            if (SerialParser::getState(list, &a->result) == 0) {
                 a->errCode = noError;
+            }
         }
         else
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "State read OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "State read OK");
+            else
+                emit log(LogInfo, "State read ERROR");
+        }
         _continueProcessingReceivedData();
     }
     // Confirm if slot call is blocking or generate a signal
@@ -389,7 +405,12 @@ void SerialWorker::_getChannel(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Channel read OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Channel read OK");
+            else
+                emit log(LogInfo, "Channel read ERROR");
+        }
         _continueProcessingReceivedData();
     }
     // Confirm if slot call is blocking or generate a signal
@@ -420,7 +441,12 @@ void SerialWorker::_getCurrentRange(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Current range read OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Current range read OK");
+            else
+                emit log(LogInfo, "Current range read ERROR");
+        }
         _continueProcessingReceivedData();
     }
     if (doneSem)
@@ -444,7 +470,12 @@ void SerialWorker::_getVset(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Voltage read OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Voltage read OK");
+            else
+                emit log(LogInfo, "Voltage read ERROR");
+        }
         _continueProcessingReceivedData();
     }
     if (doneSem)
@@ -468,7 +499,12 @@ void SerialWorker::_getCset(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Current read OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Current read OK");
+            else
+                emit log(LogInfo, "Current read ERROR");
+        }
         _continueProcessingReceivedData();
     }
     if (doneSem)
@@ -495,7 +531,12 @@ void SerialWorker::_setState(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "State write OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "State write OK");
+            else
+                emit log(LogInfo, "State write ERROR");
+        }
         _continueProcessingReceivedData();
     }
     // Confirm if slot call is blocking or generate a signal
@@ -526,7 +567,12 @@ void SerialWorker::_setCurrentRange(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Current range write OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Current range write OK");
+            else
+                emit log(LogInfo, "Current range write ERROR");
+        }
         _continueProcessingReceivedData();
     }
     if (doneSem)
@@ -550,7 +596,12 @@ void SerialWorker::_setVset(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Voltage write OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Voltage write OK");
+            else
+                emit log(LogInfo, "Voltage write ERROR");
+        }
         _continueProcessingReceivedData();
     }
     // Confirm if slot call is blocking or generate a signal
@@ -575,7 +626,12 @@ void SerialWorker::_setCset(QSemaphore *doneSem, void *arguments)
         {
             a->errCode = errParser;
         }
-        emit log(LogInfo, "Current write OK");
+        if (verboseLevel > 0) {
+            if (a->errCode == noError)
+                emit log(LogInfo, "Current write OK");
+            else
+                emit log(LogInfo, "Current write ERROR");
+        }
         _continueProcessingReceivedData();
     }
     if (doneSem)
@@ -594,24 +650,28 @@ void SerialWorker::_setCset(QSemaphore *doneSem, void *arguments)
 
 void SerialWorker::_infoPacketHandler()
 {
-    log(LogInfo, "Processing INFO packet");
+    if (verboseLevel > 0)
+        log(LogInfo, "Processing INFO packet");
     QStringList list = SerialParser::splitPacket(receiveBuffer);
     int value;
     int channel;
     int currentRange;
     if (SerialParser::getValueForKey(list, proto.keys.vmea, &value) == 0)
     {
-        log(LogInfo, "Received new vmea");
+        if (verboseLevel > 0)
+            log(LogInfo, "Received new vmea");
         emit updVmea(value);
     }
     if (SerialParser::getValueForKey(list, proto.keys.cmea, &value) == 0)
     {
-        log(LogInfo, "Received new cmea");
+        if (verboseLevel > 0)
+            log(LogInfo, "Received new cmea");
         emit updCmea(value);
     }
     if (SerialParser::getValueForKey(list, proto.keys.pmea, &value) == 0)
     {
-        log(LogInfo, "Received new pmea");
+        if (verboseLevel > 0)
+            log(LogInfo, "Received new pmea");
         emit updPmea(value);
     }
 
@@ -690,34 +750,36 @@ void SerialWorker::_readSerialPort(void)
                     if (c == proto.termSymbol)
                     {
                         if (verboseLevel > 0)
-                        {
                             log(LogInfo, "Received complete message");
-                        }
                         // process
                         int messageType = SerialParser::getMessageType(receiveBuffer);
                         switch (messageType)
                         {
                             case SerialParser::MSG_INFO:
-                                log(LogInfo, "Received INFO packet");
+                                if (verboseLevel > 0)
+                                    log(LogInfo, "Received INFO packet");
                                 emit signal_infoReceived();
                                 exit = true;
                                 break;
                             case SerialParser::MSG_ACK:
                                 if (ackRequired)
                                 {
-                                    log(LogInfo, "Received ACK");
+                                    if (verboseLevel > 0)
+                                        log(LogInfo, "Received ACK");
                                     ackRequired = false;
                                     emit signal_ackReceived();
                                     exit = true;
                                 }
                                 else
                                 {
-                                    log(LogWarn, "Received ACK that is not required");
+                                    if (verboseLevel > 0)
+                                        log(LogWarn, "Received ACK that is not required");
                                     receiveBuffer.clear();
                                 }
                                 break;
                             default:
-                                log(LogInfo, "Received unknown data");
+                                if (verboseLevel > 0)
+                                    log(LogInfo, "Received unknown data");
                                 receiveBuffer.clear();
                                 break;
                         }

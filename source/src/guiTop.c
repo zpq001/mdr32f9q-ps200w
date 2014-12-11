@@ -160,13 +160,13 @@ void vTaskGUI(void *pvParameters)
 					case param_VLIMIT:
 						guiUpdateVoltageLimit(msg.converter_event.channel, msg.converter_event.limit_type);
 						// Voltage setting may have been changed - update too
-						guiUpdateVoltageSetting(msg.converter_event.channel);
+						//guiUpdateVoltageSetting(msg.converter_event.channel);	// Not required - CHECKME!!!
 						break;
 					case param_CLIMIT:
 						guiUpdateCurrentLimit(msg.converter_event.channel, msg.converter_event.current_range, 
 							(msg.converter_event.limit_type == LIMIT_TYPE_LOW) ? UPDATE_LOW_LIMIT : UPDATE_HIGH_LIMIT);
 						// Current setting may have been changed - update too
-						guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);
+						//guiUpdateCurrentSetting(msg.converter_event.channel, msg.converter_event.current_range);	// Not required - CHECKME!!!
 						break;
 					case param_CRANGE:
 						guiUpdateCurrentRange(msg.converter_event.channel);

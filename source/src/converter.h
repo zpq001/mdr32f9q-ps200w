@@ -28,7 +28,7 @@
 
 
 //---------------------------------------------//
-// Message stuff
+// Control message stuff
 
 enum ConverterTaskMsgTypes {
 	CONVERTER_TICK,
@@ -39,14 +39,14 @@ enum ConverterTaskMsgTypes {
 };
 
 enum ConverterParameters {
-	param_STATE,				// *used only for notify
+	param_STATE,				
 	param_CHANNEL,
 	param_CRANGE,
 	param_VSET,
 	param_CSET,
 	param_VLIMIT,
 	param_CLIMIT,
-	param_MEASURED_DATA,		// *
+	param_MEASURED_DATA,		
 	param_OVERLOAD_PROTECTION,
 	param_DAC_OFFSET
 };
@@ -89,10 +89,16 @@ typedef struct {
 #define VALUE_BOUND_BY_ABS_MIN		0x08
 #define VALUE_UPDATED				0x10
 #define VALUE_UPFORCED				0x20	// value change has been caused by another value change
-
 #define VALUE_BOUND_MASK	(VALUE_BOUND_BY_SOFT_MAX | VALUE_BOUND_BY_SOFT_MIN | VALUE_BOUND_BY_ABS_MAX | VALUE_BOUND_BY_ABS_MIN)
 
 enum ConverterErrorCodes { ERROR_NONE, ERROR_INTERNAL, ERROR_CMD };
+
+enum ConverterStates {
+	CONVERTER_STATE_OFF,
+	CONVERTER_STATE_ON,
+	CONVERTER_STATE_OVERLOADED,
+	CONVERTER_STATE_CHARGING
+};
 
 enum ConverterStateEvents {
 	CONV_TURNED_ON,
@@ -104,16 +110,22 @@ enum ConverterStateEvents {
 	CONV_NO_STATE_CHANGE
 };
 
-//-------------------------------------------------------//
-// Converter states
+// Charge settings
 
-#define CONVERTER_STATE_OFF			0x00
-#define CONVERTER_STATE_ON			0x01
-#define CONVERTER_STATE_OVERLOADED	0x02
-#define CONVERTER_STATE_CHARGING	0x04
+// Charge status
+enum ConverterChargeStatusValues {
+	CHARGE_INACTIVE
+	CHARGE_STARTED,
+	CHARGE_STOPPED,
+	CHARGE_ABORTED,
+	
+	CHARGE_COMPLETED_BY_DV = 0x10,
+	CHARGE_COMPLETED_BY_TIMER,
+	CHARGE_COMPLETED_BY_VMAX,
+	CHARGE_COMPLETED_BY_CMIN,
+};
 
-
-
+#define CHARGE_SUCCESS_MASK	(CHARGE_COMPLETED_BY_DV | CHARGE_COMPLETED_BY_TIMER | CHARGE_COMPLETED_BY_VMAX | CHARGE_COMPLETED_BY_CMIN)
 
 //-------------------------------------------------------//
 // Converter data structures
@@ -124,13 +136,12 @@ typedef struct {
 	uint32_t MAXIMUM;					// const, maximum avaliable setting 
 	uint32_t limit_low;
 	uint32_t limit_high;
-	uint32_t LIMIT_MIN;					// const, minimum current setting
-	uint32_t LIMIT_MAX;					// const, maximum current setting
+	uint32_t LIMIT_MIN;					// const, minimum avaliable limit setting
+	uint32_t LIMIT_MAX;					// const, maximum avaliable limit setting
 	uint8_t enable_low_limit : 1;		
 	uint8_t enable_high_limit : 1;
 	uint8_t RANGE : 1;					// used as const, only for current
 } reg_setting_t;
-
 
 typedef struct {
 	uint8_t CHANNEL : 1;						// used as const
@@ -143,11 +154,34 @@ typedef struct {
 	reg_setting_t* current;
 } channel_state_t;
 
+// Charging stuff
+typedef struct {
+	uint32_t vset;
+	uint32_t cset;
+	int16_t dv;
+	uint32_t vmax;
+	uint32_t cmin;
+	uint32_t time_limit;
+	uint8_t use_dv : 1;
+	uint8_t use_vmax : 1;
+	uint8_t use_cmin : 1;
+	uint8_t use_time_limit : 1;
+} charge_settings_t;
+
+
+typedef struct {
+	int16_t dv_mea;
+	uint32_t timer;
+	uint8_t status;
+} charge_status_t;
+
 
 typedef struct {
 	channel_state_t channel_5v;
 	channel_state_t channel_12v;
 	channel_state_t *channel;
+	charge_settings_t charge_settings;
+	charge_status_t charge_status;
 	uint8_t state;
 	uint8_t overload_protection_enable : 1;
 	uint8_t overload_warning_enable : 1;

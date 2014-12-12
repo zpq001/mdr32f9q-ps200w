@@ -31,7 +31,7 @@
 
 
 
-enum ChargeFSMCommands { START_CHARGE = 1, STOP_CHARGE, ABORT_CHARGE, CHARGE_TICK };
+enum ChargeFSMCommands { CHARGE_START = 1, CHARGE_STOP, CHARGE_ABORT, CHARGE_TICK };
 
 
 
@@ -52,10 +52,10 @@ dispatch_msg_t dispatcher_msg;
 converter_state_t converter_state;		// main converter control
 //dac_settings_t dac_settings;			// DAC calibration offset
 
-static void Converter_ProcessStateControl (uint8_t cmd_code);
-static void Converter_ProcessParamControl (void);
-static void Converter_ProcessProfile (void);
-static uint8_t Converter_ProcessCharge(uint8_t cmd);
+static void processStateControl (uint8_t cmd_code);
+static void processParamControl (void);
+static void processProfileControl (void);
+static void processChargeControl(uint8_t cmd);
 
 
 //---------------------------------------------//
@@ -591,7 +591,6 @@ void Converter_Init(void)
 	converter_state.overload_warning_enable = 0;
 	converter_state.overload_threshold = (10*1);
 	
-	
 	// Default settings for channel and current ranges
 	converter_state.channel_5v.current = &converter_state.channel_5v.current_low_range;
 	converter_state.channel_12v.current = &converter_state.channel_12v.current_low_range;
@@ -609,6 +608,9 @@ void Converter_Init(void)
 	SetOutputLoad(converter_state.channel->load_state);
 	// Overload protection mechanism uses data from converter_state, so no
 	// 	special settings are required.
+	
+	// Initialize charge framework
+	converter_state.charge_status.status = CHARGE_INACTIVE;
 }
 
 
@@ -685,21 +687,21 @@ void vTaskConverter(void *pvParameters)
 		switch (msg.type) {
 			case CONVERTER_CONTROL:
 				if (msg.param == param_STATE)
-					Converter_ProcessStateControl(msg.a.state_set.command);
+					processStateControl(msg.a.state_set.command);
 				else
-					Converter_ProcessParamControl();
+					processParamControl();
 				break;
 			case CONVERTER_PROFILE_CMD:
-				Converter_ProcessProfile();
+				processProfileControl();
 				break;
 			case CONVERTER_ADC_MEASUREMENT_READY:
 
 				break;
 			case CONVERTER_TICK:
-				Converter_ProcessStateControl(event_TICK);
+				processStateControl(event_TICK);
 				break;
 			case CONVERTER_OVERLOAD_EVENT:
-				Converter_ProcessStateControl(event_OVERLOAD);
+				processStateControl(event_OVERLOAD);
 				break;
 			default:	// unknown
 				break;
@@ -712,7 +714,7 @@ void vTaskConverter(void *pvParameters)
 //=========================================================================//
 //	Control command processor
 //=========================================================================//
-static void Converter_ProcessStateControl (uint8_t cmd_code) {
+static void processStateControl (uint8_t cmd_code) {
 	uint8_t err_code = ERROR_NONE;
 	uint8_t state_event = CONV_NO_STATE_CHANGE;
 	uint8_t temp8u;
@@ -730,7 +732,7 @@ static void Converter_ProcessStateControl (uint8_t cmd_code) {
 				Converter_TurnOff();
 				SetOutputLoad(converter_state.channel->load_state);
 				converter_state.state = CONVERTER_STATE_OFF;
-				Converter_ProcessCharge(STOP_CHARGE);
+				processChargeControl(STOP_CHARGE);
 				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
 			}
 			else if (converter_state.state == CONVERTER_STATE_OVERLOADED) {
@@ -775,7 +777,7 @@ static void Converter_ProcessStateControl (uint8_t cmd_code) {
 						// Resistive output load must be disabled
 						SetOutputLoad(0);
 						// Process charge FSM
-						Converter_ProcessCharge(START_CHARGE);
+						processChargeControl(START_CHARGE);
 						converter_state.state = CONVERTER_STATE_CHARGING;
 						state_event = CONV_STARTED_CHARGE;
 					}
@@ -796,7 +798,7 @@ static void Converter_ProcessStateControl (uint8_t cmd_code) {
 			Converter_TurnOff();
 			converter_state.state = CONVERTER_STATE_OFF;
 			if (temp8u == CONVERTER_STATE_CHARGING) {
-				Converter_ProcessCharge(STOP_CHARGE);
+				processChargeControl(STOP_CHARGE);
 				state_event = CONV_ABORTED_CHARGE;
 			} else {
 				// Resistive output load was disabled by charger and it is second STOP command - enable it
@@ -820,7 +822,7 @@ static void Converter_ProcessStateControl (uint8_t cmd_code) {
 			stateResponse(0, err_code, CONV_OVERLOADED);
 			if (temp8u == CONVERTER_STATE_CHARGING) {
 				// Stop charge FSM
-				Converter_ProcessCharge(STOP_CHARGE);
+				processChargeControl(STOP_CHARGE);
 				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
 				// Do not enable resistive load here
 			}			
@@ -837,7 +839,7 @@ static void Converter_ProcessStateControl (uint8_t cmd_code) {
 //=========================================================================//
 //	Parameters setting processor
 //=========================================================================//
-static void Converter_ProcessParamControl (void)
+static void processParamControl (void)
 {
 	uint8_t err_code = ERROR_NONE;
 	uint8_t op_result = 0;
@@ -902,7 +904,7 @@ static void Converter_ProcessParamControl (void)
 			dispatcher_msg.converter_event.spec = op_result;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			if (op_result2 & VALUE_UPDATED) {
-				fillDispatchMessage(&msg, &dispatcher_msg, param_VSET);
+				fillDispatchMessage(0, &dispatcher_msg, param_VSET);
 				dispatcher_msg.converter_event.channel = msg.a.vlim_set.channel;
 				dispatcher_msg.converter_event.spec = op_result2 | VALUE_UPFORCED;
 				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
@@ -934,7 +936,7 @@ static void Converter_ProcessParamControl (void)
 			dispatcher_msg.converter_event.spec = op_result;
 			xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
 			if (op_result2 & VALUE_UPDATED) {
-				fillDispatchMessage(&msg, &dispatcher_msg, param_CSET);
+				fillDispatchMessage(0, &dispatcher_msg, param_CSET);
 				dispatcher_msg.converter_event.channel = msg.a.clim_set.channel;
 				dispatcher_msg.converter_event.range = msg.a.clim_set.range;
 				dispatcher_msg.converter_event.spec = op_result2 | VALUE_UPFORCED;
@@ -947,7 +949,7 @@ static void Converter_ProcessParamControl (void)
 			if (msg.a.ch_set.new_channel != converter_state.channel->CHANNEL)
 			{
 				// Disable converter if enabled
-				Converter_ProcessStateControl(cmd_GET_READY_FOR_CHANNEL_SWITCH);
+				processStateControl(cmd_GET_READY_FOR_CHANNEL_SWITCH);
 				// Wait until voltage feedback switching is allowed
 				while(Converter_IsReady() == 0) 
 					vTaskDelay(1);
@@ -1066,7 +1068,7 @@ static void Converter_ProcessParamControl (void)
 //=========================================================================//
 //	Profile command processor
 //=========================================================================//
-static void Converter_ProcessProfile (void)
+static void processProfileControl (void)
 {
 	uint8_t temp8u;
 	//uint8_t err_code = ERROR_NONE;
@@ -1075,7 +1077,7 @@ static void Converter_ProcessProfile (void)
 		//---------------- Loading profile ------------------------//
 		case cmd_LOAD_PROFILE:
 			// Disable converter if enabled
-			Converter_ProcessStateControl(cmd_GET_READY_FOR_PROFILE_LOAD);
+			processStateControl(cmd_GET_READY_FOR_PROFILE_LOAD);
 			// Load profile data
 			taskENTER_CRITICAL();
 			Converter_LoadProfile();
@@ -1131,25 +1133,20 @@ static void Converter_ProcessProfile (void)
 //	Charge process controller
 //	
 //---------------------------------------------//
-static uint8_t Converter_ProcessCharge(uint8_t cmd)
+static void processChargeControl(uint8_t cmd)
 {
-	static uint8_t charge_state;
-/*	switch (cmd)
+	switch (cmd)
 	{
-		case START_CHARGE:
-			charge_state = 1;
+		case CHARGE_START:
+			
 			break;
-		case STOP_SHARGE:
-		case ABORT_CHARGE:
-			charge_state = 0;
+		case SHARGE_STOP:
+			break;
+		case CHARGE_ABORT:
 			break;
 		case CHARGE_TICK:
-			// do charge stuff
 			break;
 	}
-*/
-	// return converter output state - should it be enabled or disabled	
-	return charge_state;
 }
 
 
@@ -1157,285 +1154,6 @@ static uint8_t Converter_ProcessCharge(uint8_t cmd)
 		
 				
 				
-				
-				
-/*				
-			//=========================================================================//
-			// Turn ON
-			case cmd_TURN_ON:
-				if ((converter_state.state == CONVERTER_STATE_OFF) || (converter_state.state == CONVERTER_STATE_OVERLOADED))
-				{
-					temp8u = Converter_TurnOn();
-					if (temp8u == CONVERTER_CMD_OK)
-					{
-						converter_state.state = CONVERTER_STATE_ON;
-						err_code = CMD_OK;
-					}
-					else
-					{
-						err_code = CMD_ERROR;
-					}
-				}
-				else
-				{
-					// Converter is already ON
-					err_code = CMD_OK;
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			//=========================================================================//
-			// Turn OFF
-			case cmd_TURN_OFF:
-				Converter_TurnOff();
-				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
-				err_code = CMD_OK;
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			//=========================================================================//
-			// Overload
-			case CONVERTER_OVERLOADED:
-				// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
-				converter_state.state = CONVERTER_STATE_OVERLOADED;
-				// Reset that routine FSM flag
-				if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
-				{
-					// OK, flag has been reset.
-					err_code = EVENT_OK;
-				}	
-				else
-				{
-					// Error, we should never get here.
-					// Kind of restore attempt
-					Converter_TurnOff();
-					err_code = EVENT_ERROR;							
-				}
-				// Send notification to dispatcher
-				dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
-				dispatcher_msg.sender = sender_CONVERTER;
-				dispatcher_msg.converter_event.msg_type = 0;
-				dispatcher_msg.converter_event.msg_sender = 0;
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OVERLOAD;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break; 
-			//=========================================================================//
-			// Tick
-			case CONVERTER_TICK:		// Temporary! Will be special for charging mode
-				// ADC task is responsible for sampling and filtering voltage and current
-				adc_msg = ADC_GET_ALL_NORMAL;
-				xQueueSendToBack(xQueueADC, &adc_msg, 0);
-				break;
-				
-			default:
-				break;
-		}
-	}
-}
-*/
-
-
-
-
-
-
-/*
-void bla-bla(uint8_t cmd)
-{
-
-	if (converter_state.state == CONVERTER_STATE_OFF)
-	{
-		switch (cmd)
-		{
-			case cmd_TURN_ON:		
-				// Command to low-level
-				temp8u = Converter_TurnOn();
-				if (temp8u == CONVERTER_CMD_OK)
-				{
-					converter_state.state = CONVERTER_STATE_ON;
-					err_code = CMD_OK;
-				} 
-				else 
-				{
-					err_code = CMD_ERROR;
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;	
-			case cmd_TURN_OFF:	
-				// Always set output load
-				SetOutputLoad(LOAD_ENABLE);
-				converter_state.state = CONVERTER_STATE_OFF;	// Reset overloaded state
-				err_code = CMD_OK;
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			case CONVERTER_OVERLOADED:
-				// We can get here if there are simultaneous messages of turning off and overload.
-				// Anyway, hardware already disabled by low-level interrupt-driven routine.
-				Converter_ClearOverloadFlag();
-				break;	
-			case cmd_START_CHARGE:
-				retVal = Converter_ProcessCharge(__START__);
-				if (retVal == 1)
-				{
-					// Command to low-level
-					temp8u = Converter_TurnOn();
-					if (temp8u == CONVERTER_CMD_OK)
-					{
-						SetOutputLoad(0);
-						converter_state.state = CONVERTER_STATE_CHARGING;
-						err_code = CMD_OK;
-					} 
-					else 
-					{
-						err_code = CMD_ERROR;
-					}
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_CHARGING;
-				dispatcher_msg.converter_event.err_code = retVal | err_code;		// fixme
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-		}
-	}
-	else if (converter_state.state == CONVERTER_STATE_ON)
-	{
-		switch (cmd)
-		{
-			case cmd_TURN_ON:		
-				// Converter is already ON
-				err_code = CMD_OK;
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_ON;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			case cmd_TURN_OFF:	
-				Converter_TurnOff();
-				converter_state.state = CONVERTER_STATE_OFF;
-				err_code = CMD_OK;
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OFF;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			case CONVERTER_OVERLOADED:
-				// Hardware has been overloaded and disabled by low-level interrupt-driven routine.
-				converter_state.state = CONVERTER_STATE_OVERLOADED;
-				// Reset that routine FSM flag
-				if (Converter_ClearOverloadFlag() == CONVERTER_CMD_OK)
-				{
-					// OK, flag has been reset.
-					err_code = EVENT_OK;
-				}	
-				else
-				{
-					// Error, we should never get here.
-					// Kind of restore attempt
-					Converter_TurnOff();
-					err_code = EVENT_ERROR;							
-				}
-				// Send notification to dispatcher
-				dispatcher_msg.type = DISPATCHER_CONVERTER_EVENT;
-				dispatcher_msg.sender = sender_CONVERTER;
-				dispatcher_msg.converter_event.msg_type = 0;
-				dispatcher_msg.converter_event.msg_sender = 0;
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_OVERLOAD;
-				dispatcher_msg.converter_event.err_code = err_code;
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-			case cmd_START_CHARGE:
-				retVal = Converter_ProcessCharge(__START__);
-				if (retVal == 1)
-				{
-					SetOutputLoad(0);
-				}
-				// Confirm
-				if (msg.pxSemaphore)	xSemaphoreGive(*msg.pxSemaphore);
-				// Send notification to dispatcher
-				fillDispatchMessage(&msg, &dispatcher_msg);
-				dispatcher_msg.converter_event.spec = STATE_CHANGE_TO_CHARGING;
-				dispatcher_msg.converter_event.err_code = retVal;				// fixme
-				xQueueSendToBack(xQueueDispatcher, &dispatcher_msg, 0);
-				break;
-		}
-	}
-	else if (converter_state.state == CONVERTER_STATE_CHARGING)
-	{
-		switch (cmd)
-		{
-			case cmd_TURN_ON:		
-				break;	// do nothing
-			case cmd_TURN_OFF:	
-				retVal = Converter_ProcessCharge(__STOP__);
-				if (retVal == 0)
-				{
-					__disable_converter();
-					SetOutputLoad(converter_state.channel->load_state);
-				}
-				break;
-			case CONVERTER_OVERLOADED:
-				Converter_ProcessCharge(__STOP_BY_OVERLOAD__);
-				SetOutputLoad(converter_state.channel->load_state);
-				break;
-			case cmd_START_CHARGE:
-				retVal = Converter_ProcessCharge(__RESTART__);
-				break;
-		}
-	}
-	else if (converter_state.state == CONVERTER_STATE_OVERLOADED)
-	{
-		switch (cmd)
-		{
-			case cmd_TURN_ON:		
-				break;	
-			case cmd_TURN_OFF:	
-				break;
-			case CONVERTER_OVERLOADED:
-				break;
-			case cmd_START_CHARGE:
-				break;
-		}
-	
-	}
-	
-
-}
-*/
-
-
-
 
 
 

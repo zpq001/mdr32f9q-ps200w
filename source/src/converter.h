@@ -114,7 +114,7 @@ enum ConverterStateEvents {
 
 // Charge status
 enum ConverterChargeStatusValues {
-	CHARGE_INACTIVE
+	CHARGE_INACTIVE,
 	CHARGE_STARTED,
 	CHARGE_STOPPED,
 	CHARGE_ABORTED,

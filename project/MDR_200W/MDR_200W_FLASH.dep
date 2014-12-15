@@ -129,7 +129,7 @@ I (..\..\source\src\eeprom.h)(0x5401BAE7)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\dwt_delay.h)(0x530255C2)
 I (..\..\source\src\control.h)(0x53692CCB)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\service.h)(0x53692CCB)
 I (..\..\source\src\dispatcher.h)(0x548892BF)
@@ -160,7 +160,7 @@ I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\defines.h)(0x530255C2)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\converter_hw.h)(0x53692CCB)
 I (..\..\source\src\control.h)(0x53692CCB)
@@ -200,7 +200,7 @@ I (..\..\source\MDR32F9Qx_config.h)(0x530255C2)
 I (..\..\source\defines.h)(0x530255C2)
 I (..\..\source\src\control.h)(0x53692CCB)
 I (..\..\source\src\global_def.h)(0x548615D1)
-F (..\..\source\src\converter.c)(0x5488934C)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\converter.o --list_dir ".\\listing\\" --list --omf_browse .\flash\converter.crf --depend .\flash\converter.d)
+F (..\..\source\src\converter.c)(0x548DAE1D)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\converter.o --list_dir ".\\listing\\" --list --omf_browse .\flash\converter.crf --depend .\flash\converter.d)
 I (C:\Keil\ARM\ARMCC\include\string.h)(0x5284AC6A)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
@@ -220,7 +220,7 @@ I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\source\src\control.h)(0x53692CCB)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\converter_hw.h)(0x53692CCB)
@@ -248,7 +248,7 @@ I (..\..\source\src\global_def.h)(0x548615D1)
 I (..\..\source\src\led.h)(0x530255C2)
 I (..\..\source\src\sound_driver.h)(0x530255C2)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
@@ -256,7 +256,7 @@ I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\converter_hw.h)(0x53692CCB)
 I (..\..\source\src\eeprom.h)(0x5401BAE7)
 I (..\..\source\src\dispatcher.h)(0x548892BF)
-F (..\..\source\src\dispatcher.c)(0x548893C7)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\dispatcher.o --list_dir ".\\listing\\" --list --omf_browse .\flash\dispatcher.crf --depend .\flash\dispatcher.d)
+F (..\..\source\src\dispatcher.c)(0x548DB15B)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\dispatcher.o --list_dir ".\\listing\\" --list --omf_browse .\flash\dispatcher.crf --depend .\flash\dispatcher.d)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
 I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x5284AC6A)
@@ -283,7 +283,7 @@ I (..\..\source\gui\guiGraphics\guiFonts.h)(0x530255C2)
 I (..\..\source\gui\guiGraphics\guiGraphPrimitives.h)(0x53692CC9)
 I (..\..\source\src\dwt_delay.h)(0x530255C2)
 I (..\..\source\src\key_def.h)(0x53692CCB)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\control.h)(0x53692CCB)
@@ -315,7 +315,7 @@ I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm\system_MDR32F9Qx.
 I (..\..\source\defines.h)(0x530255C2)
 I (..\..\source\src\encoder.h)(0x530255C2)
 I (..\..\source\src\systick.h)(0x5381E4A7)
-F (..\..\source\src\guiTop.c)(0x548892BF)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\guitop.o --list_dir ".\\listing\\" --list --omf_browse .\flash\guitop.crf --depend .\flash\guitop.d)
+F (..\..\source\src\guiTop.c)(0x548DB0B5)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\guitop.o --list_dir ".\\listing\\" --list --omf_browse .\flash\guitop.crf --depend .\flash\guitop.d)
 I (C:\Keil\ARM\ARMCC\include\stdio.h)(0x5284AC64)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
@@ -360,7 +360,7 @@ I (..\..\source\gui\guiMainForm.h)(0x530255C2)
 I (..\..\source\gui\guiMasterPanel.h)(0x53692CC9)
 I (..\..\source\gui\guiSetupPanel.h)(0x5389A188)
 I (..\..\source\gui\guiMessagePanel1.h)(0x53692CC8)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\adc.h)(0x53692CCB)
 I (..\..\source\src\dispatcher.h)(0x548892BF)
@@ -533,7 +533,7 @@ I (..\..\source\src\encoder.h)(0x530255C2)
 I (..\..\source\src\systemfunc.h)(0x5381DDE3)
 I (..\..\library\MDR32F9Qx_StdPeriph_Driver\inc\MDR32F9Qx_dma.h)(0x4F916E95)
 I (..\..\source\src\control.h)(0x53692CCB)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\converter_hw.h)(0x53692CCB)
@@ -563,7 +563,7 @@ I (..\..\library\FreeRTOS\Source\include\mpu_wrappers.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\buttons.h)(0x53692CCB)
@@ -613,7 +613,7 @@ I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\uart_proto.h)(0x5484B758)
 I (..\..\source\src\systemfunc.h)(0x5381DDE3)
 I (..\..\source\src\dispatcher.h)(0x548892BF)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\guiTop.h)(0x54861676)
 I (..\..\source\src\eeprom.h)(0x5401BAE7)
 F (..\..\source\src\uart_tx.c)(0x5484CCAC)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\uart_tx.o --list_dir ".\\listing\\" --list --omf_browse .\flash\uart_tx.crf --depend .\flash\uart_tx.d)
@@ -651,7 +651,7 @@ I (..\..\source\src\uart_tx.h)(0x5484B962)
 I (..\..\source\src\uart_rx.h)(0x5484B758)
 I (..\..\source\src\uart_proto.h)(0x5484B758)
 I (..\..\source\src\adc.h)(0x53692CCB)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\global_def.h)(0x548615D1)
 F (..\..\source\src\eeprom.c)(0x54038112)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\eeprom.o --list_dir ".\\listing\\" --list --omf_browse .\flash\eeprom.crf --depend .\flash\eeprom.d)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
@@ -677,7 +677,7 @@ I (..\..\source\src\eeprom.h)(0x5401BAE7)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\semphr.h)(0x525C2ACA)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\source\src\converter_task_def.h)(0x548892BF)
 I (..\..\source\src\dispatcher.h)(0x548892BF)
 F (..\..\source\src\isr_user_handlers.c)(0x53CE8434)(-c --cpu Cortex-M3 -g -O1 --apcs=interwork --asm --interleave --asm_dir ".\\listing\\" -I..\..\source -I..\..\source\src -I..\..\source\gui -I..\..\source\gui\guiCore -I..\..\source\gui\guiWidgets -I..\..\source\gui\guiGraphics -I..\..\source\gui\utils -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc -I..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\startup\arm -I..\..\library\MDR32F9Qx_StdPeriph_Driver\inc -I..\..\library\FreeRTOS\Source\portable\RVDS\ARM_CM3 -I..\..\library\FreeRTOS\Source -I..\..\library\FreeRTOS\Source\include-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include-I C:\Keil\ARM\Inc\Milandr\MDR32F9x-o .\flash\isr_user_handlers.o --list_dir ".\\listing\\" --list --omf_browse .\flash\isr_user_handlers.crf --depend .\flash\isr_user_handlers.d)
@@ -866,7 +866,7 @@ I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h)(0x51BAA9C4)
@@ -915,7 +915,7 @@ I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h)(0x51BAA9C4)
@@ -961,7 +961,7 @@ I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h)(0x51BAA9C4)
@@ -1026,7 +1026,7 @@ I (..\..\library\FreeRTOS\Source\include\task.h)(0x525C2BA8)
 I (..\..\library\FreeRTOS\Source\include\list.h)(0x525C2ACA)
 I (..\..\library\FreeRTOS\Source\include\queue.h)(0x525C2ACA)
 I (..\..\source\src\global_def.h)(0x548615D1)
-I (..\..\source\src\converter.h)(0x54889332)
+I (..\..\source\src\converter.h)(0x548DAD9B)
 I (..\..\library\CMSIS\CM3\DeviceSupport\MDR32F9Qx\inc\MDR32Fx.h)(0x4F916E95)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm3.h)(0x512C64B2)
 I (C:\Keil\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h)(0x51BAA9C4)

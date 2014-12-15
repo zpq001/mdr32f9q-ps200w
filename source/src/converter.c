@@ -732,7 +732,7 @@ static void processStateControl (uint8_t cmd_code) {
 				Converter_TurnOff();
 				SetOutputLoad(converter_state.channel->load_state);
 				converter_state.state = CONVERTER_STATE_OFF;
-				processChargeControl(STOP_CHARGE);
+				processChargeControl(cmd_STOP_CHARGE);
 				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
 			}
 			else if (converter_state.state == CONVERTER_STATE_OVERLOADED) {
@@ -777,7 +777,7 @@ static void processStateControl (uint8_t cmd_code) {
 						// Resistive output load must be disabled
 						SetOutputLoad(0);
 						// Process charge FSM
-						processChargeControl(START_CHARGE);
+						processChargeControl(cmd_START_CHARGE);
 						converter_state.state = CONVERTER_STATE_CHARGING;
 						state_event = CONV_STARTED_CHARGE;
 					}
@@ -798,7 +798,7 @@ static void processStateControl (uint8_t cmd_code) {
 			Converter_TurnOff();
 			converter_state.state = CONVERTER_STATE_OFF;
 			if (temp8u == CONVERTER_STATE_CHARGING) {
-				processChargeControl(STOP_CHARGE);
+				processChargeControl(cmd_STOP_CHARGE);
 				state_event = CONV_ABORTED_CHARGE;
 			} else {
 				// Resistive output load was disabled by charger and it is second STOP command - enable it
@@ -822,7 +822,7 @@ static void processStateControl (uint8_t cmd_code) {
 			stateResponse(0, err_code, CONV_OVERLOADED);
 			if (temp8u == CONVERTER_STATE_CHARGING) {
 				// Stop charge FSM
-				processChargeControl(STOP_CHARGE);
+				processChargeControl(cmd_STOP_CHARGE);
 				stateResponse(0, ERROR_NONE, CONV_ABORTED_CHARGE);
 				// Do not enable resistive load here
 			}			
@@ -921,7 +921,7 @@ static void processParamControl (void)
 			// Ensure that current setting lies inside new limits
 			if (op_result & VALUE_UPDATED)
 				op_result2 = Converter_SetCurrent(msg.a.clim_set.channel, msg.a.clim_set.range, 
-									getCurrentRegData(msg.a.clim_set.channel, msg.a.clim_set.range)->setting;
+									getCurrentRegData(msg.a.clim_set.channel, msg.a.clim_set.range)->setting);
 			taskEXIT_CRITICAL();
 			// Apply new setting to hardware. CHECKME: charge state	
 			if ((op_result2 & VALUE_UPDATED) && (msg.a.clim_set.channel == converter_state.channel->CHANNEL) && 
@@ -1137,15 +1137,14 @@ static void processChargeControl(uint8_t cmd)
 {
 	switch (cmd)
 	{
-		case CHARGE_START:
-			
+	/*	case CHARGE_START:
 			break;
-		case SHARGE_STOP:
+		case cmd_SHARGE_STOP:
 			break;
 		case CHARGE_ABORT:
 			break;
 		case CHARGE_TICK:
-			break;
+			break; */
 	}
 }
 

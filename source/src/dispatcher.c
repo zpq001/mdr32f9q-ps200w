@@ -346,9 +346,9 @@ void vTaskDispatcher(void *pvParameters)
 					sound_msg = 0;
 					if (msg.converter_event.param != param_STATE) {
 						// Skip sound if value change has been caused by another value change (call it VALUE_UPFORCED)
-						if (msg.converter_event.spec & (VALUE_BOUND_MASK | VALUE_UPFORCED) == VALUE_BOUND_MASK)
+						if ((msg.converter_event.spec & (VALUE_BOUND_MASK | VALUE_UPFORCED)) == VALUE_BOUND_MASK)
 							sound_msg = SND_CONV_SETTING_ILLEGAL | SND_CONVERTER_PRIORITY_NORMAL;
-						else if (msg.converter_event.spec & (VALUE_UPDATED | VALUE_UPFORCED) == VALUE_UPDATED)
+						else if ((msg.converter_event.spec & (VALUE_UPDATED | VALUE_UPFORCED)) == VALUE_UPDATED)
 							sound_msg = SND_CONV_SETTING_OK | SND_CONVERTER_PRIORITY_NORMAL;
 					} else {
 						if (msg.converter_event.err_code != ERROR_NONE)

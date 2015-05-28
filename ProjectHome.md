@@ -1,0 +1,1 @@
+32-bit Milandr MDR32F9Qx microcontroller-based controller for lab power supply with voltage/current regulation, LCD indication and remote control
